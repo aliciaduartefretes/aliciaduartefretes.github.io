@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Aprende guaraní de forma interactiva y divertida con la Profe Ali.">
+  <title>Guaraní con Ali</title>
+  <style>
+    :root{--green:#32b768;--dark:#173f35;--cream:#fffaf0;--yellow:#ffd166;--red:#ff6b6b;--muted:#678077;--line:#dce8e2}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--cream);color:var(--dark)}
+    button,select{font:inherit}.hide{display:none!important}.shell{max-width:1050px;margin:auto;padding:0 22px}
+    header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}
+    nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-weight:900;font-size:22px;color:var(--dark)}
+    .brand span{color:var(--green)}.stats{display:flex;gap:14px;align-items:center;font-weight:800}.pill{background:#f4f9f6;border-radius:99px;padding:9px 13px}
+    main{min-height:calc(100vh - 72px)}.hero{display:grid;grid-template-columns:1.2fr .8fr;align-items:center;gap:45px;padding:70px 0}
+    .eyebrow{color:var(--green);font-weight:900;text-transform:uppercase;letter-spacing:.12em;font-size:13px}
+    h1{font-size:clamp(42px,7vw,76px);line-height:.98;margin:14px 0 22px;letter-spacing:-.05em}
+    .hero p{font-size:19px;line-height:1.6;color:var(--muted);max-width:620px}.card{background:#fff;border:2px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 10px 0 #dce8e2}
+    .mascot{font-size:90px;text-align:center}.bubble{background:#eaf8ef;border-radius:18px;padding:18px;font-size:21px;text-align:center;font-weight:900;margin-top:15px}
+    .field{margin:22px 0}.field label{display:block;font-weight:800;margin-bottom:9px}.field select{width:100%;padding:15px;border:2px solid var(--line);border-radius:14px;background:white}
+    .btn{border:0;border-radius:15px;padding:15px 22px;font-weight:900;cursor:pointer;background:var(--green);color:white;box-shadow:0 5px 0 #188d49;transition:.15s}
+    .btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(4px);box-shadow:none}.btn.secondary{background:white;color:var(--dark);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+    .path{padding:48px 0 80px}.section-title{text-align:center;font-size:34px;margin:0 0 10px}.section-sub{text-align:center;color:var(--muted);margin-bottom:45px}
+    .lessons{display:grid;gap:18px;max-width:720px;margin:auto}.lesson{display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:18px;background:white;border:2px solid var(--line);border-radius:22px;padding:18px;cursor:pointer}
+    .lesson:hover{border-color:var(--green)}.lesson.locked{opacity:.55;cursor:not-allowed}.lesson-icon{width:62px;height:62px;display:grid;place-items:center;background:#eaf8ef;border-radius:18px;font-size:30px}.lesson h3{margin:0 0 5px}.lesson p{margin:0;color:var(--muted)}
+    .check{font-size:25px;color:var(--green)}.progress{height:13px;background:#e7efeb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--green);width:0;transition:.3s}
+    .game{max-width:700px;margin:auto;padding:48px 0}.game-top{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;margin-bottom:45px}.close{background:none;border:0;font-size:28px;cursor:pointer;color:var(--muted)}
+    .question{background:#fff;border:2px solid var(--line);border-radius:25px;padding:32px}.question h2{font-size:29px;margin-top:0}.prompt{font-size:24px;font-weight:900;margin:27px 0}
+    .options{display:grid;gap:12px}.option{background:#fff;border:2px solid var(--line);border-radius:15px;padding:16px;text-align:left;font-weight:800;cursor:pointer}.option:hover{border-color:var(--green);background:#f5fff8}.option.selected{border-color:var(--green);background:#eaf8ef}
+    .feedback{margin-top:20px;padding:17px;border-radius:15px;font-weight:800}.feedback.good{background:#e4f8eb;color:#17733d}.feedback.bad{background:#ffe7e7;color:#a42f2f}
+    .actions{margin-top:24px;display:flex;justify-content:flex-end}.finish{text-align:center;padding:55px 20px}.finish .trophy{font-size:100px}.finish h2{font-size:40px;margin:10px}
+    footer{border-top:1px solid var(--line);padding:30px;text-align:center;color:var(--muted)}
+    @media(max-width:720px){.hero{grid-template-columns:1fr;padding:40px 0}.hero .card{order:-1}nav{height:65px}.stats{gap:6px}.pill{padding:8px;font-size:14px}.lesson{grid-template-columns:58px 1fr}.lesson .check{display:none}.question{padding:22px}h1{font-size:48px}}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="shell">
+      <div class="brand">Guaraní <span>con Ali</span></div>
+      <div class="stats">
+        <span class="pill">🔥 <b id="streak">1</b></span>
+        <span class="pill">💚 <b id="lives">5</b></span>
+        <span class="pill">⭐ <b id="xp">0</b> XP</span>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <section id="home">
+      <div class="shell hero">
+        <div>
+          <div class="eyebrow" data-t="eyebrow">El idioma que conecta con Paraguay</div>
+          <h1 data-t="title">Aprende guaraní jugando.</h1>
+          <p data-t="intro">Lecciones cortas, ejercicios interactivos y expresiones reales para hablar guaraní desde el primer día.</p>
+          <div class="field">
+            <label data-t="native">¿Cuál es tu idioma nativo?</label>
+            <select id="lang">
+              <option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option>
+            </select>
+          </div>
+          <button class="btn" id="start" data-t="start">Comenzar a aprender</button>
+        </div>
+        <div class="card"><div class="mascot">🦜</div><div class="bubble">Mba'éichapa! 👋<br><small data-t="hello">¡Hola! ¿Cómo estás?</small></div></div>
+      </div>
+    </section>
+    <section id="course" class="hide">
+      <div class="shell path">
+        <h2 class="section-title" data-t="path">Tu camino de aprendizaje</h2>
+        <p class="section-sub" data-t="choose">Elige una lección y gana puntos.</p>
+        <div class="lessons" id="lessons"></div>
+      </div>
+    </section>
+    <section id="game" class="hide"><div class="shell game">
+      <div class="game-top"><button class="close" id="close">×</button><div class="progress"><i id="bar"></i></div><span>💚 <b id="gameLives">5</b></span></div>
+      <div id="questionBox" class="question"></div>
+    </div></section>
+    <section id="finish" class="hide"><div class="shell finish"><div class="trophy">🏆</div><h2 data-t="done">¡Lección completada!</h2><p id="result"></p><button class="btn" id="continue" data-t="continue">Continuar</button></div></section>
+  </main>
+  <footer>Hecho con 💚 para compartir la lengua guaraní · La Profe Ali</footer>
+  <script>
+    const T={
+      es:{eyebrow:"El idioma que conecta con Paraguay",title:"Aprende guaraní jugando.",intro:"Lecciones cortas, ejercicios interactivos y expresiones reales para hablar guaraní desde el primer día.",native:"¿Cuál es tu idioma nativo?",start:"Comenzar a aprender",hello:"¡Hola! ¿Cómo estás?",path:"Tu camino de aprendizaje",choose:"Elige una lección y gana puntos.",done:"¡Lección completada!",continue:"Continuar",check:"Comprobar",next:"Siguiente",correct:"¡Excelente! Respuesta correcta.",wrong:"La respuesta correcta es",earned:"Ganaste",units:["Saludos básicos","Palabras esenciales","Conversaciones cotidianas"],descs:["Saluda y preséntate","Familia, comida y números","Frases para situaciones reales"]},
+      en:{eyebrow:"The language that connects you to Paraguay",title:"Learn Guaraní by playing.",intro:"Short lessons, interactive exercises and real expressions to speak Guaraní from day one.",native:"What is your native language?",start:"Start learning",hello:"Hello! How are you?",path:"Your learning path",choose:"Choose a lesson and earn points.",done:"Lesson complete!",continue:"Continue",check:"Check",next:"Next",correct:"Excellent! Correct answer.",wrong:"The correct answer is",earned:"You earned",units:["Basic greetings","Essential words","Everyday conversations"],descs:["Greet and introduce yourself","Family, food and numbers","Phrases for real situations"]},
+      pt:{eyebrow:"O idioma que conecta você ao Paraguai",title:"Aprenda guarani brincando.",intro:"Lições curtas, exercícios interativos e expressões reais para falar guarani desde o primeiro dia.",native:"Qual é o seu idioma nativo?",start:"Começar a aprender",hello:"Olá! Como você está?",path:"Seu caminho de aprendizagem",choose:"Escolha uma lição e ganhe pontos.",done:"Lição concluída!",continue:"Continuar",check:"Verificar",next:"Próximo",correct:"Excelente! Resposta correta.",wrong:"A resposta correta é",earned:"Você ganhou",units:["Saudações básicas","Palavras essenciais","Conversas cotidianas"],descs:["Cumprimente e apresente-se","Família, comida e números","Frases para situações reais"]},
+      fr:{eyebrow:"La langue qui vous relie au Paraguay",title:"Apprenez le guarani en jouant.",intro:"Des leçons courtes, des exercices interactifs et des expressions réelles pour parler guarani dès le premier jour.",native:"Quelle est votre langue maternelle ?",start:"Commencer",hello:"Bonjour ! Comment allez-vous ?",path:"Votre parcours",choose:"Choisissez une leçon et gagnez des points.",done:"Leçon terminée !",continue:"Continuer",check:"Vérifier",next:"Suivant",correct:"Excellent ! Bonne réponse.",wrong:"La bonne réponse est",earned:"Vous avez gagné",units:["Salutations de base","Mots essentiels","Conversations quotidiennes"],descs:["Saluez et présentez-vous","Famille, nourriture et nombres","Phrases pour des situations réelles"]},
+      it:{eyebrow:"La lingua che ti collega al Paraguay",title:"Impara il guaraní giocando.",intro:"Lezioni brevi, esercizi interattivi ed espressioni reali per parlare guaraní dal primo giorno.",native:"Qual è la tua lingua madre?",start:"Inizia a imparare",hello:"Ciao! Come stai?",path:"Il tuo percorso",choose:"Scegli una lezione e guadagna punti.",done:"Lezione completata!",continue:"Continua",check:"Controlla",next:"Avanti",correct:"Eccellente! Risposta corretta.",wrong:"La risposta corretta è",earned:"Hai guadagnato",units:["Saluti di base","Parole essenziali","Conversazioni quotidiane"],descs:["Saluta e presentati","Famiglia, cibo e numeri","Frasi per situazioni reali"]}
+    };
+    const Q=[
+      [{g:"Mba'éichapa",a:{es:"¿Cómo estás?",en:"How are you?",pt:"Como você está?",fr:"Comment allez-vous ?",it:"Come stai?"},o:["Mba'éichapa","Aguyje","Jajotopata"]},{g:"Aguyje",a:{es:"Gracias",en:"Thank you",pt:"Obrigado",fr:"Merci",it:"Grazie"},o:["Iporã","Aguyje","Maitei"]},{g:"Jajotopata",a:{es:"Nos vemos",en:"See you",pt:"Até logo",fr:"À bientôt",it:"Ci vediamo"},o:["Jajotopata","Mba'éichapa","Héẽ"]}],
+      [{g:"Y",a:{es:"Agua",en:"Water",pt:"Água",fr:"Eau",it:"Acqua"},o:["Y","Óga","Karu"]},{g:"Óga",a:{es:"Casa",en:"House",pt:"Casa",fr:"Maison",it:"Casa"},o:["Mitã","Óga","Sy"]},{g:"Peteĩ",a:{es:"Uno",en:"One",pt:"Um",fr:"Un",it:"Uno"},o:["Mokõi","Mbohapy","Peteĩ"]}],
+      [{g:"Che vare'a",a:{es:"Tengo hambre",en:"I am hungry",pt:"Estou com fome",fr:"J'ai faim",it:"Ho fame"},o:["Che kane'õ","Che vare'a","Che avy'a"]},{g:"Che avy'a",a:{es:"Estoy feliz",en:"I am happy",pt:"Estou feliz",fr:"Je suis heureux",it:"Sono felice"},o:["Che avy'a","Che vare'a","Che róga"]},{g:"Iporã",a:{es:"Está bien / Es bonito",en:"It is good / beautiful",pt:"É bom / bonito",fr:"C'est bien / beau",it:"È bello / buono"},o:["Aguyje","Iporã","Nahániri"]}]
+    ];
+    let state=JSON.parse(localStorage.getItem("guaraniAli")||'{"xp":0,"lives":5,"done":[]}'),lang="es",unit=0,step=0,selected="";
+    const $=s=>document.querySelector(s),show=id=>["home","course","game","finish"].forEach(x=>$("#"+x).classList.toggle("hide",x!==id));
+    function save(){localStorage.setItem("guaraniAli",JSON.stringify(state));$("#xp").textContent=state.xp;$("#lives").textContent=state.lives;$("#gameLives").textContent=state.lives}
+    function translate(){document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T[lang][e.dataset.t]);renderLessons()}
+    function renderLessons(){let t=T[lang];$("#lessons").innerHTML=t.units.map((x,i)=>`<article class="lesson ${i>state.done.length?"locked":""}" data-unit="${i}"><div class="lesson-icon">${["👋","🌽","💬"][i]}</div><div><h3>${i+1}. ${x}</h3><p>${t.descs[i]}</p></div><div class="check">${state.done.includes(i)?"✓":"›"}</div></article>`).join("");document.querySelectorAll(".lesson:not(.locked)").forEach(e=>e.onclick=()=>begin(+e.dataset.unit))}
+    function begin(i){unit=i;step=0;selected="";show("game");renderQuestion()}
+    function renderQuestion(){let q=Q[unit][step],t=T[lang],instruction={es:"Selecciona el significado correcto",en:"Choose the correct meaning",pt:"Selecione o significado correto",fr:"Choisissez la bonne signification",it:"Scegli il significato corretto"}[lang],all=Q.flat();$("#bar").style.width=(step/Q[unit].length*100)+"%";$("#questionBox").innerHTML=`<small>${step+1} / ${Q[unit].length}</small><h2>${instruction}</h2><div class="prompt">${q.g}</div><div class="options">${q.o.map(o=>{let match=all.find(x=>x.g===o);return `<button class="option" data-v="${o}">${match?match.a[lang]:o}</button>`}).join("")}</div><div id="feedback"></div><div class="actions"><button class="btn" id="checkBtn">${t.check}</button></div>`;document.querySelectorAll(".option").forEach(b=>b.onclick=()=>{document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selected=b.dataset.v});$("#checkBtn").onclick=check}
+    function check(){if(!selected)return;let q=Q[unit][step],ok=selected===q.g,t=T[lang],f=$("#feedback");f.className="feedback "+(ok?"good":"bad");f.textContent=ok?t.correct:`${t.wrong}: ${q.a[lang]}`;if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);save();$("#checkBtn").textContent=t.next;$("#checkBtn").onclick=next;document.querySelectorAll(".option").forEach(b=>b.disabled=true)}
+    function next(){step++;selected="";if(step<Q[unit].length)renderQuestion();else{if(!state.done.includes(unit))state.done.push(unit);save();$("#result").textContent=`${T[lang].earned} 30 XP ⭐`;show("finish")}}
+    $("#lang").onchange=e=>{lang=e.target.value;translate()};$("#start").onclick=()=>show("course");$("#close").onclick=()=>show("course");$("#continue").onclick=()=>{renderLessons();show("course")};translate();save();
+  </script>
+</body>
+</html>
