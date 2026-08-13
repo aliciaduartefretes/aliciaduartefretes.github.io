@@ -2,8 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
+  <meta name="theme-color" content="#6f4ad7">
+  <meta name="color-scheme" content="light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Guaraní con Ali">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <title>Guaraní con Ali · Curso interactivo</title>
   <style>
     :root{--ink:#302b4f;--green:#7757d9;--green2:#f0ecff;--cream:#fff9f1;--sun:#ffc85a;--red:#f06f72;--blue:#5b8def;--muted:#726d83;--line:#e4deee;--white:#fff;--shadow:0 10px 28px rgba(64,48,105,.12)}
@@ -93,6 +102,8 @@
     @media(max-width:720px){.paraguay-map-shell{min-height:800px}.paraguay-map-art{width:90%;height:600px;top:20px}.kid-map-caption{right:18px;top:18px;max-width:150px}.kid-map-caption b{font-size:15px}.map-hummingbird{left:13%;top:65px}.kid-map-node{width:62px;height:62px;font-size:25px}.kid-world-panel{left:12px;bottom:12px;width:calc(100% - 24px);padding:14px}.kid-world-panel-head{grid-template-columns:48px 1fr}.kid-world-panel-icon{width:46px;height:46px}.kid-world-panel h3{font-size:17px}.kid-world-panel p{font-size:11px}.kid-world-panel .kid-mission{width:43px;height:43px}.kid-dress-stage{grid-template-columns:1fr;padding:12px}.kid-character{min-height:330px}.kid-person{transform:scale(.9);margin-top:12px}.kid-wardrobe{grid-template-columns:repeat(2,1fr)}.kid-wardrobe button{min-height:105px}.kid-game-card{padding:19px 12px}.kid-game-top{grid-template-columns:auto 1fr auto}.kid-score{display:none}.kid-drag-tray{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:720px){.sound-results{grid-template-columns:1fr}.sound-search-card{padding:18px}.sound-search-box input{font-size:16px}}
     [hidden]{display:none!important}.nav-btn.staff-entry.visible{display:block!important}body:not([data-user-role="admin"]) #adminTab,body:not([data-user-role="admin"]) #adminPane{display:none!important;visibility:hidden!important;pointer-events:none!important}@media(max-width:760px){.bottom-nav{width:calc(100% - 20px);justify-content:space-around}.nav-btn{padding:8px 9px;font-size:11px}}
+    /* Mobile application shell: safe areas, touch targets and install/update notices. */
+    html{min-height:100%;background:#fff9f1;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}body{min-height:100dvh;padding-bottom:calc(94px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent;touch-action:manipulation}button,a,input,select,textarea{touch-action:manipulation}button,.btn,.mini-btn,.nav-btn,.back,.kid-back,.kid-sound{min-height:44px}input,select,textarea{font-size:16px}.bottom-nav{bottom:max(7px,env(safe-area-inset-bottom));padding-bottom:max(7px,env(safe-area-inset-bottom));max-width:720px}.reaction-sound-toggle{bottom:calc(102px + env(safe-area-inset-bottom))}.toast{top:calc(82px + env(safe-area-inset-top));max-width:calc(100% - 28px);text-align:center}.app-notice{position:fixed;z-index:125;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 24px));display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid #ded6f1;border-radius:18px;background:rgba(255,255,255,.98);box-shadow:0 16px 42px rgba(46,34,82,.2);backdrop-filter:blur(14px)}.app-notice[hidden]{display:none!important}.app-notice-icon{flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#6f4ad7,#f06f72);color:#fff;font-size:21px}.app-notice-copy{min-width:0;flex:1}.app-notice-copy b,.app-notice-copy small{display:block}.app-notice-copy small{margin-top:2px;color:var(--muted);line-height:1.35}.app-notice-actions{display:flex;gap:6px}.app-notice-actions button{min-height:40px;padding:8px 12px}.network-status{position:fixed;z-index:124;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:999px;background:#332957;color:#fff;font-size:12px;font-weight:850;box-shadow:0 6px 20px rgba(0,0,0,.18)}.standalone-only{display:none}.app-standalone .standalone-only{display:inline-flex}.app-standalone .sponsor-strip{padding-top:env(safe-area-inset-top);height:calc(50px + env(safe-area-inset-top))}.app-standalone header{top:0}.app-standalone .account-menu{top:calc(74px + env(safe-area-inset-top))}@media(max-width:760px){.shell{width:min(100% - 24px,1120px)}.app-notice{align-items:flex-start}.app-notice-actions{flex-direction:column}.app-notice-actions button{width:100%}.bottom-nav{border-radius:22px}.nav-btn{min-width:58px;min-height:54px}.nav-btn span{font-size:21px}.hero,.page-head,.course-head{padding-top:24px}.lesson-wrap{padding-top:20px}.staff-form input,.staff-form select,.staff-form textarea,.suggest-card input,.suggest-card select,.suggest-card textarea{min-height:48px}.staff-form button,.suggest-card button,.course-card .btn{width:100%}}@media(display-mode:standalone){body{user-select:none}.study,.quiz,.staff-card,.suggest-card,input,textarea{user-select:text}}
   </style>
 </head>
 <body>
@@ -147,12 +158,15 @@
   <section id="suggestions" class="hide"><div class="shell"><div class="page-head"><span class="tag">CONSTRUYAMOS JUNTOS</span><h2>¿Cómo podemos mejorar?</h2><p>Tu idea puede convertirse en la próxima función o lección.</p></div><div class="sponsor-info"><h3>🤝 Espacio para marcas</h3><p>Las marcas patrocinadoras podrán aparecer en el banner animado superior, en unidades temáticas y en experiencias especiales del curso.</p><a class="btn" href="mailto:Aliciaduartefretes@gmail.com?subject=Patrocinio%20Guaran%C3%AD%20con%20Ali">Quiero patrocinar</a></div><form class="suggest-card" action="https://formsubmit.co/Aliciaduartefretes@gmail.com" method="POST"><input type="hidden" name="_subject" value="Nueva sugerencia para Guaraní con Ali"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="_template" value="table"><input type="hidden" name="_next" value="https://aliciaduartefretes.github.io/?sugerencia=enviada"><input type="text" name="_honey" style="display:none"><div class="form-row"><div><label for="visitorName">Nombre</label><input id="visitorName" name="Nombre" placeholder="¿Cómo te llamas?" required></div><div><label for="visitorEmail">Correo (opcional)</label><input id="visitorEmail" type="email" name="Correo" placeholder="Para poder responderte"></div></div><label for="ideaType">¿Qué quieres sugerir?</label><select id="ideaType" name="Tipo"><option>Nueva lección</option><option>Corrección de guaraní</option><option>Mejora de la página</option><option>Problema técnico</option><option>Colaboración o patrocinio</option><option>Otra idea</option></select><label for="idea">Cuéntanos tu idea</label><textarea id="idea" name="Sugerencia" placeholder="Escribe aquí tu sugerencia…" required></textarea><button class="btn" type="submit">Enviar sugerencia ✨</button><p><small>La sugerencia llegará directamente al correo de la Profe Ali.</small></p></form></div></section>
 </main>
 <div class="auth-backdrop hide" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="auth-card"><button class="auth-close" id="authClose" aria-label="Cerrar">×</button><div class="auth-icon">🌟</div><h2 id="authTitle">¿Quieres guardar tu progreso?</h2><p id="authText">Inicia sesión para conservar tus avances y personalizar tu experiencia en cualquier dispositivo.</p><div class="auth-benefits"><span id="authBenefit1">✓ Conserva tus unidades y XP</span><span id="authBenefit2">✓ Continúa desde otro celular</span><span id="authBenefit3">✓ Personaliza tu aprendizaje</span></div><button class="google-btn" id="googleLogin"><span style="font-size:20px">🇬</span><span id="googleLoginText">Continuar con Google</span></button><button class="guest-btn" id="guestContinue">Ahora no, continuar como invitado</button><div class="auth-status" id="authStatus"></div></div></div>
-<div class="account-menu hide" id="accountMenu"><strong id="profileName"></strong><small id="profileEmail"></small><button class="mini-btn staff-entry" data-go="institutional">🏫 Gestión académica</button><button class="mini-btn" id="logoutBtn">Cerrar sesión</button></div>
+<div class="account-menu hide" id="accountMenu"><strong id="profileName"></strong><small id="profileEmail"></small><button class="mini-btn staff-entry" data-go="institutional">🏫 Gestión académica</button><a class="mini-btn" href="/eliminar-cuenta.html" style="display:block;text-align:center;text-decoration:none;margin:8px 0">🗑️ Solicitar eliminación de cuenta</a><button class="mini-btn" id="logoutBtn">Cerrar sesión</button></div>
 <div class="consent hide" id="consentBanner"><div><h3 id="consentTitle">Tu privacidad importa</h3><p id="consentText">Con tu permiso usamos estadísticas para saber cuántas personas visitan el curso y mejorarlo. No enviamos tus respuestas ni tu correo a Analytics.</p></div><div class="consent-actions"><button class="mini-btn" id="consentReject">Solo lo necesario</button><button class="btn" id="consentAccept">Aceptar estadísticas</button></div></div>
 <div class="toast" id="toast">¡Reto preparado! ⚡</div>
 <button class="reaction-sound-toggle" id="reactionSoundToggle" type="button" aria-label="Silenciar sonidos de reacción" title="Silenciar sonidos de reacción">🔊</button>
 <nav class="bottom-nav" aria-label="Navegación principal"><button class="nav-btn active" data-go="home"><span>🏠</span><i data-ui="navHome">Inicio</i></button><button class="nav-btn" data-go="catalog"><span>📚</span><i data-ui="navCourse">Cursos</i></button><button class="nav-btn staff-entry" id="staffBottomNav" data-go="institutional"><span>🏫</span><i>Gestión</i></button><button class="nav-btn" data-go="videos"><span>▶️</span><i data-ui="navVideos">Videos</i></button><button class="nav-btn" data-go="suggestions"><span>💡</span><i data-ui="navIdeas">Sugerencias</i></button></nav>
-<footer>Hecho con 💚 para compartir la lengua y la cultura paraguayas · La Profe Ali · <button class="privacy-link" id="privacySettings">Privacidad</button><br><small id="buildVersion">Versión GCA-21 · permisos aislados por cuenta</small></footer>
+<div class="network-status" id="networkStatus" role="status" aria-live="polite" hidden>Sin conexión · el progreso local sigue disponible</div>
+<aside class="app-notice" id="appInstallNotice" hidden aria-label="Instalar aplicación"><div class="app-notice-icon">📱</div><div class="app-notice-copy"><b>Instala Guaraní con Ali</b><small>Acceso rápido desde tu pantalla de inicio y experiencia a pantalla completa.</small></div><div class="app-notice-actions"><button class="btn" id="installAppButton">Instalar</button><button class="mini-btn" id="dismissInstallButton" aria-label="Cerrar">Ahora no</button></div></aside>
+<aside class="app-notice" id="appUpdateNotice" hidden aria-label="Actualizar aplicación"><div class="app-notice-icon">✨</div><div class="app-notice-copy"><b>Nueva versión disponible</b><small>Actualiza cuando termines tu actividad para recibir las mejoras.</small></div><div class="app-notice-actions"><button class="btn" id="updateAppButton">Actualizar</button><button class="mini-btn" id="dismissUpdateButton" aria-label="Cerrar">Después</button></div></aside>
+<footer>Hecho con 💚 para compartir la lengua y la cultura paraguayas · La Profe Ali · <button class="privacy-link" id="privacySettings">Privacidad</button> · <a class="privacy-link" href="/privacidad.html">Política de privacidad</a><br><small id="buildVersion">Versión GCA-22 · aplicación móvil PWA</small></footer>
 <script>
 /* Complete course translations: EN, PT, FR, IT */
 const DESCRIPTIONS_I18N={
@@ -2190,6 +2204,67 @@ onAuthStateChanged(auth,async user=>{
  try{let ref=doc(db,"users",user.uid),snap=await getDoc(ref);if(!sameAccount())return;if(snap.exists()){applyingCloud=true;window.applySyncedProgress?.(snap.data());applyingCloud=false}}catch(error){applyingCloud=false;if(!sameAccount())return;console.error("No se pudo leer el progreso",error)}
  try{if(sameAccount())await writeProgress(window.getCourseSnapshot?.()||{})}catch(error){console.error("No se pudo guardar el progreso",error)}
 });
+</script>
+<script>
+(()=>{
+  const isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true||document.referrer.startsWith("android-app://");
+  document.documentElement.classList.toggle("app-standalone",isStandalone);
+  const networkStatus=document.getElementById("networkStatus");
+  const updateNetworkStatus=()=>{const offline=!navigator.onLine;networkStatus.hidden=!offline;document.documentElement.classList.toggle("app-offline",offline)};
+  window.addEventListener("online",updateNetworkStatus);
+  window.addEventListener("offline",updateNetworkStatus);
+  updateNetworkStatus();
+
+  let deferredInstallPrompt=null;
+  const installNotice=document.getElementById("appInstallNotice");
+  window.addEventListener("beforeinstallprompt",event=>{
+    event.preventDefault();
+    deferredInstallPrompt=event;
+    if(!isStandalone&&sessionStorage.getItem("gcaInstallDismissed")!=="1")installNotice.hidden=false;
+  });
+  document.getElementById("installAppButton").addEventListener("click",async()=>{
+    if(!deferredInstallPrompt)return;
+    installNotice.hidden=true;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt=null;
+  });
+  document.getElementById("dismissInstallButton").addEventListener("click",()=>{
+    installNotice.hidden=true;
+    sessionStorage.setItem("gcaInstallDismissed","1");
+  });
+  window.addEventListener("appinstalled",()=>{installNotice.hidden=true;deferredInstallPrompt=null});
+
+  if(!("serviceWorker" in navigator)||!(location.protocol==="https:"||location.hostname==="localhost"))return;
+  let refreshing=false;
+  const updateNotice=document.getElementById("appUpdateNotice");
+  const showUpdate=registration=>{
+    if(!registration.waiting)return;
+    updateNotice.hidden=false;
+    document.getElementById("updateAppButton").onclick=()=>{
+      updateNotice.hidden=true;
+      registration.waiting.postMessage({type:"SKIP_WAITING"});
+    };
+  };
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(refreshing)return;
+    refreshing=true;
+    location.reload();
+  });
+  document.getElementById("dismissUpdateButton").addEventListener("click",()=>{updateNotice.hidden=true});
+  navigator.serviceWorker.register("/sw.js").then(registration=>{
+    showUpdate(registration);
+    registration.addEventListener("updatefound",()=>{
+      const worker=registration.installing;
+      worker?.addEventListener("statechange",()=>{
+        if(worker.state==="installed"&&navigator.serviceWorker.controller)showUpdate(registration);
+      });
+    });
+    const checkUpdate=()=>registration.update().catch(()=>{});
+    window.addEventListener("focus",checkUpdate);
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
+  }).catch(error=>console.warn("No se pudo activar el modo de aplicación",error));
+})();
 </script>
 </body>
 </html>
