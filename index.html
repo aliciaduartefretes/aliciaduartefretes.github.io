@@ -2706,5 +2706,95 @@ onAuthStateChanged(auth,async user=>{
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
+<script>
+/* GCA46 · aislamiento estricto entre los motores Policía y Medicina */
+(()=>{
+  const BUILD="GCA46-POLICIA-MEDICINA-SEPARADOS";
+  document.documentElement.dataset.build=BUILD;
+
+  /* Policía solo puede enlazar tarjetas que estén dentro de #policeCourse. */
+  renderPoliceUnits=function(){
+    const ranges=[
+      ["#policeUnits",0,6],["#policeUnits2",6,16],["#policeUnits3",16,27],
+      ["#policeUnits4",27,44],["#policeUnits5",44,61],["#policeUnits6",61,75],
+      ["#policeUnits7",75,88],["#policeUnits8",88,98],["#policeUnits9",98,POLICE_LESSONS.length]
+    ];
+    ranges.forEach(([id,start,end])=>{
+      const box=$(id);if(!box)return;
+      box.innerHTML=POLICE_LESSONS.slice(start,end).map((u,j)=>{
+        const i=start+j,locked=!window.isCourseAuthor&&i>0&&!state.policeDone.includes(i-1),done=state.policeDone.includes(i),score=state.policeScores[i];
+        return `<article class="police-unit ${locked?"locked":""}" data-course-engine="police" data-police-i="${i}"><div class="number">${u.icon}</div><div><h4>${j+1}. ${u.title}</h4><p>${u.source} · ${u.questions.length} actividades${score!==undefined?` · Mejor puntaje ${score}%`:""}</p></div><div class="status">${locked?"🔒":done?"✅":"›"}</div></article>`;
+      }).join("");
+    });
+    document.querySelectorAll("#policeCourse .police-unit[data-course-engine='police']:not(.locked)").forEach(card=>{
+      card.onclick=null;
+      card.addEventListener("click",event=>{
+        event.preventDefault();event.stopPropagation();
+        openPoliceLesson(Number(card.dataset.policeI));
+      });
+    });
+  };
+
+  /* Medicina se dibuja y se enlaza exclusivamente con su propio motor y banco. */
+  renderMedicalUnits=function(){
+    const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"];
+    translateMedicalShell();
+    const ranges=[["#medicalUnits",0,10],["#medicalUnits2",10,20],["#medicalUnits3",20,30],["#medicalUnits4",30,40]];
+    ranges.forEach(([id,start,end])=>{
+      const root=$(id);if(!root)return;
+      root.innerHTML=lessons.slice(start,end).map((u,j)=>{
+        const i=start+j,done=state.medicalDone.includes(i),score=state.medicalScores[i];
+        return `<article class="police-unit medical-unit" data-course-engine="medical" data-med-i="${i}"><div class="number">${i+1}</div><div><h4>${u.icon} ${u.title}</h4><p>${u.source} · ${u.questions.length} ${t.activities}${Number.isFinite(score)?` · ${t.best} ${score}%`:""}</p></div><div class="status">${done?"✅":"▶️"}</div></article>`;
+      }).join("");
+    });
+    document.querySelectorAll("#medicalCourse .medical-unit[data-course-engine='medical']").forEach(card=>{
+      card.onclick=null;
+      card.addEventListener("click",event=>{
+        event.preventDefault();event.stopImmediatePropagation();
+        const index=Number(card.dataset.medI);
+        if(Number.isInteger(index)&&activeMedicalLessons()[index])openMedicalLesson(index);
+      },true);
+    });
+    $("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor);
+  };
+
+  /* Apertura médica defensiva: nunca consulta POLICE_LESSONS ni abre policeLesson. */
+  openMedicalLesson=function(index){
+    const lessons=activeMedicalLessons(),next=Number(index);
+    medicalUnit=Number.isInteger(next)&&lessons[next]?next:0;
+    medicalStep=0;medicalCorrect=0;medicalAnswer="";medicalChecked=false;medicalPhase="study";
+    if(typeof medicalQueue!=="undefined")medicalQueue=[];
+    show("medicalLesson",true);
+    renderMedicalStudy();
+    window.scrollTo(0,0);
+    window.courseAnalytics?.("medical_lesson_opened",{lesson_number:medicalUnit+1,course:"medicine",lesson_title:lessons[medicalUnit].title});
+  };
+
+  /* Al continuar, se abre formalmente la siguiente lección médica. */
+  const medicalFinishedSeparated=renderMedicalFinishedScreen;
+  renderMedicalFinishedScreen=function(){
+    medicalFinishedSeparated();
+    const button=$("#medicalReturn"),hasNext=medicalUnit+1<activeMedicalLessons().length;
+    if(button&&hasNext){
+      button.textContent="Continuar →";
+      button.onclick=()=>openMedicalLesson(medicalUnit+1);
+    }
+  };
+
+  /* Barreras de navegación: al entrar en Medicina siempre se reconstruye su catálogo. */
+  const enterMedicine=event=>{
+    if(event){event.preventDefault();event.stopImmediatePropagation()}
+    useCourseLanguage(["es","pt"],"es","Medicina está disponible en español y portugués.");
+    show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0);
+  };
+  [$("#homeMedical"),$("#startMedicalHome"),$("#openMedicalCourse")].filter(Boolean).forEach(button=>button.addEventListener("click",enterMedicine,true));
+  $("#medicalBack")?.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();show("medicalCourse",true);renderMedicalUnits();window.scrollTo(0,0)},true);
+
+  /* Sanea tarjetas que pudieron quedar enlazadas antes de cargar esta corrección. */
+  renderPoliceUnits();
+  renderMedicalUnits();
+  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
+})();
+</script>
 </body>
 </html>
