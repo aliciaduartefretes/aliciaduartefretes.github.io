@@ -2616,7 +2616,7 @@ onAuthStateChanged(auth,async user=>{
     const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}. Esta pregunta volverá al final.`;
     playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));
     document.querySelectorAll("#lessonBody .answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});
-    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);button.disabled=false;button.textContent=UI[lang].next;
+    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);button.disabled=false;button.textContent=UI[lang].next;button.onclick=()=>{generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish()};
   };
   renderGeneralFinishedScreen=function(){
     const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
@@ -2653,7 +2653,7 @@ onAuthStateChanged(auth,async user=>{
     if(q.type==="order")ok=value.length===q.answer.length&&value.every((x,i)=>normalizeAnswer(x)===normalizeAnswer(q.answer[i]));else if(Array.isArray(q.answer))ok=q.answer.some(x=>normalizeAnswer(x)===normalizeAnswer(value));else ok=normalizeAnswer(value)===normalizeAnswer(q.answer);
     policeChecked=true;if(ok){policeCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);policeQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#policeLessonBody"));
     const fb=$("#policeFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?"¡Correcto!":"Respuesta a revisar."}</b><br>${q.explain}${ok?"":`<br><small>Respuesta esperada: ${Array.isArray(q.answer)?q.answer[0]:q.answer.join?q.answer.join(" "):q.answer}. Volverá al final.</small>`}`;
-    btn.disabled=false;btn.textContent="Siguiente";document.querySelectorAll(".answer,.order-chip,.text-answer").forEach(x=>x.disabled=true);
+    btn.disabled=false;btn.textContent="Siguiente";btn.onclick=()=>{policeQueuePos++;if(policeQueuePos<policeQueue.length){renderPoliceQuiz();save()}else finishPoliceLesson()};document.querySelectorAll(".answer,.order-chip,.text-answer").forEach(x=>x.disabled=true);
   };
   renderPoliceFinishedScreen=function(){
     const body=$("#policeLessonBody"),hasNext=policeUnit+1<POLICE_LESSONS.length,score=100;if(!body)return;
@@ -2682,7 +2682,7 @@ onAuthStateChanged(auth,async user=>{
     if(medicalChecked){medicalQueuePos++;if(medicalQueuePos<medicalQueue.length){renderMedicalQuiz();save()}else finishMedicalLesson();return}
     const ok=medicalAnswer===q.answer;medicalChecked=true;if(ok){medicalCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);medicalQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#medicalLessonBody"));
     const fb=$("#medicalFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?t.correct:t.review}</b><br>${q.explain}${ok?"":`<br><small>${t.expected}: ${q.answer}. ${lang==="pt"?"Esta pergunta voltará no final.":"Esta pregunta volverá al final."}</small>`}`;
-    btn.disabled=false;btn.textContent=t.next;document.querySelectorAll("#medicalChoices .answer").forEach(x=>{x.disabled=true;if(x.textContent===q.answer)x.classList.add("answer-correct");else if(x.textContent===medicalAnswer&&!ok)x.classList.add("answer-wrong")});
+    btn.disabled=false;btn.textContent=t.next;btn.onclick=()=>{medicalQueuePos++;if(medicalQueuePos<medicalQueue.length){renderMedicalQuiz();save()}else finishMedicalLesson()};document.querySelectorAll("#medicalChoices .answer").forEach(x=>{x.disabled=true;if(x.textContent===q.answer)x.classList.add("answer-correct");else if(x.textContent===medicalAnswer&&!ok)x.classList.add("answer-wrong")});
   };
   renderMedicalFinishedScreen=function(){
     const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"],body=$("#medicalLessonBody"),hasNext=medicalUnit+1<lessons.length;if(!body)return;
@@ -2854,6 +2854,49 @@ onAuthStateChanged(auth,async user=>{
     }
   };
 
+  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
+})();
+</script>
+<script>
+/* GCA48 · cierre garantizado de la última pregunta */
+(()=>{
+  const BUILD="GCA48-ULTIMO-SIGUIENTE-GARANTIZADO";
+  document.documentElement.dataset.build=BUILD;
+  let applyingRemoteProgress=false,deferredRemoteProgress=null;
+
+  function visible(id){const node=document.querySelector(id);return !!node&&!node.classList.contains("hide")}
+  function exerciseIsActive(){
+    return (visible("#lesson")&&phase==="quiz")||
+      (visible("#policeLesson")&&policePhase==="quiz")||
+      (visible("#medicalLesson")&&medicalPhase==="quiz")||
+      visible("#kidsGame")||visible("#rudeLesson");
+  }
+
+  /* Guardado local inmediato; la nube espera hasta que la tarjeta haya terminado.
+     Así una respuesta ya corregida nunca puede volver al estado de comprobación. */
+  save=function(){
+    localStorage.setItem("guaraniAliPro",JSON.stringify(state));
+    const xp=$("#xp"),lives=$("#lives");if(xp)xp.textContent=state.xp;if(lives)lives.textContent=state.lives;
+    if(!exerciseIsActive()&&!applyingRemoteProgress)window.syncCourseProgress?.({...state,lang});
+  };
+
+  const applyRemoteProgressBase=window.applySyncedProgress;
+  if(typeof applyRemoteProgressBase==="function")window.applySyncedProgress=data=>{
+    if(exerciseIsActive()){deferredRemoteProgress=data;return}
+    applyingRemoteProgress=true;
+    try{applyRemoteProgressBase(data)}finally{applyingRemoteProgress=false;deferredRemoteProgress=null}
+  };
+
+  /* Al finalizar, la fase cambia antes de guardar: el progreso completo sí se
+     sincroniza y la pantalla final permanece estable. */
+  const finishGeneralStable=finish;
+  finish=function(){phase="finished";finishGeneralStable()};
+  const finishPoliceStable=finishPoliceLesson;
+  finishPoliceLesson=function(){policePhase="finished";finishPoliceStable()};
+  const finishMedicalStable=finishMedicalLesson;
+  finishMedicalLesson=function(){medicalPhase="finished";finishMedicalStable()};
+
+  window.__gcaExerciseLock={build:BUILD,exerciseIsActive,getDeferred:()=>!!deferredRemoteProgress};
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
