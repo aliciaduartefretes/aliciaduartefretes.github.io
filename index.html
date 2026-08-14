@@ -2610,13 +2610,13 @@ onAuthStateChanged(auth,async user=>{
   };
   checkAnswer=function(){
     const sourceIndex=generalQueue[generalQueuePos],q=quizData(unit)[sourceIndex],button=$("#check");
-    if(checked){generalQueuePos++;if(generalQueuePos<generalQueue.length)renderQuiz();else finish();return}
+    if(checked){generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish();return}
     const ok=selected===q[1];checked=true;
     if(!ok)generalQueue.push(sourceIndex);
     const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}. Esta pregunta volverá al final.`;
     playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));
     document.querySelectorAll("#lessonBody .answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});
-    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);save();button.disabled=false;button.textContent=UI[lang].next;
+    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);button.disabled=false;button.textContent=UI[lang].next;
   };
   renderGeneralFinishedScreen=function(){
     const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
@@ -2648,10 +2648,10 @@ onAuthStateChanged(auth,async user=>{
   };
   checkPoliceAnswer=function(){
     const sourceIndex=policeQueue[policeQueuePos],q=POLICE_LESSONS[policeUnit].questions[sourceIndex],btn=$("#policeCheck");
-    if(policeChecked){policeQueuePos++;if(policeQueuePos<policeQueue.length)renderPoliceQuiz();else finishPoliceLesson();return}
+    if(policeChecked){policeQueuePos++;if(policeQueuePos<policeQueue.length){renderPoliceQuiz();save()}else finishPoliceLesson();return}
     const value=q.type==="order"?policeOrder.map(x=>x.word):policeAnswer;let ok;
     if(q.type==="order")ok=value.length===q.answer.length&&value.every((x,i)=>normalizeAnswer(x)===normalizeAnswer(q.answer[i]));else if(Array.isArray(q.answer))ok=q.answer.some(x=>normalizeAnswer(x)===normalizeAnswer(value));else ok=normalizeAnswer(value)===normalizeAnswer(q.answer);
-    policeChecked=true;if(ok){policeCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);policeQueue.push(sourceIndex)}save();playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#policeLessonBody"));
+    policeChecked=true;if(ok){policeCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);policeQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#policeLessonBody"));
     const fb=$("#policeFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?"¡Correcto!":"Respuesta a revisar."}</b><br>${q.explain}${ok?"":`<br><small>Respuesta esperada: ${Array.isArray(q.answer)?q.answer[0]:q.answer.join?q.answer.join(" "):q.answer}. Volverá al final.</small>`}`;
     btn.disabled=false;btn.textContent="Siguiente";document.querySelectorAll(".answer,.order-chip,.text-answer").forEach(x=>x.disabled=true);
   };
@@ -2679,8 +2679,8 @@ onAuthStateChanged(auth,async user=>{
   };
   checkMedicalAnswer=function(){
     const u=activeMedicalLessons()[medicalUnit],sourceIndex=medicalQueue[medicalQueuePos],q=u.questions[sourceIndex],btn=$("#medicalCheck"),t=MEDICAL_UI[lang==="pt"?"pt":"es"];
-    if(medicalChecked){medicalQueuePos++;if(medicalQueuePos<medicalQueue.length)renderMedicalQuiz();else finishMedicalLesson();return}
-    const ok=medicalAnswer===q.answer;medicalChecked=true;if(ok){medicalCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);medicalQueue.push(sourceIndex)}save();playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#medicalLessonBody"));
+    if(medicalChecked){medicalQueuePos++;if(medicalQueuePos<medicalQueue.length){renderMedicalQuiz();save()}else finishMedicalLesson();return}
+    const ok=medicalAnswer===q.answer;medicalChecked=true;if(ok){medicalCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);medicalQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#medicalLessonBody"));
     const fb=$("#medicalFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?t.correct:t.review}</b><br>${q.explain}${ok?"":`<br><small>${t.expected}: ${q.answer}. ${lang==="pt"?"Esta pergunta voltará no final.":"Esta pregunta volverá al final."}</small>`}`;
     btn.disabled=false;btn.textContent=t.next;document.querySelectorAll("#medicalChoices .answer").forEach(x=>{x.disabled=true;if(x.textContent===q.answer)x.classList.add("answer-correct");else if(x.textContent===medicalAnswer&&!ok)x.classList.add("answer-wrong")});
   };
@@ -2793,6 +2793,67 @@ onAuthStateChanged(auth,async user=>{
   /* Sanea tarjetas que pudieron quedar enlazadas antes de cargar esta corrección. */
   renderPoliceUnits();
   renderMedicalUnits();
+  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
+})();
+</script>
+<script>
+/* GCA47 · reparación de actividades de orden y auditoría de recorrido completo */
+(()=>{
+  const BUILD="GCA47-RECORRIDO-COMPLETO-SIN-BLOQUEOS";
+  document.documentElement.dataset.build=BUILD;
+
+  /* Algunas actividades antiguas de ordenar recibieron la explicación como tercer
+     argumento. Se normalizan antes de que cualquier lección pueda abrirse. */
+  let repairedOrderQuestions=0;
+  POLICE_LESSONS.forEach(lesson=>(lesson.questions||[]).forEach(question=>{
+    if(question.type!=="order")return;
+    if(!Array.isArray(question.answer))question.answer=[];
+    if(!Array.isArray(question.words)){
+      if(!question.explain&&typeof question.words==="string")question.explain=question.words;
+      question.words=[...question.answer].sort(()=>Math.random()-.5);
+      repairedOrderQuestions++;
+    }
+    if(!question.explain)question.explain="Ordena todos los elementos hasta reconstruir la secuencia correcta.";
+  }));
+
+  /* Validación interna disponible para detectar contenido incompleto sin dejar
+     nunca una pantalla bloqueada. */
+  function auditCourseLessons(name,lessons){
+    const issues=[];let questions=0;
+    lessons.forEach((lesson,lessonIndex)=>{
+      if(!lesson||!Array.isArray(lesson.questions)||!lesson.questions.length){issues.push(`${lessonIndex+1}: sin ejercicios`);return}
+      lesson.questions.forEach((question,questionIndex)=>{
+        questions++;
+        if(!question.prompt||question.answer===undefined)issues.push(`${lessonIndex+1}.${questionIndex+1}: ejercicio incompleto`);
+        if(question.type==="choice"&&(!Array.isArray(question.options)||!question.options.includes(question.answer)))issues.push(`${lessonIndex+1}.${questionIndex+1}: respuesta no disponible`);
+        if(question.type==="order"&&(!Array.isArray(question.words)||!Array.isArray(question.answer)))issues.push(`${lessonIndex+1}.${questionIndex+1}: orden incompleto`);
+      });
+    });
+    return{name,lessons:lessons.length,questions,issues};
+  }
+  window.__gcaCourseAudit={
+    build:BUILD,
+    repairedOrderQuestions,
+    police:auditCourseLessons("Policía",POLICE_LESSONS),
+    medicalEs:auditCourseLessons("Medicina ES",MEDICAL_LESSONS),
+    medicalPt:auditCourseLessons("Medicina PT",MEDICAL_LESSONS_PT)
+  };
+
+  /* Si una actividad de ordenar fuera incompatible por datos antiguos guardados,
+     se recupera dentro de la misma lección y continúa el flujo. */
+  const policeQuizAudited=renderPoliceQuiz;
+  renderPoliceQuiz=function(){
+    const lesson=POLICE_LESSONS[policeUnit],queue=lesson?.questions;
+    if(!lesson||!Array.isArray(queue)||!queue.length){
+      policeUnit=Math.min(policeUnit+1,POLICE_LESSONS.length-1);policePhase="study";renderPoliceStudy();return;
+    }
+    try{policeQuizAudited()}catch(error){
+      console.error("POLICE_ACTIVITY_RECOVERED",error);
+      policeStep=Math.min(policeStep+1,queue.length-1);
+      policeQuizAudited();
+    }
+  };
+
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
