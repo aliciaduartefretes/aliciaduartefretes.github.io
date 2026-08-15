@@ -3009,5 +3009,76 @@ onAuthStateChanged(auth,async user=>{
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
+<style id="gca54-account-order-and-menu">
+  /* Mantiene el orden natural: marca, IA/idioma, estadísticas y cuenta al final. */
+  @media(max-width:760px){
+    header .brand{order:0!important}
+    header .header-tools{order:1!important}
+    header .stats{order:2!important}
+    header .account-btn{order:99!important;margin-left:auto!important}
+  }
+  .account-menu{position:fixed}
+  .account-menu-close{position:absolute;right:9px;top:8px;width:36px;height:36px;min-height:36px;border:0;border-radius:50%;background:#f3effb;color:#44365f;font-size:24px;line-height:1;cursor:pointer}
+</style>
+<script id="gca54-live-home-translation">
+(()=>{
+  const HOME_EXTRA={
+    es:{words:["Aprende a pensar 🧠","Aprende a hablar 💬","Aprende a sentir en guaraní 💚"],sponsors:["✨ ESPACIO PARA TU MARCA · Llega a una comunidad que ama Paraguay","🇵🇾 Guaraní con Ali · Educación, cultura y comunidad","🤝 ¿QUIERES PATROCINAR? · Escríbenos"],privacy:["Privacidad","Política de privacidad"],follow:"Seguir a Ali Explora",account:["Gestión académica","Solicitar eliminación de cuenta","Cerrar sesión"]},
+    en:{words:["Learn to think 🧠","Learn to speak 💬","Learn to feel in Guaraní 💚"],sponsors:["✨ SPACE FOR YOUR BRAND · Reach a community that loves Paraguay","🇵🇾 Guaraní with Ali · Education, culture and community","🤝 WANT TO SPONSOR? · Write to us"],privacy:["Privacy","Privacy policy"],follow:"Follow Ali Explora",account:["Academic management","Request account deletion","Sign out"]},
+    pt:{words:["Aprenda a pensar 🧠","Aprenda a falar 💬","Aprenda a sentir em guarani 💚"],sponsors:["✨ ESPAÇO PARA SUA MARCA · Alcance uma comunidade que ama o Paraguai","🇵🇾 Guarani com Ali · Educação, cultura e comunidade","🤝 QUER PATROCINAR? · Escreva-nos"],privacy:["Privacidade","Política de privacidade"],follow:"Siga Ali Explora",account:["Gestão acadêmica","Solicitar exclusão da conta","Sair"]},
+    fr:{words:["Apprenez à penser 🧠","Apprenez à parler 💬","Apprenez à ressentir en guarani 💚"],sponsors:["✨ ESPACE POUR VOTRE MARQUE · Touchez une communauté qui aime le Paraguay","🇵🇾 Guarani avec Ali · Éducation, culture et communauté","🤝 VOUS VOULEZ PARRAINER ? · Écrivez-nous"],privacy:["Confidentialité","Politique de confidentialité"],follow:"Suivre Ali Explora",account:["Gestion académique","Demander la suppression du compte","Se déconnecter"]},
+    it:{words:["Impara a pensare 🧠","Impara a parlare 💬","Impara a sentire in guaraní 💚"],sponsors:["✨ SPAZIO PER IL TUO MARCHIO · Raggiungi una comunità che ama il Paraguay","🇵🇾 Guaraní con Ali · Educazione, cultura e comunità","🤝 VUOI SPONSORIZZARE? · Scrivici"],privacy:["Privacy","Informativa sulla privacy"],follow:"Segui Ali Explora",account:["Gestione accademica","Richiedi eliminazione account","Esci"]},
+    de:{words:["Lerne zu denken 🧠","Lerne zu sprechen 💬","Lerne auf Guaraní zu fühlen 💚"],sponsors:["✨ PLATZ FÜR DEINE MARKE · Erreiche eine Community, die Paraguay liebt","🇵🇾 Guaraní mit Ali · Bildung, Kultur und Gemeinschaft","🤝 MÖCHTEST DU SPONSERN? · Schreib uns"],privacy:["Datenschutz","Datenschutzerklärung"],follow:"Ali Explora folgen",account:["Akademische Verwaltung","Kontolöschung beantragen","Abmelden"]}
+  };
+
+  function applyExtraHomeTranslation(code){
+    const copy=HOME_EXTRA[code]||HOME_EXTRA.es;
+    document.querySelectorAll("#home .hero-word").forEach((node,index)=>{if(copy.words[index])node.textContent=copy.words[index]});
+    const sponsorNodes=[...document.querySelectorAll(".sponsor-item")];
+    sponsorNodes.forEach((node,index)=>{node.textContent=copy.sponsors[index%copy.sponsors.length]});
+    const privacyButton=document.querySelector("#privacySettings");
+    const privacyPolicy=document.querySelector('footer a[href*="privacidad"]');
+    if(privacyButton)privacyButton.textContent=copy.privacy[0];
+    if(privacyPolicy)privacyPolicy.textContent=copy.privacy[1];
+    const follow=document.querySelector(".follow-label");if(follow)follow.textContent=copy.follow;
+    const menuButtons=document.querySelectorAll("#accountMenu .mini-btn,#accountMenu #logoutBtn");
+    menuButtons.forEach((node,index)=>{if(copy.account[index])node.textContent=(index===0?"🏫 ":index===1?"🗑️ ":"")+copy.account[index]});
+  }
+
+  function changeLanguageNow(next){
+    if(!HOME_EXTRA[next])next="es";
+    try{
+      if(typeof setAppLanguage==="function")setAppLanguage(next);
+      else{
+        lang=next;
+        const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
+        if(main)main.value=next;if(header)header.value=next;
+        if(typeof translateUI==="function")translateUI();
+        if(typeof save==="function")save();
+      }
+    }catch(error){console.error("Cambio de idioma:",error)}
+    applyExtraHomeTranslation(next);
+    document.documentElement.lang=next;
+  }
+
+  const menu=document.querySelector("#accountMenu"),account=document.querySelector("#accountBtn");
+  if(menu&&!menu.querySelector(".account-menu-close")){
+    const close=document.createElement("button");close.type="button";close.className="account-menu-close";close.setAttribute("aria-label","Cerrar");close.textContent="×";close.onclick=()=>menu.classList.add("hide");menu.prepend(close);
+  }
+  document.addEventListener("pointerdown",event=>{
+    if(!menu||menu.classList.contains("hide"))return;
+    if(!menu.contains(event.target)&&!account?.contains(event.target))menu.classList.add("hide");
+  },true);
+  document.addEventListener("keydown",event=>{if(event.key==="Escape")menu?.classList.add("hide")});
+  menu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))menu.classList.add("hide")});
+
+  document.addEventListener("change",event=>{
+    if(event.target?.matches("#headerLang,#lang"))changeLanguageNow(event.target.value);
+  },true);
+  const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
+  applyExtraHomeTranslation(initial);
+  window.applyCompleteHomeLanguage=changeLanguageNow;
+})();
+</script>
 </body>
 </html>
