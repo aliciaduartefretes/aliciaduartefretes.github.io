@@ -3070,9 +3070,6 @@ onAuthStateChanged(auth,async user=>{
   document.addEventListener("keydown",event=>{if(event.key==="Escape")menu?.classList.add("hide")});
   menu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))menu.classList.add("hide")});
 
-  document.addEventListener("change",event=>{
-    if(event.target?.matches("#headerLang,#lang"))changeLanguageNow(event.target.value);
-  },true);
   const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
   applyExtraHomeTranslation(initial);
   window.applyCompleteHomeLanguage=changeLanguageNow;
@@ -3132,6 +3129,50 @@ onAuthStateChanged(auth,async user=>{
   const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||document.querySelector("#headerLang")?.value||"es";
   enforceLanguage(preferred);
   window.setPlatformLanguage=enforceLanguage;
+})();
+</script>
+<script id="gca56-instant-language-switch">
+(()=>{
+  const IDS=["headerLang","lang"];
+
+  function replaceOldSelector(id){
+    const old=document.getElementById(id);
+    if(!old)return null;
+    const clean=old.cloneNode(true);
+    old.replaceWith(clean);
+    return clean;
+  }
+
+  function repaintVisibleScreen(code){
+    window.setPlatformLanguage?.(code);
+    document.documentElement.lang=code;
+    IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
+
+    if(!document.querySelector("#home")?.classList.contains("hide")){
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      window.applyCompleteHomeLanguage?.(code);
+    }
+    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
+    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
+    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
+    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
+    if(typeof translateUI==="function")translateUI();
+  }
+
+  function selectLanguage(event){
+    const code=event.currentTarget.value;
+    repaintVisibleScreen(code);
+    if(typeof save==="function")save();
+    if(typeof rememberLearningLocation==="function")rememberLearningLocation();
+    requestAnimationFrame(()=>repaintVisibleScreen(code));
+  }
+
+  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||window.lang||"es";
+  IDS.map(replaceOldSelector).filter(Boolean).forEach(select=>{
+    select.value=preferred;
+    select.addEventListener("change",selectLanguage);
+  });
+  repaintVisibleScreen(preferred);
 })();
 </script>
 </body>
