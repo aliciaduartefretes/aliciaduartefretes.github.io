@@ -179,228 +179,86 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   .header-lang span{font-size:15px!important}.header-lang select{min-width:0;max-width:94px;font-size:12px!important}
 }
 </style>
-  <style id="gca49-mobile-app-fix">
-    /* GCA49: corrección exclusivamente visual para móviles y WebView. */
-    html,body{width:100%;max-width:100%;overflow-x:hidden}
-    body>main,header,footer,.sponsor-strip{max-width:100%}
-    .sponsor-strip{overflow:hidden}
-
-    @media(max-width:760px){
-      body{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
-      .shell{width:calc(100% - 20px)!important;max-width:100%!important;margin-inline:auto!important}
-
-      header nav.shell{height:auto!important;min-height:68px;padding:8px 0;display:grid!important;grid-template-columns:minmax(92px,.75fr) minmax(0,1.25fr);gap:7px 8px!important}
-      header .brand{min-width:0;font-size:18px;line-height:1.05}
-      .header-tools{min-width:0;justify-content:flex-end!important;overflow:hidden}
-      .header-lang{min-width:0!important;max-width:none!important;flex:1 1 auto;padding-inline:7px!important}
-      .header-lang select{width:100%!important;max-width:none!important;min-width:0!important;font-size:13px!important}
-      .header-ai{flex:0 0 43px;width:43px;padding:6px!important}
-      .stats{grid-column:1/-1;width:100%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px!important}
-      .stats .pill,.account-btn{min-width:0!important;width:100%;padding:7px 4px!important;justify-content:center;overflow:hidden}
-      .account-btn{max-width:none!important}
-      .account-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-      #rudeCourse,#rudeCourse>.shell{width:100%;max-width:100%}
-      #rudeCourse>.shell{width:calc(100% - 20px)!important}
-      #rudeCourse .police-hero{width:100%;max-width:100%;margin-inline:0;padding:22px 18px;border-radius:24px}
-      #rudeCourse .police-hero h2{font-size:clamp(30px,9vw,42px);line-height:1.05;overflow-wrap:anywhere}
-      .rude-course-summary,.rude-module-grid,.rude-category-grid,.rude-category-card{width:100%;max-width:100%;min-width:0}
-      .rude-category-card{padding:17px}
-      .rude-category-card b,.rude-category-top h3{overflow-wrap:anywhere}
-
-      .rude-video-float{right:10px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 76px);gap:7px;padding:7px 10px 7px 7px!important}
-      .rude-video-float span{flex:0 0 32px;width:32px;height:32px}
-      .rude-video-float b{max-width:128px;font-size:11px!important;line-height:1.15;white-space:normal;text-align:left}
-
-      .bottom-nav{left:8px!important;right:8px!important;bottom:max(6px,env(safe-area-inset-bottom))!important;transform:none!important;width:auto!important;max-width:calc(100% - 16px)!important;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px!important;padding:5px 3px max(5px,env(safe-area-inset-bottom))!important;overflow:visible!important}
-      .bottom-nav .nav-btn{width:100%!important;min-width:0!important;min-height:52px;padding:5px 1px!important;overflow:hidden}
-      .bottom-nav .nav-btn span{font-size:18px;line-height:1;margin-bottom:3px}
-      .bottom-nav .nav-btn i{display:block;max-width:100%;font-size:8px!important;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-      .follow-ali,.reaction-sound-toggle{max-width:calc(100% - 20px)}
-      img,svg,iframe{max-width:100%}
-    }
-
-    @media(max-width:390px){
-      header .brand{font-size:16px}
-      .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .stats .account-btn{grid-column:1/-1}
-      .rude-video-float b{max-width:105px}
-      .bottom-nav .nav-btn i{font-size:7px!important}
-    }
-  </style>
-  <style id="gca50-header-single-row-fix">
-    /* GCA50: encabezado móvil compacto, nuevamente en una sola fila. */
+  <style id="gca53-original-header-photo-only">
+    /* Encabezado original: mismas proporciones, ocultando únicamente el nombre de la cuenta. */
     @media(max-width:760px){
       header nav.shell{
-        width:calc(100% - 12px)!important;
-        min-height:58px!important;
-        height:58px!important;
+        width:calc(100% - 16px)!important;
+        height:64px!important;
+        min-height:64px!important;
         padding:5px 0!important;
         display:flex!important;
         flex-wrap:nowrap!important;
         align-items:center!important;
         justify-content:space-between!important;
-        gap:3px!important;
-        overflow:hidden;
+        gap:4px!important;
+        overflow:hidden!important;
       }
       header .brand{
-        flex:0 1 86px;
-        min-width:70px;
-        max-width:86px;
-        font-size:14px!important;
-        line-height:1.02!important;
-        letter-spacing:-.35px;
+        flex:0 0 84px!important;
+        width:84px!important;
+        min-width:84px!important;
+        max-width:84px!important;
+        font-size:17px!important;
+        line-height:1.03!important;
+        letter-spacing:-.35px!important;
       }
       .header-tools{
-        order:initial!important;
-        flex:0 1 105px;
-        width:105px;
-        min-width:90px;
-        gap:3px!important;
-        justify-content:center!important;
-        overflow:visible!important;
+        flex:0 0 112px!important;
+        width:112px!important;
+        min-width:112px!important;
+        max-width:112px!important;
+        display:flex!important;
+        align-items:center!important;
+        gap:4px!important;
       }
       .header-ai{
-        flex:0 0 34px!important;
-        width:34px!important;
-        min-width:34px!important;
-        min-height:38px!important;
-        height:38px!important;
-        padding:3px!important;
-        border-radius:12px!important;
+        order:0!important;
+        flex:0 0 39px!important;
+        width:39px!important;
+        min-width:39px!important;
+        height:44px!important;
+        min-height:44px!important;
+        padding:4px!important;
+        border-radius:14px!important;
       }
-      .header-ai span{margin:0!important;font-size:16px}
+      .header-ai span{margin:0!important;font-size:18px!important}
+      .header-ai b{display:none!important}
       .header-lang{
-        flex:1 1 auto!important;
-        width:68px!important;
-        min-width:0!important;
-        max-width:72px!important;
-        height:38px!important;
-        padding:0 4px!important;
-        border-radius:12px!important;
+        order:1!important;
+        flex:0 0 69px!important;
+        width:69px!important;
+        min-width:69px!important;
+        max-width:69px!important;
+        height:44px!important;
+        padding:0 5px!important;
+        gap:2px!important;
+        border-radius:14px!important;
       }
-      .header-lang>span{font-size:11px!important;margin-right:1px!important}
-      .header-lang select{
-        width:52px!important;
-        max-width:52px!important;
-        padding:0!important;
-        font-size:10px!important;
-        font-weight:900!important;
-      }
+      .header-lang span{font-size:12px!important}
+      .header-lang select{width:51px!important;max-width:51px!important;font-size:10px!important;padding:0!important}
       .stats{
         order:initial!important;
-        grid-column:auto!important;
-        flex:0 1 145px!important;
-        width:auto!important;
-        min-width:126px!important;
+        flex:0 0 146px!important;
+        width:146px!important;
+        min-width:146px!important;
+        max-width:146px!important;
         display:flex!important;
         flex-wrap:nowrap!important;
         align-items:center!important;
+        justify-content:space-between!important;
         gap:3px!important;
-      }
-      .stats .pill{
-        flex:0 1 auto!important;
-        width:auto!important;
-        min-width:0!important;
-        height:38px!important;
-        padding:4px 6px!important;
-        font-size:11px!important;
       }
       .stats .pill:first-child{display:none!important}
-      .account-btn{
-        flex:0 0 38px!important;
-        width:38px!important;
-        min-width:38px!important;
-        max-width:38px!important;
-        height:38px!important;
-        padding:3px!important;
-        border-radius:13px!important;
-      }
-      .account-btn img,.account-avatar{width:30px!important;height:30px!important;flex:0 0 30px!important}
-      .account-name{display:none!important}
-    }
-
-    @media(max-width:390px){
-      header nav.shell{width:calc(100% - 8px)!important;gap:2px!important}
-      header .brand{flex-basis:78px;max-width:78px;font-size:13px!important}
-      .header-tools{flex-basis:98px;width:98px;min-width:88px}
-      .header-lang{max-width:64px!important}
-      .header-lang select{width:46px!important;max-width:46px!important;font-size:9px!important}
-      .stats{flex-basis:136px!important;min-width:122px!important;gap:2px!important}
-      .stats .pill{padding-inline:5px!important;font-size:10px!important}
-    }
-  </style>
-  <style id="gca51-balanced-mobile-header">
-    /* GCA51: proporciones equilibradas sin abandonar la fila única. */
-    @media(max-width:760px){
-      header nav.shell{
-        width:calc(100% - 8px)!important;
-        height:66px!important;
-        min-height:66px!important;
-        padding:6px 0!important;
-        gap:2px!important;
-      }
-      header .brand{
-        flex:0 0 92px!important;
-        width:92px!important;
-        min-width:92px!important;
-        max-width:92px!important;
-        font-size:16px!important;
-        line-height:1.04!important;
-        letter-spacing:-.4px!important;
-      }
-      .header-tools{
-        flex:0 0 108px!important;
-        width:108px!important;
-        min-width:108px!important;
-        max-width:108px!important;
-        gap:3px!important;
-      }
-      .header-ai{
-        flex:0 0 37px!important;
-        width:37px!important;
-        min-width:37px!important;
-        height:44px!important;
-        min-height:44px!important;
-        border-radius:14px!important;
-      }
-      .header-ai span{font-size:18px!important}
-      .header-lang{
-        flex:0 0 68px!important;
-        width:68px!important;
-        min-width:68px!important;
-        max-width:68px!important;
-        height:44px!important;
-        padding:0 5px!important;
-        border-radius:14px!important;
-      }
-      .header-lang>span{font-size:12px!important}
-      .header-lang select{
-        width:50px!important;
-        max-width:50px!important;
-        font-size:10px!important;
-        letter-spacing:-.2px!important;
-      }
-      .stats{
-        flex:1 1 auto!important;
-        width:auto!important;
-        min-width:0!important;
-        max-width:none!important;
-        gap:2px!important;
-        justify-content:flex-end!important;
-        overflow:visible!important;
-      }
       .stats .pill{
         height:44px!important;
         min-height:44px!important;
+        padding:5px!important;
         border-radius:16px!important;
         font-size:11px!important;
-        padding:5px!important;
-        overflow:visible!important;
       }
       .stats .pill:nth-child(2){flex:0 0 39px!important;width:39px!important}
-      .stats .pill:nth-child(3){flex:0 0 68px!important;width:68px!important;white-space:nowrap!important}
+      .stats .pill:nth-child(3){flex:0 0 64px!important;width:64px!important;white-space:nowrap!important;font-size:10px!important}
       .account-btn{
         flex:0 0 40px!important;
         width:40px!important;
@@ -409,108 +267,25 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
         height:44px!important;
         min-height:44px!important;
         padding:3px!important;
-        border-radius:16px!important;
-        overflow:visible!important;
+        border-radius:50%!important;
+        display:grid!important;
+        place-items:center!important;
+        overflow:hidden!important;
       }
-      .account-btn img,.account-avatar{
-        width:34px!important;
-        height:34px!important;
-        flex:0 0 34px!important;
-      }
+      .account-btn .account-name{display:none!important}
+      .account-btn #accountIcon{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;min-width:34px!important;overflow:hidden!important;border-radius:50%!important}
+      .account-btn img,.account-btn #accountIcon img{width:34px!important;height:34px!important;min-width:34px!important;border-radius:50%!important;object-fit:cover!important}
     }
 
     @media(max-width:370px){
-      header .brand{flex-basis:86px!important;width:86px!important;min-width:86px!important;max-width:86px!important;font-size:15px!important}
-      .header-tools{flex-basis:102px!important;width:102px!important;min-width:102px!important;max-width:102px!important}
-      .header-ai{flex-basis:35px!important;width:35px!important;min-width:35px!important}
-      .header-lang{flex-basis:64px!important;width:64px!important;min-width:64px!important;max-width:64px!important}
-      .stats .pill:nth-child(3){flex-basis:62px!important;width:62px!important;font-size:10px!important}
-      .account-btn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important}
-    }
-  </style>
-  <style id="gca52-annotated-mobile-adjustments">
-    /* Ajustes solicitados sobre la captura: fila compacta, sin hueco y hero mejor integrado. */
-    @media(max-width:760px){
-      header nav.shell{
-        justify-content:flex-start!important;
-        width:calc(100% - 16px)!important;
-        height:66px!important;
-        padding:6px 0!important;
-        gap:4px!important;
-        overflow:visible!important;
-      }
-      header .brand{
-        flex:0 0 104px!important;
-        width:104px!important;
-        min-width:104px!important;
-        max-width:104px!important;
-        padding-left:2px;
-        font-size:17px!important;
-        line-height:1.04!important;
-      }
-      .header-tools{
-        flex:0 0 112px!important;
-        width:112px!important;
-        min-width:112px!important;
-        max-width:112px!important;
-      }
-      .header-ai{flex-basis:39px!important;width:39px!important;min-width:39px!important}
-      .header-lang{
-        flex-basis:70px!important;
-        width:70px!important;
-        min-width:70px!important;
-        max-width:70px!important;
-      }
-      .header-lang select{width:52px!important;max-width:52px!important;font-size:10px!important}
-      .stats{
-        flex:1 1 0!important;
-        margin-left:0!important;
-        min-width:0!important;
-        justify-content:flex-start!important;
-        gap:3px!important;
-      }
-      .stats .pill:nth-child(2){flex:0 0 40px!important;width:40px!important}
-      .stats .pill:nth-child(3){flex:0 0 66px!important;width:66px!important;font-size:10px!important;padding-inline:4px!important}
-      .account-btn{flex:0 0 40px!important;width:40px!important;min-width:40px!important;max-width:40px!important}
-
-      #home .hero{padding:410px 0 18px!important}
-      #home .hero-art{
-        top:4px!important;
-        left:0!important;
-        right:0!important;
-        min-height:398px!important;
-      }
-      #home .hero-art .ali-hero{
-        left:-7%!important;
-        width:73%!important;
-        height:106%!important;
-        bottom:-2%!important;
-      }
-      #home .hero-word{
-        right:2%!important;
-        left:auto!important;
-        max-width:52%!important;
-        padding:10px 12px!important;
-        font-size:14px!important;
-        line-height:1.2!important;
-      }
-      #home .hero-word.one{top:58px!important;right:2%!important}
-      #home .hero-word.two{top:137px!important;right:4%!important}
-      #home .hero-word.three{top:218px!important;right:1%!important}
-    }
-
-    @media(max-width:390px){
       header nav.shell{width:calc(100% - 10px)!important;gap:2px!important}
-      header .brand{flex-basis:96px!important;width:96px!important;min-width:96px!important;max-width:96px!important;font-size:16px!important}
+      header .brand{flex-basis:78px!important;width:78px!important;min-width:78px!important;max-width:78px!important;font-size:16px!important}
       .header-tools{flex-basis:106px!important;width:106px!important;min-width:106px!important;max-width:106px!important}
       .header-ai{flex-basis:37px!important;width:37px!important;min-width:37px!important}
-      .header-lang{flex-basis:66px!important;width:66px!important;min-width:66px!important;max-width:66px!important}
-      .stats{gap:2px!important}
-      .stats .pill:nth-child(2){flex-basis:38px!important;width:38px!important}
-      .stats .pill:nth-child(3){flex-basis:62px!important;width:62px!important;font-size:9px!important}
+      .header-lang{flex-basis:65px!important;width:65px!important;min-width:65px!important;max-width:65px!important}
+      .stats{flex-basis:140px!important;width:140px!important;min-width:140px!important;max-width:140px!important}
+      .stats .pill:nth-child(3){flex-basis:60px!important;width:60px!important;font-size:9px!important}
       .account-btn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important}
-      #home .hero-art .ali-hero{width:75%!important}
-      #home .hero-word{font-size:13px!important;max-width:51%!important}
     }
   </style>
 </head>
