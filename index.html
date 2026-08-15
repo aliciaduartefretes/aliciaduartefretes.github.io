@@ -229,6 +229,108 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
       .bottom-nav .nav-btn i{font-size:7px!important}
     }
   </style>
+  <style id="gca50-header-single-row-fix">
+    /* GCA50: encabezado móvil compacto, nuevamente en una sola fila. */
+    @media(max-width:760px){
+      header nav.shell{
+        width:calc(100% - 12px)!important;
+        min-height:58px!important;
+        height:58px!important;
+        padding:5px 0!important;
+        display:flex!important;
+        flex-wrap:nowrap!important;
+        align-items:center!important;
+        justify-content:space-between!important;
+        gap:3px!important;
+        overflow:hidden;
+      }
+      header .brand{
+        flex:0 1 86px;
+        min-width:70px;
+        max-width:86px;
+        font-size:14px!important;
+        line-height:1.02!important;
+        letter-spacing:-.35px;
+      }
+      .header-tools{
+        order:initial!important;
+        flex:0 1 105px;
+        width:105px;
+        min-width:90px;
+        gap:3px!important;
+        justify-content:center!important;
+        overflow:visible!important;
+      }
+      .header-ai{
+        flex:0 0 34px!important;
+        width:34px!important;
+        min-width:34px!important;
+        min-height:38px!important;
+        height:38px!important;
+        padding:3px!important;
+        border-radius:12px!important;
+      }
+      .header-ai span{margin:0!important;font-size:16px}
+      .header-lang{
+        flex:1 1 auto!important;
+        width:68px!important;
+        min-width:0!important;
+        max-width:72px!important;
+        height:38px!important;
+        padding:0 4px!important;
+        border-radius:12px!important;
+      }
+      .header-lang>span{font-size:11px!important;margin-right:1px!important}
+      .header-lang select{
+        width:52px!important;
+        max-width:52px!important;
+        padding:0!important;
+        font-size:10px!important;
+        font-weight:900!important;
+      }
+      .stats{
+        order:initial!important;
+        grid-column:auto!important;
+        flex:0 1 145px!important;
+        width:auto!important;
+        min-width:126px!important;
+        display:flex!important;
+        flex-wrap:nowrap!important;
+        align-items:center!important;
+        gap:3px!important;
+      }
+      .stats .pill{
+        flex:0 1 auto!important;
+        width:auto!important;
+        min-width:0!important;
+        height:38px!important;
+        padding:4px 6px!important;
+        font-size:11px!important;
+      }
+      .stats .pill:first-child{display:none!important}
+      .account-btn{
+        flex:0 0 38px!important;
+        width:38px!important;
+        min-width:38px!important;
+        max-width:38px!important;
+        height:38px!important;
+        padding:3px!important;
+        border-radius:13px!important;
+      }
+      .account-btn img,.account-avatar{width:30px!important;height:30px!important;flex:0 0 30px!important}
+      .account-name{display:none!important}
+    }
+
+    @media(max-width:390px){
+      header nav.shell{width:calc(100% - 8px)!important;gap:2px!important}
+      header .brand{flex-basis:78px;max-width:78px;font-size:13px!important}
+      .header-tools{flex-basis:98px;width:98px;min-width:88px}
+      .header-lang{max-width:64px!important}
+      .header-lang select{width:46px!important;max-width:46px!important;font-size:9px!important}
+      .stats{flex-basis:136px!important;min-width:122px!important;gap:2px!important}
+      .stats .pill{padding-inline:5px!important;font-size:10px!important}
+    }
+  </style>
 </head>
 <body>
 <div class="sponsor-strip" aria-label="Patrocinadores">
