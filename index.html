@@ -3018,7 +3018,7 @@ onAuthStateChanged(auth,async user=>{
     header .account-btn{order:99!important;margin-left:auto!important}
   }
   .account-menu{position:fixed}
-  .account-menu-close{position:absolute;right:9px;top:8px;width:36px;height:36px;min-height:36px;border:0;border-radius:50%;background:#f3effb;color:#44365f;font-size:24px;line-height:1;cursor:pointer}
+  .account-menu-close{display:none!important}
 </style>
 <script id="gca54-live-home-translation">
 (()=>{
@@ -3048,23 +3048,21 @@ onAuthStateChanged(auth,async user=>{
   function changeLanguageNow(next){
     if(!HOME_EXTRA[next])next="es";
     try{
-      if(typeof setAppLanguage==="function")setAppLanguage(next);
-      else{
-        lang=next;
-        const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
-        if(main)main.value=next;if(header)header.value=next;
-        if(typeof translateUI==="function")translateUI();
-        if(typeof save==="function")save();
-      }
+      lang=next;
+      localStorage.setItem("guaraniAliPreferredLanguage",next);
+      const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
+      if(main)main.value=next;if(header)header.value=next;
+      if(typeof translateUI==="function")translateUI();
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      if(typeof save==="function")save();
+      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
     }catch(error){console.error("Cambio de idioma:",error)}
     applyExtraHomeTranslation(next);
     document.documentElement.lang=next;
   }
 
   const menu=document.querySelector("#accountMenu"),account=document.querySelector("#accountBtn");
-  if(menu&&!menu.querySelector(".account-menu-close")){
-    const close=document.createElement("button");close.type="button";close.className="account-menu-close";close.setAttribute("aria-label","Cerrar");close.textContent="×";close.onclick=()=>menu.classList.add("hide");menu.prepend(close);
-  }
+  menu?.querySelector(".account-menu-close")?.remove();
   document.addEventListener("pointerdown",event=>{
     if(!menu||menu.classList.contains("hide"))return;
     if(!menu.contains(event.target)&&!account?.contains(event.target))menu.classList.add("hide");
@@ -3078,6 +3076,62 @@ onAuthStateChanged(auth,async user=>{
   const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
   applyExtraHomeTranslation(initial);
   window.applyCompleteHomeLanguage=changeLanguageNow;
+})();
+</script>
+<script id="gca55-unified-language-state">
+(()=>{
+  const TEXT={
+    es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
+    en:{nav:["Home","Courses","Practice","Dictionary","Management","Videos","Suggestions"],home:["Keep learning","General Guaraní","From the beginning","Lesson","of","Continue →","Explore other courses","Guaraní for children","Games and adventures","Swear words in Guaraní","Ñe’ẽ vai","Police entrance Guaraní","Preparation","Guaraní for Medicine","Clinical"],profile:"Private account"},
+    pt:{nav:["Início","Cursos","Prática","Dicionário","Gestão","Vídeos","Sugestões"],home:["Continue aprendendo","Guarani geral","Desde o início","Lição","de","Continuar →","Explore outros cursos","Guarani para crianças","Jogos e aventuras","Palavrões em guarani","Ñe’ẽ vai","Guarani para ingresso na Polícia","Preparação","Guarani para Medicina","Clínica"],profile:"Conta privada"},
+    fr:{nav:["Accueil","Cours","Pratique","Dictionnaire","Gestion","Vidéos","Suggestions"],home:["Continuez à apprendre","Guarani général","Depuis le début","Leçon","sur","Continuer →","Explorez d’autres cours","Guarani pour enfants","Jeux et aventures","Gros mots en guarani","Ñe’ẽ vai","Guarani pour l’entrée dans la Police","Préparation","Guarani pour la Médecine","Clinique"],profile:"Compte privé"},
+    it:{nav:["Home","Corsi","Pratica","Dizionario","Gestione","Video","Suggerimenti"],home:["Continua a imparare","Guaraní generale","Dall’inizio","Lezione","di","Continua →","Esplora altri corsi","Guaraní per bambini","Giochi e avventure","Parolacce in guaraní","Ñe’ẽ vai","Guaraní per l’ingresso in Polizia","Preparazione","Guaraní per Medicina","Clinica"],profile:"Account privato"},
+    de:{nav:["Start","Kurse","Übung","Wörterbuch","Verwaltung","Videos","Vorschläge"],home:["Weiterlernen","Allgemeines Guaraní","Von Anfang an","Lektion","von","Weiter →","Weitere Kurse entdecken","Guaraní für Kinder","Spiele und Abenteuer","Schimpfwörter auf Guaraní","Ñe’ẽ vai","Guaraní für den Polizeieintritt","Vorbereitung","Guaraní für Medizin","Klinisch"],profile:"Privates Konto"}
+  };
+  const homeKeys=["continue","general","fromZero",null,null,"continueButton","explore","kids","games","rude","rudeSub","police","prep","medical","clinical"];
+
+  function paintCompleteInterface(code){
+    const copy=TEXT[code]||TEXT.es;
+    document.querySelectorAll(".bottom-nav .nav-btn i").forEach((node,index)=>{if(copy.nav[index])node.textContent=copy.nav[index]});
+    homeKeys.forEach((key,index)=>{if(!key)return;document.querySelectorAll(`[data-home-text="${key}"]`).forEach(node=>node.textContent=copy.home[index])});
+    const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
+    const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
+    const profile=document.querySelector("#profileEmail");if(profile)profile.textContent=copy.profile;
+    window.applyCompleteHomeLanguage?.(code);
+  }
+
+  function enforceLanguage(code){
+    if(!TEXT[code])code="es";
+    localStorage.setItem("guaraniAliPreferredLanguage",code);
+    lang=code;
+    const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
+    if(main)main.value=code;if(header)header.value=code;
+    if(typeof translateUI==="function")translateUI();
+    paintCompleteInterface(code);
+    document.documentElement.lang=code;
+  }
+
+  const remoteBase=window.applySyncedProgress;
+  if(typeof remoteBase==="function")window.applySyncedProgress=data=>{
+    const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||lang||"es";
+    remoteBase({...data,lang:preferred});
+    enforceLanguage(preferred);
+  };
+
+  [document.querySelector("#headerLang"),document.querySelector("#lang")].forEach(select=>{
+    if(!select)return;
+    select.onchange=event=>{
+      const code=event.target.value;
+      enforceLanguage(code);
+      if(typeof save==="function")save();
+      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
+    };
+  });
+
+  document.querySelector("#accountMenu .account-menu-close")?.remove();
+  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||document.querySelector("#headerLang")?.value||"es";
+  enforceLanguage(preferred);
+  window.setPlatformLanguage=enforceLanguage;
 })();
 </script>
 </body>
