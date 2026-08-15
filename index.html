@@ -3175,5 +3175,75 @@ onAuthStateChanged(auth,async user=>{
   repaintVisibleScreen(preferred);
 })();
 </script>
+<script id="gca57-live-language-and-remove-marce">
+(()=>{
+  const LANGUAGE_IDS="#headerLang,#lang";
+  let applying=false;
+
+  function syncLanguage(code,persist=true){
+    if(!["es","en","pt","fr","it","de"].includes(code))code="es";
+    if(applying)return;
+    applying=true;
+    try{
+      localStorage.setItem("guaraniAliPreferredLanguage",code);
+      if(typeof lang!=="undefined")lang=code;
+      document.documentElement.lang=code;
+      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
+      if(typeof translateUI==="function")translateUI();
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      window.applyCompleteHomeLanguage?.(code);
+      window.setPlatformLanguage?.(code);
+      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
+      if(persist&&typeof save==="function")save();
+      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
+    }catch(error){console.error("Cambio inmediato de idioma:",error)}
+    finally{applying=false}
+  }
+
+  function repaintAfterLanguageChange(code){
+    syncLanguage(code,true);
+    requestAnimationFrame(()=>syncLanguage(code,false));
+    setTimeout(()=>syncLanguage(code,false),60);
+    setTimeout(()=>syncLanguage(code,false),220);
+  }
+
+  document.addEventListener("change",event=>{
+    const select=event.target.closest?.(LANGUAGE_IDS);
+    if(!select)return;
+    event.stopImmediatePropagation();
+    repaintAfterLanguageChange(select.value);
+  },true);
+
+  function removeMarceCourse(){
+    ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
+      const node=document.querySelector(selector);
+      if(!node)return;
+      node.classList.add("hide");
+      node.style.setProperty("display","none","important");
+      node.setAttribute("aria-hidden","true");
+      node.setAttribute("inert","");
+    });
+    document.querySelectorAll('option[value="personalized"],option[value="marce"]').forEach(option=>option.remove());
+    const teacherAccess=document.querySelector("#teacherCourseAccess");
+    if(teacherAccess){
+      const label=document.querySelector('label[for="teacherCourseAccess"]');
+      const note=teacherAccess.nextElementSibling;
+      teacherAccess.value="";
+      teacherAccess.style.display="none";
+      label?.classList.add("hide");
+      if(note?.tagName==="SMALL")note.classList.add("hide");
+    }
+    document.querySelectorAll('[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>{
+      node.style.setProperty("display","none","important");node.setAttribute("inert","");
+    });
+    if(location.hash==="#customCourse"||location.hash==="#personalized"){
+      history.replaceState(null,"",location.pathname+location.search+"#home");
+      if(typeof show==="function")show("home");
+    }
+  }
+
+  removeMarceCourse();
+})();
+</script>
 </body>
 </html>
