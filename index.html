@@ -331,6 +331,103 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
       .stats .pill{padding-inline:5px!important;font-size:10px!important}
     }
   </style>
+  <style id="gca51-balanced-mobile-header">
+    /* GCA51: proporciones equilibradas sin abandonar la fila única. */
+    @media(max-width:760px){
+      header nav.shell{
+        width:calc(100% - 8px)!important;
+        height:66px!important;
+        min-height:66px!important;
+        padding:6px 0!important;
+        gap:2px!important;
+      }
+      header .brand{
+        flex:0 0 92px!important;
+        width:92px!important;
+        min-width:92px!important;
+        max-width:92px!important;
+        font-size:16px!important;
+        line-height:1.04!important;
+        letter-spacing:-.4px!important;
+      }
+      .header-tools{
+        flex:0 0 108px!important;
+        width:108px!important;
+        min-width:108px!important;
+        max-width:108px!important;
+        gap:3px!important;
+      }
+      .header-ai{
+        flex:0 0 37px!important;
+        width:37px!important;
+        min-width:37px!important;
+        height:44px!important;
+        min-height:44px!important;
+        border-radius:14px!important;
+      }
+      .header-ai span{font-size:18px!important}
+      .header-lang{
+        flex:0 0 68px!important;
+        width:68px!important;
+        min-width:68px!important;
+        max-width:68px!important;
+        height:44px!important;
+        padding:0 5px!important;
+        border-radius:14px!important;
+      }
+      .header-lang>span{font-size:12px!important}
+      .header-lang select{
+        width:50px!important;
+        max-width:50px!important;
+        font-size:10px!important;
+        letter-spacing:-.2px!important;
+      }
+      .stats{
+        flex:1 1 auto!important;
+        width:auto!important;
+        min-width:0!important;
+        max-width:none!important;
+        gap:2px!important;
+        justify-content:flex-end!important;
+        overflow:visible!important;
+      }
+      .stats .pill{
+        height:44px!important;
+        min-height:44px!important;
+        border-radius:16px!important;
+        font-size:11px!important;
+        padding:5px!important;
+        overflow:visible!important;
+      }
+      .stats .pill:nth-child(2){flex:0 0 39px!important;width:39px!important}
+      .stats .pill:nth-child(3){flex:0 0 68px!important;width:68px!important;white-space:nowrap!important}
+      .account-btn{
+        flex:0 0 40px!important;
+        width:40px!important;
+        min-width:40px!important;
+        max-width:40px!important;
+        height:44px!important;
+        min-height:44px!important;
+        padding:3px!important;
+        border-radius:16px!important;
+        overflow:visible!important;
+      }
+      .account-btn img,.account-avatar{
+        width:34px!important;
+        height:34px!important;
+        flex:0 0 34px!important;
+      }
+    }
+
+    @media(max-width:370px){
+      header .brand{flex-basis:86px!important;width:86px!important;min-width:86px!important;max-width:86px!important;font-size:15px!important}
+      .header-tools{flex-basis:102px!important;width:102px!important;min-width:102px!important;max-width:102px!important}
+      .header-ai{flex-basis:35px!important;width:35px!important;min-width:35px!important}
+      .header-lang{flex-basis:64px!important;width:64px!important;min-width:64px!important;max-width:64px!important}
+      .stats .pill:nth-child(3){flex-basis:62px!important;width:62px!important;font-size:10px!important}
+      .account-btn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important}
+    }
+  </style>
 </head>
 <body>
 <div class="sponsor-strip" aria-label="Patrocinadores">
