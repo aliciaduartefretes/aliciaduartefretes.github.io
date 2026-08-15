@@ -179,6 +179,56 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   .header-lang span{font-size:15px!important}.header-lang select{min-width:0;max-width:94px;font-size:12px!important}
 }
 </style>
+  <style id="gca49-mobile-app-fix">
+    /* GCA49: corrección exclusivamente visual para móviles y WebView. */
+    html,body{width:100%;max-width:100%;overflow-x:hidden}
+    body>main,header,footer,.sponsor-strip{max-width:100%}
+    .sponsor-strip{overflow:hidden}
+
+    @media(max-width:760px){
+      body{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+      .shell{width:calc(100% - 20px)!important;max-width:100%!important;margin-inline:auto!important}
+
+      header nav.shell{height:auto!important;min-height:68px;padding:8px 0;display:grid!important;grid-template-columns:minmax(92px,.75fr) minmax(0,1.25fr);gap:7px 8px!important}
+      header .brand{min-width:0;font-size:18px;line-height:1.05}
+      .header-tools{min-width:0;justify-content:flex-end!important;overflow:hidden}
+      .header-lang{min-width:0!important;max-width:none!important;flex:1 1 auto;padding-inline:7px!important}
+      .header-lang select{width:100%!important;max-width:none!important;min-width:0!important;font-size:13px!important}
+      .header-ai{flex:0 0 43px;width:43px;padding:6px!important}
+      .stats{grid-column:1/-1;width:100%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px!important}
+      .stats .pill,.account-btn{min-width:0!important;width:100%;padding:7px 4px!important;justify-content:center;overflow:hidden}
+      .account-btn{max-width:none!important}
+      .account-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+      #rudeCourse,#rudeCourse>.shell{width:100%;max-width:100%}
+      #rudeCourse>.shell{width:calc(100% - 20px)!important}
+      #rudeCourse .police-hero{width:100%;max-width:100%;margin-inline:0;padding:22px 18px;border-radius:24px}
+      #rudeCourse .police-hero h2{font-size:clamp(30px,9vw,42px);line-height:1.05;overflow-wrap:anywhere}
+      .rude-course-summary,.rude-module-grid,.rude-category-grid,.rude-category-card{width:100%;max-width:100%;min-width:0}
+      .rude-category-card{padding:17px}
+      .rude-category-card b,.rude-category-top h3{overflow-wrap:anywhere}
+
+      .rude-video-float{right:10px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;max-width:calc(100% - 76px);gap:7px;padding:7px 10px 7px 7px!important}
+      .rude-video-float span{flex:0 0 32px;width:32px;height:32px}
+      .rude-video-float b{max-width:128px;font-size:11px!important;line-height:1.15;white-space:normal;text-align:left}
+
+      .bottom-nav{left:8px!important;right:8px!important;bottom:max(6px,env(safe-area-inset-bottom))!important;transform:none!important;width:auto!important;max-width:calc(100% - 16px)!important;display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px!important;padding:5px 3px max(5px,env(safe-area-inset-bottom))!important;overflow:visible!important}
+      .bottom-nav .nav-btn{width:100%!important;min-width:0!important;min-height:52px;padding:5px 1px!important;overflow:hidden}
+      .bottom-nav .nav-btn span{font-size:18px;line-height:1;margin-bottom:3px}
+      .bottom-nav .nav-btn i{display:block;max-width:100%;font-size:8px!important;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+      .follow-ali,.reaction-sound-toggle{max-width:calc(100% - 20px)}
+      img,svg,iframe{max-width:100%}
+    }
+
+    @media(max-width:390px){
+      header .brand{font-size:16px}
+      .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .stats .account-btn{grid-column:1/-1}
+      .rude-video-float b{max-width:105px}
+      .bottom-nav .nav-btn i{font-size:7px!important}
+    }
+  </style>
 </head>
 <body>
 <div class="sponsor-strip" aria-label="Patrocinadores">
