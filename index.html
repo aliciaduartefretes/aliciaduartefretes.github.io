@@ -3045,22 +3045,6 @@ onAuthStateChanged(auth,async user=>{
     menuButtons.forEach((node,index)=>{if(copy.account[index])node.textContent=(index===0?"🏫 ":index===1?"🗑️ ":"")+copy.account[index]});
   }
 
-  function changeLanguageNow(next){
-    if(!HOME_EXTRA[next])next="es";
-    try{
-      lang=next;
-      localStorage.setItem("guaraniAliPreferredLanguage",next);
-      const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
-      if(main)main.value=next;if(header)header.value=next;
-      if(typeof translateUI==="function")translateUI();
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      if(typeof save==="function")save();
-      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){console.error("Cambio de idioma:",error)}
-    applyExtraHomeTranslation(next);
-    document.documentElement.lang=next;
-  }
-
   const menu=document.querySelector("#accountMenu"),account=document.querySelector("#accountBtn");
   menu?.querySelector(".account-menu-close")?.remove();
   document.addEventListener("pointerdown",event=>{
@@ -3070,9 +3054,7 @@ onAuthStateChanged(auth,async user=>{
   document.addEventListener("keydown",event=>{if(event.key==="Escape")menu?.classList.add("hide")});
   menu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))menu.classList.add("hide")});
 
-  const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
-  applyExtraHomeTranslation(initial);
-  window.applyCompleteHomeLanguage=changeLanguageNow;
+  window.applyExtraHomeTranslation=applyExtraHomeTranslation;
 })();
 </script>
 <script id="gca55-unified-language-state">
@@ -3094,7 +3076,6 @@ onAuthStateChanged(auth,async user=>{
     const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
     const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
     const profile=document.querySelector("#profileEmail");if(profile)profile.textContent=copy.profile;
-    window.applyCompleteHomeLanguage?.(code);
   }
 
   function enforceLanguage(code){
@@ -3115,25 +3096,15 @@ onAuthStateChanged(auth,async user=>{
     enforceLanguage(preferred);
   };
 
-  [document.querySelector("#headerLang"),document.querySelector("#lang")].forEach(select=>{
-    if(!select)return;
-    select.onchange=event=>{
-      const code=event.target.value;
-      enforceLanguage(code);
-      if(typeof save==="function")save();
-      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    };
-  });
-
   document.querySelector("#accountMenu .account-menu-close")?.remove();
-  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||document.querySelector("#headerLang")?.value||"es";
-  enforceLanguage(preferred);
+  window.paintCompleteInterface=paintCompleteInterface;
   window.setPlatformLanguage=enforceLanguage;
 })();
 </script>
 <script id="gca56-instant-language-switch">
 (()=>{
   const IDS=["headerLang","lang"];
+  const LANGUAGES=["es","en","pt","fr","it","de"];
 
   function replaceOldSelector(id){
     const old=document.getElementById(id);
@@ -3143,28 +3114,28 @@ onAuthStateChanged(auth,async user=>{
     return clean;
   }
 
-  function repaintVisibleScreen(code){
-    window.setPlatformLanguage?.(code);
+  function applyLanguage(code,{persist=true,track=true}={}){
+    if(!LANGUAGES.includes(code))code="es";
+    lang=code;
     document.documentElement.lang=code;
+    localStorage.setItem("guaraniAliPreferredLanguage",code);
     IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
 
-    if(!document.querySelector("#home")?.classList.contains("hide")){
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      window.applyCompleteHomeLanguage?.(code);
-    }
-    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
-    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
-    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
-    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
+    /* Un solo repintado completo por cambio: evita que distintos controladores
+       se sobrescriban y hace visible la traducción sin recargar la página. */
     if(typeof translateUI==="function")translateUI();
+    window.paintCompleteInterface?.(code);
+    window.applyExtraHomeTranslation?.(code);
+
+    IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
+    if(track)window.courseAnalytics?.("language_selected",{language:code});
+    if(persist&&typeof save==="function")save();
+    if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
   }
 
   function selectLanguage(event){
     const code=event.currentTarget.value;
-    repaintVisibleScreen(code);
-    if(typeof save==="function")save();
-    if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    requestAnimationFrame(()=>repaintVisibleScreen(code));
+    applyLanguage(code);
   }
 
   const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||window.lang||"es";
@@ -3172,48 +3143,12 @@ onAuthStateChanged(auth,async user=>{
     select.value=preferred;
     select.addEventListener("change",selectLanguage);
   });
-  repaintVisibleScreen(preferred);
+  applyLanguage(preferred,{persist:false,track:false});
+  window.setPlatformLanguage=applyLanguage;
 })();
 </script>
 <script id="gca57-live-language-and-remove-marce">
 (()=>{
-  const LANGUAGE_IDS="#headerLang,#lang";
-  let applying=false;
-
-  function syncLanguage(code,persist=true){
-    if(!["es","en","pt","fr","it","de"].includes(code))code="es";
-    if(applying)return;
-    applying=true;
-    try{
-      localStorage.setItem("guaraniAliPreferredLanguage",code);
-      if(typeof lang!=="undefined")lang=code;
-      document.documentElement.lang=code;
-      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
-      if(typeof translateUI==="function")translateUI();
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      window.applyCompleteHomeLanguage?.(code);
-      window.setPlatformLanguage?.(code);
-      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
-      if(persist&&typeof save==="function")save();
-      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){console.error("Cambio inmediato de idioma:",error)}
-    finally{applying=false}
-  }
-
-  function repaintAfterLanguageChange(code){
-    syncLanguage(code,true);
-    requestAnimationFrame(()=>syncLanguage(code,false));
-    setTimeout(()=>syncLanguage(code,false),60);
-    setTimeout(()=>syncLanguage(code,false),220);
-  }
-
-  document.addEventListener("change",event=>{
-    const select=event.target.closest?.(LANGUAGE_IDS);
-    if(!select)return;
-    event.stopImmediatePropagation();
-    repaintAfterLanguageChange(select.value);
-  },true);
-
   function removeMarceCourse(){
     ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
       const node=document.querySelector(selector);
