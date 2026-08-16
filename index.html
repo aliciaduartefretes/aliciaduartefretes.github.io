@@ -2397,7 +2397,9 @@ function renderInstitutional(){
  document.querySelector("#teacherList").innerHTML=teachers.length?teachers.map(teacher=>`<article><b>${esc(teacher.name||"Profesor")}</b><small>${esc(teacher.email)} · Acceso activo${teacher.courseKeys?.includes("marce")?" · Responsable del Curso Marce":" · Sin acceso al Curso Marce"}</small></article>`).join(""):"<p>No hay profesores adicionales autorizados.</p>";
  let ownerSelect=document.querySelector("#groupTeacher");if(ownerSelect){let marceTeachers=teachers.filter(teacher=>teacher.courseKeys?.includes("marce"));ownerSelect.innerHTML=`<option value="">Selecciona al profesor responsable</option>`+marceTeachers.map(teacher=>`<option value="${esc(teacher.email)}">${esc(teacher.name||teacher.email)} · Curso Marce</option>`).join("")}
  document.querySelector("#certificateRequestList").innerHTML=staffCache.requests.length?staffCache.requests.map(request=>`<article><b>📜 ${esc(request.studentName||"Alumno")}</b><small>${esc(request.studentEmail)} · ${esc(request.courseName||"Curso personalizado")}</small><small>Profesor asignado: ${esc(request.teacherNames?.join(", ")||"Administración")} · ${dateText(request.createdAt)}</small><button class="mini-btn request-use" data-request-student="${esc(request.studentUid)}">Seleccionar para emitir certificado</button></article>`).join(""):"<p>No hay solicitudes pendientes.</p>";
- let active=students.filter(s=>{let d=asDate(s.updatedAt);return d&&Date.now()-d.getTime()<30*86400000}).length,completed=students.filter(s=>studentProgress(s).total>=75).length,totalXp=students.reduce((sum,s)=>sum+(Number(s.xp)||0),0);document.querySelector("#learningStats").innerHTML=`<article><b>${active}</b><small>Alumnos activos en los últimos 30 días</small></article><article><b>${completed}</b><small>Alumnos con 75% o más de progreso general</small></article><article><b>${totalXp}</b><small>XP acumulados por la comunidad</small></article><article><b>${average}%</b><small>Promedio institucional de aprendizaje</small></article>`;
+ let active=students.filter(s=>{let d=asDate(s.updatedAt);return d&&Date.now()-d.getTime()<30*86400000}).length,active7=students.filter(s=>{let d=asDate(s.updatedAt);return d&&Date.now()-d.getTime()<7*86400000}).length,completed=students.filter(s=>studentProgress(s).total>=75).length,totalXp=students.reduce((sum,s)=>sum+(Number(s.xp)||0),0);document.querySelector("#learningStats").innerHTML=`<article><b>${active7}</b><small>Alumnos activos en los últimos 7 días</small></article><article><b>${active}</b><small>Alumnos activos en los últimos 30 días</small></article><article><b>${completed}</b><small>Alumnos con 75% o más de progreso general</small></article><article><b>${totalXp}</b><small>XP acumulados por la comunidad</small></article><article><b>${average}%</b><small>Promedio institucional de aprendizaje</small></article>`;
+ window.__GCA59AcademicSnapshot={admin:isAdministrator(activeUser),students,groups,tasks,certificates,teachers,average,active7,active30:active,completed,totalXp,updatedAt:Date.now()};
+ window.dispatchEvent(new CustomEvent("gca:academic-updated",{detail:window.__GCA59AcademicSnapshot}));
  document.querySelectorAll(".request-use").forEach(button=>button.onclick=()=>{document.querySelector("#certificateStudent").value=button.dataset.requestStudent;document.querySelector("#certificateForm")?.scrollIntoView({behavior:"smooth",block:"center"});showToast("Alumno seleccionado para emitir su certificado.")});
 }
 window.loadInstitutional=async()=>{
@@ -3345,6 +3347,100 @@ onAuthStateChanged(auth,async user=>{
   },{once:true});
   window.setPlatformLanguage=code=>applyLanguage(code);
   window.__GCA58={build:BUILD,applyLanguage,removeLegacyMarceInterface};
+})();
+</script>
+<style id="gca59-academic-style">
+  .gca59-admin-tools{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:16px 0 12px;padding:14px;border:1.5px solid #e5dcf2;border-radius:18px;background:linear-gradient(135deg,#fff 0%,#fbf8ff 100%)}
+  .gca59-admin-tools label{display:grid;gap:5px;flex:1 1 260px;font-weight:800;color:#302553}
+  .gca59-admin-tools label span{font-size:.82rem}
+  .gca59-admin-tools input,.gca59-admin-tools select{width:100%;min-height:44px;border:1.5px solid #ddd5ea;border-radius:13px;background:#fff;padding:9px 12px;font:inherit;color:#302553}
+  .gca59-admin-tools button{min-height:44px;border:0;border-radius:13px;padding:9px 15px;background:#7047d8;color:#fff;font-size:.9rem;font-family:inherit;font-weight:800;line-height:1.1;box-shadow:0 4px 0 #4d2aa8;cursor:pointer}
+  .gca59-admin-tools button:disabled{opacity:.55;cursor:wait}
+  .gca59-result-count{flex:1 0 100%;margin:0;color:#6d647d;font-size:.86rem;font-weight:700}
+  .gca59-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+  .gca59-admin-summary article{padding:14px;border:1.5px solid #e8e0f2;border-radius:16px;background:#fff;box-shadow:0 4px 0 #eee7f7}
+  .gca59-admin-summary b{display:block;color:#5f35c7;font-size:1.45rem;line-height:1.1}
+  .gca59-admin-summary small{display:block;margin-top:5px;color:#665d73;font-weight:700}
+  #studentRows tr[hidden]{display:none!important}
+  #staffStatus[data-state="ready"]{background:#eaf9ef;color:#156c38;border-color:#b9e7c8}
+  #staffStatus[data-state="error"]{background:#fff0f0;color:#9b3030;border-color:#efc0c0}
+  @media(max-width:720px){.gca59-admin-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.gca59-admin-tools{align-items:stretch}.gca59-admin-tools button{width:100%}}
+</style>
+<script id="gca59-academic-dashboard">
+(()=>{
+  "use strict";
+  const ADMIN="aliciaduartefretes@gmail.com";
+  const norm=value=>String(value||"").trim().toLocaleLowerCase("es").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const studentCard=()=>document.querySelector("#studentRows")?.closest(".staff-card");
+  let snapshot=null;
+
+  function isAdminSnapshot(data){return !!data?.admin&&document.body.dataset.userRole==="admin"}
+  function ensureTools(){
+    const card=studentCard();
+    if(!card||document.getElementById("gca59AdminTools"))return;
+    card.querySelector(".student-search-wrap")?.remove();
+    const tools=document.createElement("div");
+    tools.id="gca59AdminTools";
+    tools.className="gca59-admin-tools";
+    tools.hidden=true;
+    tools.innerHTML='<label><span>Buscar alumno</span><input id="studentSearch" type="search" autocomplete="off" placeholder="Nombre o correo"></label><label><span>Actividad</span><select id="gca59ActivityFilter"><option value="all">Todos los alumnos</option><option value="7">Activos en 7 días</option><option value="30">Activos en 30 días</option><option value="inactive">Sin actividad reciente</option></select></label><button type="button" id="gca59RefreshAcademic">↻ Actualizar datos</button><p class="gca59-result-count" id="gca59ResultCount" aria-live="polite"></p>';
+    card.querySelector(".staff-card-intro")?.after(tools);
+    tools.querySelector("#studentSearch").addEventListener("input",filterRows);
+    tools.querySelector("#gca59ActivityFilter").addEventListener("change",filterRows);
+    tools.querySelector("#gca59RefreshAcademic").addEventListener("click",async event=>{
+      const button=event.currentTarget;button.disabled=true;button.textContent="Actualizando…";
+      try{await window.loadInstitutional?.()}finally{button.disabled=false;button.textContent="↻ Actualizar datos"}
+    });
+  }
+
+  function decorateRows(data){
+    const rows=[...document.querySelectorAll("#studentRows tr")];
+    rows.forEach((row,index)=>{
+      const student=data.students[index];
+      if(!student)return;
+      let date=student.updatedAt?.toDate?student.updatedAt.toDate():student.updatedAt?new Date(student.updatedAt):null;
+      row.dataset.search=norm(`${student.displayName||""} ${student.email||""}`);
+      row.dataset.activity=date&&!Number.isNaN(date.getTime())?String(date.getTime()):"0";
+    });
+  }
+
+  function filterRows(){
+    if(!snapshot)return;
+    const query=norm(document.getElementById("studentSearch")?.value);
+    const activity=document.getElementById("gca59ActivityFilter")?.value||"all";
+    const now=Date.now();let visible=0,total=0;
+    document.querySelectorAll("#studentRows tr").forEach(row=>{
+      if(!row.dataset.search)return;
+      total++;
+      const stamp=Number(row.dataset.activity)||0,age=stamp?now-stamp:Infinity;
+      const activityMatch=activity==="all"||(activity==="7"&&age<=7*86400000)||(activity==="30"&&age<=30*86400000)||(activity==="inactive"&&age>30*86400000);
+      const show=(!query||row.dataset.search.includes(query))&&activityMatch;
+      row.hidden=!show;if(show)visible++;
+    });
+    const count=document.getElementById("gca59ResultCount");
+    if(count)count.textContent=`Mostrando ${visible} de ${total} alumnos con progreso guardado.`;
+  }
+
+  function renderSummary(data){
+    const card=studentCard();if(!card)return;
+    let summary=document.getElementById("gca59AdminSummary");
+    if(!summary){summary=document.createElement("div");summary.id="gca59AdminSummary";summary.className="gca59-admin-summary";card.before(summary)}
+    summary.hidden=!isAdminSnapshot(data);
+    summary.innerHTML=`<article><b>${data.students.length}</b><small>Alumnos con progreso</small></article><article><b>${data.active7}</b><small>Activos esta semana</small></article><article><b>${data.average}%</b><small>Progreso promedio</small></article><article><b>${Number(data.totalXp||0).toLocaleString("es-PY")}</b><small>XP acumulados</small></article>`;
+    const studentLabel=document.querySelector("#staffStudents")?.nextElementSibling;if(studentLabel)studentLabel.textContent="Alumnos con progreso";
+  }
+
+  function apply(data){
+    snapshot=data;if(!data)return;ensureTools();
+    const tools=document.getElementById("gca59AdminTools");if(tools)tools.hidden=!isAdminSnapshot(data);
+    renderSummary(data);decorateRows(data);filterRows();
+    const status=document.getElementById("staffStatus");if(status){status.dataset.state="ready";status.textContent=`Vista administrativa privada · ${data.students.length} alumnos con progreso · actualizado ${new Date(data.updatedAt).toLocaleTimeString("es-PY",{hour:"2-digit",minute:"2-digit"})}`}
+  }
+
+  window.addEventListener("gca:academic-updated",event=>apply(event.detail));
+  document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
+  const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
+  window.__GCA59={build:"GCA-59",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
 })();
 </script>
 </body>
