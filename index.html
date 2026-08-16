@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA75-IDIOMA-INSTANTANEO">
+  <meta name="guarani-con-ali-build" content="GCA58-PRUEBA-ESTABLE">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -3075,7 +3075,7 @@ onAuthStateChanged(auth,async user=>{
   window.applyCompleteHomeLanguage=changeLanguageNow;
 })();
 </script>
-<script id="gca55-unified-language-state" type="application/json" data-disabled="gca75">
+<script id="gca55-unified-language-state">
 (()=>{
   const TEXT={
     es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
@@ -3131,7 +3131,7 @@ onAuthStateChanged(auth,async user=>{
   window.setPlatformLanguage=enforceLanguage;
 })();
 </script>
-<script id="gca56-instant-language-switch" type="application/json" data-disabled="gca75">
+<script id="gca56-instant-language-switch">
 (()=>{
   const IDS=["headerLang","lang"];
 
@@ -3175,7 +3175,7 @@ onAuthStateChanged(auth,async user=>{
   repaintVisibleScreen(preferred);
 })();
 </script>
-<script id="gca57-live-language-and-remove-marce" type="application/json" data-disabled="gca75">
+<script id="gca57-live-language-and-remove-marce">
 (()=>{
   const LANGUAGE_IDS="#headerLang,#lang";
   let applying=false;
@@ -3208,6 +3208,7 @@ onAuthStateChanged(auth,async user=>{
   }
 
   document.addEventListener("change",event=>{
+    if(window.__GCA58)return;
     const select=event.target.closest?.(LANGUAGE_IDS);
     if(!select)return;
     event.stopImmediatePropagation();
@@ -3247,19 +3248,24 @@ onAuthStateChanged(auth,async user=>{
   setTimeout(removeMarceCourse,500);
 })();
 </script>
-<script id="gca75-single-language-controller">
+<script id="gca58-stable-platform-controller">
 (()=>{
   "use strict";
-  const IDS=["headerLang","lang"];
-  const VALID=new Set(["es","en","pt","fr","it","de"]);
-  let applying=false;
+  const BUILD="GCA58-PRUEBA-ESTABLE";
+  const LANGUAGES=new Set(["es","en","pt","fr","it","de"]);
+  const SELECTORS=["headerLang","lang"];
+  const completeLanguageBase=window.setPlatformLanguage;
+  let changing=false;
 
-  function chosenLanguage(fallback="es"){
-    const stored=localStorage.getItem("guaraniAliPreferredLanguage");
-    return VALID.has(stored)?stored:(VALID.has(fallback)?fallback:"es");
+  function preferredLanguage(fallback="es"){
+    const saved=localStorage.getItem("guaraniAliPreferredLanguage");
+    return LANGUAGES.has(saved)?saved:(LANGUAGES.has(fallback)?fallback:"es");
   }
 
-  function repaintVisibleCourses(){
+  function repaintCurrentView(){
+    if(typeof translateUI==="function")translateUI();
+    if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+    if(typeof window.applyCompleteHomeLanguage==="function")window.applyCompleteHomeLanguage(lang);
     if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
     if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
     if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
@@ -3267,64 +3273,78 @@ onAuthStateChanged(auth,async user=>{
   }
 
   function applyLanguage(code,{persist=true}={}){
-    code=VALID.has(code)?code:"es";
-    if(applying)return;
-    applying=true;
+    code=LANGUAGES.has(code)?code:"es";
+    if(changing)return;
+    changing=true;
     try{
       lang=code;
       document.documentElement.lang=code;
-      localStorage.setItem("guaraniAliPreferredLanguage",code);
-      IDS.forEach(id=>{const selector=document.getElementById(id);if(selector)selector.value=code});
-      if(typeof translateUI==="function")translateUI();
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      if(typeof window.applyCompleteHomeLanguage==="function")window.applyCompleteHomeLanguage(code);
-      repaintVisibleCourses();
-      IDS.forEach(id=>{const selector=document.getElementById(id);if(selector)selector.value=code});
+      SELECTORS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
+      if(persist)localStorage.setItem("guaraniAliPreferredLanguage",code);
+      if(typeof completeLanguageBase==="function")completeLanguageBase(code);
+      repaintCurrentView();
       if(persist&&typeof save==="function")save();
       if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){
-      console.error("GCA75: no se pudo aplicar el idioma",error);
-    }finally{
-      applying=false;
-    }
+    }catch(error){console.error("GCA58: no se pudo aplicar el idioma",error)}
+    finally{changing=false}
   }
 
-  /* Clonar retira onchange y listeners heredados: queda exactamente uno por selector. */
-  IDS.forEach(id=>{
+  /* Sustituye los selectores para retirar todos los controladores acumulados. */
+  SELECTORS.forEach(id=>{
     const old=document.getElementById(id);
     if(!old)return;
     const clean=old.cloneNode(true);
     old.replaceWith(clean);
+    clean.value=preferredLanguage(typeof lang!=="undefined"?lang:"es");
     clean.addEventListener("change",event=>{
       event.preventDefault();
       event.stopImmediatePropagation();
       applyLanguage(event.currentTarget.value);
+      requestAnimationFrame(()=>applyLanguage(event.currentTarget.value,{persist:false}));
     });
   });
 
-  /* La sincronización remota conserva progreso, pero no revierte el idioma elegido localmente. */
-  const syncBase=window.applySyncedProgress;
-  if(typeof syncBase==="function")window.applySyncedProgress=data=>{
-    const preferred=chosenLanguage(typeof lang!=="undefined"?lang:"es");
-    syncBase(data?{...data,lang:preferred}:data);
-    applyLanguage(preferred,{persist:false});
+  /* La nube puede aportar progreso, pero nunca debe deshacer la elección local. */
+  const syncedBase=window.applySyncedProgress;
+  if(typeof syncedBase==="function")window.applySyncedProgress=data=>{
+    const chosen=preferredLanguage(typeof lang!=="undefined"?lang:"es");
+    syncedBase(data?{...data,lang:chosen}:data);
+    applyLanguage(chosen,{persist:false});
   };
 
-  /* El curso retirado continúa oculto sin tocar sus datos históricos. */
-  ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
-    const node=document.querySelector(selector);
-    if(!node)return;
-    node.hidden=true;
-    node.classList.add("hide");
-    node.style.setProperty("display","none","important");
-    node.setAttribute("aria-hidden","true");
-  });
-  document.querySelectorAll('option[value="personalized"],option[value="marce"],[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>node.remove());
+  /* Marce queda fuera de la experiencia sin borrar todavía datos históricos. */
+  function removeLegacyMarceInterface(){
+    ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
+      const node=document.querySelector(selector);
+      if(!node)return;
+      node.hidden=true;
+      node.setAttribute("aria-hidden","true");
+      node.style.setProperty("display","none","important");
+      if("disabled" in node)node.disabled=true;
+    });
+    document.querySelectorAll('option[value="personalized"],option[value="marce"],[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>node.remove());
+    const access=document.getElementById("teacherCourseAccess");
+    if(access){
+      document.querySelector('label[for="teacherCourseAccess"]')?.style.setProperty("display","none","important");
+      if(access.nextElementSibling?.tagName==="SMALL")access.nextElementSibling.style.setProperty("display","none","important");
+      access.hidden=true;
+      access.disabled=true;
+      access.style.setProperty("display","none","important");
+    }
+    if(["#customCourse","#personalized"].includes(location.hash)){
+      history.replaceState(null,"",location.pathname+location.search+"#home");
+      if(typeof show==="function")show("home");
+    }
+  }
 
-  const initial=chosenLanguage(typeof lang!=="undefined"?lang:"es");
-  applyLanguage(initial,{persist:false});
+  removeLegacyMarceInterface();
+  applyLanguage(preferredLanguage(typeof lang!=="undefined"?lang:"es"),{persist:false});
+  document.addEventListener("DOMContentLoaded",()=>{
+    removeLegacyMarceInterface();
+    applyLanguage(preferredLanguage(),{persist:false});
+  },{once:true});
   window.setPlatformLanguage=code=>applyLanguage(code);
-  window.__GCA75={applyLanguage,build:"GCA75-IDIOMA-INSTANTANEO"};
+  window.__GCA58={build:BUILD,applyLanguage,removeLegacyMarceInterface};
 })();
 </script>
 </body>
