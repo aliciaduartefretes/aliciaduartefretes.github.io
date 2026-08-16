@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA44-SIN-PANTALLAS-VACIAS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -11,7 +10,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>
-    window.GCA_BUILD="GCA-37";
+    window.GCA_BUILD="GCA-30";
     if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(items=>items.forEach(item=>item.unregister())).catch(()=>{});}
     if("caches" in window){caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});}
   </script>
@@ -23,9 +22,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <title>Guaraní con Ali · Curso interactivo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{--ink:#302b4f;--green:#7757d9;--green2:#f0ecff;--cream:#fff9f1;--sun:#ffc85a;--red:#f06f72;--blue:#5b8def;--muted:#726d83;--line:#e4deee;--white:#fff;--shadow:0 10px 28px rgba(64,48,105,.12)}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,select{font:inherit}.hide{display:none!important}.shell{width:min(1120px,calc(100% - 34px));margin:auto}
@@ -147,147 +143,9 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 /* Inicio inspirado en el boceto elegido */
 .header-lang{display:inline-flex;align-items:center;gap:4px;height:45px;padding:0 10px;border:1px solid #ddd4ef;border-radius:14px;background:#f8f5ff;color:#6849c2;font-weight:950}.header-lang span{font-size:22px}.header-lang select{appearance:none;border:0;background:transparent;color:#332957;font:900 14px Nunito,system-ui;outline:0;padding:5px 1px;cursor:pointer}
 #home .hero-actions,#home .home-course-label,#home .home-course-buttons,#home .quick-actions{display:none!important}
-.home-learning-dashboard{position:relative;z-index:4;margin-top:0;padding:26px 0 8px}.home-section-title{display:flex;align-items:center;gap:7px;margin:0 8px 14px}.home-section-title h2{margin:0;font-size:22px;letter-spacing:-.02em}.home-section-title span{color:#e8ba3c}.featured-course{width:100%;display:grid;grid-template-columns:64px minmax(0,1fr) 92px auto;gap:15px;align-items:center;padding:20px;border:2px solid #e5ddf4;border-radius:25px;background:linear-gradient(135deg,#fff,#fbf9ff);box-shadow:0 8px 0 #e8e1f2,0 15px 34px rgba(61,45,105,.08);color:var(--ink);text-align:left;cursor:pointer}.featured-course:hover{transform:translateY(-2px)}.featured-flag{width:62px;height:62px;display:grid;place-items:center;border-radius:18px;background:#fff;box-shadow:0 5px 14px rgba(60,49,90,.1)}.featured-flag svg{width:54px;height:54px}.featured-copy{display:grid;gap:3px}.featured-copy strong{font-size:24px}.featured-copy small{color:var(--muted);font-size:13px}.featured-copy i{display:block;width:100%;height:7px;margin-top:8px;background:#e9e3f2;border-radius:99px;overflow:hidden}.featured-copy i b{display:block;height:100%;width:0;background:#7757d9;border-radius:99px;transition:.3s}.progress-ring{--p:0;position:relative;width:78px;height:78px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#7757d9 calc(var(--p)*1%),#e9e2f5 0)}.progress-ring:before{content:"";position:absolute;inset:10px;border-radius:50%;background:#fff}.progress-ring b{position:relative;font-size:20px}.continue-pill{padding:12px 17px;border-radius:14px;background:#6942c4;color:#fff;font-weight:950;white-space:nowrap;box-shadow:0 5px 0 #4e2d9d}.explore-title{margin-top:34px}.course-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(190px,23%);gap:14px;overflow-x:auto;padding:0 7px 15px;scroll-snap-type:x mandatory;scrollbar-width:none}.course-carousel::-webkit-scrollbar{display:none}.mini-course{position:relative;scroll-snap-align:start;min-height:245px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:19px 15px 42px;border:2px solid var(--tile-border);border-radius:24px;background:var(--tile-bg);color:var(--ink);text-align:center;box-shadow:0 7px 0 var(--tile-shadow);cursor:pointer}.mini-course:hover{transform:translateY(-2px)}.mini-course .art-icon{width:92px;height:92px;display:grid;place-items:center;margin-bottom:10px}.mini-course svg{width:90px;height:90px;filter:drop-shadow(0 7px 5px rgba(55,42,70,.13))}.course-art-image{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px}.mini-course strong{font-size:19px;line-height:1.15}.mini-course small{margin-top:7px;color:var(--muted)}.mini-course>i{position:absolute;right:14px;bottom:13px;width:39px;height:39px;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--tile-accent);font-size:23px;font-style:normal;box-shadow:0 4px 12px rgba(55,42,70,.1)}.kids-tile{--tile-bg:#fff8d9;--tile-border:#efcf78;--tile-shadow:#ecd06f;--tile-accent:#e6a51e}.rude-tile{--tile-bg:#f9e7ef;--tile-border:#d9a4b8;--tile-shadow:#d59ab1;--tile-accent:#aa5878}.police-tile{--tile-bg:#fff0e9;--tile-border:#e9b2a7;--tile-shadow:#e7a69a;--tile-accent:#d56c5d}.medical-tile{--tile-bg:#e9f8f3;--tile-border:#a8d8ca;--tile-shadow:#9fd2c2;--tile-accent:#3f9881}.personal-course-strip{width:100%;display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;margin:22px 0 4px;padding:13px 17px;border:2px solid #d9cced;border-radius:20px;background:#f5f0ff;color:var(--ink);text-align:left;cursor:pointer}.teacher-art{width:48px;height:48px}.teacher-art svg{width:100%;height:100%}.personal-course-strip strong{display:block;font-size:15px}.personal-course-strip small{display:block;margin-top:3px;color:var(--muted)}.personal-course-strip>b{font-size:31px;color:#5f3cb0}.personal-course-strip:disabled{display:none}.leaderboard{margin-top:30px}
-@media(max-width:760px){header nav{gap:7px}.header-lang{order:1;height:42px;padding:0 8px}.header-lang span{font-size:18px}.stats{order:2;gap:5px}.stats .pill{padding:7px 9px}.account-btn{padding:7px 10px}.home-learning-dashboard{padding-top:20px}.featured-course{grid-template-columns:52px minmax(0,1fr) 66px;padding:16px 13px;gap:10px}.featured-flag{width:50px;height:50px}.featured-flag svg{width:46px;height:46px}.featured-copy strong{font-size:20px}.progress-ring{width:62px;height:62px}.progress-ring:before{inset:8px}.progress-ring b{font-size:16px}.continue-pill{grid-column:2/4;justify-self:end;margin-top:-3px;padding:10px 15px}.course-carousel{grid-auto-columns:calc((100% - 18px)/3);gap:9px;padding:0 0 12px}.mini-course{min-height:205px;padding:12px 6px 38px;border-radius:18px}.mini-course .art-icon{width:72px;height:66px;margin-bottom:7px}.mini-course svg{width:66px;height:66px}.mini-course strong{font-size:13px;line-height:1.12}.mini-course small{font-size:10px;line-height:1.15;margin-top:5px}.mini-course>i{right:7px;bottom:8px;width:30px;height:30px;font-size:18px}.course-art-image{border-radius:9px}.personal-course-strip{grid-template-columns:44px 1fr auto;padding:12px}.teacher-art{width:42px;height:42px}.personal-course-strip strong{font-size:14px}.personal-course-strip small{font-size:12px}}
-  .rude-course-summary{max-width:900px;margin:0 auto 18px;padding:16px 18px;border:2px solid #ead8e7;border-radius:18px;background:#fff;display:flex;align-items:center;gap:12px;box-shadow:0 5px 0 #f0e5ee}.rude-course-summary b{font-size:18px;color:#8f3046}.rude-course-summary span{flex:1;color:var(--muted)}.rude-section-title{margin:24px 0 2px;padding:12px 15px;border-radius:15px;background:linear-gradient(135deg,#4d234f,#aa4054);color:#fff;font-size:18px}.rude-module-grid{max-width:900px}.rude-unit h3{font-size:18px}.rude-unit .rude-meaning{display:block!important;margin-top:4px!important;color:#766979!important}.rude-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.rude-category-card{border:2px solid #ead8e7;border-radius:23px;background:#fff;padding:20px;text-align:left;cursor:pointer;box-shadow:0 6px 0 #f0e5ee;color:var(--ink)}.rude-category-card:hover{transform:translateY(-2px);border-color:#ad5368}.rude-category-icon{display:grid;place-items:center;width:52px;height:52px;margin-bottom:12px;border-radius:17px;background:#fff0f3;font-size:27px}.rude-category-card b{display:block;font-size:21px}.rude-category-card small{display:block;margin-top:7px;color:var(--muted);font-weight:750}.rude-category-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}.rude-category-top h3{flex:1;margin:0;font-size:24px}.rude-video-float{position:fixed;z-index:86;right:20px;bottom:174px;display:flex;align-items:center;gap:9px;border:0;border-radius:999px;padding:11px 16px 11px 11px;background:linear-gradient(135deg,#3d2048,#ba4055);color:#fff;box-shadow:0 12px 30px rgba(91,35,77,.35);cursor:pointer}.rude-video-float span{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#8f3046}.rude-video-card{border:2px solid #ead8e7;border-radius:22px;background:#fff;overflow:hidden;box-shadow:0 6px 0 #f0e5ee}.rude-video-frame{aspect-ratio:9/13;background:#221b28}.rude-video-frame iframe{width:100%;height:100%;border:0}.rude-video-info{padding:14px}.rude-video-info b{display:block;margin-bottom:10px}.rude-video-info a{display:inline-flex;text-decoration:none}.rude-video-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding:22px 0 90px}.rude-video-hero{margin:28px 0 8px;padding:28px;border-radius:28px;background:linear-gradient(135deg,#3c2045,#b43f55);color:#fff}.rude-video-hero h2{font-size:clamp(30px,5vw,48px);margin:10px 0}.rude-video-hero p{margin:0;color:#f7dce4}.video-course-card{background:linear-gradient(145deg,#fff 48%,#efe6ff)!important;border-color:#cdb9ed!important}
-  @media(max-width:760px){.rude-course-summary{align-items:flex-start;flex-direction:column}.rude-category-grid{grid-template-columns:1fr}.rude-video-float{right:12px;bottom:168px;padding:9px}.rude-video-float b{font-size:12px}.rude-video-grid{grid-template-columns:1fr}.rude-vocab-grid{grid-template-columns:1fr}.rude-unit{grid-template-columns:48px 1fr auto;padding:13px}.rude-unit .number{width:42px;height:42px}}
-  .header-tools{display:flex;align-items:center;gap:8px}.header-ai{min-height:44px;border:2px solid #dfd5f4;border-radius:15px;background:linear-gradient(135deg,#f5f0ff,#fff0f3);color:#51358e;padding:8px 12px;font:inherit;font-weight:950;cursor:pointer}.header-ai span{margin-right:4px}.rude-flow-progress{height:12px;margin:12px 0 20px;border-radius:99px;background:#eee5f0;overflow:hidden}.rude-flow-progress i{display:block;height:100%;background:linear-gradient(90deg,#6d3ac0,#d84566);border-radius:99px}.rude-explain-card{padding:22px;border:2px solid #ead8e7;border-radius:20px;background:#fff8fa}.rude-explain-word{font-size:clamp(36px,7vw,62px);font-weight:950;color:#8e3047}.rude-explain-meaning{font-size:22px;margin:10px 0}.rude-fun-note{padding:13px;border-radius:14px;background:#fff0ce;color:#704d13;font-weight:800}.rude-flow-actions{display:flex;justify-content:space-between;gap:10px;margin-top:20px}@media(max-width:760px){.header-tools{order:1;gap:4px}.header-ai{min-height:42px;padding:7px 9px}.header-ai b{display:none}.header-lang{max-width:116px}.header-lang select{max-width:82px}.stats{order:2}.bottom-nav{overflow-x:visible!important}.bottom-nav .nav-btn{flex:1 1 0!important;min-width:0!important;padding:7px 4px!important}.bottom-nav .nav-btn i{font-size:9px}.rude-flow-actions{flex-direction:column}.rude-flow-actions .btn,.rude-flow-actions .mini-btn{width:100%}}
-  .kid-translation-clue,.kid-guide,.kid-game-hint,.kid-game-scene{display:none!important}
+.home-learning-dashboard{position:relative;z-index:4;margin-top:0;padding:26px 0 8px}.home-section-title{display:flex;align-items:center;gap:7px;margin:0 8px 14px}.home-section-title h2{margin:0;font-size:22px;letter-spacing:-.02em}.home-section-title span{color:#e8ba3c}.featured-course{width:100%;display:grid;grid-template-columns:64px minmax(0,1fr) 92px auto;gap:15px;align-items:center;padding:20px;border:2px solid #e5ddf4;border-radius:25px;background:linear-gradient(135deg,#fff,#fbf9ff);box-shadow:0 8px 0 #e8e1f2,0 15px 34px rgba(61,45,105,.08);color:var(--ink);text-align:left;cursor:pointer}.featured-course:hover{transform:translateY(-2px)}.featured-flag{width:62px;height:62px;display:grid;place-items:center;border-radius:18px;background:#fff;box-shadow:0 5px 14px rgba(60,49,90,.1)}.featured-flag svg{width:54px;height:54px}.featured-copy{display:grid;gap:3px}.featured-copy strong{font-size:24px}.featured-copy small{color:var(--muted);font-size:13px}.featured-copy i{display:block;width:100%;height:7px;margin-top:8px;background:#e9e3f2;border-radius:99px;overflow:hidden}.featured-copy i b{display:block;height:100%;width:0;background:#7757d9;border-radius:99px;transition:.3s}.progress-ring{--p:0;position:relative;width:78px;height:78px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#7757d9 calc(var(--p)*1%),#e9e2f5 0)}.progress-ring:before{content:"";position:absolute;inset:10px;border-radius:50%;background:#fff}.progress-ring b{position:relative;font-size:20px}.continue-pill{padding:12px 17px;border-radius:14px;background:#6942c4;color:#fff;font-weight:950;white-space:nowrap;box-shadow:0 5px 0 #4e2d9d}.explore-title{margin-top:34px}.course-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(190px,23%);gap:14px;overflow-x:auto;padding:0 7px 15px;scroll-snap-type:x mandatory;scrollbar-width:none}.course-carousel::-webkit-scrollbar{display:none}.mini-course{position:relative;scroll-snap-align:start;min-height:245px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:19px 15px 42px;border:2px solid var(--tile-border);border-radius:24px;background:var(--tile-bg);color:var(--ink);text-align:center;box-shadow:0 7px 0 var(--tile-shadow);cursor:pointer}.mini-course:hover{transform:translateY(-2px)}.mini-course .art-icon{width:92px;height:92px;display:grid;place-items:center;margin-bottom:10px}.mini-course svg{width:90px;height:90px;filter:drop-shadow(0 7px 5px rgba(55,42,70,.13))}.mini-course strong{font-size:19px;line-height:1.15}.mini-course small{margin-top:7px;color:var(--muted)}.mini-course>i{position:absolute;right:14px;bottom:13px;width:39px;height:39px;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--tile-accent);font-size:23px;font-style:normal;box-shadow:0 4px 12px rgba(55,42,70,.1)}.kids-tile{--tile-bg:#fff8d9;--tile-border:#efcf78;--tile-shadow:#ecd06f;--tile-accent:#e6a51e}.rude-tile{--tile-bg:#f9e7ef;--tile-border:#d9a4b8;--tile-shadow:#d59ab1;--tile-accent:#aa5878}.police-tile{--tile-bg:#fff0e9;--tile-border:#e9b2a7;--tile-shadow:#e7a69a;--tile-accent:#d56c5d}.medical-tile{--tile-bg:#e9f8f3;--tile-border:#a8d8ca;--tile-shadow:#9fd2c2;--tile-accent:#3f9881}.personal-course-strip{width:100%;display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;margin:22px 0 4px;padding:13px 17px;border:2px solid #d9cced;border-radius:20px;background:#f5f0ff;color:var(--ink);text-align:left;cursor:pointer}.teacher-art{width:48px;height:48px}.teacher-art svg{width:100%;height:100%}.personal-course-strip strong{display:block;font-size:15px}.personal-course-strip small{display:block;margin-top:3px;color:var(--muted)}.personal-course-strip>b{font-size:31px;color:#5f3cb0}.personal-course-strip:disabled{display:none}.leaderboard{margin-top:30px}
+@media(max-width:760px){header nav{gap:7px}.header-lang{order:1;height:42px;padding:0 8px}.header-lang span{font-size:18px}.stats{order:2;gap:5px}.stats .pill{padding:7px 9px}.account-btn{padding:7px 10px}.home-learning-dashboard{padding-top:20px}.featured-course{grid-template-columns:52px minmax(0,1fr) 66px;padding:16px 13px;gap:10px}.featured-flag{width:50px;height:50px}.featured-flag svg{width:46px;height:46px}.featured-copy strong{font-size:20px}.progress-ring{width:62px;height:62px}.progress-ring:before{inset:8px}.progress-ring b{font-size:16px}.continue-pill{grid-column:2/4;justify-self:end;margin-top:-3px;padding:10px 15px}.course-carousel{grid-auto-columns:72%;gap:13px}.mini-course{min-height:230px}.personal-course-strip{grid-template-columns:44px 1fr auto;padding:12px}.teacher-art{width:42px;height:42px}.personal-course-strip strong{font-size:14px}.personal-course-strip small{font-size:12px}}
 </style>
-<style id="gca37-home-fix">
-.course-carousel{gap:12px!important}
-.mini-course{min-height:218px!important;padding:15px 11px 39px!important;border-radius:21px!important;justify-content:flex-start!important;overflow:hidden}
-.mini-course:before{content:"";position:absolute;width:105px;height:105px;border-radius:50%;top:-48px;right:-42px;background:rgba(255,255,255,.42);pointer-events:none}
-.mini-course .art-icon{position:relative;width:94px!important;height:86px!important;margin:0 auto 8px!important;display:grid!important;place-items:center!important;overflow:hidden!important;flex:0 0 auto!important}
-.mini-course .course-art-image{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;border-radius:0!important;filter:drop-shadow(0 6px 6px rgba(55,42,70,.16))}
-.mini-course .course-emoji{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;font-size:62px!important;line-height:1!important;filter:drop-shadow(0 5px 5px rgba(55,42,70,.14))}
-.police-tile .art-icon,.medical-tile .art-icon{width:94px!important;height:82px!important;margin-bottom:10px!important;padding:0!important}
-.police-tile .course-art-image,.medical-tile .course-art-image{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;transform:none!important;object-fit:contain!important}
-.police-tile strong,.medical-tile strong{position:relative;z-index:2}
-.mini-course strong{font-family:"Nunito","Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif!important;font-size:18.5px!important;font-weight:900!important;letter-spacing:-.025em!important;line-height:1.08!important;max-width:100%}
-.mini-course small{font-family:"Nunito",ui-rounded,system-ui,sans-serif!important;font-size:13px!important;font-weight:700!important;line-height:1.15!important;margin-top:6px!important}
-@media(max-width:900px){
-  .course-carousel{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 16px)/3)!important;gap:8px!important;width:100%!important;padding:0 0 12px!important;overflow-x:auto!important}
-  .mini-course{width:auto!important;min-width:0!important;max-width:none!important;min-height:172px!important;padding:9px 5px 31px!important;border-radius:16px!important}
-  .mini-course .art-icon{width:58px!important;height:56px!important;margin:0 auto 5px!important}
-  .mini-course .course-emoji{font-size:43px!important}
-  .police-tile .art-icon,.medical-tile .art-icon{width:58px!important;height:52px!important;margin-bottom:7px!important}
-  .mini-course strong{font-size:13.5px!important;line-height:1.05!important;overflow-wrap:anywhere}
-  .mini-course small{font-size:9.5px!important;line-height:1.1!important;margin-top:5px!important}
-  .mini-course>i{width:26px!important;height:26px!important;right:6px!important;bottom:6px!important;font-size:16px!important}
-  .header-lang{min-width:92px;max-width:122px;padding:0 7px!important;gap:3px!important}
-  .header-lang span{font-size:15px!important}.header-lang select{min-width:0;max-width:94px;font-size:12px!important}
-}
-</style>
-  <style id="gca53-original-header-photo-only">
-    /* Encabezado original: mismas proporciones, ocultando únicamente el nombre de la cuenta. */
-    @media(max-width:760px){
-      header nav.shell{
-        width:calc(100% - 16px)!important;
-        height:64px!important;
-        min-height:64px!important;
-        padding:5px 0!important;
-        display:flex!important;
-        flex-wrap:nowrap!important;
-        align-items:center!important;
-        justify-content:space-between!important;
-        gap:4px!important;
-        overflow:hidden!important;
-      }
-      header .brand{
-        flex:0 0 84px!important;
-        width:84px!important;
-        min-width:84px!important;
-        max-width:84px!important;
-        font-size:17px!important;
-        line-height:1.03!important;
-        letter-spacing:-.35px!important;
-      }
-      .header-tools{
-        flex:0 0 112px!important;
-        width:112px!important;
-        min-width:112px!important;
-        max-width:112px!important;
-        display:flex!important;
-        align-items:center!important;
-        gap:4px!important;
-      }
-      .header-ai{
-        order:0!important;
-        flex:0 0 39px!important;
-        width:39px!important;
-        min-width:39px!important;
-        height:44px!important;
-        min-height:44px!important;
-        padding:4px!important;
-        border-radius:14px!important;
-      }
-      .header-ai span{margin:0!important;font-size:18px!important}
-      .header-ai b{display:none!important}
-      .header-lang{
-        order:1!important;
-        flex:0 0 69px!important;
-        width:69px!important;
-        min-width:69px!important;
-        max-width:69px!important;
-        height:44px!important;
-        padding:0 5px!important;
-        gap:2px!important;
-        border-radius:14px!important;
-      }
-      .header-lang span{font-size:12px!important}
-      .header-lang select{width:51px!important;max-width:51px!important;font-size:10px!important;padding:0!important}
-      .stats{
-        order:initial!important;
-        flex:0 0 146px!important;
-        width:146px!important;
-        min-width:146px!important;
-        max-width:146px!important;
-        display:flex!important;
-        flex-wrap:nowrap!important;
-        align-items:center!important;
-        justify-content:space-between!important;
-        gap:3px!important;
-      }
-      .stats .pill:first-child{display:none!important}
-      .stats .pill{
-        height:44px!important;
-        min-height:44px!important;
-        padding:5px!important;
-        border-radius:16px!important;
-        font-size:11px!important;
-      }
-      .stats .pill:nth-child(2){flex:0 0 39px!important;width:39px!important}
-      .stats .pill:nth-child(3){flex:0 0 64px!important;width:64px!important;white-space:nowrap!important;font-size:10px!important}
-      .account-btn{
-        flex:0 0 40px!important;
-        width:40px!important;
-        min-width:40px!important;
-        max-width:40px!important;
-        height:44px!important;
-        min-height:44px!important;
-        padding:3px!important;
-        border-radius:50%!important;
-        display:grid!important;
-        place-items:center!important;
-        overflow:hidden!important;
-      }
-      .account-btn .account-name{display:none!important}
-      .account-btn #accountIcon{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;min-width:34px!important;overflow:hidden!important;border-radius:50%!important}
-      .account-btn img,.account-btn #accountIcon img{width:34px!important;height:34px!important;min-width:34px!important;border-radius:50%!important;object-fit:cover!important}
-    }
-
-    @media(max-width:370px){
-      header nav.shell{width:calc(100% - 10px)!important;gap:2px!important}
-      header .brand{flex-basis:78px!important;width:78px!important;min-width:78px!important;max-width:78px!important;font-size:16px!important}
-      .header-tools{flex-basis:106px!important;width:106px!important;min-width:106px!important;max-width:106px!important}
-      .header-ai{flex-basis:37px!important;width:37px!important;min-width:37px!important}
-      .header-lang{flex-basis:65px!important;width:65px!important;min-width:65px!important;max-width:65px!important}
-      .stats{flex-basis:140px!important;width:140px!important;min-width:140px!important;max-width:140px!important}
-      .stats .pill:nth-child(3){flex-basis:60px!important;width:60px!important;font-size:9px!important}
-      .account-btn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important}
-    }
-  </style>
 </head>
 <body>
 <div class="sponsor-strip" aria-label="Patrocinadores">
@@ -300,7 +158,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
     <div class="sponsor-item">🤝 <strong>¿QUIERES PATROCINAR?</strong> · Escríbenos</div>
   </div>
 </div>
-<header><nav class="shell"><div class="brand">Guaraní <span>con Ali</span></div><div class="header-tools"><label class="header-lang" aria-label="Idioma nativo"><span>◎</span><select id="headerLang"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label><button class="header-ai" type="button" data-go="aiCenter" aria-label="Abrir Ali IA"><span>✨</span><b>Ali IA</b></button></div><div class="stats"><span class="pill">🔥 <b>1</b></span><span class="pill">💚 <b id="lives">5</b></span><span class="pill">⭐ <b id="xp">0</b> XP</span><button class="account-btn" id="accountBtn"><span id="accountIcon">👤</span><span class="account-name" id="accountName">Guardar progreso</span></button></div></nav></header>
+<header><nav class="shell"><div class="brand">Guaraní <span>con Ali</span></div><label class="header-lang" aria-label="Idioma nativo"><span>◎</span><select id="headerLang"><option value="es">ES</option><option value="en">EN</option><option value="pt">PT</option><option value="fr">FR</option><option value="it">IT</option><option value="de">DE</option></select></label><div class="stats"><span class="pill">🔥 <b>1</b></span><span class="pill">💚 <b id="lives">5</b></span><span class="pill">⭐ <b id="xp">0</b> XP</span><button class="account-btn" id="accountBtn"><span id="accountIcon">👤</span><span class="account-name" id="accountName">Guardar progreso</span></button></div></nav></header>
 <main>
   <section id="home">
     <div class="shell hero">
@@ -316,10 +174,10 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
           </button>
           <div class="home-section-title explore-title"><h2 data-home-text="explore">Explora otros cursos</h2><span>✦</span></div>
           <div class="course-carousel">
-            <button class="mini-course kids-tile" id="homeKids" type="button"><span class="art-icon"><img class="course-art-image" alt="Pajarito del curso para niños" src="data:image/webp;base64,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"></span></span><strong data-home-text="kids">Guaraní para niños</strong><small data-home-text="games">Juegos y aventuras</small><i>→</i></button>
-            <button class="mini-course rude-tile" id="homeRude" type="button"><span class="art-icon"><span class="course-emoji" aria-hidden="true">🤬</span></span><strong data-home-text="rude">Groserías en guaraní</strong><small data-home-text="rudeSub">Ñe’ẽ vai</small><i>→</i></button>
-            <button class="mini-course police-tile" id="homePolice" type="button"><span class="art-icon"><img class="course-art-image" alt="Escudo del curso policial" src="data:image/webp;base64,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"></span></span><strong data-home-text="police">Ingreso a la Policía</strong><small data-home-text="prep">Preparación</small><i>→</i></button>
-            <button class="mini-course medical-tile" id="homeMedical" type="button"><span class="art-icon"><img class="course-art-image" alt="Estetoscopio del curso de medicina" src="data:image/webp;base64,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"></span></span><strong data-home-text="medical">Guaraní para Medicina</strong><small data-home-text="clinical">Clínica</small><i>→</i></button>
+            <button class="mini-course kids-tile" id="homeKids" type="button"><span class="art-icon"><svg viewBox="0 0 96 96"><ellipse cx="48" cy="54" rx="29" ry="25" fill="#8cb7c8"/><circle cx="60" cy="38" r="22" fill="#a9ced8"/><circle cx="66" cy="34" r="7" fill="#fff"/><circle cx="68" cy="34" r="3" fill="#27394d"/><path d="M78 40l15 7-15 7z" fill="#f0a83c"/><path d="M35 69q13 13 26 0" fill="none" stroke="#597f91" stroke-width="5" stroke-linecap="round"/><path d="M28 49Q9 54 18 72" fill="#719daf"/><path d="M52 75v12M66 73l5 12" stroke="#d28b35" stroke-width="4" stroke-linecap="round"/></svg></span><strong data-home-text="kids">Guaraní para niños</strong><small data-home-text="games">Juegos y aventuras</small><i>→</i></button>
+            <button class="mini-course rude-tile" id="homeRude" type="button"><span class="art-icon"><svg viewBox="0 0 96 96"><path d="M14 16h68a10 10 0 0 1 10 10v40a10 10 0 0 1-10 10H48L27 90l4-14H14A10 10 0 0 1 4 66V26a10 10 0 0 1 10-10z" fill="#c4809a"/><path d="M23 47h50" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M28 36l7 9-9 8M48 35l-3 18M63 37l8 8-7 9" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="28" r="4" fill="#ffe49d"/><circle cx="78" cy="61" r="4" fill="#ffe49d"/></svg></span><strong data-home-text="rude">Insultos en guaraní</strong><small data-home-text="rudeSub">Ñe’ẽ vai</small><i>→</i></button>
+            <button class="mini-course police-tile" id="homePolice" type="button"><span class="art-icon"><svg viewBox="0 0 96 96"><path d="M48 5l35 13v27c0 22-14 37-35 47C27 82 13 67 13 45V18z" fill="#596478" stroke="#343c4c" stroke-width="4"/><path d="M48 14l25 10v21c0 15-9 27-25 36-16-9-25-21-25-36V24z" fill="#e27d71"/><path d="M48 24l6 13 15 2-11 10 3 15-13-7-13 7 3-15-11-10 15-2z" fill="#fff0c7"/></svg></span><strong data-home-text="police">Ingreso a la Policía</strong><small data-home-text="prep">Preparación</small><i>→</i></button>
+            <button class="mini-course medical-tile" id="homeMedical" type="button"><span class="art-icon"><svg viewBox="0 0 96 96"><path d="M25 11v24c0 17 10 28 23 28s23-11 23-28V11" fill="none" stroke="#4d8079" stroke-width="8" stroke-linecap="round"/><path d="M17 11h16M63 11h16" stroke="#365f5b" stroke-width="8" stroke-linecap="round"/><path d="M48 63v8c0 11 8 18 18 18 9 0 16-7 16-16" fill="none" stroke="#4d8079" stroke-width="7" stroke-linecap="round"/><circle cx="82" cy="66" r="10" fill="#d4ebe5" stroke="#365f5b" stroke-width="5"/></svg></span><strong data-home-text="medical">Guaraní para Medicina</strong><small data-home-text="clinical">Clínica</small><i>→</i></button>
           </div>
           <button class="personal-course-strip" id="homeMarce" type="button"><span class="teacher-art" aria-hidden="true"><svg viewBox="0 0 64 64"><rect x="5" y="7" width="54" height="50" rx="10" fill="#d9c8ee"/><circle cx="32" cy="25" r="11" fill="#efc59c"/><path d="M20 24q2-16 12-16t12 16q-6-6-12-6t-12 6" fill="#b68442"/><path d="M15 57q2-20 17-20t17 20" fill="#5b4aa1"/><path d="M8 10h48" stroke="#8b71c7" stroke-width="4"/></svg></span><span><strong data-home-text="marce">Curso personalizado con el Mbo'ehára Marce</strong><small id="homeMarceStatus">Clase desbloqueada · Entrar ahora</small></span><b>›</b></button>
         </section>
@@ -354,10 +212,9 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   <section id="institutional" class="hide institutional"><div class="shell"><div class="staff-hero"><span class="tag">🏫 GESTIÓN ACADÉMICA</span><h2>Centro institucional</h2><p>Seguimiento de alumnos, estadísticas, grupos, tareas, reportes y certificados.</p></div><div class="staff-tabs"><button class="staff-tab active" data-staff-tab="teacher">👩‍🏫 Panel del profesor</button><button class="staff-tab role-hidden" id="adminTab" data-staff-tab="admin">🛡️ Panel del administrador</button></div><div class="staff-role-badge" id="staffRoleBadge">Área privada</div><div class="staff-message" id="staffStatus">Verificando tu acceso…</div><div class="staff-pane" id="teacherPane"><div class="staff-kpis"><div class="staff-kpi"><b id="staffStudents">0</b><small>Alumnos</small></div><div class="staff-kpi"><b id="staffAverage">0%</b><small>Progreso promedio</small></div><div class="staff-kpi"><b id="staffGroups">0</b><small>Grupos o cursos</small></div><div class="staff-kpi"><b id="staffTasks">0</b><small>Tareas asignadas</small></div></div><div class="staff-card"><h3>Progreso de cada alumno</h3><p class="staff-card-intro">Aquí ves qué porcentaje completó cada alumno en cada programa. Los datos se actualizan cuando el alumno inicia sesión y avanza en una lección.</p><div class="staff-table-wrap"><table class="staff-table"><thead><tr><th>Alumno</th><th>General</th><th>Policía</th><th>Medicina</th><th>Niños</th><th>XP</th><th>Última actividad</th></tr></thead><tbody id="studentRows"></tbody></table></div></div><div class="staff-grid"><div class="staff-card"><h3>Crear un curso o grupo</h3><p class="staff-card-intro">Escribe un nombre identificable, elige el programa que estudiará el grupo y créalo. Después podrás seleccionarlo al asignar tareas.</p><form class="staff-form" id="groupForm"><label for="groupName">Nombre del curso o grupo</label><input id="groupName" placeholder="Ej.: Guaraní inicial · Grupo A" required><label for="groupCourse">Programa de aprendizaje</label><select id="groupCourse"><option>Guaraní general</option><option>Ingreso a la Policía</option><option>Guaraní para Medicina</option><option>Guaraní para niños</option></select><button class="btn" type="submit">Crear curso o grupo</button></form><div class="staff-list" id="groupList"></div></div><div class="staff-card"><h3>Asignar una tarea</h3><p class="staff-card-intro">La tarea se vincula a uno de tus grupos. Indica qué deben hacer los alumnos y la fecha límite.</p><form class="staff-form" id="taskForm"><label for="taskTitle">Título</label><input id="taskTitle" placeholder="Ej.: Completar la unidad 1" required><label for="taskGroup">Grupo que recibirá la tarea</label><select id="taskGroup" required><option value="">Selecciona un grupo</option></select><label for="taskDue">Fecha de entrega</label><input id="taskDue" type="date" required><label for="taskNotes">Indicaciones</label><textarea id="taskNotes" placeholder="Explica claramente qué deben completar"></textarea><button class="btn" type="submit">Asignar tarea</button></form><div class="staff-list" id="taskList"></div></div></div></div><div class="staff-pane hide" id="adminPane"><div class="staff-grid"><div class="staff-card"><h3>Estadísticas de aprendizaje</h3><p class="staff-card-intro">Resumen general para entender participación, avance y actividad de todos los alumnos.</p><div id="learningStats" class="staff-list"></div><div class="staff-actions"><button class="btn" id="downloadReport">⬇️ Descargar reporte CSV</button></div></div><div class="staff-card"><h3>Emitir certificado</h3><p class="staff-card-intro">Selecciona al alumno y el programa. Se registrará la emisión y se descargará un certificado imprimible.</p><form class="staff-form" id="certificateForm"><select id="certificateStudent" required><option value="">Selecciona un alumno</option></select><select id="certificateCourse"><option>Guaraní general</option><option>Ingreso a la Policía</option><option>Guaraní para Medicina</option><option>Guaraní para niños</option></select><input id="certificateHours" type="number" min="1" value="20" placeholder="Carga horaria"><button class="btn" type="submit">Emitir y descargar certificado</button></form><div class="staff-list" id="certificateList"></div></div></div><div class="staff-card"><h3>Autorizar profesores</h3><p class="staff-card-intro">Agrega el correo de una persona para darle acceso únicamente al Panel del profesor. No podrá ver este panel administrativo.</p><form class="staff-form" id="teacherForm"><label for="teacherEmail">Correo del profesor</label><input id="teacherEmail" type="email" placeholder="profesor@correo.com" required><label for="teacherName">Nombre del profesor</label><input id="teacherName" placeholder="Nombre y apellido" required><button class="btn" type="submit">Autorizar profesor</button></form><div class="staff-list" id="teacherList"></div></div></div></div></section>
   <section id="practice" class="hide learning-hub"><div class="shell"><div class="feature-hero"><span class="tag">🎯 CENTRO DE PRÁCTICA</span><h2>Practica guaraní</h2></div><div class="practice-overview"><div class="practice-kpi"><b id="practiceCorrect">0</b><small>Correctas</small></div><div class="practice-kpi"><b id="practiceErrors">0</b><small>Por reforzar</small></div><div class="practice-kpi"><b id="practiceMastery">0%</b><small>Dominio</small></div><div class="practice-kpi"><b>7</b><small>Áreas evaluadas</small></div></div><div class="practice-tabs" role="tablist"><button class="practice-tab active" data-practice="listen">🎧 Escuchar</button><button class="practice-tab" data-practice="read">📖 Comprender</button><button class="practice-tab" data-practice="write">✍️ Escribir</button><button class="practice-tab" data-practice="speak">🎙️ Hablar</button></div><div class="practice-panel" id="practicePanel"></div></div></section>
   <section id="aiCenter" class="hide ai-center"><div class="shell ai-center-shell"><div class="feature-hero"><span class="tag">✨ INTELIGENCIA ARTIFICIAL</span><h2>Conversa con Ali IA</h2><p>Pregunta significados, solicita explicaciones, practica conversaciones y recibe orientación según el contenido de la plataforma.</p><span class="ai-status"><i></i> Disponible · en desarrollo</span><div class="ai-development-note">Ya puedes usarla con el diccionario y los cursos. Seguimos ampliando su capacidad de conversación y personalización.</div></div><div class="ai-workspace" id="aiWorkspace"></div></div></section>
-  <section id="dictionary" class="hide learning-hub"><div class="shell"><div class="feature-hero"><span class="tag">📚 DICCIONARIO GUARANÍ–ESPAÑOL</span><h2>Busca, comprende y escucha</h2><p>Consulta cientos de palabras extraídas del Ñe'ẽryru que compartiste. Puedes buscar en guaraní o español y escuchar las pronunciaciones disponibles.</p></div><div class="dictionary-layout"><div class="dictionary-card"><input class="dictionary-search" id="dictionarySearch" type="search" placeholder="Buscar en guaraní o español…" autocomplete="off"><div class="dictionary-meta"><span id="dictionaryCount">Cargando palabras…</span><span>Guaraní ↔ Español</span></div><div class="dictionary-results" id="dictionaryResults"></div><button class="mini-btn dictionary-more" id="dictionaryMore" type="button">Mostrar más palabras</button><div class="dictionary-source">Fuente de consulta: <b>Diccionario Guaraní–Español / Español–Guaraní — Ñe'ẽryru</b>, de Natalia Krivoshein de Canese y Feliciano Acosta Alcaraz. Los significados fueron resumidos y adaptados para uso educativo.</div></div><aside class="rude-card"><span class="tag">🔥 GUARANÍ SIN FILTRO</span><h3>Groserías en guaraní</h3><p>El lado más pícaro del guaraní y el jopara paraguayo.</p><div class="rude-list" id="rudeList"></div><button class="btn" id="openRudeFromDictionary" type="button">Entrar a Groserías en guaraní →</button></aside></div></div></section>
-  <section id="rudeCourse" class="hide"><div class="shell"><div class="course-back"><button data-go="catalog">← Volver a todos los cursos</button></div><div class="police-hero rude-hero"><div><span class="tag">🔥 GUARANÍ SIN FILTRO</span><h2>Groserías en guaraní</h2><p>Aprendé groserías con toda la picardía paraguaya.</p></div><div class="police-badge">🤬🇵🇾</div></div><div class="rude-course-summary"><b>Elegí un área y empezá</b><span>Aprendé cada expresión y avanzá a tu ritmo.</span></div><div class="rude-module-grid" id="rudeCourseUnits"></div></div><button class="rude-video-float" id="openRudeVideosFromCourse" type="button"><span>▶</span><b>Ver videos de groserías</b></button></section>
+  <section id="dictionary" class="hide learning-hub"><div class="shell"><div class="feature-hero"><span class="tag">📚 DICCIONARIO GUARANÍ–ESPAÑOL</span><h2>Busca, comprende y escucha</h2><p>Consulta cientos de palabras extraídas del Ñe'ẽryru que compartiste. Puedes buscar en guaraní o español y escuchar las pronunciaciones disponibles.</p></div><div class="dictionary-layout"><div class="dictionary-card"><input class="dictionary-search" id="dictionarySearch" type="search" placeholder="Buscar en guaraní o español…" autocomplete="off"><div class="dictionary-meta"><span id="dictionaryCount">Cargando palabras…</span><span>Guaraní ↔ Español</span></div><div class="dictionary-results" id="dictionaryResults"></div><button class="mini-btn dictionary-more" id="dictionaryMore" type="button">Mostrar más palabras</button><div class="dictionary-source">Fuente de consulta: <b>Diccionario Guaraní–Español / Español–Guaraní — Ñe'ẽryru</b>, de Natalia Krivoshein de Canese y Feliciano Acosta Alcaraz. Los significados fueron resumidos y adaptados para uso educativo.</div></div><aside class="rude-card"><span class="tag">🗣️ ÑE'Ẽ VAI</span><h3>Groserías y expresiones fuertes</h3><p>También forman un curso completo dentro de la sección Cursos.</p><div class="context-warning">Estas expresiones pueden resultar ofensivas. Se incluyen para comprender conversaciones reales, no para promover ataques o acoso.</div><div class="rude-list" id="rudeList"></div><button class="btn" id="openRudeFromDictionary" type="button">Entrar al curso Ñe'ẽ vai →</button></aside></div></div></section>
+  <section id="rudeCourse" class="hide"><div class="shell"><div class="course-back"><button data-go="catalog">← Volver a todos los cursos</button></div><div class="police-hero rude-hero"><div><span class="tag">🗣️ GUARANÍ COLOQUIAL</span><h2>Ñe'ẽ vai: groserías y expresiones fuertes</h2><p>Aprende a reconocer palabras ofensivas, comprender su intensidad y responder con criterio en conversaciones reales.</p><div class="course-card-stats"><span>📕 4 módulos</span><span>🎯 Prácticas obligatorias</span><span>🌱 Repetición de errores</span></div></div><div class="police-badge">🗯️🇵🇾</div></div><div class="context-warning" style="max-width:900px;margin:0 auto 18px"><b>Enfoque educativo:</b> el objetivo es comprender el lenguaje real y evitar malentendidos. Ninguna práctica promueve insultar, acosar o atacar a otras personas.</div><div class="rude-module-grid" id="rudeCourseUnits"></div></div></section>
   <section id="rudeLesson" class="hide"><div class="shell"><div class="course-back"><button id="rudeBack">← Volver al curso</button></div><div class="rude-lesson-card" id="rudeLessonBody"></div></div></section>
-  <section id="rudeVideos" class="hide"><div class="shell"><div class="course-back"><button id="rudeVideosBack">← Volver al curso</button></div><div class="rude-video-hero"><span class="tag">🎬 GUARANÍ SIN FILTRO</span><h2>Videos de groserías en guaraní</h2><p>Las explicaciones de la Profe Ali, reunidas en una sola ruta.</p></div><div class="rude-video-grid" id="rudeVideoGrid"></div></div></section>
   <section id="videos" class="hide"><div class="shell"><div class="page-head"><span class="tag">VIDEOS DE LA PROFE ALI</span><h2>Aprende con situaciones reales</h2><p>Refuerza cada tema con las explicaciones y curiosidades de Ali.</p></div><div class="reels-gallery" id="reelsGallery"></div><div class="insta-cta"><h3>¿Quieres ver más?</h3><p>Sigue a @aliexplora para recibir nuevas lecciones y curiosidades.</p><a class="btn instagram" href="https://www.instagram.com/aliexplora/" target="_blank" rel="noopener">📸 Seguir en Instagram</a></div></div></section>
   <section id="suggestions" class="hide"><div class="shell"><div class="page-head"><span class="tag">CONSTRUYAMOS JUNTOS</span><h2>¿Cómo podemos mejorar?</h2><p>Tu idea puede convertirse en la próxima función o lección.</p></div><div class="sponsor-info"><h3>🤝 Espacio para marcas</h3><p>Las marcas patrocinadoras podrán aparecer en el banner animado superior, en unidades temáticas y en experiencias especiales del curso.</p><a class="btn" href="mailto:Aliciaduartefretes@gmail.com?subject=Patrocinio%20Guaran%C3%AD%20con%20Ali">Quiero patrocinar</a></div><form class="suggest-card" action="https://formsubmit.co/Aliciaduartefretes@gmail.com" method="POST"><input type="hidden" name="_subject" value="Nueva sugerencia para Guaraní con Ali"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="_template" value="table"><input type="hidden" name="_next" value="https://aliciaduartefretes.github.io/?sugerencia=enviada"><input type="text" name="_honey" style="display:none"><div class="form-row"><div><label for="visitorName">Nombre</label><input id="visitorName" name="Nombre" placeholder="¿Cómo te llamas?" required></div><div><label for="visitorEmail">Correo (opcional)</label><input id="visitorEmail" type="email" name="Correo" placeholder="Para poder responderte"></div></div><label for="ideaType">¿Qué quieres sugerir?</label><select id="ideaType" name="Tipo"><option>Nueva lección</option><option>Corrección de guaraní</option><option>Mejora de la página</option><option>Problema técnico</option><option>Colaboración o patrocinio</option><option>Otra idea</option></select><label for="idea">Cuéntanos tu idea</label><textarea id="idea" name="Sugerencia" placeholder="Escribe aquí tu sugerencia…" required></textarea><button class="btn" type="submit">Enviar sugerencia ✨</button><p><small>La sugerencia llegará directamente al correo de la Profe Ali.</small></p></form></div></section>
 </main>
@@ -367,7 +224,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 <div class="toast" id="toast">¡Reto preparado! ⚡</div>
 <button class="reaction-sound-toggle" id="reactionSoundToggle" type="button" aria-label="Silenciar sonidos de reacción" title="Silenciar sonidos de reacción">🔊</button>
 <aside class="ai-panel" id="aiPanel" aria-label="Asistente de Guaraní con Ali"><div class="ai-head"><span>✨</span><div><b>Ali IA</b><small>Conversación educativa · en desarrollo</small></div></div><div class="ai-messages" id="aiMessages"><div class="ai-message bot">Mba'éichapa 👋 Soy Ali IA. Puedo explicarte contenidos, buscar en el Ñe'ẽryru, ayudarte a practicar y conversar sobre lo que estás aprendiendo.</div></div><div class="ai-suggestions"><button data-ai-prompt="Explícame cómo saludar">Explicar saludos</button><button data-ai-prompt="¿Cómo se dice casa?">Buscar palabra</button><button data-ai-prompt="Quiero practicar una conversación">Conversar</button></div><form class="ai-form" id="aiForm"><input id="aiInput" placeholder="Pregúntame algo sobre guaraní…" autocomplete="off"><button type="submit">Enviar</button></form></aside>
-<nav class="bottom-nav" aria-label="Navegación principal"><button class="nav-btn active" data-go="home"><span>🏠</span><i data-ui="navHome">Inicio</i></button><button class="nav-btn" data-go="catalog"><span>📚</span><i data-ui="navCourse">Cursos</i></button><button class="nav-btn" data-go="practice"><span>🎯</span><i>Práctica</i></button><button class="nav-btn" data-go="dictionary"><span>📖</span><i>Diccionario</i></button><button class="nav-btn staff-entry" id="staffBottomNav" data-go="institutional"><span>🏫</span><i>Gestión</i></button><button class="nav-btn" data-go="videos"><span>▶️</span><i data-ui="navVideos">Videos</i></button><button class="nav-btn" data-go="suggestions"><span>💡</span><i data-ui="navIdeas">Sugerencias</i></button></nav>
+<nav class="bottom-nav" aria-label="Navegación principal"><button class="nav-btn active" data-go="home"><span>🏠</span><i data-ui="navHome">Inicio</i></button><button class="nav-btn" data-go="catalog"><span>📚</span><i data-ui="navCourse">Cursos</i></button><button class="nav-btn" data-go="practice"><span>🎯</span><i>Práctica</i></button><button class="nav-btn" data-go="dictionary"><span>📖</span><i>Diccionario</i></button><button class="nav-btn" data-go="aiCenter"><span>✨</span><i>IA</i></button><button class="nav-btn staff-entry" id="staffBottomNav" data-go="institutional"><span>🏫</span><i>Gestión</i></button><button class="nav-btn" data-go="videos"><span>▶️</span><i data-ui="navVideos">Videos</i></button><button class="nav-btn" data-go="suggestions"><span>💡</span><i data-ui="navIdeas">Sugerencias</i></button></nav>
 <div class="network-status" id="networkStatus" role="status" aria-live="polite" hidden>Sin conexión · el progreso local sigue disponible</div>
 <aside class="app-notice" id="appInstallNotice" hidden aria-label="Instalar aplicación"><div class="app-notice-icon">📱</div><div class="app-notice-copy"><b>Instala Guaraní con Ali</b><small>Acceso rápido desde tu pantalla de inicio y experiencia a pantalla completa.</small></div><div class="app-notice-actions"><button class="btn" id="installAppButton">Instalar</button><button class="mini-btn" id="dismissInstallButton" aria-label="Cerrar">Ahora no</button></div></aside>
 <aside class="app-notice" id="appUpdateNotice" hidden aria-label="Actualizar aplicación"><div class="app-notice-icon">✨</div><div class="app-notice-copy"><b>Nueva versión disponible</b><small>Actualiza cuando termines tu actividad para recibir las mejoras.</small></div><div class="app-notice-actions"><button class="btn" id="updateAppButton">Actualizar</button><button class="mini-btn" id="dismissUpdateButton" aria-label="Cerrar">Después</button></div></aside>
@@ -1749,7 +1606,7 @@ function quizData(i){return lang==="es"?quizBase[i]:QUIZ_I18N[lang][i]}
 function translateStatic(){let t=STATIC_I18N[lang],set=(q,v)=>{let e=$(q);if(e)e.textContent=v};set("#course .insta-cta h3","📱 "+t[0]);set("#course .insta-cta p",t[1]);set("#course .insta-cta a",t[2]);set("#videos .page-head .tag",t[3]);set("#videos .page-head h2",t[4]);set("#videos .page-head p",t[5]);set("#videos .insta-cta h3",t[6]);set("#videos .insta-cta p",t[7]);set("#videos .insta-cta a","📸 "+t[8]);set("#suggestions .page-head .tag",t[9]);set("#suggestions .page-head h2",t[10]);set("#suggestions .page-head p",t[11]);set("#suggestions .sponsor-info h3","🤝 "+t[12]);set("#suggestions .sponsor-info p",t[13]);set("#suggestions .sponsor-info a",t[14]);let labels=document.querySelectorAll(".suggest-card label");[t[15],t[17],t[19],t[20]].forEach((v,i)=>labels[i]&&(labels[i].textContent=v));$("#visitorName").placeholder=t[16];$("#visitorEmail").placeholder=t[18];$("#idea").placeholder=t[21];set(".suggest-card button",t[22]);set(".suggest-card small",t[23]);document.querySelectorAll("#ideaType option").forEach((o,i)=>o.textContent=t[24+i])}
 function translateAuth(){let t=AUTH_I18N[lang];if(!window.currentCourseUser)$("#accountName").textContent=t[0];$("#authTitle").textContent=t[1];$("#authText").textContent=t[2];$("#authBenefit1").textContent="✓ "+t[3];$("#authBenefit2").textContent="✓ "+t[4];$("#authBenefit3").textContent="✓ "+t[5];$("#googleLoginText").textContent=t[6];$("#guestContinue").textContent=t[7];$("#logoutBtn").textContent=t[8]}
 function translateConsent(){let t=CONSENT_I18N[lang];$("#consentTitle").textContent=t[0];$("#consentText").textContent=t[1];$("#consentReject").textContent=t[2];$("#consentAccept").textContent=t[3];$("#privacySettings").textContent=t[4]}
-function translateUI(){document.documentElement.lang=lang;document.querySelectorAll("[data-ui]").forEach(e=>{let v=UI[lang][e.dataset.ui];if(v!==undefined)e.textContent=v});translateStatic();translateAuth();translateConsent();translateCourseShell();renderUnits();renderPoliceUnits();renderReels();if(window.medicalReady)renderMedicalUnits();if(!$("#lesson").classList.contains("hide"))phase==="finished"?renderGeneralFinishedScreen():phase==="study"?renderStudy():renderQuiz();if(window.medicalReady&&!$("#medicalLesson")?.classList.contains("hide"))medicalPhase==="finished"?renderMedicalFinishedScreen():medicalPhase==="study"?renderMedicalStudy():renderMedicalQuiz()}
+function translateUI(){document.documentElement.lang=lang;document.querySelectorAll("[data-ui]").forEach(e=>{let v=UI[lang][e.dataset.ui];if(v!==undefined)e.textContent=v});translateStatic();translateAuth();translateConsent();translateCourseShell();renderUnits();renderPoliceUnits();renderReels();if(window.medicalReady)renderMedicalUnits();if(!$("#lesson").classList.contains("hide"))phase==="study"?renderStudy():renderQuiz();if(window.medicalReady&&!$("#medicalLesson")?.classList.contains("hide"))medicalPhase==="study"?renderMedicalStudy():medicalPhase==="quiz"?renderMedicalQuiz():finishMedicalLesson()}
 function renderUnits(){$("#units").innerHTML=U.map((u,i)=>{let locked=i>state.done.length;return `<article class="unit ${locked?"locked":""}" data-i="${i}" title="${locked?UI[lang].locked:""}"><div class="unit-icon" style="--tone:${["#f0ecff","#fff1e8","#eaf2ff","#fff6d8"][i%4]}">${u.icon}</div><div><h3>${i+1}. ${title(i)}</h3><p>${desc(i)}</p><div class="unit-meta">📖 ${UI[lang].read} · 🎯 4 ${UI[lang].practice}${state.done.includes(i)?" · ✓":""}</div></div><div class="arrow">${locked?"🔒":"›"}</div></article>`}).join("");document.querySelectorAll(".unit:not(.locked)").forEach(e=>e.onclick=()=>openUnit(+e.dataset.i))}
 function unlockAuthorGeneral(){if(!window.isCourseAuthor)return;document.querySelectorAll("#units .unit").forEach(e=>{e.classList.remove("locked");e.title="Modo autora";let arrow=e.querySelector(".arrow");if(arrow)arrow.textContent="›";e.onclick=()=>openUnit(+e.dataset.i)})}
 const renderUnitsWithAuthor=renderUnits;renderUnits=function(){renderUnitsWithAuthor();unlockAuthorGeneral()};
@@ -1771,8 +1628,7 @@ function renderReels(){$("#reelsGallery").innerHTML=reelData().map(r=>`<article 
 function renderStudy(){let u=lessonData(unit);$("#lessonProgress").style.width="35%";$("#lessonLabel").textContent=`${UI[lang].read} · ${unit+1}/12`;let visual=u.pronouns?`<h4 class="visual-title">👥 ${UI[lang].vocab}</h4><div class="pronouns">${u.pronouns.map(x=>`<div class="pronoun"><b>${x[0]}</b><small>${x[1]}</small><em>${x[2]}</em></div>`).join("")}</div>`:`<h4 class="visual-title">🖼️ ${UI[lang].vocab}</h4><div class="vocab-grid">${(u.vocab||[]).map(x=>`<div class="vocab"><div class="pic">${x[0]}</div><div><b>${x[1]}</b><small>${x[2]}</small></div></div>`).join("")}</div>`;let dia=u.dialogue?`<h4 class="visual-title">💬 ${UI[lang].dialogue}</h4><div class="dialogue">${u.dialogue.map(x=>`<div class="line"><div class="avatar">${x[0]}</div><div class="bubble2"><b>${x[1]}</b><small>${x[2]}</small></div></div>`).join("")}</div>`:"";$("#lessonBody").innerHTML=`<div class="lesson-cover"><div class="cover-copy"><div class="kicker">${UI[lang].read} · ${UI[lang].unit} ${unit+1}</div><h2>${title(unit)}</h2><p>${desc(unit)}</p></div><div class="cover-art">${illustration(unit)}</div></div><div class="study"><h3>🎯 ${UI[lang].objective}</h3><p class="explain">${u.objective}</p><p class="explain">${u.explain}</p><div class="callout"><b>💡 ${UI[lang].key}</b><br>${u.key}</div>${visual}${dia}${reelBlock()}<div class="study-actions"><button class="btn" id="beginQuiz">${UI[lang].begin} →</button></div></div>`;$("#beginQuiz").onclick=()=>{phase="quiz";step=0;renderQuiz()}}
 function renderQuiz(){let q=quizData(unit)[step];$("#lessonProgress").style.width=`${35+(step+1)*15}%`;$("#lessonLabel").textContent=`${UI[lang].practice} · ${step+1}/4`;$("#lessonBody").innerHTML=`<div class="quiz"><small>${title(unit)} · ${step+1}/4</small><h3>${q[0]}</h3><div class="answers">${q[2].map(a=>`<button class="answer" data-a="${a}">${a}</button>`).join("")}</div><div id="feedback"></div><div class="quiz-actions"><button class="btn" id="check" disabled>${UI[lang].check}</button></div></div>`;document.querySelectorAll(".answer").forEach(b=>b.onclick=()=>{if(checked)return;document.querySelectorAll(".answer").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selected=b.dataset.a;$("#check").disabled=false});$("#check").onclick=checkAnswer}
 function checkAnswer(){if(checked){playReaction("tap");step++;checked=false;selected="";if(step<4)renderQuiz();else finish();return}let q=quizData(unit)[step],ok=selected===q[1];checked=true;let fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}`;playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));document.querySelectorAll(".answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);save();$("#check").textContent=UI[lang].next}
-function renderGeneralFinishedScreen(){const body=$("#lessonBody");if(!body)return;$("#lessonProgress").style.width="100%";$("#lessonLabel").textContent=UI[lang].finish;body.innerHTML=`<div class="finished"><div class="cup">🏆</div><h2>${UI[lang].finish}</h2><p>${UI[lang].earned} ⭐</p><button class="btn" id="return">${UI[lang].return}</button></div>`;$("#return").onclick=()=>{renderUnits();show("course",true);window.scrollTo(0,0)}}
-function finish(){phase="finished";if(!state.done.includes(unit))state.done.push(unit);renderGeneralFinishedScreen();finishReaction(true);window.courseAnalytics?.("unit_completed",{unit_number:unit+1,language:lang});save()}
+function finish(){if(!state.done.includes(unit))state.done.push(unit);window.courseAnalytics?.("unit_completed",{unit_number:unit+1,language:lang});save();$("#lessonProgress").style.width="100%";$("#lessonBody").innerHTML=`<div class="finished"><div class="cup">🏆</div><h2>${UI[lang].finish}</h2><p>${UI[lang].earned} ⭐</p><button class="btn" id="return">${UI[lang].return}</button></div>`;finishReaction(true);$("#return").onclick=()=>{renderUnits();show("course",true);window.scrollTo(0,0)}}
 function go(id){if(id==="videos")renderReels();if(id==="policeCourse")renderPoliceUnits();window.courseAnalytics?.("screen_viewed",{screen_name:id,language:lang});show(id,true);window.scrollTo(0,0)}
 function quickChallenge(){let t=$("#toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);openUnit(0)}
 function openAuth(){if(!window.currentCourseUser)$("#authModal").classList.remove("hide")}
@@ -2217,19 +2073,6 @@ const baseMedicalSync=window.applySyncedProgress;window.applySyncedProgress=data
 $("#startMedicalHome").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};$("#openMedicalCourse").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};$("#medicalBack").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();window.scrollTo(0,0)};document.querySelector("[data-med-back]").onclick=()=>go("catalog");
 const baseSetCourseUserMedical=window.setCourseUser;window.setCourseUser=user=>{baseSetCourseUserMedical(user);$("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor);renderMedicalUnits()};
 window.medicalReady=true;renderMedicalUnits();save();
-/* Medicina estable: índices saneados, todas las lecciones disponibles y recuperación contra pantallas vacías. */
-const renderMedicalStudyOriginal=renderMedicalStudy,renderMedicalQuizOriginal=renderMedicalQuiz,checkMedicalAnswerOriginal=checkMedicalAnswer,finishMedicalLessonOriginal=finishMedicalLesson;
-function normalizeMedicalState(){const lessons=activeMedicalLessons();if(!Array.isArray(lessons)||!lessons.length)return null;medicalUnit=Math.max(0,Math.min(lessons.length-1,Number.isFinite(Number(medicalUnit))?Number(medicalUnit):0));const unit=lessons[medicalUnit];if(!unit||!Array.isArray(unit.questions)||!unit.questions.length)return null;medicalStep=Math.max(0,Math.min(unit.questions.length-1,Number.isFinite(Number(medicalStep))?Number(medicalStep):0));state.medicalDone=(Array.isArray(state.medicalDone)?state.medicalDone:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length);return{lessons,unit}}
-function renderMedicalRecovery(message){const body=$("#medicalLessonBody");if(!body)return;$("#medicalProgress").style.width="18%";$("#medicalLessonLabel").textContent="Guaraní para Medicina";body.innerHTML=`<div class="police-study"><div class="callout"><b>🩺 Continuemos</b><br>${message||"La lección se recuperó correctamente."}</div><div class="study-actions"><button class="btn" id="medicalRecover">Abrir la lección →</button></div></div>`;$("#medicalRecover").onclick=()=>{medicalUnit=0;medicalStep=0;medicalPhase="study";renderMedicalStudy()}}
-renderMedicalUnits=function(){const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"];translateMedicalShell();const draw=(id,start,end)=>{const root=$(id);if(!root)return;root.innerHTML=lessons.slice(start,end).map((u,j)=>{const i=start+j,done=state.medicalDone.includes(i),score=state.medicalScores[i];return `<article class="police-unit medical-unit" data-med-i="${i}"><div class="number">${i+1}</div><div><h4>${u.icon} ${u.title}</h4><p>${u.source} · ${u.questions.length} ${t.activities}${Number.isFinite(score)?` · ${t.best} ${score}%`:""}</p></div><div class="status">${done?"✅":"▶️"}</div></article>`}).join("")};draw("#medicalUnits",0,10);draw("#medicalUnits2",10,20);draw("#medicalUnits3",20,30);draw("#medicalUnits4",30,40);document.querySelectorAll(".medical-unit").forEach(card=>card.onclick=()=>openMedicalLesson(Number(card.dataset.medI)));$("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor)}
-openMedicalLesson=function(i){const lessons=activeMedicalLessons();medicalUnit=Math.max(0,Math.min(lessons.length-1,Number(i)||0));medicalStep=0;medicalCorrect=0;medicalAnswer="";medicalChecked=false;medicalPhase="study";show("medicalLesson",true);renderMedicalStudy();window.scrollTo(0,0);window.courseAnalytics?.("medical_lesson_opened",{lesson_number:medicalUnit+1})}
-renderMedicalStudy=function(){const safe=normalizeMedicalState();if(!safe){renderMedicalRecovery("No pudimos encontrar esa lección. Toca el botón para comenzar desde la primera.");return}medicalStep=0;try{renderMedicalStudyOriginal()}catch(error){console.error("MEDICAL_STUDY_RECOVERY",error);renderMedicalRecovery("El contenido se restauró después de un problema de carga.")}}
-renderMedicalQuiz=function(){const safe=normalizeMedicalState();if(!safe){renderMedicalRecovery("No pudimos abrir ese ejercicio. Toca el botón para reiniciar la lección.");return}if(medicalStep>=safe.unit.questions.length)medicalStep=0;try{renderMedicalQuizOriginal();setTimeout(()=>{const body=$("#medicalLessonBody");if(!body?.innerText.trim())renderMedicalRecovery("El ejercicio se recuperó automáticamente.")},50)}catch(error){console.error("MEDICAL_QUIZ_RECOVERY",error);medicalStep=0;medicalPhase="study";renderMedicalRecovery("Ese ejercicio tenía un estado anterior incompatible. Ya puedes abrirlo nuevamente.")}}
-checkMedicalAnswer=function(){const safe=normalizeMedicalState();if(!safe||!safe.unit.questions[medicalStep]){medicalStep=0;renderMedicalQuiz();return}try{checkMedicalAnswerOriginal()}catch(error){console.error("MEDICAL_ANSWER_RECOVERY",error);medicalStep=Math.min(medicalStep+1,safe.unit.questions.length-1);renderMedicalQuiz()}}
-let medicalFinishedScore=null,medicalFinishedPassed=false;
-function renderMedicalFinishedScreen(){const safe=normalizeMedicalState();if(!safe){renderMedicalRecovery();return}const u=safe.unit,t=MEDICAL_UI[lang==="pt"?"pt":"es"],needed=u.exam?75:70,stored=Number(state.medicalScores[medicalUnit]),score=medicalFinishedScore!==null&&Number.isFinite(medicalFinishedScore)?medicalFinishedScore:Number.isFinite(stored)?stored:0,passed=medicalFinishedPassed||state.medicalDone.includes(medicalUnit)||score>=needed,body=$("#medicalLessonBody");if(!body)return;$("#medicalProgress").style.width="100%";$("#medicalLessonLabel").textContent=passed?t.passed:t.reinforce;body.innerHTML=`<div class="finished"><div class="score-ring" style="--score:${score*3.6}deg"><b>${score}%</b></div><h2>${passed?t.passed:t.reinforce}</h2><p>${passed?t.unlocked:`${t.need} ${needed}%. ${t.retryText}`}</p><button class="btn" id="medicalReturn">${passed?t.back:t.retry}</button></div>`;$("#medicalReturn").onclick=()=>passed?(renderMedicalUnits(),show("medicalCourse",true),window.scrollTo(0,0)):openMedicalLesson(medicalUnit)}
-finishMedicalLesson=function(){const safe=normalizeMedicalState();if(!safe){renderMedicalRecovery();return}const u=safe.unit,needed=u.exam?75:70,score=Math.round(medicalCorrect/u.questions.length*100),passed=score>=needed;medicalPhase="finished";medicalFinishedScore=score;medicalFinishedPassed=passed;state.medicalScores[medicalUnit]=Math.max(state.medicalScores[medicalUnit]||0,score);if(passed&&!state.medicalDone.includes(medicalUnit))state.medicalDone.push(medicalUnit);state.medicalDone.sort((a,b)=>a-b);renderMedicalFinishedScreen();finishReaction(passed);save();window.courseAnalytics?.("medical_lesson_completed",{lesson_number:medicalUnit+1,score,passed})}
-renderMedicalUnits();
 /* Guaraní para niños · El viaje de Arami */
 const KIDS_WORLDS=[
 {icon:"👋",title:"El jardín de los saludos",desc:"Saluda, agradece y despídete.",bg:"#fff5c9",border:"#f6c945",shadow:"#e4b52f",items:[{g:"Maitei",s:"Hola",e:"👋"},{g:"Mba’éichapa?",s:"¿Cómo estás?",e:"😊"},{g:"Iporã",s:"Estoy bien / está bien",e:"👍"},{g:"Aguyje",s:"Gracias",e:"🙏"},{g:"Jajoecha peve",s:"Hasta luego",e:"🌅"}]},
@@ -2264,7 +2107,7 @@ function openKidMission(w,m){kidWorld=w;kidMission=m;kidMapSelected=w;kidStep=0;
 window.openKidMission=openKidMission;
 let kidLetterBuilt=[],kidCrushBoard=[],kidCrushSelected=-1,kidCrushProgress=0;
 const kidCleanWord=w=>w.normalize("NFC").replace(/[¿?¡!.,]/g,"").replace(/\s+/g,"").toLocaleUpperCase("es");
-function kidGameHeader(q,name){return `<h2>${q.prompt}</h2>`}
+function kidGameHeader(q,name){return `${kidStreak>=2?`<div class="kid-streak">🔥 ¡Racha de ${kidStreak}!</div>`:""}<div class="kid-game-scene"><span class="arami-mini">🐦</span><span class="kid-mode">${name}</span></div><div class="kid-guide">Arami dice: ${q.guide}</div><h2>${q.prompt}</h2><p class="kid-game-hint">${q.hint}</p>`}
 function renderKidQuestion(){let q=kidQuestions[kidStep],names={drag:"Atrapa el dibujo",dress:"El ropero de Ava",letters:"El tesoro de letras",match3:"Frutas mágicas"};kidSelected="";kidChecked=false;kidLetterBuilt=[];kidCrushProgress=0;kidCrushSelected=-1;$("#kidsProgress").style.width=`${kidStep/kidQuestions.length*100}%`;$("#kidsGameStars").textContent=`⭐ ${kidCorrect}`;let body=kidGameHeader(q,names[q.type]);if(q.type==="drag")body+=`<div class="kid-play-area"><div class="kid-drop-zone" id="kidDropZone">🪺 Arrastra aquí el dibujo correcto</div><div class="kid-drag-tray">${q.options.map(o=>`<button class="kid-drag-card kid-option" draggable="true" data-value="${String(o.value).replaceAll('"',"&quot;")}"><span>${o.emoji}</span>${o.label}</button>`).join("")}</div></div>`;if(q.type==="dress")body+=`<div class="kid-play-area kid-dress-stage"><div class="kid-translation-clue"><span>${q.emoji}</span><b>Busca la traducción de «${q.prompt.match(/«(.+?)»/)?.[1]||""}»</b></div><div class="kid-character" id="kidDressTarget"><div class="kid-person" aria-label="Ava, personaje para vestir"><div class="kid-person-hair"></div><div class="kid-person-head"></div><div class="kid-person-face"></div><div class="kid-person-smile"></div><div class="kid-person-arm left"></div><div class="kid-person-arm right"></div><div class="kid-person-body"></div><div class="kid-person-legs"></div><div class="kid-equipped" id="kidEquipped"></div></div><div class="kid-dress-target">ELIGE UNA PRENDA</div></div><div class="kid-wardrobe"><div class="kid-wardrobe-title">🧳 ¿Cuál es la respuesta?</div>${q.options.map(o=>`<button class="kid-option" draggable="true" data-value="${String(o.value).replaceAll('"',"&quot;")}" data-slot="${o.outfit.slot}" data-outfit="${o.outfit.emoji}"><span class="kid-outfit-emoji" aria-hidden="true">${o.outfit.emoji}</span>${o.value}</button>`).join("")}</div></div>`;if(q.type==="letters"){let target=kidCleanWord(q.answer),letters=kidShuffle([...target].map((letter,i)=>({letter,id:i})));body+=`<div class="kid-play-area"><div class="kid-word-model"><span>${q.emoji}</span><span>Mira el modelo: <strong>${target}</strong></span></div><div class="kid-letter-slots" id="kidLetterSlots">${letters.map(()=>`<button class="kid-letter placeholder" disabled>_</button>`).join("")}</div><div class="kid-letter-bank" id="kidLetterBank">${letters.map(x=>`<button class="kid-letter" data-id="${x.id}" data-letter="${x.letter}">${x.letter}</button>`).join("")}</div><p class="kid-letter-help">Copia el modelo tocando las letras de izquierda a derecha. Si te equivocas, toca la letra colocada para devolverla.</p></div>`}if(q.type==="match3")body+=`<div class="kid-play-area kid-crush-wrap"><div class="kid-crush-board" id="kidCrushBoard"></div><div class="kid-word-meter"><b>${q.emoji} Palabra por descubrir</b><div class="kid-reveal-word" id="kidRevealWord"></div><p class="kid-match-tip">Intercambia dos frutas vecinas. Forma una fila o columna de 3 iguales para revelar letras.</p></div></div>`;body+=`<div id="kidFeedback"></div><button class="btn kid-next" id="kidNext" ${q.type==="letters"?"":"disabled"}>${q.type==="letters"?"Comprobar palabra":"Continuar"}</button>`;$("#kidsGameBody").innerHTML=body;$("#kidNext").onclick=checkKidAnswer;if(q.type==="drag")setupKidDrag(q);if(q.type==="dress")setupKidDress(q);if(q.type==="letters")setupKidLetters(q);if(q.type==="match3")setupKidCrush(q);updateKidSoundButton()}
 function setupKidDrag(q){let zone=$("#kidDropZone"),cards=[...document.querySelectorAll(".kid-drag-card")],picked=null;const choose=b=>{cards.forEach(x=>x.classList.remove("picked"));b.classList.add("picked");picked=b;kidSelected=b.dataset.value;playKidSound("select")};const drop=()=>{if(!picked||kidChecked)return;zone.innerHTML=`<div class="kid-mini-success"><span style="font-size:58px">${picked.querySelector("span").textContent}</span><br>${picked.textContent.trim()}</div>`;checkKidAnswer()};cards.forEach(b=>{b.onclick=()=>choose(b);b.ondragstart=e=>{choose(b);e.dataTransfer.setData("text/plain",b.dataset.value)}});zone.onclick=drop;zone.ondragover=e=>{e.preventDefault();zone.classList.add("drag-over")};zone.ondragleave=()=>zone.classList.remove("drag-over");zone.ondrop=e=>{e.preventDefault();zone.classList.remove("drag-over");drop()}}
 function setupKidDress(q){let equipped=$("#kidEquipped"),target=$("#kidDressTarget"),cards=[...document.querySelectorAll(".kid-wardrobe button")],picked=null;const choose=b=>{if(kidChecked)return;cards.forEach(x=>x.classList.remove("picked"));b.classList.add("picked");picked=b;kidSelected=b.dataset.value;let slot=b.dataset.slot,outfit=b.dataset.outfit;equipped.innerHTML=["backpack","boots","poncho"].includes(slot)?`<span class="wear-${slot}" aria-hidden="true">${slot==="boots"?`${outfit} ${outfit}`:outfit}</span>`:`<span class="wear-${slot}" aria-hidden="true"></span>`;target.classList.add("dressed");target.querySelector(".kid-dress-target").textContent="¡AVA YA ESTÁ VESTIDA!";playKidSound("select");setTimeout(checkKidAnswer,520)};cards.forEach(b=>{b.onclick=()=>choose(b);b.ondragstart=e=>{e.dataTransfer.setData("text/plain",b.dataset.value)}});target.ondragover=e=>{e.preventDefault();target.querySelector(".kid-dress-target")?.classList.add("drag-over")};target.ondragleave=()=>target.querySelector(".kid-dress-target")?.classList.remove("drag-over");target.ondrop=e=>{e.preventDefault();let dropped=cards.find(b=>b.dataset.value===e.dataTransfer.getData("text/plain"));target.querySelector(".kid-dress-target")?.classList.remove("drag-over");if(dropped)choose(dropped)}}
@@ -2290,17 +2133,17 @@ function restoreLearningLocation(saved,fromHistory=false){
   if(!saved||!views.includes(saved.view))saved={view:(location.hash||"#home").slice(1)};
   let target=views.includes(saved.view)?saved.view:"home";
   if(["es","en","pt","fr","it","de"].includes(saved.lang)){lang=saved.lang;$("#lang").value=lang}
-  unit=Math.max(0,Math.min(U.length-1,Number(saved.unit)||0));phase=["study","quiz","finished"].includes(saved.phase)?saved.phase:"study";step=Math.max(0,Math.min(3,Number(saved.step)||0));
-  policeUnit=Math.max(0,Math.min(POLICE_LESSONS.length-1,Number(saved.policeUnit)||0));policeStep=Math.max(0,Number(saved.policeStep)||0);policePhase=["study","quiz","finished"].includes(saved.policePhase)?saved.policePhase:"study";
+  unit=Math.max(0,Math.min(U.length-1,Number(saved.unit)||0));phase=saved.phase==="quiz"?"quiz":"study";step=Math.max(0,Math.min(3,Number(saved.step)||0));
+  policeUnit=Math.max(0,Math.min(POLICE_LESSONS.length-1,Number(saved.policeUnit)||0));policeStep=Math.max(0,Number(saved.policeStep)||0);policePhase=saved.policePhase==="quiz"?"quiz":"study";
   medicalUnit=Math.max(0,Math.min(MEDICAL_LESSONS.length-1,Number(saved.medicalUnit)||0));medicalStep=Math.max(0,Number(saved.medicalStep)||0);medicalPhase=["study","quiz","finished"].includes(saved.medicalPhase)?saved.medicalPhase:"study";
   kidWorld=Math.max(0,Math.min(KIDS_WORLDS.length-1,Number(saved.kidWorld)||0));kidMission=Math.max(0,Math.min(3,Number(saved.kidMission)||0));kidMapSelected=Math.max(0,Math.min(KIDS_WORLDS.length-1,Number(saved.kidMapSelected)||kidWorld));
   translateUI();show(target,false);
   if(target==="course")renderUnits();
-  if(target==="lesson")phase==="finished"?renderGeneralFinishedScreen():phase==="quiz"?renderQuiz():renderStudy();
+  if(target==="lesson")phase==="quiz"?renderQuiz():renderStudy();
   if(target==="policeCourse")renderPoliceUnits();
-  if(target==="policeLesson")policePhase==="finished"?renderPoliceFinishedScreen():policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();
+  if(target==="policeLesson")policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();
   if(target==="medicalCourse")renderMedicalUnits();
-  if(target==="medicalLesson")medicalPhase==="quiz"?renderMedicalQuiz():medicalPhase==="finished"?renderMedicalFinishedScreen():renderMedicalStudy();
+  if(target==="medicalLesson")medicalPhase==="quiz"?renderMedicalQuiz():medicalPhase==="finished"?finishMedicalLesson():renderMedicalStudy();
   if(target==="kidsCourse")renderKidsMap();
   if(target==="kidsGame"){kidQuestions=buildKidQuestions(kidWorld,kidMission);kidStep=Math.max(0,Math.min(kidQuestions.length-1,Number(saved.kidStep)||0));renderKidQuestion();startKidMusic()}
   if(target==="sounds")renderSoundResults($("#soundSearch")?.value||"");
@@ -2308,18 +2151,16 @@ function restoreLearningLocation(saved,fromHistory=false){
 }
 let locationSaveTimer;window.addEventListener("scroll",()=>{clearTimeout(locationSaveTimer);locationSaveTimer=setTimeout(()=>rememberLearningLocation(),180)},{passive:true});window.addEventListener("pagehide",()=>rememberLearningLocation());
 const HOME_COPY={
- es:{continue:"Continúa aprendiendo",general:"Guaraní general",fromZero:"Desde cero",lesson:"Lección",of:"de",continueButton:"Continuar →",explore:"Explora otros cursos",kids:"Guaraní para niños",games:"Juegos y aventuras",rude:"Groserías en guaraní",rudeSub:"Ñe’ẽ vai",police:"Ingreso a la Policía",prep:"Preparación",medical:"Guaraní para Medicina",clinical:"Clínica",marce:"Curso personalizado con el Mbo'ehára Marce",unlocked:"Clase desbloqueada · Entrar ahora"},
- en:{continue:"Keep learning",general:"General Guaraní",fromZero:"From the beginning",lesson:"Lesson",of:"of",continueButton:"Continue →",explore:"Explore other courses",kids:"Guaraní for children",games:"Games and adventures",rude:"Swear words in Guaraní",rudeSub:"Ñe’ẽ vai",police:"Police entrance Guaraní",prep:"Preparation",medical:"Guaraní for Medicine",clinical:"Clinical",marce:"Personalized course with Mbo'ehára Marce",unlocked:"Class unlocked · Enter now"},
- pt:{continue:"Continue aprendendo",general:"Guarani geral",fromZero:"Desde o início",lesson:"Lição",of:"de",continueButton:"Continuar →",explore:"Explore outros cursos",kids:"Guarani para crianças",games:"Jogos e aventuras",rude:"Palavrões em guarani",rudeSub:"Ñe’ẽ vai",police:"Guarani para ingresso na Polícia",prep:"Preparação",medical:"Guarani para Medicina",clinical:"Clínica",marce:"Curso personalizado com o Mbo'ehára Marce",unlocked:"Aula desbloqueada · Entrar agora"},
- fr:{continue:"Continuez à apprendre",general:"Guarani général",fromZero:"Depuis le début",lesson:"Leçon",of:"sur",continueButton:"Continuer →",explore:"Explorer d’autres cours",kids:"Guarani pour enfants",games:"Jeux et aventures",rude:"Gros mots en guarani",rudeSub:"Ñe’ẽ vai",police:"Guarani pour l’entrée dans la Police",prep:"Préparation",medical:"Guarani pour la Médecine",clinical:"Clinique",marce:"Cours personnalisé avec le Mbo'ehára Marce",unlocked:"Cours débloqué · Entrer"},
- it:{continue:"Continua a imparare",general:"Guaraní generale",fromZero:"Dall’inizio",lesson:"Lezione",of:"di",continueButton:"Continua →",explore:"Esplora altri corsi",kids:"Guaraní per bambini",games:"Giochi e avventure",rude:"Parolacce in guaraní",rudeSub:"Ñe’ẽ vai",police:"Guaraní per l’ingresso in Polizia",prep:"Preparazione",medical:"Guaraní per Medicina",clinical:"Clinica",marce:"Corso personalizzato con il Mbo'ehára Marce",unlocked:"Corso sbloccato · Entra"},
- de:{continue:"Weiterlernen",general:"Allgemeines Guaraní",fromZero:"Von Anfang an",lesson:"Lektion",of:"von",continueButton:"Weiter →",explore:"Weitere Kurse entdecken",kids:"Guaraní für Kinder",games:"Spiele und Abenteuer",rude:"Schimpfwörter auf Guaraní",rudeSub:"Ñe’ẽ vai",police:"Guaraní für den Polizeieintritt",prep:"Vorbereitung",medical:"Guaraní für Medizin",clinical:"Klinisch",marce:"Personalisierter Kurs mit Mbo'ehára Marce",unlocked:"Kurs freigeschaltet · Öffnen"}
+ es:{continue:"Continúa aprendiendo",general:"Guaraní general",fromZero:"Desde cero",lesson:"Lección",of:"de",continueButton:"Continuar →",explore:"Explora otros cursos",kids:"Guaraní para niños",games:"Juegos y aventuras",rude:"Insultos en guaraní",rudeSub:"Ñe’ẽ vai",police:"Ingreso a la Policía",prep:"Preparación",medical:"Guaraní para Medicina",clinical:"Clínica",marce:"Curso personalizado con el Mbo'ehára Marce",unlocked:"Clase desbloqueada · Entrar ahora"},
+ en:{continue:"Keep learning",general:"General Guaraní",fromZero:"From the beginning",lesson:"Lesson",of:"of",continueButton:"Continue →",explore:"Explore other courses",kids:"Guaraní for children",games:"Games and adventures",rude:"Insults in Guaraní",rudeSub:"Ñe’ẽ vai",police:"Police entrance Guaraní",prep:"Preparation",medical:"Guaraní for Medicine",clinical:"Clinical",marce:"Personalized course with Mbo'ehára Marce",unlocked:"Class unlocked · Enter now"},
+ pt:{continue:"Continue aprendendo",general:"Guarani geral",fromZero:"Desde o início",lesson:"Lição",of:"de",continueButton:"Continuar →",explore:"Explore outros cursos",kids:"Guarani para crianças",games:"Jogos e aventuras",rude:"Insultos em guarani",rudeSub:"Ñe’ẽ vai",police:"Guarani para ingresso na Polícia",prep:"Preparação",medical:"Guarani para Medicina",clinical:"Clínica",marce:"Curso personalizado com o Mbo'ehára Marce",unlocked:"Aula desbloqueada · Entrar agora"},
+ fr:{continue:"Continuez à apprendre",general:"Guarani général",fromZero:"Depuis le début",lesson:"Leçon",of:"sur",continueButton:"Continuer →",explore:"Explorer d’autres cours",kids:"Guarani pour enfants",games:"Jeux et aventures",rude:"Insultes en guarani",rudeSub:"Ñe’ẽ vai",police:"Guarani pour l’entrée dans la Police",prep:"Préparation",medical:"Guarani pour la Médecine",clinical:"Clinique",marce:"Cours personnalisé avec le Mbo'ehára Marce",unlocked:"Cours débloqué · Entrer"},
+ it:{continue:"Continua a imparare",general:"Guaraní generale",fromZero:"Dall’inizio",lesson:"Lezione",of:"di",continueButton:"Continua →",explore:"Esplora altri corsi",kids:"Guaraní per bambini",games:"Giochi e avventure",rude:"Insulti in guaraní",rudeSub:"Ñe’ẽ vai",police:"Guaraní per l’ingresso in Polizia",prep:"Preparazione",medical:"Guaraní per Medicina",clinical:"Clinica",marce:"Corso personalizzato con il Mbo'ehára Marce",unlocked:"Corso sbloccato · Entra"},
+ de:{continue:"Weiterlernen",general:"Allgemeines Guaraní",fromZero:"Von Anfang an",lesson:"Lektion",of:"von",continueButton:"Weiter →",explore:"Weitere Kurse entdecken",kids:"Guaraní für Kinder",games:"Spiele und Abenteuer",rude:"Beleidigungen auf Guaraní",rudeSub:"Ñe’ẽ vai",police:"Guaraní für den Polizeieintritt",prep:"Vorbereitung",medical:"Guaraní für Medizin",clinical:"Klinisch",marce:"Personalisierter Kurs mit Mbo'ehára Marce",unlocked:"Kurs freigeschaltet · Öffnen"}
 };
 function renderHomeDashboard(){let copy=HOME_COPY[lang]||HOME_COPY.es;document.querySelectorAll("[data-home-text]").forEach(node=>{let value=copy[node.dataset.homeText];if(value)node.textContent=value});let completed=Math.min(12,state.done?.length||0),percent=Math.round(completed/12*100),next=Math.min(12,completed+1);$("#homeProgressPercent").textContent=`${percent}%`;$("#homeProgressRing").style.setProperty("--p",percent);$("#homeProgressBar").style.width=`${percent}%`;$("#homeLessonStatus").textContent=`${copy.lesson} ${next} ${copy.of} 12`;$("#headerLang").value=lang;$("#homeMarceStatus").textContent=copy.unlocked}
 const translateUIBeforeHome=translateUI;translateUI=()=>{translateUIBeforeHome();renderHomeDashboard()};
-function setAppLanguage(next){if(!UI[next])next="es";lang=next;$("#lang").value=next;$("#headerLang").value=next;window.courseAnalytics?.("language_selected",{language:next});translateUI();save();rememberLearningLocation()}
-$("#headerLang").onchange=event=>setAppLanguage(event.target.value);
-$("#lang").onchange=event=>setAppLanguage(event.target.value);
+$("#headerLang").onchange=event=>{$("#lang").value=event.target.value;$("#lang").dispatchEvent(new Event("change",{bubbles:true}))};
 $("#homeContinue").onclick=()=>$("#start").click();$("#homeKids").onclick=()=>$("#startKidsHome").click();$("#homePolice").onclick=()=>$("#startPoliceHome").click();$("#homeMedical").onclick=()=>$("#startMedicalHome").click();$("#homeRude").onclick=()=>{let target=$("#openRudeCourse");target?target.click():go("catalog")};$("#homeMarce").onclick=()=>$("#startCustomHome").click();
 function syncHomeMarce(){let source=$("#startCustomHome"),target=$("#homeMarce");if(!source||!target)return;let allowed=!source.disabled&&!source.classList.contains("hide");target.disabled=!allowed;target.classList.toggle("hide",!allowed)}
 new MutationObserver(syncHomeMarce).observe($("#startCustomHome"),{attributes:true,attributeFilter:["class","disabled"]});syncHomeMarce();
@@ -2403,7 +2244,7 @@ function renderInstitutional(){
 window.loadInstitutional=async()=>{
  let status=document.querySelector("#staffStatus");if(!isStaff()){show("home",true);return}
  let admin=isAdministrator(activeUser),adminTab=document.querySelector("#adminTab"),teacherTab=document.querySelector('[data-staff-tab="teacher"]'),adminPane=document.querySelector("#adminPane"),teacherPane=document.querySelector("#teacherPane"),certificateCard=document.querySelector("#certificateForm").closest(".staff-card");currentInstitutionRole=admin?"admin":"teacher";document.body.dataset.userRole=currentInstitutionRole;adminTab.classList.toggle("role-hidden",!admin);adminTab.hidden=!admin;adminTab.style.display=admin?"":"none";adminTab.setAttribute("aria-hidden",String(!admin));adminPane.hidden=!admin;adminPane.inert=!admin;adminPane.setAttribute("aria-hidden",String(!admin));certificateCard.parentElement.removeChild(certificateCard);(admin?document.querySelector("#adminPane .staff-grid"):document.querySelector("#teacherPane .staff-grid")).appendChild(certificateCard);document.querySelector("#staffRoleBadge").textContent=admin?"🛡️ Área privada de administración":"👩‍🏫 Área privada del profesor";document.querySelector("#staffEntryLabel").textContent=admin?"Centro de administración":"Área del profesor";
- adminTab.classList.remove("active");teacherTab.classList.add("active");adminPane.classList.add("hide");teacherPane.classList.remove("hide");let requestCard=document.querySelector("#certificateRequestCard");requestCard.parentElement.removeChild(requestCard);(admin?adminPane:teacherPane).appendChild(requestCard);let customOption=document.querySelector("#customProgramOption"),ownerControls=[document.querySelector("#groupTeacherLabel"),document.querySelector("#groupTeacher"),document.querySelector("#groupTeacherHelp")];if(customOption){customOption.hidden=true;customOption.disabled=true}if(document.querySelector("#groupCourse").value==="personalized")document.querySelector("#groupCourse").selectedIndex=0;ownerControls.forEach(control=>{if(control)control.hidden=true});
+ adminTab.classList.toggle("active",admin);teacherTab.classList.toggle("active",!admin);adminPane.classList.toggle("hide",!admin);teacherPane.classList.toggle("hide",admin);let requestCard=document.querySelector("#certificateRequestCard");requestCard.parentElement.removeChild(requestCard);(admin?adminPane:teacherPane).appendChild(requestCard);let customOption=document.querySelector("#customProgramOption"),canManageMarce=admin||currentCourseKeys.includes("marce"),ownerControls=[document.querySelector("#groupTeacherLabel"),document.querySelector("#groupTeacher"),document.querySelector("#groupTeacherHelp")];customOption.textContent=CUSTOM_PROGRAM;customOption.hidden=!canManageMarce;customOption.disabled=!canManageMarce;if(!canManageMarce&&document.querySelector("#groupCourse").value==="personalized")document.querySelector("#groupCourse").selectedIndex=0;ownerControls.forEach(control=>{if(control)control.hidden=!admin});
  status.textContent="Actualizando datos…";
  try{
   let staffEmail=normalizeEmail(activeUser.email),usersRequest=admin?getDocs(collection(db,"users")):getDocs(query(collection(db,"users"),where("teacherEmails","array-contains",staffEmail))),groupsRequest=admin?getDocs(query(collection(db,"groups"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"groups"),where("teacherEmail","==",staffEmail))),tasksRequest=admin?getDocs(query(collection(db,"assignments"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"assignments"),where("teacherEmail","==",staffEmail))),certRequest=admin?getDocs(query(collection(db,"certificates"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"certificates"),where("issuedBy","==",staffEmail))),inboxRequest=admin?getDocs(query(collection(db,"certificateRequests"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"certificateRequests"),where("teacherEmails","array-contains",staffEmail))),requests=[usersRequest,groupsRequest,tasksRequest,certRequest,inboxRequest];
@@ -2520,11 +2361,11 @@ onAuthStateChanged(auth,async user=>{
   const lexiconKeys=new Set(lexicon.map(item=>normalizeLexicon(item[0])));
   pdfLexicon.forEach(item=>{if(!lexiconKeys.has(normalizeLexicon(item[0]))){lexicon.push(item);lexiconKeys.add(normalizeLexicon(item[0]))}});
   const rude=[
-    ["tavy","tonto/a","Grosería común; también puede describir falta de conocimiento según el contexto."],
+    ["tavy","tonto/a","Insulto común; también puede describir falta de conocimiento según el contexto."],
     ["výro","idiota; tonto/a","Expresión despectiva muy extendida en el habla paraguaya."],
-    ["tembo","pene","Palabra vulgar; puede aparecer como grosería o exclamación."],
+    ["tembo","pene","Palabra vulgar; puede aparecer como insulto o exclamación."],
     ["tepoti","excremento; mierda","Vulgar y ofensiva según la frase."],
-    ["añamemby","hijo/a del diablo","Grosería fuerte de uso coloquial."],
+    ["añamemby","hijo/a del diablo","Insulto fuerte de uso coloquial."],
     ["nde rasóre","expresión fuerte de enojo","Se usa como exclamación ofensiva; su sentido cambia con el tono."],
     ["ejapiro","vete al diablo / vete de aquí","Mandato vulgar y agresivo."],
     ["japiro","expresión vulgar de rechazo","Muy informal y ofensiva." ]
@@ -2600,7 +2441,7 @@ onAuthStateChanged(auth,async user=>{
   document.querySelectorAll("[data-practice]").forEach(b=>b.onclick=()=>{skill=b.dataset.practice;practiceIndex=0;retry=[];document.querySelectorAll("[data-practice]").forEach(x=>x.classList.toggle("active",x===b));renderPractice()});updatePracticeStats();renderPractice();
 
   const aiPanel=document.querySelector("#aiPanel"),aiMessages=document.querySelector("#aiMessages"),aiInput=document.querySelector("#aiInput");
-  const aiReply=text=>{const q=norm(text);if(q.includes("salud"))return "Para saludar puedes usar Maitei o Mba'éichapa. Practica este diálogo: “Mba'éichapa?” — “Iporã, aguyje.”";if(q.includes("certific"))return "En Gestión, busca al alumno por nombre o correo y toca su nombre. Quedará seleccionado para emitir el certificado. Las solicitudes pendientes se preparan desde el mismo panel.";if(q.includes("error"))return "Revisa Práctica enfocada. Cada error vuelve a aparecer hasta que lo corrijas, así no avanzas por simple adivinanza.";if(q.includes("palabra")||q.includes("diccionario"))return "Abre Diccionario en la barra inferior. Puedes buscar tanto en guaraní como en español y escuchar las palabras que tienen audio oficial.";if(q.includes("groser")||q.includes("insulto"))return "Groserías en guaraní reúne expresiones coloquiales, significados, intensidad, prácticas y videos de la Profe Ali.";if(q.includes("hola")||q.includes("mba"))return "Mba'éichapa 👋 ¿Quieres practicar escuchar, leer, escribir o hablar?";return "Puedo ayudarte con vocabulario, pronunciación, prácticas, navegación, certificados y dudas generales. Cuéntame qué quieres aprender o resolver."};
+  const aiReply=text=>{const q=norm(text);if(q.includes("salud"))return "Para saludar puedes usar Maitei o Mba'éichapa. Practica este diálogo: “Mba'éichapa?” — “Iporã, aguyje.”";if(q.includes("certific"))return "En Gestión, busca al alumno por nombre o correo y toca su nombre. Quedará seleccionado para emitir el certificado. Las solicitudes pendientes se preparan desde el mismo panel.";if(q.includes("error"))return "Revisa Práctica enfocada. Cada error vuelve a aparecer hasta que lo corrijas, así no avanzas por simple adivinanza.";if(q.includes("palabra")||q.includes("diccionario"))return "Abre Diccionario en la barra inferior. Puedes buscar tanto en guaraní como en español y escuchar las palabras que tienen audio oficial.";if(q.includes("groser")||q.includes("insulto"))return "La sección Ñe'ẽ vai está dentro del Diccionario. Explica el significado, intensidad y contexto para comprenderlas sin fomentar agresiones.";if(q.includes("hola")||q.includes("mba"))return "Mba'éichapa 👋 ¿Quieres practicar escuchar, leer, escribir o hablar?";return "Puedo ayudarte con vocabulario, pronunciación, prácticas, navegación, certificados y dudas generales. Cuéntame qué quieres aprender o resolver."};
   function addAi(text,type){const div=document.createElement("div");div.className=`ai-message ${type}`;div.textContent=text;aiMessages.appendChild(div);aiMessages.scrollTop=aiMessages.scrollHeight}
   document.querySelector("#aiLauncher")?.addEventListener("click",()=>{aiPanel.classList.toggle("hide");if(!aiPanel.classList.contains("hide"))setTimeout(()=>aiInput.focus(),50)});document.querySelector("#aiClose")?.addEventListener("click",()=>aiPanel.classList.add("hide"));document.querySelector("#aiForm")?.addEventListener("submit",e=>{e.preventDefault();const text=aiInput.value.trim();if(!text)return;addAi(text,"user");aiInput.value="";setTimeout(()=>addAi(aiReply(text),"bot"),350)});document.querySelectorAll("[data-ai-prompt]").forEach(b=>b.onclick=()=>{aiInput.value=b.dataset.aiPrompt;document.querySelector("#aiForm").requestSubmit()});
 
@@ -2617,634 +2458,28 @@ onAuthStateChanged(auth,async user=>{
   document.querySelector("#dictionaryMore")?.addEventListener("click",()=>{dictionaryLimit+=48;renderDictionary()});renderDictionary();
 
   /* Curso Ñe'ẽ vai, colocado después de los demás cursos. */
-  try{if(!views.includes("rudeCourse"))views.push("rudeCourse","rudeLesson","rudeVideos")}catch(error){}
+  try{if(!views.includes("rudeCourse"))views.push("rudeCourse","rudeLesson")}catch(error){}
   const catalogGrid=document.querySelector("#catalog .course-grid");
-  if(catalogGrid&&!document.querySelector("#rudeCourseCard"))catalogGrid.insertAdjacentHTML("beforeend",'<article class="course-card rude-course-card" id="rudeCourseCard"><div class="course-ribbon">GUARANÍ SIN FILTRO</div><div class="course-card-icon">🤬🇵🇾</div><h3>Groserías en guaraní</h3><p>Aprendé groserías con toda la picardía paraguaya.</p><button class="btn" id="openRudeCourse">Empezar →</button></article>');
+  if(catalogGrid&&!document.querySelector("#rudeCourseCard"))catalogGrid.insertAdjacentHTML("beforeend",'<article class="course-card rude-course-card" id="rudeCourseCard"><div class="course-ribbon">NUEVO CURSO</div><div class="course-card-icon">🗯️🇵🇾</div><h3>Ñe\'ẽ vai: groserías en guaraní</h3><p>Reconoce insultos y expresiones fuertes, entiende su intensidad y aprende cuándo evitar su uso.</p><div class="course-card-stats"><span>4 módulos</span><span>Práctica interactiva</span><span>Visible para todos</span></div><button class="btn" id="openRudeCourse">Comenzar curso →</button></article>');
   const rudeModules=[
-    {title:"Reconocer sin repetir",desc:"Significado, tono e intensidad",words:[["tavy","tonto/a; ignorante","Puede ser leve o despectivo según el tono."],["výro","idiota; tonto/a","Muy frecuente en el habla coloquial paraguaya."],["tarova","loco/a; descontrolado/a","Puede describir conducta o funcionar como grosería."],["tavyrai","muy tonto/a","Forma intensificada y claramente ofensiva."]],quiz:[{q:"¿Cuál suele equivaler a “idiota” en el habla coloquial?",a:"Výro",o:["Maitei","Výro","Aguyje"]},{q:"¿La intensidad depende también del tono y del contexto?",a:"Sí",o:["Sí","No"]},{q:"¿Cuál es una forma intensificada de tavy?",a:"Tavyrai",o:["Tavyrai","Iporã","Jajotopata"]}]},
-    {title:"Enojo y rechazo",desc:"Expresiones dirigidas a otra persona",words:[["añamemby","hijo/a del diablo","Grosería fuerte."],["nde rasóre","expresión fuerte de enojo","Su traducción exacta cambia según el tono."],["ejapiro","vete al diablo / vete de aquí","Mandato vulgar y agresivo."],["japiro","expresión vulgar de rechazo","Muy informal y ofensiva."]],quiz:[{q:"¿Cuál es un mandato vulgar para echar a alguien?",a:"Ejapiro",o:["Ejapiro","Eju","Maitei"]},{q:"Añamemby es…",a:"Una grosería fuerte",o:["Un saludo","Una grosería fuerte","Una despedida"]},{q:"¿Conviene usar estas expresiones con desconocidos?",a:"No",o:["Sí","No"]}]},
+    {title:"Reconocer sin repetir",desc:"Significado, tono e intensidad",words:[["tavy","tonto/a; ignorante","Puede ser leve o despectivo según el tono."],["výro","idiota; tonto/a","Muy frecuente en el habla coloquial paraguaya."],["tarova","loco/a; descontrolado/a","Puede describir conducta o funcionar como insulto."],["tavyrai","muy tonto/a","Forma intensificada y claramente ofensiva."]],quiz:[{q:"¿Cuál suele equivaler a “idiota” en el habla coloquial?",a:"Výro",o:["Maitei","Výro","Aguyje"]},{q:"¿La intensidad depende también del tono y del contexto?",a:"Sí",o:["Sí","No"]},{q:"¿Cuál es una forma intensificada de tavy?",a:"Tavyrai",o:["Tavyrai","Iporã","Jajotopata"]}]},
+    {title:"Enojo y rechazo",desc:"Expresiones dirigidas a otra persona",words:[["añamemby","hijo/a del diablo","Insulto fuerte."],["nde rasóre","expresión fuerte de enojo","Su traducción exacta cambia según el tono."],["ejapiro","vete al diablo / vete de aquí","Mandato vulgar y agresivo."],["japiro","expresión vulgar de rechazo","Muy informal y ofensiva."]],quiz:[{q:"¿Cuál es un mandato vulgar para echar a alguien?",a:"Ejapiro",o:["Ejapiro","Eju","Maitei"]},{q:"Añamemby es…",a:"Un insulto fuerte",o:["Un saludo","Un insulto fuerte","Una despedida"]},{q:"¿Conviene usar estas expresiones con desconocidos?",a:"No",o:["Sí","No"]}]},
     {title:"Palabras corporales vulgares",desc:"Comprender sin confundir",words:[["tembo","pene","Término anatómico vulgar; también aparece en exclamaciones."],["tepoti","excremento; mierda","Vulgar y ofensivo según la frase."],["tevi","trasero; ano","Puede ser descriptivo o vulgar."],["teviro","expresión vulgar","Se usa de forma ofensiva en ciertos contextos."]],quiz:[{q:"¿Cuál se refiere literalmente a excremento?",a:"Tepoti",o:["Tepoti","Tereré","Tape"]},{q:"Tembo es una palabra…",a:"Vulgar",o:["Formal","Vulgar","De cortesía"]},{q:"Aprender el significado implica que debas usarla?",a:"No",o:["Sí","No"]}]},
-    {title:"Comprensión en contexto",desc:"Evaluación final y respuesta responsable",words:[["ñe'ẽ vai","palabras malas o fuertes","Nombre general de esta ruta educativa."],["ñe'ẽngai","maldición","Palabra registrada en el Ñe'ẽryru."],["ñe'ẽapi","ofensa; palabra que hiere","Expresión útil para hablar de una ofensa verbal."],["ani ere péicha","no digas eso","Respuesta para poner un límite sin devolver la grosería."]],quiz:[{q:"¿Qué significa ñe'ẽ vai?",a:"Palabras malas o fuertes",o:["Palabras malas o fuertes","Palabras médicas","Saludos"]},{q:"¿Qué respuesta pone un límite sin responder con otra grosería?",a:"Ani ere péicha",o:["Ejapiro","Ani ere péicha","Výro"]},{q:"Objetivo principal del curso:",a:"Comprender y evitar malentendidos",o:["Atacar mejor","Comprender y evitar malentendidos","Memorizar sin contexto"]}]}
+    {title:"Comprensión en contexto",desc:"Evaluación final y respuesta responsable",words:[["ñe'ẽ vai","palabras malas o fuertes","Nombre general de esta ruta educativa."],["ñe'ẽngai","maldición","Palabra registrada en el Ñe'ẽryru."],["ñe'ẽapi","insulto; palabra que hiere","Expresión útil para hablar del acto de insultar."],["ani ere péicha","no digas eso","Respuesta para poner un límite sin devolver el insulto."]],quiz:[{q:"¿Qué significa ñe'ẽ vai?",a:"Palabras malas o fuertes",o:["Palabras malas o fuertes","Palabras médicas","Saludos"]},{q:"¿Qué respuesta pone un límite sin insultar?",a:"Ani ere péicha",o:["Ejapiro","Ani ere péicha","Výro"]},{q:"Objetivo principal del curso:",a:"Comprender y evitar malentendidos",o:["Atacar mejor","Comprender y evitar malentendidos","Memorizar sin contexto"]}]}
   ];
-  const rudeLessonBank=[
-    ["Tembo","Pene; también exclamación de rechazo","Muy vulgar","Tembo y sus variantes"],["Nde tembo","Idiota, imbécil; grosería dirigida","Muy fuerte","Tembo y sus variantes"],["Akã tembo","Cabeza de pene; pelotudo","Muy fuerte","Tembo y sus variantes"],["Tembo guasu","Pene grande; grosería enfática","Muy vulgar","Tembo y sus variantes"],["Tembo'i","Pene pequeño; burla sexual","Muy vulgar","Tembo y sus variantes"],["Tembo rei","Persona inútil o desagradable","Fuerte","Tembo y sus variantes"],["Tembo tuja","Viejo desagradable; literalmente pene viejo","Muy vulgar","Tembo y sus variantes"],["Temboiterei","Grosería intensificada con tembo","Muy fuerte","Tembo y sus variantes"],["Tembo forro","Grosería vulgar para una persona desagradable","Muy fuerte","Tembo y sus variantes"],["Tembo la eréa","Lo que decís es una estupidez o una mierda","Muy fuerte","Tembo y sus variantes"],["Che rembo","¡Las pelotas!; mentira; ni loco","Muy vulgar","Tembo y sus variantes"],["Moópio nde tembo","¿Quién carajo sos?","Muy agresivo","Tembo y sus variantes"],["Moópio nde akã tembo","¿Quién te creés, cabeza de pene?","Muy agresivo","Tembo y sus variantes"],
-    ["Tavy","Tonto o ignorante","Medio","Tontos y locos"],["Tavýcho","Tonto; ignorante","Medio","Tontos y locos"],["Tavyrai","Tontuelo o bastante tonto","Medio","Tontos y locos"],["Tavyrón","Gran tonto, bruto o irresponsable","Fuerte","Tontos y locos"],["Tavyróna","Forma de tavyrón dirigida a una mujer","Fuerte","Tontos y locos"],["Tavyrón guasu","Tonto enorme o tonto total","Fuerte","Tontos y locos"],["Tavyrõngo","Variante enfática de tavyrón","Fuerte","Tontos y locos"],["Ndetavy","Sos tonto","Medio","Tontos y locos"],["Ndetavy ne akã mbytetépe","Sos tonto hasta el centro de la cabeza","Fuerte","Tontos y locos"],["Tovatavy","Cara de tonto; idiota","Medio","Tontos y locos"],["Výro","Idiota, tonto o bobo","Medio","Tontos y locos"],["Výro tuja","Viejo tonto","Fuerte","Tontos y locos"],["Výro paha","Tonto total; el último de los tontos","Fuerte","Tontos y locos"],["Výro chaleco","Variante burlona para decir tonto","Medio","Tontos y locos"],["Vyrochúko","Tonto presumido o importante","Medio","Tontos y locos"],["Výro maleta","Variante jocosa para intensificar výro","Medio","Tontos y locos"],["Nde výro reikóva","Qué idiota sos","Fuerte","Tontos y locos"],["Lápi mbyky","Lápiz corto; persona poco inteligente","Burla","Tontos y locos"],["Vúrro lápi","Burro, bruto o muy torpe","Fuerte","Tontos y locos"],["Burro rembo","Persona extremadamente estúpida","Muy fuerte","Tontos y locos"],["Ñandejára táxi","Taxi de Dios; burro o tonto","Burla","Tontos y locos"],["Tarúpido","Mezcla de tarado y estúpido","Fuerte","Tontos y locos"],["Noimbái","No está completo; le falta algo en la cabeza","Burla","Tontos y locos"],["Okablea","Tiene los cables cruzados; está loco","Burla","Tontos y locos"],["Opoi kuártagui","Se salió del cambio; perdió la razón","Burla","Tontos y locos"],["Lui-lui","No está bien de la cabeza","Burla","Tontos y locos"],["Tarova","Loco, descontrolado o imprudente","Medio","Tontos y locos"],["Tarovaiterei","Completamente loco","Fuerte","Tontos y locos"],
-    ["Añamemby","Hijo del diablo; equivalente fuerte a hijo de puta","Muy fuerte","Diablo y enojo"],["Aña ra'y","Hijo del diablo","Fuerte","Diablo y enojo"],["Añárako","Interjección genital asociada al diablo","Extrema","Diablo y enojo"],["Añáraki","Variante suavizada de añárako","Muy fuerte","Diablo y enojo"],["Añarakópeguare","Salido del coño del diablo","Extrema","Diablo y enojo"],["Arakópeguare","Variante vulgar de añarakópeguare","Extrema","Diablo y enojo"],["Añaraitypeguare","Salido del infierno","Muy fuerte","Diablo y enojo"],["Nderakóre","Interjección genital extremadamente fuerte","Extrema","Diablo y enojo"],["Nderasóre","Variante deformada de nderakóre","Fuerte","Diablo y enojo"],["Ndesýre","Interjección ofensiva que involucra a la madre","Muy fuerte","Diablo y enojo"],["Añamechu","¡Demonios!; exclamación de enojo","Fuerte","Diablo y enojo"],["Añame'ẽ","Variante popular de exclamación con aña","Fuerte","Diablo y enojo"],["Kóre","Exclamación abreviada de enojo","Medio","Diablo y enojo"],["Ndéra","Exclamación paraguaya de sorpresa o enojo","Medio","Diablo y enojo"],["Chórena","Exclamación suavizada de fastidio","Suave","Diablo y enojo"],
-    ["Japiro","Jodete, andate a la mierda o qué estupidez","Muy fuerte","Mandar al carajo"],["Ejapiro","Andate a la mierda","Muy fuerte","Mandar al carajo"],["Tereho ejapiro","Andate a la mierda","Muy fuerte","Mandar al carajo"],["Japiro túnare","Andá a masturbarte sobre un cactus","Extrema","Mandar al carajo"],["Tereho ejapiro túnare","Andate a masturbar sobre un cactus","Extrema","Mandar al carajo"],["Japiro imátare","Grosería sexual de rechazo","Extrema","Mandar al carajo"],["Nderevi","Tu culo; ni ahí o jamás","Muy vulgar","Mandar al carajo"],["Che revi","Mi culo; ni loco o mentira","Muy vulgar","Mandar al carajo"],["Nderevikua","El agujero de tu culo","Extrema","Mandar al carajo"],["Tekaka la eréa","Lo que decís es mierda","Muy fuerte","Mandar al carajo"],["Che rekakakue","Mi mierda; forma de regaño","Muy vulgar","Mandar al carajo"],["Anive nde výro","Basta; no seas idiota","Fuerte","Mandar al carajo"],["Péicha he'i chéve ne hermana","Eso mismo me dijo tu hermana","Provocador","Mandar al carajo"],["Moópio nde tavýcho","¿Quién te creés, tonto?","Agresivo","Mandar al carajo"],["Moópio nde mykurẽ","¿Quién te creés, zarigüeya?","Agresivo","Mandar al carajo"],
-    ["Mbóre","Persona despreciable; también ni loco o jamás","Fuerte","Inútiles y desagradables"],["Mboréski","Variante jocosa de mbóre","Medio","Inútiles y desagradables"],["Mbóchi","Variante suavizada de mbóre","Medio","Inútiles y desagradables"],["Mborefliki","Variante humorística de mbóre","Medio","Inútiles y desagradables"],["Mboreiterei","Mbóre intensificado","Fuerte","Inútiles y desagradables"],["Náko","Persona ordinaria, desagradable o sin valor","Fuerte","Inútiles y desagradables"],["Deprovecho","Inútil; no sirve para nada","Medio","Inútiles y desagradables"],["Zapatu un lado","Zapato de un solo lado; persona inútil","Burla","Inútiles y desagradables"],["Jagua ry'ái","Sudor de perro; persona insignificante","Fuerte","Inútiles y desagradables"],["Pichi","Insignificante o poca cosa","Medio","Inútiles y desagradables"],["Pichirulo","Persona irrelevante o inútil","Burla","Inútiles y desagradables"],["Plíki","Sin importancia; poca cosa","Burla","Inútiles y desagradables"],["Alhaja","Irónicamente, persona problemática","Sarcasmo","Inútiles y desagradables"],["Arruinado","Inútil, incompetente o echado a perder","Fuerte","Inútiles y desagradables"],["Maltirón","Bruto, peligroso o descontrolado","Fuerte","Inútiles y desagradables"],["Sagua'a","Maleducado, tosco o sin modales","Fuerte","Inútiles y desagradables"],["Juru guasu","Bocón, agresivo o malhablado","Medio","Inútiles y desagradables"],["Tie'ỹ","Desvergonzado, indecente u obsceno","Fuerte","Inútiles y desagradables"],["Jejapo","Presumido, engreído o creído","Medio","Inútiles y desagradables"],["Cepillero","Adulador, chupamedias o lambiscón","Medio","Inútiles y desagradables"],["Pyrague","Soplón, espía o delator","Fuerte","Inútiles y desagradables"],["Tĩro'ysã","Nariz fría; soplón o metiche","Burla","Inútiles y desagradables"],["Pire pererĩ","Piel fina; persona muy susceptible","Burla","Inútiles y desagradables"],["Tasengy","Llorón o quejoso","Burla","Inútiles y desagradables"],["Tevi picha'i kangy","Cobarde o cagón","Muy vulgar","Inútiles y desagradables"],
-    ["Mykurẽ","Zarigüeya; persona maloliente","Fuerte","Apariencia y olor"],["Hurón'i","Persona que huele muy mal","Burla","Apariencia y olor"],["Neryakuã segundo tiempo","Olés a segundo tiempo; fuerte olor a sudor","Burla","Apariencia y olor"],["Akakuru","Cabeza sarnosa; feo o deteriorado","Fuerte","Apariencia y olor"],["Arriero vai","Hombre feo","Medio","Apariencia y olor"],["Vaícho","Feíto o desagradable","Burla","Apariencia y olor"],["Vaikueto","Muy feo o desagradable","Fuerte","Apariencia y olor"],["Molde vai","Molde malo; persona muy fea","Burla","Apariencia y olor"],["Arpa forro","Feo como funda de arpa","Burla","Apariencia y olor"],["Ajúra galleta","Cuello de galleta; burla física","Burla","Apariencia y olor"],["Sa'yju","Pálido o amarillento","Burla","Apariencia y olor"],["Reñeinaugura potaite","Estás por inaugurarte; extremadamente flaco","Burla","Apariencia y olor"],["Sevo'i eléctrico","Lombriz eléctrica; flaco y movedizo","Burla","Apariencia y olor"],["Ñati'ũ bikini","Bikini de mosquito; extremadamente flaco","Burla","Apariencia y olor"],["Pelécho","Viejo, desgastado o venido a menos","Medio","Apariencia y olor"],["Apelechado","Envejecido o deteriorado","Medio","Apariencia y olor"],["Pysãtronco","Dedos de tronco; torpe jugando fútbol","Burla","Apariencia y olor"],
-    ["Lorito óga","Hombre dominado por su pareja","Burla","Pareja, dinero y picardía"],["Sã mbyky","Correa corta; controlado por su pareja","Burla","Pareja, dinero y picardía"],["Mba'ysyvo","Hombre al que su pareja no deja salir","Burla","Pareja, dinero y picardía"],["Tatu capatá","Pareja o padre excesivamente celoso","Vulgar","Pareja, dinero y picardía"],["Segundo plato","Amante o relación secundaria","Despectivo","Pareja, dinero y picardía"],["Alonsito","Hombre que reconoce como propio el hijo de otro","Burla fuerte","Pareja, dinero y picardía"],["Arriero mantenido","Hombre mantenido económicamente","Despectivo","Pareja, dinero y picardía"],["Maestra ména","Marido de la maestra; estereotipo de dependiente","Burla","Pareja, dinero y picardía"],["Prensa yvyra","Avaro o tacaño","Burla","Pareja, dinero y picardía"],["Arriero perõ","Hombre sin dinero; pelagato","Despectivo","Pareja, dinero y picardía"],["Sogue","Sin dinero o quebrado","Coloquial","Pareja, dinero y picardía"],["Soguéto","Completamente sin dinero","Burla","Pareja, dinero y picardía"],["Mboy'úsico","Músico bebedor; borracho habitual","Burla","Pareja, dinero y picardía"],["Karuvai","Persona sexualmente indiscriminada","Vulgar","Pareja, dinero y picardía"],["Takúlo","Persona muy excitada sexualmente","Vulgar","Pareja, dinero y picardía"],["Takúla","Forma femenina de persona muy excitada","Vulgar","Pareja, dinero y picardía"],["Takuchi","Caliente o excitado; uso burlón","Vulgar","Pareja, dinero y picardía"],["Kangylon","Impotente o sexualmente incapaz","Muy vulgar","Pareja, dinero y picardía"],["No liga ni túke","No consigue ninguna relación sexual","Burla","Pareja, dinero y picardía"],["Puñetero","Masturbador; persona fastidiosa","Vulgar","Pareja, dinero y picardía"],["Pajero","Masturbador; tonto o inútil","Vulgar","Pareja, dinero y picardía"],["Nde chupete soro mba'e pio?","¿Se rompió tu chupete?; para alguien llorón","Burla","Pareja, dinero y picardía"],["Omano pio nde Ángel de la Guarda?","¿Murió tu ángel de la guarda?; burla ante un olor terrible","Burla","Pareja, dinero y picardía"],["Ekaka lazo mba'e pio?","¿Acaso cagás lazos?; para quien tarda en el baño","Muy vulgar","Pareja, dinero y picardía"],["Ro'use","Quiero comerte; deseo sexual explícito","Muy vulgar","Pareja, dinero y picardía"]
-  ];
-  const rudeMeanings=rudeLessonBank.map(x=>x[1]);
-  rudeModules.splice(0,rudeModules.length,...rudeLessonBank.map((x,i)=>{const wrong1=rudeLessonBank[(i+17)%rudeLessonBank.length],wrong2=rudeLessonBank[(i+43)%rudeLessonBank.length],intensities=[...new Set(rudeLessonBank.map(row=>row[2]))],wrongIntensity1=intensities[(intensities.indexOf(x[2])+2)%intensities.length],wrongIntensity2=intensities[(intensities.indexOf(x[2])+5)%intensities.length];return{title:x[0],desc:`${x[2]} · ${x[3]}`,category:x[3],words:[[x[0],x[1],`Intensidad: ${x[2]}. Uso coloquial paraguayo.`]],quiz:[{type:"meaning",q:`¿Qué significa “${x[0]}”?`,a:x[1],o:[x[1],wrong1[1],wrong2[1]].sort(()=>Math.random()-.5)},{type:"word",q:`¿Cuál expresión significa “${x[1]}”?`,a:x[0],o:[x[0],wrong1[0],wrong2[0]].sort(()=>Math.random()-.5)},{type:"intensity",q:`¿Qué intensidad tiene “${x[0]}”?`,a:x[2],o:[x[2],wrongIntensity1,wrongIntensity2].sort(()=>Math.random()-.5)},{type:"use",q:`Completá la respuesta más pícara: “Para decir ${x[1].toLowerCase()}, digo…”`,a:x[0],o:[x[0],wrong2[0],wrong1[0]].sort(()=>Math.random()-.5)}]}}));
-  document.querySelector("#rudeLessonCount")?.replaceChildren();
-  let rudeDone=[];try{const saved=JSON.parse(localStorage.getItem("gcaRudeDone")||"[]");rudeDone=Array.isArray(saved)?saved:[]}catch(error){localStorage.removeItem("gcaRudeDone")}
-  let rudeModuleIndex=0,rudeQuizIndex=0,rudeCategoryFilter="";
-  const rudeCategoryIcons={"Tembo y sus variantes":"🔥","Tontos y locos":"🤪","Diablo y enojo":"😈","Mandar al carajo":"💥","Inútiles y desagradables":"🗯️","Apariencia y olor":"👃","Pareja, dinero y picardía":"😉"};
-  function bindRudeLessonCards(root,adminView){root.querySelectorAll("[data-rude-module]").forEach(card=>card.onclick=()=>{const i=Number(card.dataset.rudeModule);if(!adminView&&i>0&&!rudeDone.includes(i-1))return showToast("Completa primero la lección anterior.");rudeModuleIndex=i;rudeQuizIndex=0;show("rudeLesson",true);renderRudeStudy()})}
-  function renderRudeCourse(){const root=document.querySelector("#rudeCourseUnits");if(!root)return;const adminView=typeof isAdministrator==="function"&&isAdministrator(activeUser),categories=[...new Set(rudeModules.map(m=>m.category))];if(!rudeCategoryFilter){root.innerHTML=`<div class="rude-category-grid">${categories.map(category=>{const lessons=rudeModules.filter(m=>m.category===category),completed=lessons.filter(m=>rudeDone.includes(rudeModules.indexOf(m))).length;return `<button class="rude-category-card" type="button" data-rude-category="${category}"><span class="rude-category-icon">${rudeCategoryIcons[category]||"🔥"}</span><b>${category}</b><small>${lessons.length} lecciones · ${completed} completadas</small></button>`}).join("")}</div>`;root.querySelectorAll("[data-rude-category]").forEach(button=>button.onclick=()=>{rudeCategoryFilter=button.dataset.rudeCategory;renderRudeCourse();window.scrollTo({top:document.querySelector("#rudeCourseUnits").offsetTop-110,behavior:"smooth"})});return}const lessons=rudeModules.map((m,i)=>({m,i})).filter(x=>x.m.category===rudeCategoryFilter);root.innerHTML=`<div class="rude-category-top"><button class="mini-btn" id="rudeCategoriesBack" type="button">← Áreas</button><h3>${rudeCategoryIcons[rudeCategoryFilter]||"🔥"} ${rudeCategoryFilter}</h3></div>${lessons.map(({m,i})=>{const locked=!adminView&&i>0&&!rudeDone.includes(i-1),done=rudeDone.includes(i);return `<article class="rude-unit ${locked?"locked":""}" data-rude-module="${i}"><span class="number">${done?"✓":i+1}</span><div><h3>${m.title}</h3><p class="rude-meaning">${m.words[0][1]}</p></div><span>${locked?"🔒":done?"✅":"→"}</span></article>`}).join("")}`;document.querySelector("#rudeCategoriesBack").onclick=()=>{rudeCategoryFilter="";renderRudeCourse()};bindRudeLessonCards(root,adminView)}
-  function renderRudeStudy(){const m=rudeModules[rudeModuleIndex],root=document.querySelector("#rudeLessonBody");root.innerHTML=`<div class="police-lesson-cover rude-hero"><small>LECCIÓN ${rudeModuleIndex+1} DE ${rudeModules.length}</small><h2>${m.title}</h2><p>${m.desc}</p></div><div class="rude-study"><h3>Aprendé esta grosería 🇵🇾</h3><div class="rude-vocab-grid">${m.words.map(w=>`<article class="rude-vocab"><b>${w[0]}</b><span>${w[1]}</span><span>${w[2]}</span></article>`).join("")}</div><div class="context-warning"><b>Toque pícaro:</b> el tono puede convertir la misma expresión en broma entre amigos o en una grosería muy fuerte.</div><div class="quiz-actions"><button class="btn" id="startRudeQuiz">Practicar →</button></div></div>`;document.querySelector("#startRudeQuiz").onclick=()=>{rudeQuizIndex=0;renderRudeQuiz()}}
-  function renderRudeQuiz(){const m=rudeModules[rudeModuleIndex],item=m.quiz[rudeQuizIndex],root=document.querySelector("#rudeLessonBody");root.innerHTML=`<div class="rude-study"><small>PRÁCTICA</small><div class="practice-question">${item.q}</div><div class="practice-options">${item.o.map(x=>`<button data-rude-answer="${x}">${x}</button>`).join("")}</div><div id="rudeFeedback"></div><div class="mastery-note">Si te equivocas, vuelve a intentarlo hasta acertar.</div></div>`;root.querySelectorAll("[data-rude-answer]").forEach(button=>button.onclick=()=>{const ok=button.dataset.rudeAnswer===item.a,feedback=document.querySelector("#rudeFeedback");if(!ok){button.classList.add("wrong");feedback.className="feedback no";feedback.textContent="Todavía no. Revisá el significado y volvé a intentar.";return}button.classList.add("correct");feedback.className="feedback ok";feedback.textContent="¡Correcto!";setTimeout(()=>{rudeQuizIndex++;if(rudeQuizIndex<m.quiz.length)renderRudeQuiz();else finishRudeModule()},650)})}
-  function finishRudeModule(){if(!rudeDone.includes(rudeModuleIndex))rudeDone.push(rudeModuleIndex);localStorage.setItem("gcaRudeDone",JSON.stringify(rudeDone));const last=rudeModuleIndex===rudeModules.length-1;document.querySelector("#rudeLessonBody").innerHTML=`<div class="finished"><div class="cup">${last?"🏆":"🔥"}</div><h2>${last?"¡Dominaste el guaraní sin filtro!":"¡Grosería aprendida!"}</h2><p>${last?"Completaste todas las lecciones de Groserías en guaraní.":"La siguiente lección quedó desbloqueada."}</p><button class="btn" id="finishRudeBack">Volver al curso</button></div>`;document.querySelector("#finishRudeBack").onclick=()=>{show("rudeCourse",true);renderRudeCourse()}}
-  function hasRudeFullAccess(){return (typeof isAdministrator==="function"&&isAdministrator(activeUser))||document.body.dataset.userRole==="admin"||window.isCourseAuthor===true||normalizeEmail(activeUser?.email)==="aliciaduartefretes@gmail.com"}
-  function rudeCategoryIndices(category){return rudeModules.map((m,i)=>m.category===category?i:-1).filter(i=>i>=0)}
-  function startRudeCategory(category){rudeCategoryFilter=category;const indices=rudeCategoryIndices(category),pending=indices.find(i=>!rudeDone.includes(i));rudeModuleIndex=pending??indices[0];rudeQuizIndex=0;show("rudeLesson",true);renderRudeStudy();window.scrollTo(0,0)}
-  renderRudeCourse=function(){const root=document.querySelector("#rudeCourseUnits");if(!root)return;const categories=[...new Set(rudeModules.map(m=>m.category))];root.innerHTML=`<div class="rude-category-grid">${categories.map(category=>{const indices=rudeCategoryIndices(category),completed=indices.filter(i=>rudeDone.includes(i)).length,percent=Math.round(completed/indices.length*100);return `<button class="rude-category-card" type="button" data-rude-category="${category}"><span class="rude-category-icon">${rudeCategoryIcons[category]||"🔥"}</span><b>${category}</b><span class="rude-flow-progress"><i style="width:${percent}%"></i></span><small>${completed===indices.length?"✓ Área completada":"Empezar práctica →"}</small></button>`}).join("")}</div>`;root.querySelectorAll("[data-rude-category]").forEach(button=>button.onclick=()=>startRudeCategory(button.dataset.rudeCategory))};
-  renderRudeStudy=function(){const m=rudeModules[rudeModuleIndex],indices=rudeCategoryIndices(m.category),position=indices.indexOf(rudeModuleIndex),root=document.querySelector("#rudeLessonBody"),fullAccess=hasRudeFullAccess();root.innerHTML=`<div class="police-lesson-cover rude-hero"><small>${m.category.toUpperCase()}</small><h2>${m.title}</h2><div class="rude-flow-progress"><i style="width:${position/indices.length*100}%"></i></div></div><div class="rude-study"><article class="rude-explain-card"><div class="rude-explain-word">${m.title}</div><div class="rude-explain-meaning">${m.words[0][1]}</div><div class="rude-fun-note">🔥 ${m.words[0][2]}</div></article><div class="rude-flow-actions">${fullAccess&&position>0?'<button class="mini-btn" id="rudePrevious" type="button">← Anterior</button>':'<span></span>'}<button class="btn" id="startRudeQuiz">Practicar →</button>${fullAccess&&position<indices.length-1?'<button class="mini-btn" id="rudeSkipNext" type="button">Avanzar →</button>':''}</div></div>`;document.querySelector("#startRudeQuiz").onclick=()=>{rudeQuizIndex=0;renderRudeQuiz()};document.querySelector("#rudePrevious")?.addEventListener("click",()=>{rudeModuleIndex=indices[position-1];rudeQuizIndex=0;renderRudeStudy()});document.querySelector("#rudeSkipNext")?.addEventListener("click",()=>{rudeModuleIndex=indices[position+1];rudeQuizIndex=0;renderRudeStudy()})};
-  finishRudeModule=function(){if(!rudeDone.includes(rudeModuleIndex))rudeDone.push(rudeModuleIndex);localStorage.setItem("gcaRudeDone",JSON.stringify(rudeDone));const m=rudeModules[rudeModuleIndex],indices=rudeCategoryIndices(m.category),position=indices.indexOf(rudeModuleIndex),next=indices[position+1],categoryFinished=next===undefined;document.querySelector("#rudeLessonBody").innerHTML=`<div class="finished"><div class="cup">${categoryFinished?"🏆":"🔥"}</div><h2>${categoryFinished?"¡Área completada!":"¡Grosería aprendida!"}</h2><p>${categoryFinished?`Completaste ${m.category}.`:"Ahora sigue la próxima expresión."}</p><button class="btn" id="finishRudeNext">${categoryFinished?"Volver a las áreas":"Avanzar →"}</button></div>`;document.querySelector("#finishRudeNext").onclick=()=>{if(categoryFinished){show("rudeCourse",true);renderRudeCourse();window.scrollTo(0,0)}else{rudeModuleIndex=next;rudeQuizIndex=0;renderRudeStudy();window.scrollTo(0,0)}}};
-  /* Flujo continuo: los errores se explican, pasan al final y nunca congelan la práctica. */
-  let rudePracticeQueue=[],rudePracticeStep=0,rudePracticeBusy=false;
-  function resetRudePractice(){const m=rudeModules[rudeModuleIndex];rudePracticeQueue=m.quiz.map((_,i)=>i);rudePracticeStep=0;rudePracticeBusy=false}
-  function nextRudeModule(){const pending=rudeModules.map((_,i)=>i).filter(i=>i!==rudeModuleIndex&&!rudeDone.includes(i));const pool=pending.length?pending:rudeModules.map((_,i)=>i).filter(i=>i!==rudeModuleIndex);return pool[Math.floor(Math.random()*pool.length)]??0}
-  function explainRudeMistake(item,chosen){if(item.type==="word"){const selected=rudeLessonBank.find(row=>row[0]===chosen);return selected?`“${chosen}” significa “${selected[1]}”. La respuesta correcta aquí es “${item.a}”.`:`La expresión correcta es “${item.a}”.`}if(item.type==="meaning")return `Ese no es el significado. “${rudeModules[rudeModuleIndex].title}” significa “${item.a}”.`;if(item.type==="intensity")return `Esa intensidad no corresponde. La respuesta correcta es “${item.a}”.`;return `La opción correcta es “${item.a}”.`}
-  renderRudeStudy=function(){const m=rudeModules[rudeModuleIndex],indices=rudeCategoryIndices(m.category),completed=rudeDone.includes(rudeModuleIndex),root=document.querySelector("#rudeLessonBody");if(!root)return;root.innerHTML=`<div class="police-lesson-cover rude-hero"><small>${m.category.toUpperCase()}</small><h2>${m.title}</h2><div class="rude-flow-progress"><i style="width:${completed?100:Math.max(8,indices.indexOf(rudeModuleIndex)/indices.length*100)}%"></i></div></div><div class="rude-study"><article class="rude-explain-card"><div class="rude-explain-word">${m.title}</div><div class="rude-explain-meaning">${m.words[0][1]}</div><div class="rude-fun-note">🔥 ${m.words[0][2]}</div></article><div class="rude-flow-actions single"><button class="btn" id="startRudeQuiz">${completed?"Volver a practicar":"Practicar"} →</button></div></div>`;document.querySelector("#startRudeQuiz").onclick=()=>{resetRudePractice();renderRudeQuiz()}}
-  renderRudeQuiz=function(){const m=rudeModules[rudeModuleIndex],questionIndex=rudePracticeQueue[rudePracticeStep],item=m.quiz[questionIndex],root=document.querySelector("#rudeLessonBody");if(!item){finishRudeModule();return}rudePracticeBusy=false;root.innerHTML=`<div class="rude-study"><small>PRÁCTICA</small><div class="practice-question">${item.q}</div><div class="practice-options">${item.o.map(x=>`<button data-rude-answer="${x}">${x}</button>`).join("")}</div><div id="rudeFeedback" aria-live="polite"></div></div>`;root.querySelectorAll("[data-rude-answer]").forEach(button=>button.onclick=()=>{if(rudePracticeBusy)return;rudePracticeBusy=true;const chosen=button.dataset.rudeAnswer,ok=chosen===item.a,feedback=document.querySelector("#rudeFeedback");root.querySelectorAll("[data-rude-answer]").forEach(option=>option.disabled=true);button.classList.add(ok?"correct":"wrong");feedback.className=`feedback ${ok?"ok":"no"}`;if(ok){feedback.textContent="¡Correcto!"}else{feedback.innerHTML=`<b>Incorrecto.</b> ${explainRudeMistake(item,chosen)} Esta pregunta volverá al final.`;rudePracticeQueue.push(questionIndex)}setTimeout(()=>{rudePracticeStep++;if(rudePracticeStep<rudePracticeQueue.length)renderRudeQuiz();else finishRudeModule()},ok?650:1700)})}
-  finishRudeModule=function(){if(!rudeDone.includes(rudeModuleIndex))rudeDone.push(rudeModuleIndex);localStorage.setItem("gcaRudeDone",JSON.stringify(rudeDone));const completed=rudeModules[rudeModuleIndex],categoryDone=rudeCategoryIndices(completed.category).every(i=>rudeDone.includes(i)),root=document.querySelector("#rudeLessonBody"),next=nextRudeModule();root.innerHTML=`<div class="finished"><div class="cup">${categoryDone?"🏆":"✅"}</div><h2>¡Completado!</h2><p>${categoryDone?`Completaste ${completed.category}.`:"Muy bien. Continuá con otra expresión."}</p><button class="btn" id="finishRudeNext">Continuar →</button></div>`;document.querySelector("#finishRudeNext").onclick=()=>{rudeModuleIndex=next;rudeCategoryFilter=rudeModules[next].category;renderRudeStudy();window.scrollTo(0,0)}}
+  let rudeDone=JSON.parse(localStorage.getItem("gcaRudeDone")||"[]"),rudeModuleIndex=0,rudeQuizIndex=0;
+  function renderRudeCourse(){const root=document.querySelector("#rudeCourseUnits");if(!root)return;const adminView=isAdministrator(activeUser);root.innerHTML=rudeModules.map((m,i)=>{const locked=!adminView&&i>0&&!rudeDone.includes(i-1),done=rudeDone.includes(i);return `<article class="rude-unit ${locked?"locked":""}" data-rude-module="${i}"><span class="number">${done?"✓":i+1}</span><div><h3>${m.title}</h3><p>${m.desc}</p></div><span>${locked?"🔒":done?"✅":"→"}</span></article>`}).join("");root.querySelectorAll("[data-rude-module]").forEach(card=>card.onclick=()=>{const i=Number(card.dataset.rudeModule);if(!adminView&&i>0&&!rudeDone.includes(i-1))return showToast("Completa primero el módulo anterior.");rudeModuleIndex=i;rudeQuizIndex=0;show("rudeLesson",true);renderRudeStudy()})}
+  function renderRudeStudy(){const m=rudeModules[rudeModuleIndex],root=document.querySelector("#rudeLessonBody");root.innerHTML=`<div class="police-lesson-cover rude-hero"><small>MÓDULO ${rudeModuleIndex+1} DE ${rudeModules.length}</small><h2>${m.title}</h2><p>${m.desc}</p></div><div class="rude-study"><h3>Comprende antes de practicar</h3><div class="rude-vocab-grid">${m.words.map(w=>`<article class="rude-vocab"><b>${w[0]} · ${w[1]}</b><span>${w[2]}</span></article>`).join("")}</div><div class="context-warning">El significado cambia con la confianza, la intención y el tono. Reconocer una palabra no significa que sea apropiado usarla.</div><div class="quiz-actions"><button class="btn" id="startRudeQuiz">Empezar práctica →</button></div></div>`;document.querySelector("#startRudeQuiz").onclick=()=>{rudeQuizIndex=0;renderRudeQuiz()}}
+  function renderRudeQuiz(){const m=rudeModules[rudeModuleIndex],item=m.quiz[rudeQuizIndex],root=document.querySelector("#rudeLessonBody");root.innerHTML=`<div class="rude-study"><small>PRÁCTICA ${rudeQuizIndex+1} DE ${m.quiz.length}</small><div class="practice-question">${item.q}</div><div class="practice-options">${item.o.map(x=>`<button data-rude-answer="${x}">${x}</button>`).join("")}</div><div id="rudeFeedback"></div><div class="mastery-note">Si te equivocas, la misma pregunta permanece hasta que la corrijas.</div></div>`;root.querySelectorAll("[data-rude-answer]").forEach(button=>button.onclick=()=>{const ok=button.dataset.rudeAnswer===item.a,feedback=document.querySelector("#rudeFeedback");if(!ok){button.classList.add("wrong");feedback.className="feedback no";feedback.textContent="Todavía no. Revisa el significado y vuelve a intentar.";return}button.classList.add("correct");feedback.className="feedback ok";feedback.textContent="¡Correcto!";setTimeout(()=>{rudeQuizIndex++;if(rudeQuizIndex<m.quiz.length)renderRudeQuiz();else finishRudeModule()},650)})}
+  function finishRudeModule(){if(!rudeDone.includes(rudeModuleIndex))rudeDone.push(rudeModuleIndex);localStorage.setItem("gcaRudeDone",JSON.stringify(rudeDone));const last=rudeModuleIndex===rudeModules.length-1;document.querySelector("#rudeLessonBody").innerHTML=`<div class="finished"><div class="cup">${last?"🏆":"⭐"}</div><h2>${last?"Curso completado":"Módulo completado"}</h2><p>${last?"Ya puedes reconocer estas expresiones y entender mejor su contexto.":"El siguiente módulo quedó desbloqueado."}</p><button class="btn" id="finishRudeBack">Volver al curso</button></div>`;document.querySelector("#finishRudeBack").onclick=()=>{show("rudeCourse",true);renderRudeCourse()}}
   document.querySelector("#openRudeCourse")?.addEventListener("click",()=>{show("rudeCourse",true);renderRudeCourse()});document.querySelector("#openRudeFromDictionary")?.addEventListener("click",()=>{show("rudeCourse",true);renderRudeCourse()});document.querySelector("#rudeBack")?.addEventListener("click",()=>{show("rudeCourse",true);renderRudeCourse()});renderRudeCourse();
-
-  /* Curso independiente de videos de groserías: se ven dentro de la plataforma. */
-  const rudeReels=["DLKvToxMtwj","DLGZEDZs4b3","DLDeRVXxzl_","DJm18Xpx0Xh","DJh2D_ERDgC","DJcWspXREuN","DJfkAXdMUJ7","DJX4pKNMNzf","DJWi0VpxBh2","DJUgkUvxeQl","DJRcQA0x9zG","DJNG0G3xCjx","DJM-QRRxhj-","DJKNuk0xT7w","DJHy3HDRqqW","DJFLyN6RSNq","DJCxzejRQSk","DI4e_SkRq6N","DIzqNOIM31T"];
-  function renderRudeVideos(){const root=document.querySelector("#rudeVideoGrid");if(!root||root.dataset.ready)return;root.dataset.ready="true";root.innerHTML=rudeReels.map((id,i)=>`<article class="rude-video-card"><div class="rude-video-frame"><iframe loading="lazy" src="https://www.instagram.com/reel/${id}/embed/" title="Video de groserías en guaraní" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div><div class="rude-video-info"><b>Groserías en guaraní</b><a class="mini-btn" href="https://www.instagram.com/reel/${id}/" target="_blank" rel="noopener noreferrer">Abrir también en Instagram ↗</a></div></article>`).join("")}
-  function openRudeVideoCourse(){show("rudeVideos",true);renderRudeVideos();window.scrollTo(0,0)}
-  document.querySelector("#openRudeVideosFromCourse")?.addEventListener("click",openRudeVideoCourse);document.querySelector("#rudeVideosBack")?.addEventListener("click",()=>{show("rudeCourse",true);renderRudeCourse()});
 
   /* Ali IA usa el diccionario y entiende solicitudes de aprendizaje más variadas. */
   function findLexiconMatches(text){const q=norm(text),parts=q.split(/\s+/).filter(x=>x.length>1);let exact=lexicon.filter(item=>parts.some(part=>norm(item[0])===part)||q===norm(item[0]));if(exact.length)return exact.slice(0,5);return lexicon.filter(item=>norm(item[0]).includes(q)||norm(item[1]).includes(q)).slice(0,5)}
-  function smartAiReply(text){const q=norm(text),after=(needle)=>text.slice(norm(text).indexOf(needle)+needle.length).replace(/[¿?]/g,"").trim();if(q.includes("certific"))return "En Gestión puedes buscar al alumno por nombre o correo, tocar su nombre y preparar su certificado. Ali IA puede recomendar una decisión, pero la aprobación final queda en manos de la administración.";if(q.includes("groser")||q.includes("insulto")||q.includes("ñe'e vai")||q.includes("nee vai"))return "Groserías en guaraní reúne expresiones organizadas por áreas, prácticas continuas y videos de la Profe Ali.";if(q.includes("practicar")||q.includes("ejercicio"))return "Puedes practicar Escuchar, Comprender, Escribir o Hablar desde Práctica. Si quieres vocabulario fuerte, abre el curso Ñe'ẽ vai. ¿Qué habilidad deseas trabajar?";let target="";if(q.includes("que significa"))target=after("que significa");else if(q.includes("significa"))target=after("significa");else if(q.includes("como se dice")){target=after("como se dice");const found=lexicon.filter(item=>norm(item[1]).includes(norm(target))).slice(0,5);if(found.length)return `Para “${target}” encontré: ${found.map(x=>`${x[0]} (${x[1]})`).join("; ")}.`;}else if(text.trim().split(/\s+/).length<=3)target=text.trim();if(target){const found=findLexiconMatches(target);if(found.length)return found.map(x=>`${x[0]}: ${x[1]}. ${x[2]||""}`).join("\n");}if(q.includes("salud"))return "Para saludar: Maitei. Para preguntar cómo está alguien: Mba'éichapa. Respuesta breve: Iporã, aguyje. Puedes practicarlo en Escuchar o Hablar.";if(q.includes("diccionario")||q.includes("palabra"))return `El diccionario contiene ${lexicon.length} palabras y expresiones basadas principalmente en el Ñe'ẽryru que compartiste. Escribe una palabra en guaraní o pregunta “¿cómo se dice…?”`;if(q.includes("error"))return "Tus errores no desaparecen: las prácticas los repiten hasta que respondas correctamente. Así el avance refleja aprendizaje real.";return "Puedo buscar palabras del Ñe'ẽryru, traducir significados, recomendar una práctica, explicar el curso Groserías en guaraní y orientar certificados. Prueba: “¿Qué significa hayhu?” o “¿Cómo se dice casa?”"}
+  function smartAiReply(text){const q=norm(text),after=(needle)=>text.slice(norm(text).indexOf(needle)+needle.length).replace(/[¿?]/g,"").trim();if(q.includes("certific"))return "En Gestión puedes buscar al alumno por nombre o correo, tocar su nombre y preparar su certificado. Ali IA puede recomendar una decisión, pero la aprobación final queda en manos de la administración.";if(q.includes("groser")||q.includes("insulto")||q.includes("ñe'e vai")||q.includes("nee vai"))return "Ñe'ẽ vai ahora es un curso de 4 módulos ubicado al final de Cursos. Incluye contexto, intensidad y prácticas que no permiten avanzar hasta corregir los errores.";if(q.includes("practicar")||q.includes("ejercicio"))return "Puedes practicar Escuchar, Comprender, Escribir o Hablar desde Práctica. Si quieres vocabulario fuerte, abre el curso Ñe'ẽ vai. ¿Qué habilidad deseas trabajar?";let target="";if(q.includes("que significa"))target=after("que significa");else if(q.includes("significa"))target=after("significa");else if(q.includes("como se dice")){target=after("como se dice");const found=lexicon.filter(item=>norm(item[1]).includes(norm(target))).slice(0,5);if(found.length)return `Para “${target}” encontré: ${found.map(x=>`${x[0]} (${x[1]})`).join("; ")}.`;}else if(text.trim().split(/\s+/).length<=3)target=text.trim();if(target){const found=findLexiconMatches(target);if(found.length)return found.map(x=>`${x[0]}: ${x[1]}. ${x[2]||""}`).join("\n");}if(q.includes("salud"))return "Para saludar: Maitei. Para preguntar cómo está alguien: Mba'éichapa. Respuesta breve: Iporã, aguyje. Puedes practicarlo en Escuchar o Hablar.";if(q.includes("diccionario")||q.includes("palabra"))return `El diccionario contiene ${lexicon.length} palabras y expresiones basadas principalmente en el Ñe'ẽryru que compartiste. Escribe una palabra en guaraní o pregunta “¿cómo se dice…?”`;if(q.includes("error"))return "Tus errores no desaparecen: las prácticas los repiten hasta que respondas correctamente. Así el avance refleja aprendizaje real.";return "Puedo buscar palabras del Ñe'ẽryru, traducir significados, recomendar una práctica, explicar el curso Ñe'ẽ vai y orientar certificados. Prueba: “¿Qué significa hayhu?” o “¿Cómo se dice casa?”"}
   document.querySelector("#aiForm")?.addEventListener("submit",event=>{event.preventDefault();event.stopImmediatePropagation();const text=aiInput.value.trim();if(!text)return;addAi(text,"user");aiInput.value="";const wait=document.createElement("div");wait.className="ai-message bot ai-thinking";wait.textContent="Buscando en el Ñe'ẽryru…";aiMessages.appendChild(wait);aiMessages.scrollTop=aiMessages.scrollHeight;setTimeout(()=>{wait.remove();addAi(smartAiReply(text),"bot")},300)},true);
 
-  /* Guardia global contra tarjetas vacías y rutas cruzadas entre cursos. */
-  const renderStudyStable=renderStudy,renderQuizStable=renderQuiz;
-  renderStudy=function(){unit=Math.max(0,Math.min(U.length-1,Number(unit)||0));phase="study";try{renderStudyStable()}catch(error){console.error("GENERAL_STUDY_RECOVERY",error);const body=$("#lessonBody");if(body)body.innerHTML='<div class="study"><div class="callout"><b>📚 Continuemos</b><br>La lección se recuperó automáticamente.</div><div class="study-actions"><button class="btn" id="generalRecover">Abrir la lección →</button></div></div>';$("#generalRecover")?.addEventListener("click",()=>{unit=0;step=0;renderStudy()})}}
-  renderQuiz=function(){unit=Math.max(0,Math.min(U.length-1,Number(unit)||0));const questions=quizData(unit);if(!Array.isArray(questions)||!questions.length){phase="study";renderStudy();return}if(step>=questions.length){phase="finished";renderGeneralFinishedScreen();return}step=Math.max(0,Number(step)||0);try{renderQuizStable()}catch(error){console.error("GENERAL_QUIZ_RECOVERY",error);step=0;phase="study";renderStudy()}}
-  const renderPoliceStudyStable=renderPoliceStudy,renderPoliceQuizStable=renderPoliceQuiz;
-  let policeFinishedScore=null,policeFinishedPassed=false;
-  renderPoliceStudy=function(){policeUnit=Math.max(0,Math.min(POLICE_LESSONS.length-1,Number(policeUnit)||0));policeStep=0;policePhase="study";try{renderPoliceStudyStable()}catch(error){console.error("POLICE_STUDY_RECOVERY",error);const body=$("#policeLessonBody");if(body)body.innerHTML='<div class="police-study"><div class="callout"><b>📘 Continuemos</b><br>La lección se recuperó automáticamente.</div><div class="study-actions"><button class="btn" id="policeRecover">Abrir la lección →</button></div></div>';$("#policeRecover")?.addEventListener("click",()=>{policeUnit=0;renderPoliceStudy()})}}
-  renderPoliceQuiz=function(){policeUnit=Math.max(0,Math.min(POLICE_LESSONS.length-1,Number(policeUnit)||0));const questions=POLICE_LESSONS[policeUnit]?.questions;if(!Array.isArray(questions)||!questions.length){renderPoliceStudy();return}if(policeStep>=questions.length){policePhase="finished";renderPoliceFinishedScreen();return}policeStep=Math.max(0,Number(policeStep)||0);try{renderPoliceQuizStable()}catch(error){console.error("POLICE_QUIZ_RECOVERY",error);policeStep=0;renderPoliceStudy()}}
-  function renderPoliceFinishedScreen(){const u=POLICE_LESSONS[policeUnit]||POLICE_LESSONS[0],needed=u.exam?75:70,stored=Number(state.policeScores[policeUnit]),score=policeFinishedScore!==null&&Number.isFinite(policeFinishedScore)?policeFinishedScore:Number.isFinite(stored)?stored:0,passed=policeFinishedPassed||state.policeDone.includes(policeUnit)||score>=needed,body=$("#policeLessonBody");if(!body)return;$("#policeProgress").style.width="100%";$("#policeLessonLabel").textContent=passed?"Lección aprobada":"Repaso recomendado";body.innerHTML=`<div class="finished"><div class="score-ring" style="--score:${score*3.6}deg"><b>${score}%</b></div><h2>${passed?"¡Lección aprobada!":"Vamos a reforzarla"}</h2><p>${passed?"La lección quedó completada.":`Necesitas ${needed} %. Puedes intentarlo nuevamente.`}</p><button class="btn" id="policeReturn">${passed?"Volver al módulo":"Reintentar"}</button></div>`;$("#policeReturn").onclick=()=>passed?(renderPoliceUnits(),show("policeCourse",true),window.scrollTo(0,0)):openPoliceLesson(policeUnit)}
-  finishPoliceLesson=function(){const u=POLICE_LESSONS[policeUnit],total=u.questions.length,score=Math.round(policeCorrect/total*100),needed=u.exam?75:70,passed=score>=needed;policePhase="finished";policeFinishedScore=score;policeFinishedPassed=passed;state.policeScores[policeUnit]=Math.max(state.policeScores[policeUnit]||0,score);if(passed&&!state.policeDone.includes(policeUnit))state.policeDone.push(policeUnit);state.policeDone.sort((a,b)=>a-b);renderPoliceFinishedScreen();finishReaction(passed);save();window.courseAnalytics?.("police_lesson_completed",{lesson_number:policeUnit+1,score,passed})}
-  function restoreVisibleLearningCard(){const generalVisible=!$("#lesson")?.classList.contains("hide"),policeVisible=!$("#policeLesson")?.classList.contains("hide"),medicalVisible=!$("#medicalLesson")?.classList.contains("hide");if(generalVisible&&!$("#lessonBody")?.innerText.trim())phase==="finished"?renderGeneralFinishedScreen():phase==="quiz"?renderQuiz():renderStudy();if(policeVisible&&!$("#policeLessonBody")?.innerText.trim())policePhase==="finished"?renderPoliceFinishedScreen():policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();if(medicalVisible&&!$("#medicalLessonBody")?.innerText.trim())medicalPhase==="finished"?renderMedicalFinishedScreen():medicalPhase==="quiz"?renderMedicalQuiz():renderMedicalStudy()}
-  const learningCardObserver=new MutationObserver(()=>queueMicrotask(restoreVisibleLearningCard));learningCardObserver.observe($("#lessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#policeLessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#medicalLessonBody"),{childList:true,subtree:true});window.addEventListener("error",()=>setTimeout(restoreVisibleLearningCard,0));window.addEventListener("unhandledrejection",()=>setTimeout(restoreVisibleLearningCard,0));setTimeout(restoreVisibleLearningCard,0);
-  [$("#homeMedical"),$("#startMedicalHome"),$("#openMedicalCourse")].filter(Boolean).forEach(button=>button.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();openMedicalLocalized()},true));
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
-})();
-</script>
-<script>
-/* GCA45 · flujo sucesivo y dominio de errores en todos los cursos */
-(()=>{
-  const BUILD="GCA45-CONTINUAR-Y-REPETIR-ERRORES";
-  document.documentElement.dataset.build=BUILD;
-
-  /* GUARANÍ GENERAL: el error pasa al final; al completar, abre la unidad siguiente. */
-  let generalQueue=[],generalQueuePos=0,generalQueueUnit=-1;
-  const startGeneralQueue=()=>{generalQueue=quizData(unit).map((_,i)=>i);generalQueuePos=0;generalQueueUnit=unit;step=0;checked=false;selected=""};
-  const generalStudyWithQueue=renderStudy;
-  renderStudy=function(){
-    generalStudyWithQueue();
-    const begin=$("#beginQuiz");
-    if(begin)begin.onclick=()=>{phase="quiz";startGeneralQueue();renderQuiz()};
-  };
-  renderQuiz=function(){
-    const questions=quizData(unit);
-    if(generalQueueUnit!==unit||!generalQueue.length)startGeneralQueue();
-    const sourceIndex=generalQueue[generalQueuePos],q=questions[sourceIndex];
-    if(!q){finish();return}
-    step=sourceIndex;checked=false;selected="";
-    const progress=Math.min(96,35+((generalQueuePos+1)/Math.max(generalQueue.length,1))*61);
-    $("#lessonProgress").style.width=`${progress}%`;
-    $("#lessonLabel").textContent=UI[lang].practice;
-    $("#lessonBody").innerHTML=`<div class="quiz"><small>${title(unit)}</small><h3>${q[0]}</h3><div class="answers">${q[2].map(a=>`<button class="answer" data-a="${a}">${a}</button>`).join("")}</div><div id="feedback"></div><div class="quiz-actions"><button class="btn" id="check" disabled>${UI[lang].check}</button></div></div>`;
-    document.querySelectorAll("#lessonBody .answer").forEach(b=>b.onclick=()=>{if(checked)return;document.querySelectorAll("#lessonBody .answer").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selected=b.dataset.a;$("#check").disabled=false});
-    $("#check").onclick=checkAnswer;
-  };
-  checkAnswer=function(){
-    const sourceIndex=generalQueue[generalQueuePos],q=quizData(unit)[sourceIndex],button=$("#check");
-    if(checked){generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish();return}
-    const ok=selected===q[1];checked=true;
-    if(!ok)generalQueue.push(sourceIndex);
-    const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}. Esta pregunta volverá al final.`;
-    playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));
-    document.querySelectorAll("#lessonBody .answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});
-    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);button.disabled=false;button.textContent=UI[lang].next;button.onclick=()=>{generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish()};
-  };
-  renderGeneralFinishedScreen=function(){
-    const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
-    $("#lessonProgress").style.width="100%";$("#lessonLabel").textContent=UI[lang].finish;
-    body.innerHTML=`<div class="finished"><div class="cup">🏆</div><h2>${UI[lang].finish}</h2><p>${UI[lang].earned} ⭐</p><button class="btn" id="return">${hasNext?"Continuar →":UI[lang].return}</button></div>`;
-    $("#return").onclick=()=>{if(hasNext){unit++;phase="study";generalQueue=[];renderStudy();window.scrollTo(0,0)}else{renderUnits();show("course",true);window.scrollTo(0,0)}};
-  };
-
-  /* POLICÍA: cola de preguntas falladas y continuación sucesiva. */
-  let policeQueue=[],policeQueuePos=0,policeQueueUnit=-1;
-  const resetPoliceQueue=()=>{policeQueue=POLICE_LESSONS[policeUnit].questions.map((_,i)=>i);policeQueuePos=0;policeQueueUnit=policeUnit;policeStep=0;policeCorrect=0;policeChecked=false};
-  const policeStudyQueueBase=renderPoliceStudy;
-  renderPoliceStudy=function(){
-    policeStudyQueueBase();
-    const begin=$("#beginPoliceQuiz");if(begin)begin.onclick=()=>{policePhase="quiz";resetPoliceQueue();renderPoliceQuiz()};
-  };
-  renderPoliceQuiz=function(){
-    const u=POLICE_LESSONS[policeUnit];if(policeQueueUnit!==policeUnit||!policeQueue.length)resetPoliceQueue();
-    const sourceIndex=policeQueue[policeQueuePos],q=u.questions[sourceIndex];if(!q){finishPoliceLesson();return}
-    policeStep=sourceIndex;policeAnswer="";policeOrder=[];policeChecked=false;
-    $("#policeProgress").style.width=`${Math.min(96,18+((policeQueuePos+1)/Math.max(policeQueue.length,1))*78)}%`;$("#policeLessonLabel").textContent="Práctica";
-    const input=q.type==="fill"?`<input class="text-answer" id="policeTextAnswer" autocomplete="off" placeholder="Escribe tu respuesta…">`:q.type==="order"?`<div class="order-result" id="policeOrderResult"><span style="color:var(--muted)">Toca las palabras en el orden correcto</span></div><div class="order-bank">${q.words.map((w,i)=>`<button class="order-chip" data-word-i="${i}">${w}</button>`).join("")}</div>`:`<div class="answers" id="policeChoices">${q.options.map((a,i)=>`<button class="answer" data-choice-i="${i}">${a}</button>`).join("")}</div>`;
-    $("#policeLessonBody").innerHTML=`<div class="police-quiz"><div class="question-type">${policeTypeLabel(q.type)} · ${u.source}</div><h3>${q.prompt}</h3>${input}<div id="policeFeedback"></div><div class="quiz-actions"><button class="btn" id="policeCheck" disabled>Comprobar</button></div></div>`;
-    const check=$("#policeCheck");
-    if(q.type==="choice")document.querySelectorAll("#policeChoices .answer").forEach(b=>b.onclick=()=>{if(policeChecked)return;document.querySelectorAll("#policeChoices .answer").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");policeAnswer=q.options[+b.dataset.choiceI];check.disabled=false});
-    if(q.type==="fill"){const inp=$("#policeTextAnswer");inp.oninput=()=>{policeAnswer=inp.value;check.disabled=!inp.value.trim()};inp.onkeydown=e=>{if(e.key==="Enter"&&!check.disabled)check.click()};inp.focus()}
-    if(q.type==="order")document.querySelectorAll(".order-chip").forEach(b=>b.onclick=()=>{if(policeChecked||b.classList.contains("used"))return;const i=+b.dataset.wordI;policeOrder.push({i,word:q.words[i]});b.classList.add("used");renderOrderResult();check.disabled=!policeOrder.length});
-    check.onclick=checkPoliceAnswer;
-  };
-  checkPoliceAnswer=function(){
-    const sourceIndex=policeQueue[policeQueuePos],q=POLICE_LESSONS[policeUnit].questions[sourceIndex],btn=$("#policeCheck");
-    if(policeChecked){policeQueuePos++;if(policeQueuePos<policeQueue.length){renderPoliceQuiz();save()}else finishPoliceLesson();return}
-    const value=q.type==="order"?policeOrder.map(x=>x.word):policeAnswer;let ok;
-    if(q.type==="order")ok=value.length===q.answer.length&&value.every((x,i)=>normalizeAnswer(x)===normalizeAnswer(q.answer[i]));else if(Array.isArray(q.answer))ok=q.answer.some(x=>normalizeAnswer(x)===normalizeAnswer(value));else ok=normalizeAnswer(value)===normalizeAnswer(q.answer);
-    policeChecked=true;if(ok){policeCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);policeQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#policeLessonBody"));
-    const fb=$("#policeFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?"¡Correcto!":"Respuesta a revisar."}</b><br>${q.explain}${ok?"":`<br><small>Respuesta esperada: ${Array.isArray(q.answer)?q.answer[0]:q.answer.join?q.answer.join(" "):q.answer}. Volverá al final.</small>`}`;
-    btn.disabled=false;btn.textContent="Siguiente";btn.onclick=()=>{policeQueuePos++;if(policeQueuePos<policeQueue.length){renderPoliceQuiz();save()}else finishPoliceLesson()};document.querySelectorAll(".answer,.order-chip,.text-answer").forEach(x=>x.disabled=true);
-  };
-  renderPoliceFinishedScreen=function(){
-    const body=$("#policeLessonBody"),hasNext=policeUnit+1<POLICE_LESSONS.length,score=100;if(!body)return;
-    $("#policeProgress").style.width="100%";$("#policeLessonLabel").textContent="Lección aprobada";
-    body.innerHTML=`<div class="finished"><div class="score-ring" style="--score:360deg"><b>${score}%</b></div><h2>¡Lección aprobada!</h2><p>Completaste también los ejercicios que necesitaban refuerzo.</p><button class="btn" id="policeReturn">${hasNext?"Continuar →":"Volver al curso"}</button></div>`;
-    $("#policeReturn").onclick=()=>{if(hasNext){policeUnit++;policePhase="study";policeQueue=[];renderPoliceStudy();window.scrollTo(0,0)}else{renderPoliceUnits();show("policeCourse",true);window.scrollTo(0,0)}};
-  };
-  finishPoliceLesson=function(){
-    const score=100;policePhase="finished";policeFinishedScore=score;policeFinishedPassed=true;state.policeScores[policeUnit]=Math.max(state.policeScores[policeUnit]||0,score);if(!state.policeDone.includes(policeUnit))state.policeDone.push(policeUnit);state.policeDone.sort((a,b)=>a-b);renderPoliceFinishedScreen();finishReaction(true);save();window.courseAnalytics?.("police_lesson_completed",{lesson_number:policeUnit+1,score,passed:true});
-  };
-
-  /* MEDICINA: misma regla, sin modificar ni regenerar el banco clínico. */
-  let medicalQueue=[],medicalQueuePos=0,medicalQueueUnit=-1;
-  const resetMedicalQueue=()=>{medicalQueue=activeMedicalLessons()[medicalUnit].questions.map((_,i)=>i);medicalQueuePos=0;medicalQueueUnit=medicalUnit;medicalStep=0;medicalCorrect=0;medicalChecked=false};
-  const medicalStudyQueueBase=renderMedicalStudy;
-  renderMedicalStudy=function(){medicalStudyQueueBase();const begin=$("#beginMedicalQuiz");if(begin)begin.onclick=()=>{medicalPhase="quiz";resetMedicalQueue();renderMedicalQuiz()}};
-  renderMedicalQuiz=function(){
-    const u=activeMedicalLessons()[medicalUnit],t=MEDICAL_UI[lang==="pt"?"pt":"es"];if(medicalQueueUnit!==medicalUnit||!medicalQueue.length)resetMedicalQueue();
-    const sourceIndex=medicalQueue[medicalQueuePos],q=u.questions[sourceIndex];if(!q){finishMedicalLesson();return}medicalStep=sourceIndex;medicalAnswer="";medicalChecked=false;
-    $("#medicalProgress").style.width=`${Math.min(96,18+((medicalQueuePos+1)/Math.max(medicalQueue.length,1))*78)}%`;$("#medicalLessonLabel").textContent=t.practice;
-    $("#medicalLessonBody").innerHTML=`<div class="police-quiz"><div class="question-type">${t.clinical} · ${u.source}</div><h3>${q.prompt}</h3><div class="answers" id="medicalChoices">${q.options.map((a,i)=>`<button class="answer" data-med-choice="${i}">${a}</button>`).join("")}</div><div id="medicalFeedback"></div><div class="quiz-actions"><button class="btn" id="medicalCheck" disabled>${t.check}</button></div></div>`;
-    document.querySelectorAll("#medicalChoices .answer").forEach(b=>b.onclick=()=>{if(medicalChecked)return;document.querySelectorAll("#medicalChoices .answer").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");medicalAnswer=q.options[+b.dataset.medChoice];$("#medicalCheck").disabled=false});$("#medicalCheck").onclick=checkMedicalAnswer;
-  };
-  checkMedicalAnswer=function(){
-    const u=activeMedicalLessons()[medicalUnit],sourceIndex=medicalQueue[medicalQueuePos],q=u.questions[sourceIndex],btn=$("#medicalCheck"),t=MEDICAL_UI[lang==="pt"?"pt":"es"];
-    if(medicalChecked){medicalQueuePos++;if(medicalQueuePos<medicalQueue.length){renderMedicalQuiz();save()}else finishMedicalLesson();return}
-    const ok=medicalAnswer===q.answer;medicalChecked=true;if(ok){medicalCorrect++;state.xp+=10}else{state.lives=Math.max(0,state.lives-1);medicalQueue.push(sourceIndex)}playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#medicalLessonBody"));
-    const fb=$("#medicalFeedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.innerHTML=`<b>${ok?t.correct:t.review}</b><br>${q.explain}${ok?"":`<br><small>${t.expected}: ${q.answer}. ${lang==="pt"?"Esta pergunta voltará no final.":"Esta pregunta volverá al final."}</small>`}`;
-    btn.disabled=false;btn.textContent=t.next;btn.onclick=()=>{medicalQueuePos++;if(medicalQueuePos<medicalQueue.length){renderMedicalQuiz();save()}else finishMedicalLesson()};document.querySelectorAll("#medicalChoices .answer").forEach(x=>{x.disabled=true;if(x.textContent===q.answer)x.classList.add("answer-correct");else if(x.textContent===medicalAnswer&&!ok)x.classList.add("answer-wrong")});
-  };
-  renderMedicalFinishedScreen=function(){
-    const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"],body=$("#medicalLessonBody"),hasNext=medicalUnit+1<lessons.length;if(!body)return;
-    $("#medicalProgress").style.width="100%";$("#medicalLessonLabel").textContent=t.passed;
-    body.innerHTML=`<div class="finished"><div class="score-ring" style="--score:360deg"><b>100%</b></div><h2>${t.passed}</h2><p>${lang==="pt"?"Você completou também os exercícios que precisavam de reforço.":"Completaste también los ejercicios que necesitaban refuerzo."}</p><button class="btn" id="medicalReturn">${hasNext?(lang==="pt"?"Continuar →":"Continuar →"):(lang==="pt"?"Voltar ao curso":"Volver al curso")}</button></div>`;
-    $("#medicalReturn").onclick=()=>{if(hasNext){medicalUnit++;medicalPhase="study";medicalQueue=[];renderMedicalStudy();window.scrollTo(0,0)}else{renderMedicalUnits();show("medicalCourse",true);window.scrollTo(0,0)}};
-  };
-  finishMedicalLesson=function(){
-    const score=100;medicalPhase="finished";medicalFinishedScore=score;medicalFinishedPassed=true;state.medicalScores[medicalUnit]=Math.max(state.medicalScores[medicalUnit]||0,score);if(!state.medicalDone.includes(medicalUnit))state.medicalDone.push(medicalUnit);state.medicalDone.sort((a,b)=>a-b);renderMedicalFinishedScreen();finishReaction(true);save();window.courseAnalytics?.("medical_lesson_completed",{lesson_number:medicalUnit+1,score,passed:true});
-  };
-
-  /* NIÑOS: una respuesta incorrecta se añade al final de la misma misión. */
-  const kidCheckBase=checkKidAnswer;
-  checkKidAnswer=function(){
-    const q=kidQuestions[kidStep];
-    if(!kidChecked&&q&&kidSelected!==q.answer)kidQuestions.push(q);
-    kidCheckBase();
-    const feedback=$("#kidFeedback");if(feedback?.classList.contains("no"))feedback.innerHTML+=`<br><small>Este desafío volverá al final.</small>`;
-  };
-
-  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
-})();
-</script>
-<script>
-/* GCA46 · aislamiento estricto entre los motores Policía y Medicina */
-(()=>{
-  const BUILD="GCA46-POLICIA-MEDICINA-SEPARADOS";
-  document.documentElement.dataset.build=BUILD;
-
-  /* Policía solo puede enlazar tarjetas que estén dentro de #policeCourse. */
-  renderPoliceUnits=function(){
-    const ranges=[
-      ["#policeUnits",0,6],["#policeUnits2",6,16],["#policeUnits3",16,27],
-      ["#policeUnits4",27,44],["#policeUnits5",44,61],["#policeUnits6",61,75],
-      ["#policeUnits7",75,88],["#policeUnits8",88,98],["#policeUnits9",98,POLICE_LESSONS.length]
-    ];
-    ranges.forEach(([id,start,end])=>{
-      const box=$(id);if(!box)return;
-      box.innerHTML=POLICE_LESSONS.slice(start,end).map((u,j)=>{
-        const i=start+j,locked=!window.isCourseAuthor&&i>0&&!state.policeDone.includes(i-1),done=state.policeDone.includes(i),score=state.policeScores[i];
-        return `<article class="police-unit ${locked?"locked":""}" data-course-engine="police" data-police-i="${i}"><div class="number">${u.icon}</div><div><h4>${j+1}. ${u.title}</h4><p>${u.source} · ${u.questions.length} actividades${score!==undefined?` · Mejor puntaje ${score}%`:""}</p></div><div class="status">${locked?"🔒":done?"✅":"›"}</div></article>`;
-      }).join("");
-    });
-    document.querySelectorAll("#policeCourse .police-unit[data-course-engine='police']:not(.locked)").forEach(card=>{
-      card.onclick=null;
-      card.addEventListener("click",event=>{
-        event.preventDefault();event.stopPropagation();
-        openPoliceLesson(Number(card.dataset.policeI));
-      });
-    });
-  };
-
-  /* Medicina se dibuja y se enlaza exclusivamente con su propio motor y banco. */
-  renderMedicalUnits=function(){
-    const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"];
-    translateMedicalShell();
-    const ranges=[["#medicalUnits",0,10],["#medicalUnits2",10,20],["#medicalUnits3",20,30],["#medicalUnits4",30,40]];
-    ranges.forEach(([id,start,end])=>{
-      const root=$(id);if(!root)return;
-      root.innerHTML=lessons.slice(start,end).map((u,j)=>{
-        const i=start+j,done=state.medicalDone.includes(i),score=state.medicalScores[i];
-        return `<article class="police-unit medical-unit" data-course-engine="medical" data-med-i="${i}"><div class="number">${i+1}</div><div><h4>${u.icon} ${u.title}</h4><p>${u.source} · ${u.questions.length} ${t.activities}${Number.isFinite(score)?` · ${t.best} ${score}%`:""}</p></div><div class="status">${done?"✅":"▶️"}</div></article>`;
-      }).join("");
-    });
-    document.querySelectorAll("#medicalCourse .medical-unit[data-course-engine='medical']").forEach(card=>{
-      card.onclick=null;
-      card.addEventListener("click",event=>{
-        event.preventDefault();event.stopImmediatePropagation();
-        const index=Number(card.dataset.medI);
-        if(Number.isInteger(index)&&activeMedicalLessons()[index])openMedicalLesson(index);
-      },true);
-    });
-    $("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor);
-  };
-
-  /* Apertura médica defensiva: nunca consulta POLICE_LESSONS ni abre policeLesson. */
-  openMedicalLesson=function(index){
-    const lessons=activeMedicalLessons(),next=Number(index);
-    medicalUnit=Number.isInteger(next)&&lessons[next]?next:0;
-    medicalStep=0;medicalCorrect=0;medicalAnswer="";medicalChecked=false;medicalPhase="study";
-    if(typeof medicalQueue!=="undefined")medicalQueue=[];
-    show("medicalLesson",true);
-    renderMedicalStudy();
-    window.scrollTo(0,0);
-    window.courseAnalytics?.("medical_lesson_opened",{lesson_number:medicalUnit+1,course:"medicine",lesson_title:lessons[medicalUnit].title});
-  };
-
-  /* Al continuar, se abre formalmente la siguiente lección médica. */
-  const medicalFinishedSeparated=renderMedicalFinishedScreen;
-  renderMedicalFinishedScreen=function(){
-    medicalFinishedSeparated();
-    const button=$("#medicalReturn"),hasNext=medicalUnit+1<activeMedicalLessons().length;
-    if(button&&hasNext){
-      button.textContent="Continuar →";
-      button.onclick=()=>openMedicalLesson(medicalUnit+1);
-    }
-  };
-
-  /* Barreras de navegación: al entrar en Medicina siempre se reconstruye su catálogo. */
-  const enterMedicine=event=>{
-    if(event){event.preventDefault();event.stopImmediatePropagation()}
-    useCourseLanguage(["es","pt"],"es","Medicina está disponible en español y portugués.");
-    show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0);
-  };
-  [$("#homeMedical"),$("#startMedicalHome"),$("#openMedicalCourse")].filter(Boolean).forEach(button=>button.addEventListener("click",enterMedicine,true));
-  $("#medicalBack")?.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();show("medicalCourse",true);renderMedicalUnits();window.scrollTo(0,0)},true);
-
-  /* Sanea tarjetas que pudieron quedar enlazadas antes de cargar esta corrección. */
-  renderPoliceUnits();
-  renderMedicalUnits();
-  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
-})();
-</script>
-<script>
-/* GCA47 · reparación de actividades de orden y auditoría de recorrido completo */
-(()=>{
-  const BUILD="GCA47-RECORRIDO-COMPLETO-SIN-BLOQUEOS";
-  document.documentElement.dataset.build=BUILD;
-
-  /* Algunas actividades antiguas de ordenar recibieron la explicación como tercer
-     argumento. Se normalizan antes de que cualquier lección pueda abrirse. */
-  let repairedOrderQuestions=0;
-  POLICE_LESSONS.forEach(lesson=>(lesson.questions||[]).forEach(question=>{
-    if(question.type!=="order")return;
-    if(!Array.isArray(question.answer))question.answer=[];
-    if(!Array.isArray(question.words)){
-      if(!question.explain&&typeof question.words==="string")question.explain=question.words;
-      question.words=[...question.answer].sort(()=>Math.random()-.5);
-      repairedOrderQuestions++;
-    }
-    if(!question.explain)question.explain="Ordena todos los elementos hasta reconstruir la secuencia correcta.";
-  }));
-
-  /* Validación interna disponible para detectar contenido incompleto sin dejar
-     nunca una pantalla bloqueada. */
-  function auditCourseLessons(name,lessons){
-    const issues=[];let questions=0;
-    lessons.forEach((lesson,lessonIndex)=>{
-      if(!lesson||!Array.isArray(lesson.questions)||!lesson.questions.length){issues.push(`${lessonIndex+1}: sin ejercicios`);return}
-      lesson.questions.forEach((question,questionIndex)=>{
-        questions++;
-        if(!question.prompt||question.answer===undefined)issues.push(`${lessonIndex+1}.${questionIndex+1}: ejercicio incompleto`);
-        if(question.type==="choice"&&(!Array.isArray(question.options)||!question.options.includes(question.answer)))issues.push(`${lessonIndex+1}.${questionIndex+1}: respuesta no disponible`);
-        if(question.type==="order"&&(!Array.isArray(question.words)||!Array.isArray(question.answer)))issues.push(`${lessonIndex+1}.${questionIndex+1}: orden incompleto`);
-      });
-    });
-    return{name,lessons:lessons.length,questions,issues};
-  }
-  window.__gcaCourseAudit={
-    build:BUILD,
-    repairedOrderQuestions,
-    police:auditCourseLessons("Policía",POLICE_LESSONS),
-    medicalEs:auditCourseLessons("Medicina ES",MEDICAL_LESSONS),
-    medicalPt:auditCourseLessons("Medicina PT",MEDICAL_LESSONS_PT)
-  };
-
-  /* Si una actividad de ordenar fuera incompatible por datos antiguos guardados,
-     se recupera dentro de la misma lección y continúa el flujo. */
-  const policeQuizAudited=renderPoliceQuiz;
-  renderPoliceQuiz=function(){
-    const lesson=POLICE_LESSONS[policeUnit],queue=lesson?.questions;
-    if(!lesson||!Array.isArray(queue)||!queue.length){
-      policeUnit=Math.min(policeUnit+1,POLICE_LESSONS.length-1);policePhase="study";renderPoliceStudy();return;
-    }
-    try{policeQuizAudited()}catch(error){
-      console.error("POLICE_ACTIVITY_RECOVERED",error);
-      policeStep=Math.min(policeStep+1,queue.length-1);
-      policeQuizAudited();
-    }
-  };
-
-  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
-})();
-</script>
-<script>
-/* GCA48 · cierre garantizado de la última pregunta */
-(()=>{
-  const BUILD="GCA48-ULTIMO-SIGUIENTE-GARANTIZADO";
-  document.documentElement.dataset.build=BUILD;
-  let applyingRemoteProgress=false,deferredRemoteProgress=null;
-
-  function visible(id){const node=document.querySelector(id);return !!node&&!node.classList.contains("hide")}
-  function exerciseIsActive(){
-    return (visible("#lesson")&&phase==="quiz")||
-      (visible("#policeLesson")&&policePhase==="quiz")||
-      (visible("#medicalLesson")&&medicalPhase==="quiz")||
-      visible("#kidsGame")||visible("#rudeLesson");
-  }
-
-  /* Guardado local inmediato; la nube espera hasta que la tarjeta haya terminado.
-     Así una respuesta ya corregida nunca puede volver al estado de comprobación. */
-  save=function(){
-    localStorage.setItem("guaraniAliPro",JSON.stringify(state));
-    const xp=$("#xp"),lives=$("#lives");if(xp)xp.textContent=state.xp;if(lives)lives.textContent=state.lives;
-    if(!exerciseIsActive()&&!applyingRemoteProgress)window.syncCourseProgress?.({...state,lang});
-  };
-
-  const applyRemoteProgressBase=window.applySyncedProgress;
-  if(typeof applyRemoteProgressBase==="function")window.applySyncedProgress=data=>{
-    if(exerciseIsActive()){deferredRemoteProgress=data;return}
-    applyingRemoteProgress=true;
-    try{applyRemoteProgressBase(data)}finally{applyingRemoteProgress=false;deferredRemoteProgress=null}
-  };
-
-  /* Al finalizar, la fase cambia antes de guardar: el progreso completo sí se
-     sincroniza y la pantalla final permanece estable. */
-  const finishGeneralStable=finish;
-  finish=function(){phase="finished";finishGeneralStable()};
-  const finishPoliceStable=finishPoliceLesson;
-  finishPoliceLesson=function(){policePhase="finished";finishPoliceStable()};
-  const finishMedicalStable=finishMedicalLesson;
-  finishMedicalLesson=function(){medicalPhase="finished";finishMedicalStable()};
-
-  window.__gcaExerciseLock={build:BUILD,exerciseIsActive,getDeferred:()=>!!deferredRemoteProgress};
-  const version=document.querySelector("#buildVersion");if(version)version.textContent="";
-})();
-</script>
-<style id="gca54-account-order-and-menu">
-  /* Mantiene el orden natural: marca, IA/idioma, estadísticas y cuenta al final. */
-  @media(max-width:760px){
-    header .brand{order:0!important}
-    header .header-tools{order:1!important}
-    header .stats{order:2!important}
-    header .account-btn{order:99!important;margin-left:auto!important}
-  }
-  .account-menu{position:fixed}
-  .account-menu-close{display:none!important}
-</style>
-<script id="gca54-live-home-translation">
-(()=>{
-  const HOME_EXTRA={
-    es:{words:["Aprende a pensar 🧠","Aprende a hablar 💬","Aprende a sentir en guaraní 💚"],sponsors:["✨ ESPACIO PARA TU MARCA · Llega a una comunidad que ama Paraguay","🇵🇾 Guaraní con Ali · Educación, cultura y comunidad","🤝 ¿QUIERES PATROCINAR? · Escríbenos"],privacy:["Privacidad","Política de privacidad"],follow:"Seguir a Ali Explora",account:["Gestión académica","Solicitar eliminación de cuenta","Cerrar sesión"]},
-    en:{words:["Learn to think 🧠","Learn to speak 💬","Learn to feel in Guaraní 💚"],sponsors:["✨ SPACE FOR YOUR BRAND · Reach a community that loves Paraguay","🇵🇾 Guaraní with Ali · Education, culture and community","🤝 WANT TO SPONSOR? · Write to us"],privacy:["Privacy","Privacy policy"],follow:"Follow Ali Explora",account:["Academic management","Request account deletion","Sign out"]},
-    pt:{words:["Aprenda a pensar 🧠","Aprenda a falar 💬","Aprenda a sentir em guarani 💚"],sponsors:["✨ ESPAÇO PARA SUA MARCA · Alcance uma comunidade que ama o Paraguai","🇵🇾 Guarani com Ali · Educação, cultura e comunidade","🤝 QUER PATROCINAR? · Escreva-nos"],privacy:["Privacidade","Política de privacidade"],follow:"Siga Ali Explora",account:["Gestão acadêmica","Solicitar exclusão da conta","Sair"]},
-    fr:{words:["Apprenez à penser 🧠","Apprenez à parler 💬","Apprenez à ressentir en guarani 💚"],sponsors:["✨ ESPACE POUR VOTRE MARQUE · Touchez une communauté qui aime le Paraguay","🇵🇾 Guarani avec Ali · Éducation, culture et communauté","🤝 VOUS VOULEZ PARRAINER ? · Écrivez-nous"],privacy:["Confidentialité","Politique de confidentialité"],follow:"Suivre Ali Explora",account:["Gestion académique","Demander la suppression du compte","Se déconnecter"]},
-    it:{words:["Impara a pensare 🧠","Impara a parlare 💬","Impara a sentire in guaraní 💚"],sponsors:["✨ SPAZIO PER IL TUO MARCHIO · Raggiungi una comunità che ama il Paraguay","🇵🇾 Guaraní con Ali · Educazione, cultura e comunità","🤝 VUOI SPONSORIZZARE? · Scrivici"],privacy:["Privacy","Informativa sulla privacy"],follow:"Segui Ali Explora",account:["Gestione accademica","Richiedi eliminazione account","Esci"]},
-    de:{words:["Lerne zu denken 🧠","Lerne zu sprechen 💬","Lerne auf Guaraní zu fühlen 💚"],sponsors:["✨ PLATZ FÜR DEINE MARKE · Erreiche eine Community, die Paraguay liebt","🇵🇾 Guaraní mit Ali · Bildung, Kultur und Gemeinschaft","🤝 MÖCHTEST DU SPONSERN? · Schreib uns"],privacy:["Datenschutz","Datenschutzerklärung"],follow:"Ali Explora folgen",account:["Akademische Verwaltung","Kontolöschung beantragen","Abmelden"]}
-  };
-
-  function applyExtraHomeTranslation(code){
-    const copy=HOME_EXTRA[code]||HOME_EXTRA.es;
-    document.querySelectorAll("#home .hero-word").forEach((node,index)=>{if(copy.words[index])node.textContent=copy.words[index]});
-    const sponsorNodes=[...document.querySelectorAll(".sponsor-item")];
-    sponsorNodes.forEach((node,index)=>{node.textContent=copy.sponsors[index%copy.sponsors.length]});
-    const privacyButton=document.querySelector("#privacySettings");
-    const privacyPolicy=document.querySelector('footer a[href*="privacidad"]');
-    if(privacyButton)privacyButton.textContent=copy.privacy[0];
-    if(privacyPolicy)privacyPolicy.textContent=copy.privacy[1];
-    const follow=document.querySelector(".follow-label");if(follow)follow.textContent=copy.follow;
-    const menuButtons=document.querySelectorAll("#accountMenu .mini-btn,#accountMenu #logoutBtn");
-    menuButtons.forEach((node,index)=>{if(copy.account[index])node.textContent=(index===0?"🏫 ":index===1?"🗑️ ":"")+copy.account[index]});
-  }
-
-  function changeLanguageNow(next){
-    if(!HOME_EXTRA[next])next="es";
-    try{
-      lang=next;
-      localStorage.setItem("guaraniAliPreferredLanguage",next);
-      const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
-      if(main)main.value=next;if(header)header.value=next;
-      if(typeof translateUI==="function")translateUI();
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      if(typeof save==="function")save();
-      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){console.error("Cambio de idioma:",error)}
-    applyExtraHomeTranslation(next);
-    document.documentElement.lang=next;
-  }
-
-  const menu=document.querySelector("#accountMenu"),account=document.querySelector("#accountBtn");
-  menu?.querySelector(".account-menu-close")?.remove();
-  document.addEventListener("pointerdown",event=>{
-    if(!menu||menu.classList.contains("hide"))return;
-    if(!menu.contains(event.target)&&!account?.contains(event.target))menu.classList.add("hide");
-  },true);
-  document.addEventListener("keydown",event=>{if(event.key==="Escape")menu?.classList.add("hide")});
-  menu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))menu.classList.add("hide")});
-
-  const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
-  applyExtraHomeTranslation(initial);
-  window.applyCompleteHomeLanguage=changeLanguageNow;
-})();
-</script>
-<script id="gca55-unified-language-state">
-(()=>{
-  const TEXT={
-    es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
-    en:{nav:["Home","Courses","Practice","Dictionary","Management","Videos","Suggestions"],home:["Keep learning","General Guaraní","From the beginning","Lesson","of","Continue →","Explore other courses","Guaraní for children","Games and adventures","Swear words in Guaraní","Ñe’ẽ vai","Police entrance Guaraní","Preparation","Guaraní for Medicine","Clinical"],profile:"Private account"},
-    pt:{nav:["Início","Cursos","Prática","Dicionário","Gestão","Vídeos","Sugestões"],home:["Continue aprendendo","Guarani geral","Desde o início","Lição","de","Continuar →","Explore outros cursos","Guarani para crianças","Jogos e aventuras","Palavrões em guarani","Ñe’ẽ vai","Guarani para ingresso na Polícia","Preparação","Guarani para Medicina","Clínica"],profile:"Conta privada"},
-    fr:{nav:["Accueil","Cours","Pratique","Dictionnaire","Gestion","Vidéos","Suggestions"],home:["Continuez à apprendre","Guarani général","Depuis le début","Leçon","sur","Continuer →","Explorez d’autres cours","Guarani pour enfants","Jeux et aventures","Gros mots en guarani","Ñe’ẽ vai","Guarani pour l’entrée dans la Police","Préparation","Guarani pour la Médecine","Clinique"],profile:"Compte privé"},
-    it:{nav:["Home","Corsi","Pratica","Dizionario","Gestione","Video","Suggerimenti"],home:["Continua a imparare","Guaraní generale","Dall’inizio","Lezione","di","Continua →","Esplora altri corsi","Guaraní per bambini","Giochi e avventure","Parolacce in guaraní","Ñe’ẽ vai","Guaraní per l’ingresso in Polizia","Preparazione","Guaraní per Medicina","Clinica"],profile:"Account privato"},
-    de:{nav:["Start","Kurse","Übung","Wörterbuch","Verwaltung","Videos","Vorschläge"],home:["Weiterlernen","Allgemeines Guaraní","Von Anfang an","Lektion","von","Weiter →","Weitere Kurse entdecken","Guaraní für Kinder","Spiele und Abenteuer","Schimpfwörter auf Guaraní","Ñe’ẽ vai","Guaraní für den Polizeieintritt","Vorbereitung","Guaraní für Medizin","Klinisch"],profile:"Privates Konto"}
-  };
-  const homeKeys=["continue","general","fromZero",null,null,"continueButton","explore","kids","games","rude","rudeSub","police","prep","medical","clinical"];
-
-  function paintCompleteInterface(code){
-    const copy=TEXT[code]||TEXT.es;
-    document.querySelectorAll(".bottom-nav .nav-btn i").forEach((node,index)=>{if(copy.nav[index])node.textContent=copy.nav[index]});
-    homeKeys.forEach((key,index)=>{if(!key)return;document.querySelectorAll(`[data-home-text="${key}"]`).forEach(node=>node.textContent=copy.home[index])});
-    const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
-    const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
-    const profile=document.querySelector("#profileEmail");if(profile)profile.textContent=copy.profile;
-    window.applyCompleteHomeLanguage?.(code);
-  }
-
-  function enforceLanguage(code){
-    if(!TEXT[code])code="es";
-    localStorage.setItem("guaraniAliPreferredLanguage",code);
-    lang=code;
-    const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
-    if(main)main.value=code;if(header)header.value=code;
-    if(typeof translateUI==="function")translateUI();
-    paintCompleteInterface(code);
-    document.documentElement.lang=code;
-  }
-
-  const remoteBase=window.applySyncedProgress;
-  if(typeof remoteBase==="function")window.applySyncedProgress=data=>{
-    const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||lang||"es";
-    remoteBase({...data,lang:preferred});
-    enforceLanguage(preferred);
-  };
-
-  [document.querySelector("#headerLang"),document.querySelector("#lang")].forEach(select=>{
-    if(!select)return;
-    select.onchange=event=>{
-      const code=event.target.value;
-      enforceLanguage(code);
-      if(typeof save==="function")save();
-      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    };
-  });
-
-  document.querySelector("#accountMenu .account-menu-close")?.remove();
-  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||document.querySelector("#headerLang")?.value||"es";
-  enforceLanguage(preferred);
-  window.setPlatformLanguage=enforceLanguage;
-})();
-</script>
-<script id="gca56-instant-language-switch">
-(()=>{
-  const IDS=["headerLang","lang"];
-
-  function replaceOldSelector(id){
-    const old=document.getElementById(id);
-    if(!old)return null;
-    const clean=old.cloneNode(true);
-    old.replaceWith(clean);
-    return clean;
-  }
-
-  function repaintVisibleScreen(code){
-    window.setPlatformLanguage?.(code);
-    document.documentElement.lang=code;
-    IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
-
-    if(!document.querySelector("#home")?.classList.contains("hide")){
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      window.applyCompleteHomeLanguage?.(code);
-    }
-    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
-    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
-    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
-    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
-    if(typeof translateUI==="function")translateUI();
-  }
-
-  function selectLanguage(event){
-    const code=event.currentTarget.value;
-    repaintVisibleScreen(code);
-    if(typeof save==="function")save();
-    if(typeof rememberLearningLocation==="function")rememberLearningLocation();
-    requestAnimationFrame(()=>repaintVisibleScreen(code));
-  }
-
-  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||window.lang||"es";
-  IDS.map(replaceOldSelector).filter(Boolean).forEach(select=>{
-    select.value=preferred;
-    select.addEventListener("change",selectLanguage);
-  });
-  repaintVisibleScreen(preferred);
-})();
-</script>
-<script id="gca57-live-language-and-remove-marce">
-(()=>{
-  const LANGUAGE_IDS="#headerLang,#lang";
-  let applying=false;
-
-  function syncLanguage(code,persist=true){
-    if(!["es","en","pt","fr","it","de"].includes(code))code="es";
-    if(applying)return;
-    applying=true;
-    try{
-      localStorage.setItem("guaraniAliPreferredLanguage",code);
-      if(typeof lang!=="undefined")lang=code;
-      document.documentElement.lang=code;
-      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
-      if(typeof translateUI==="function")translateUI();
-      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-      window.applyCompleteHomeLanguage?.(code);
-      window.setPlatformLanguage?.(code);
-      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
-      if(persist&&typeof save==="function")save();
-      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){console.error("Cambio inmediato de idioma:",error)}
-    finally{applying=false}
-  }
-
-  function repaintAfterLanguageChange(code){
-    syncLanguage(code,true);
-    requestAnimationFrame(()=>syncLanguage(code,false));
-    setTimeout(()=>syncLanguage(code,false),60);
-    setTimeout(()=>syncLanguage(code,false),220);
-  }
-
-  document.addEventListener("change",event=>{
-    const select=event.target.closest?.(LANGUAGE_IDS);
-    if(!select)return;
-    event.stopImmediatePropagation();
-    repaintAfterLanguageChange(select.value);
-  },true);
-
-  function removeMarceCourse(){
-    ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
-      const node=document.querySelector(selector);
-      if(!node)return;
-      node.classList.add("hide");
-      node.style.setProperty("display","none","important");
-      node.setAttribute("aria-hidden","true");
-      node.setAttribute("inert","");
-    });
-    document.querySelectorAll('option[value="personalized"],option[value="marce"]').forEach(option=>option.remove());
-    const teacherAccess=document.querySelector("#teacherCourseAccess");
-    if(teacherAccess){
-      const label=document.querySelector('label[for="teacherCourseAccess"]');
-      const note=teacherAccess.nextElementSibling;
-      teacherAccess.value="";
-      teacherAccess.style.display="none";
-      label?.classList.add("hide");
-      if(note?.tagName==="SMALL")note.classList.add("hide");
-    }
-    document.querySelectorAll('[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>{
-      node.style.setProperty("display","none","important");node.setAttribute("inert","");
-    });
-    if(location.hash==="#customCourse"||location.hash==="#personalized"){
-      history.replaceState(null,"",location.pathname+location.search+"#home");
-      if(typeof show==="function")show("home");
-    }
-  }
-
-  removeMarceCourse();
-  document.addEventListener("DOMContentLoaded",()=>setTimeout(removeMarceCourse,0),{once:true});
-  setTimeout(removeMarceCourse,500);
 })();
 </script>
 </body>
