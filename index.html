@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA44-SIN-PANTALLAS-VACIAS">
+  <meta name="guarani-con-ali-build" content="GCA59-ESTABILIZADA">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -1779,14 +1779,14 @@ function openAuth(){if(!window.currentCourseUser)$("#authModal").classList.remov
 function closeAuth(){$("#authModal").classList.add("hide");$("#authStatus").textContent=""}
 function offerAuthOnce(){if(!window.currentCourseUser&&!localStorage.getItem("guaraniAliAuthOffered")){localStorage.setItem("guaraniAliAuthOffered","1");setTimeout(openAuth,700)}}
 window.getCourseSnapshot=()=>({...state,lang});
-window.applySyncedProgress=data=>{if(!data)return;state={xp:Math.max(state.xp||0,data.xp||0),lives:Number.isFinite(data.lives)?data.lives:state.lives,done:[...new Set([...(state.done||[]),...(data.done||[])])].sort((a,b)=>a-b),policeDone:[...new Set([...(state.policeDone||[]),...(data.policeDone||[])])].sort((a,b)=>a-b),policeScores:{...(data.policeScores||{}),...(state.policeScores||{})}};if(data.lang&&UI[data.lang]){lang=data.lang;$("#lang").value=lang}save();translateUI()};
+window.applySyncedProgress=data=>{if(!data)return;state={xp:Math.max(state.xp||0,data.xp||0),lives:Number.isFinite(data.lives)?data.lives:state.lives,done:[...new Set([...(state.done||[]),...(data.done||[])])].sort((a,b)=>a-b),policeDone:[...new Set([...(state.policeDone||[]),...(data.policeDone||[])])].sort((a,b)=>a-b),policeScores:{...(data.policeScores||{}),...(state.policeScores||{})},medicalDone:[...new Set([...(state.medicalDone||[]),...(data.medicalDone||[])])].sort((a,b)=>a-b),medicalScores:{...(data.medicalScores||{}),...(state.medicalScores||{})},kidsDone:[...new Set([...(state.kidsDone||[]),...(data.kidsDone||[])])],kidsStars:{...(data.kidsStars||{}),...(state.kidsStars||{})},kidsBadges:[...new Set([...(state.kidsBadges||[]),...(data.kidsBadges||[])])]};if(data.lang&&UI[data.lang]){lang=data.lang;$("#lang").value=lang}save();translateUI()};
 window.setCourseUser=user=>{window.currentCourseUser=user||null;if(user){$("#accountIcon").innerHTML=`<img src="${user.photoURL||""}" alt="">`;$("#accountName").textContent=(user.displayName||user.email||"").split(" ")[0];$("#profileName").textContent=user.displayName||"Cuenta conectada";$("#profileEmail").textContent="Cuenta privada";closeAuth()}else{$("#accountIcon").textContent="👤";$("#accountName").textContent=AUTH_I18N[lang][0];$("#accountMenu").classList.add("hide")}};
 window.showAuthError=()=>$("#authStatus").textContent=AUTH_I18N[lang][9];
 function setConsentChoice(choice){localStorage.setItem("guaraniAliAnalytics",choice);$("#consentBanner").classList.add("hide");if(choice==="accepted")window.enableCourseAnalytics?.();else window.disableCourseAnalytics?.()}
 function showConsent(){$("#consentBanner").classList.remove("hide")}
 $("#consentAccept").onclick=()=>setConsentChoice("accepted");$("#consentReject").onclick=()=>setConsentChoice("rejected");$("#privacySettings").onclick=showConsent;
 $("#accountBtn").onclick=()=>window.currentCourseUser?$("#accountMenu").classList.toggle("hide"):openAuth();$("#authClose").onclick=closeAuth;$("#guestContinue").onclick=()=>{window.courseAnalytics?.("guest_continue",{language:lang});closeAuth()};$("#authModal").onclick=e=>{if(e.target===$("#authModal"))closeAuth()};$("#googleLogin").onclick=()=>window.courseGoogleLogin?.();$("#logoutBtn").onclick=()=>window.courseLogout?.();
-$("#lang").onchange=e=>{lang=e.target.value;window.courseAnalytics?.("language_selected",{language:lang});translateUI();save();rememberLearningLocation()};$("#start").onclick=()=>{go("course");offerAuthOnce()};$("#startPoliceHome").onclick=()=>{go("policeCourse");offerAuthOnce()};$("#back").onclick=()=>history.length>1?history.back():go("course");$("#policeBack").onclick=()=>go("policeCourse");$("#openGeneralCourse").onclick=()=>go("course");$("#openPoliceCourse").onclick=()=>go("policeCourse");$("#daily").onclick=quickChallenge;$("#missionStart").onclick=quickChallenge;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));$("#soundSearch").addEventListener("input",e=>renderSoundResults(e.target.value));document.querySelectorAll("a.instagram").forEach(a=>a.addEventListener("click",()=>window.courseAnalytics?.("instagram_click",{location:a.closest("section")?.id||"home",language:lang})));$(".suggest-card").addEventListener("submit",()=>window.courseAnalytics?.("suggestion_submitted",{language:lang}));window.onpopstate=e=>restoreLearningLocation(e.state||JSON.parse(localStorage.getItem(LOCATION_KEY)||"null"),true);translateUI();renderPoliceUnits();renderReels();renderSoundResults();save();if(!localStorage.getItem("guaraniAliAnalytics"))setTimeout(showConsent,700);
+$("#start").onclick=()=>{go("course");offerAuthOnce()};$("#back").onclick=()=>history.length>1?history.back():go("course");$("#policeBack").onclick=()=>go("policeCourse");$("#openGeneralCourse").onclick=()=>go("course");$("#daily").onclick=quickChallenge;$("#missionStart").onclick=quickChallenge;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));$("#soundSearch").addEventListener("input",e=>renderSoundResults(e.target.value));document.querySelectorAll("a.instagram").forEach(a=>a.addEventListener("click",()=>window.courseAnalytics?.("instagram_click",{location:a.closest("section")?.id||"home",language:lang})));$(".suggest-card").addEventListener("submit",()=>window.courseAnalytics?.("suggestion_submitted",{language:lang}));window.onpopstate=e=>restoreLearningLocation(e.state||JSON.parse(localStorage.getItem(LOCATION_KEY)||"null"),true);translateUI();renderPoliceUnits();renderReels();renderSoundResults();save();if(!localStorage.getItem("guaraniAliAnalytics"))setTimeout(showConsent,700);
 function ensurePoliceModule7(){if(!$("#policeUnits7")){let card=document.createElement("div");card.className="module-card";card.innerHTML='<div class="module-head"><small>MÓDULO 7 · VOCABULARIO EN CONTEXTO</small><h3>Ñe’ẽndy: vocabulario temático</h3><p>Familia, escuela, casa, animales, flora, calendario, salud y numeración.</p></div><div class="police-lessons" id="policeUnits7"></div>';document.querySelector("#policeCourse .future-modules")?.before(card);document.querySelector("#policeCourse .future-module")?.remove()}if(!$("#authorModeBadge")){let badge=document.createElement("span");badge.id="authorModeBadge";badge.className="author-mode hide";badge.textContent="✍️ Modo autora · todo desbloqueado";document.querySelector("#policeCourse .course-card-stats")?.append(badge)}}
 ensurePoliceModule7();
 const basePoliceStudy=renderPoliceStudy;
@@ -2214,7 +2214,7 @@ function checkMedicalAnswer(){let u=activeMedicalLessons()[medicalUnit],q=u.ques
 function finishMedicalLesson(){let u=activeMedicalLessons()[medicalUnit],t=MEDICAL_UI[lang==="pt"?"pt":"es"],score=Math.round(medicalCorrect/u.questions.length*100),needed=u.exam?75:70,passed=score>=needed;medicalPhase="finished";state.medicalScores[medicalUnit]=Math.max(state.medicalScores[medicalUnit]||0,score);if(passed&&!state.medicalDone.includes(medicalUnit))state.medicalDone.push(medicalUnit);state.medicalDone.sort((a,b)=>a-b);save();$("#medicalProgress").style.width="100%";$("#medicalLessonBody").innerHTML=`<div class="finished"><div class="score-ring" style="--score:${score*3.6}deg"><b>${score}%</b></div><h2>${passed?t.passed:t.reinforce}</h2><p>${medicalCorrect} de ${u.questions.length} ${t.answers}</p><p>${passed?t.unlocked:`${t.need} ${needed}%. ${t.retryText}`}</p><button class="btn" id="medicalReturn">${passed?t.back:t.retry}</button></div>`;finishReaction(passed);$("#medicalReturn").onclick=()=>passed?(renderMedicalUnits(),show("medicalCourse",true),window.scrollTo(0,0)):openMedicalLesson(medicalUnit);window.courseAnalytics?.("medical_lesson_completed",{lesson_number:medicalUnit+1,score,passed})}
 const baseMedicalSnapshot=window.getCourseSnapshot;window.getCourseSnapshot=()=>({...baseMedicalSnapshot(),medicalDone:state.medicalDone,medicalScores:state.medicalScores});
 const baseMedicalSync=window.applySyncedProgress;window.applySyncedProgress=data=>{baseMedicalSync(data);state.medicalDone=[...new Set([...(state.medicalDone||[]),...(data?.medicalDone||[])])].sort((a,b)=>a-b);state.medicalScores={...(data?.medicalScores||{}),...(state.medicalScores||{})};save();renderMedicalUnits()};
-$("#startMedicalHome").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};$("#openMedicalCourse").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};$("#medicalBack").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();window.scrollTo(0,0)};document.querySelector("[data-med-back]").onclick=()=>go("catalog");
+$("#medicalBack").onclick=()=>{show("medicalCourse",true);renderMedicalUnits();window.scrollTo(0,0)};document.querySelector("[data-med-back]").onclick=()=>go("catalog");
 const baseSetCourseUserMedical=window.setCourseUser;window.setCourseUser=user=>{baseSetCourseUserMedical(user);$("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor);renderMedicalUnits()};
 window.medicalReady=true;renderMedicalUnits();save();
 /* Medicina estable: índices saneados, todas las lecciones disponibles y recuperación contra pantallas vacías. */
@@ -2280,12 +2280,12 @@ function finishKidMission(){stopKidMusic();let stars=kidCorrect===kidQuestions.l
 const baseKidsSnapshot=window.getCourseSnapshot;window.getCourseSnapshot=()=>({...baseKidsSnapshot(),kidsDone:state.kidsDone,kidsStars:state.kidsStars,kidsBadges:state.kidsBadges});
 const baseKidsSync=window.applySyncedProgress;window.applySyncedProgress=data=>{baseKidsSync(data);state.kidsDone=[...new Set([...(state.kidsDone||[]),...(data?.kidsDone||[])])];state.kidsStars={...(data?.kidsStars||{}),...(state.kidsStars||{})};state.kidsBadges=[...new Set([...(state.kidsBadges||[]),...(data?.kidsBadges||[])])];save();renderKidsMap()};
 const baseSetCourseUserKids=window.setCourseUser;window.setCourseUser=user=>{baseSetCourseUserKids(user);renderKidsMap()};
-$("#startKidsHome").onclick=openKidsCourse;$("#openKidsCourse").onclick=openKidsCourse;$("#kidsStartQuest").onclick=()=>{document.querySelector(".kids-map-title")?.scrollIntoView({behavior:"smooth"});playKidSound("unlock")};$("#kidsBack").onclick=()=>{stopKidMusic();show("kidsCourse",true);renderKidsMap();window.scrollTo(0,0)};$("#kidsSound").onclick=()=>{kidSoundOn=!kidSoundOn;reactionSoundOn=kidSoundOn;localStorage.setItem("guaraniAliKidsSound",kidSoundOn?"on":"off");localStorage.setItem("guaraniAliReactionSound",reactionSoundOn?"on":"off");updateKidSoundButton();updateReactionSoundButton();if(kidSoundOn){playKidSound("select");startKidMusic()}else stopKidMusic()};document.querySelector("[data-kids-back]").onclick=()=>{stopKidMusic();go("catalog")};
+$("#startKidsHome").onclick=openKidsCourse;$("#openKidsCourse").onclick=openKidsCourse;$("#kidsBack").onclick=()=>{stopKidMusic();show("kidsCourse",true);renderKidsMap();window.scrollTo(0,0)};$("#kidsSound").onclick=()=>{kidSoundOn=!kidSoundOn;reactionSoundOn=kidSoundOn;localStorage.setItem("guaraniAliKidsSound",kidSoundOn?"on":"off");localStorage.setItem("guaraniAliReactionSound",reactionSoundOn?"on":"off");updateKidSoundButton();updateReactionSoundButton();if(kidSoundOn){playKidSound("select");startKidMusic()}else stopKidMusic()};document.querySelector("[data-kids-back]").onclick=()=>{stopKidMusic();go("catalog")};
 $("#kidsStartQuest").onclick=()=>{playKidSound("unlock");openKidMission(kidMapSelected,nextKidMission(kidMapSelected))};
 function useCourseLanguage(allowed,fallback,message){if(allowed.includes(lang))return true;lang=fallback;$("#lang").value=fallback;translateUI();save();showToast(message);return true}
 const openPoliceLocalized=()=>{useCourseLanguage(["es"],"es","Este curso está disponible en español.");go("policeCourse");renderPoliceUnits();offerAuthOnce()};
 const openMedicalLocalized=()=>{useCourseLanguage(["es","pt"],"es","Medicina está disponible en español y portugués.");show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};
-$("#startPoliceHome").onclick=openPoliceLocalized;$("#openPoliceCourse").onclick=openPoliceLocalized;$("#startMedicalHome").onclick=openMedicalLocalized;$("#openMedicalCourse").onclick=openMedicalLocalized;
+$("#startPoliceHome").onclick=openPoliceLocalized;$("#openPoliceCourse").onclick=openPoliceLocalized;
 function restoreLearningLocation(saved,fromHistory=false){
   if(!saved||!views.includes(saved.view))saved={view:(location.hash||"#home").slice(1)};
   let target=views.includes(saved.view)?saved.view:"home";
@@ -2318,9 +2318,7 @@ const HOME_COPY={
 function renderHomeDashboard(){let copy=HOME_COPY[lang]||HOME_COPY.es;document.querySelectorAll("[data-home-text]").forEach(node=>{let value=copy[node.dataset.homeText];if(value)node.textContent=value});let completed=Math.min(12,state.done?.length||0),percent=Math.round(completed/12*100),next=Math.min(12,completed+1);$("#homeProgressPercent").textContent=`${percent}%`;$("#homeProgressRing").style.setProperty("--p",percent);$("#homeProgressBar").style.width=`${percent}%`;$("#homeLessonStatus").textContent=`${copy.lesson} ${next} ${copy.of} 12`;$("#headerLang").value=lang;$("#homeMarceStatus").textContent=copy.unlocked}
 const translateUIBeforeHome=translateUI;translateUI=()=>{translateUIBeforeHome();renderHomeDashboard()};
 function setAppLanguage(next){if(!UI[next])next="es";lang=next;$("#lang").value=next;$("#headerLang").value=next;window.courseAnalytics?.("language_selected",{language:next});translateUI();save();rememberLearningLocation()}
-$("#headerLang").onchange=event=>setAppLanguage(event.target.value);
-$("#lang").onchange=event=>setAppLanguage(event.target.value);
-$("#homeContinue").onclick=()=>$("#start").click();$("#homeKids").onclick=()=>$("#startKidsHome").click();$("#homePolice").onclick=()=>$("#startPoliceHome").click();$("#homeMedical").onclick=()=>$("#startMedicalHome").click();$("#homeRude").onclick=()=>{let target=$("#openRudeCourse");target?target.click():go("catalog")};$("#homeMarce").onclick=()=>$("#startCustomHome").click();
+$("#homeContinue").onclick=()=>$("#start").click();$("#homeKids").onclick=()=>$("#startKidsHome").click();$("#homePolice").onclick=()=>$("#startPoliceHome").click();$("#homeRude").onclick=()=>{let target=$("#openRudeCourse");target?target.click():go("catalog")};$("#homeMarce").onclick=()=>$("#startCustomHome").click();
 function syncHomeMarce(){let source=$("#startCustomHome"),target=$("#homeMarce");if(!source||!target)return;let allowed=!source.disabled&&!source.classList.contains("hide");target.disabled=!allowed;target.classList.toggle("hide",!allowed)}
 new MutationObserver(syncHomeMarce).observe($("#startCustomHome"),{attributes:true,attributeFilter:["class","disabled"]});syncHomeMarce();
 renderKidsMap();save();enhancePronunciations(document);restoreLearningLocation(JSON.parse(localStorage.getItem(LOCATION_KEY)||"null"));
@@ -2602,7 +2600,7 @@ onAuthStateChanged(auth,async user=>{
   const aiPanel=document.querySelector("#aiPanel"),aiMessages=document.querySelector("#aiMessages"),aiInput=document.querySelector("#aiInput");
   const aiReply=text=>{const q=norm(text);if(q.includes("salud"))return "Para saludar puedes usar Maitei o Mba'éichapa. Practica este diálogo: “Mba'éichapa?” — “Iporã, aguyje.”";if(q.includes("certific"))return "En Gestión, busca al alumno por nombre o correo y toca su nombre. Quedará seleccionado para emitir el certificado. Las solicitudes pendientes se preparan desde el mismo panel.";if(q.includes("error"))return "Revisa Práctica enfocada. Cada error vuelve a aparecer hasta que lo corrijas, así no avanzas por simple adivinanza.";if(q.includes("palabra")||q.includes("diccionario"))return "Abre Diccionario en la barra inferior. Puedes buscar tanto en guaraní como en español y escuchar las palabras que tienen audio oficial.";if(q.includes("groser")||q.includes("insulto"))return "Groserías en guaraní reúne expresiones coloquiales, significados, intensidad, prácticas y videos de la Profe Ali.";if(q.includes("hola")||q.includes("mba"))return "Mba'éichapa 👋 ¿Quieres practicar escuchar, leer, escribir o hablar?";return "Puedo ayudarte con vocabulario, pronunciación, prácticas, navegación, certificados y dudas generales. Cuéntame qué quieres aprender o resolver."};
   function addAi(text,type){const div=document.createElement("div");div.className=`ai-message ${type}`;div.textContent=text;aiMessages.appendChild(div);aiMessages.scrollTop=aiMessages.scrollHeight}
-  document.querySelector("#aiLauncher")?.addEventListener("click",()=>{aiPanel.classList.toggle("hide");if(!aiPanel.classList.contains("hide"))setTimeout(()=>aiInput.focus(),50)});document.querySelector("#aiClose")?.addEventListener("click",()=>aiPanel.classList.add("hide"));document.querySelector("#aiForm")?.addEventListener("submit",e=>{e.preventDefault();const text=aiInput.value.trim();if(!text)return;addAi(text,"user");aiInput.value="";setTimeout(()=>addAi(aiReply(text),"bot"),350)});document.querySelectorAll("[data-ai-prompt]").forEach(b=>b.onclick=()=>{aiInput.value=b.dataset.aiPrompt;document.querySelector("#aiForm").requestSubmit()});
+  document.querySelector("#aiLauncher")?.addEventListener("click",()=>{aiPanel.classList.toggle("hide");if(!aiPanel.classList.contains("hide"))setTimeout(()=>aiInput.focus(),50)});document.querySelector("#aiClose")?.addEventListener("click",()=>aiPanel.classList.add("hide"));document.querySelectorAll("[data-ai-prompt]").forEach(b=>b.onclick=()=>{aiInput.value=b.dataset.aiPrompt;document.querySelector("#aiForm").requestSubmit()});
 
   function enhanceManagement(){const card=document.querySelector("#studentRows")?.closest(".staff-card");if(card&&!card.querySelector("#studentSearch")){const wrap=document.createElement("div");wrap.className="student-search-wrap";wrap.innerHTML='<input id="studentSearch" type="search" placeholder="Buscar alumno por nombre o correo…"><small class="student-click-hint">Toca el nombre de un alumno para seleccionarlo y emitir su certificado.</small>';card.querySelector(".staff-card-intro")?.after(wrap);wrap.querySelector("input").oninput=e=>{const q=norm(e.target.value);document.querySelectorAll("#studentRows tr").forEach(row=>row.hidden=!!q&&!norm(row.textContent).includes(q))}}
     document.querySelectorAll("#studentRows tr").forEach(row=>{if(row.dataset.certClick)return;row.dataset.certClick="1";row.style.cursor="pointer";row.onclick=()=>{const name=row.querySelector("b")?.textContent,email=row.querySelector("small")?.textContent,select=document.querySelector("#certificateStudent");if(!select)return;const option=[...select.options].find(o=>norm(o.textContent)===norm(name)||norm(o.textContent).includes(norm(email)));if(option){select.value=option.value;document.querySelector("#certificateForm")?.scrollIntoView({behavior:"smooth",block:"center"});showToast("Alumno seleccionado. Revisa el programa y emite el certificado.")}else showToast("Primero actualiza los datos del alumno.")}});
@@ -2685,7 +2683,9 @@ onAuthStateChanged(auth,async user=>{
   finishPoliceLesson=function(){const u=POLICE_LESSONS[policeUnit],total=u.questions.length,score=Math.round(policeCorrect/total*100),needed=u.exam?75:70,passed=score>=needed;policePhase="finished";policeFinishedScore=score;policeFinishedPassed=passed;state.policeScores[policeUnit]=Math.max(state.policeScores[policeUnit]||0,score);if(passed&&!state.policeDone.includes(policeUnit))state.policeDone.push(policeUnit);state.policeDone.sort((a,b)=>a-b);renderPoliceFinishedScreen();finishReaction(passed);save();window.courseAnalytics?.("police_lesson_completed",{lesson_number:policeUnit+1,score,passed})}
   function restoreVisibleLearningCard(){const generalVisible=!$("#lesson")?.classList.contains("hide"),policeVisible=!$("#policeLesson")?.classList.contains("hide"),medicalVisible=!$("#medicalLesson")?.classList.contains("hide");if(generalVisible&&!$("#lessonBody")?.innerText.trim())phase==="finished"?renderGeneralFinishedScreen():phase==="quiz"?renderQuiz():renderStudy();if(policeVisible&&!$("#policeLessonBody")?.innerText.trim())policePhase==="finished"?renderPoliceFinishedScreen():policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();if(medicalVisible&&!$("#medicalLessonBody")?.innerText.trim())medicalPhase==="finished"?renderMedicalFinishedScreen():medicalPhase==="quiz"?renderMedicalQuiz():renderMedicalStudy()}
   const learningCardObserver=new MutationObserver(()=>queueMicrotask(restoreVisibleLearningCard));learningCardObserver.observe($("#lessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#policeLessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#medicalLessonBody"),{childList:true,subtree:true});window.addEventListener("error",()=>setTimeout(restoreVisibleLearningCard,0));window.addEventListener("unhandledrejection",()=>setTimeout(restoreVisibleLearningCard,0));setTimeout(restoreVisibleLearningCard,0);
-  [$("#homeMedical"),$("#startMedicalHome"),$("#openMedicalCourse")].filter(Boolean).forEach(button=>button.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();openMedicalLocalized()},true));
+  /* El acceso a Medicina se enlaza una sola vez en GCA46, donde queda aislado
+     del motor de Policía. Se elimina este enlace anterior para evitar dos
+     controladores de captura sobre los mismos botones. */
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
@@ -2990,22 +2990,34 @@ onAuthStateChanged(auth,async user=>{
   };
 
   const applyRemoteProgressBase=window.applySyncedProgress;
-  if(typeof applyRemoteProgressBase==="function")window.applySyncedProgress=data=>{
-    if(exerciseIsActive()){deferredRemoteProgress=data;return}
+  function applyRemoteProgressSafely(data){
     applyingRemoteProgress=true;
     try{applyRemoteProgressBase(data)}finally{applyingRemoteProgress=false;deferredRemoteProgress=null}
+  }
+  function flushDeferredProgress(){
+    if(!deferredRemoteProgress||exerciseIsActive())return;
+    const pending=deferredRemoteProgress;deferredRemoteProgress=null;applyRemoteProgressSafely(pending);
+  }
+  if(typeof applyRemoteProgressBase==="function")window.applySyncedProgress=data=>{
+    if(exerciseIsActive()){deferredRemoteProgress=data;return}
+    applyRemoteProgressSafely(data);
   };
+
+  /* Si la nube respondió mientras había un ejercicio abierto, aplica ese
+     progreso en cuanto el usuario termina o abandona la actividad. */
+  const showWithDeferredProgress=show;
+  show=function(){const result=showWithDeferredProgress.apply(this,arguments);flushDeferredProgress();return result};
 
   /* Al finalizar, la fase cambia antes de guardar: el progreso completo sí se
      sincroniza y la pantalla final permanece estable. */
   const finishGeneralStable=finish;
-  finish=function(){phase="finished";finishGeneralStable()};
+  finish=function(){phase="finished";finishGeneralStable();flushDeferredProgress()};
   const finishPoliceStable=finishPoliceLesson;
-  finishPoliceLesson=function(){policePhase="finished";finishPoliceStable()};
+  finishPoliceLesson=function(){policePhase="finished";finishPoliceStable();flushDeferredProgress()};
   const finishMedicalStable=finishMedicalLesson;
-  finishMedicalLesson=function(){medicalPhase="finished";finishMedicalStable()};
+  finishMedicalLesson=function(){medicalPhase="finished";finishMedicalStable();flushDeferredProgress()};
 
-  window.__gcaExerciseLock={build:BUILD,exerciseIsActive,getDeferred:()=>!!deferredRemoteProgress};
+  window.__gcaExerciseLock={build:BUILD,exerciseIsActive,getDeferred:()=>!!deferredRemoteProgress,flushDeferredProgress};
   const version=document.querySelector("#buildVersion");if(version)version.textContent="";
 })();
 </script>
@@ -3020,7 +3032,7 @@ onAuthStateChanged(auth,async user=>{
   .account-menu{position:fixed}
   .account-menu-close{display:none!important}
 </style>
-<script id="gca54-live-home-translation">
+<script type="text/plain" id="legacy-gca54-live-home-translation">
 (()=>{
   const HOME_EXTRA={
     es:{words:["Aprende a pensar 🧠","Aprende a hablar 💬","Aprende a sentir en guaraní 💚"],sponsors:["✨ ESPACIO PARA TU MARCA · Llega a una comunidad que ama Paraguay","🇵🇾 Guaraní con Ali · Educación, cultura y comunidad","🤝 ¿QUIERES PATROCINAR? · Escríbenos"],privacy:["Privacidad","Política de privacidad"],follow:"Seguir a Ali Explora",account:["Gestión académica","Solicitar eliminación de cuenta","Cerrar sesión"]},
@@ -3045,6 +3057,22 @@ onAuthStateChanged(auth,async user=>{
     menuButtons.forEach((node,index)=>{if(copy.account[index])node.textContent=(index===0?"🏫 ":index===1?"🗑️ ":"")+copy.account[index]});
   }
 
+  function changeLanguageNow(next){
+    if(!HOME_EXTRA[next])next="es";
+    try{
+      lang=next;
+      localStorage.setItem("guaraniAliPreferredLanguage",next);
+      const main=document.querySelector("#lang"),header=document.querySelector("#headerLang");
+      if(main)main.value=next;if(header)header.value=next;
+      if(typeof translateUI==="function")translateUI();
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      if(typeof save==="function")save();
+      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
+    }catch(error){console.error("Cambio de idioma:",error)}
+    applyExtraHomeTranslation(next);
+    document.documentElement.lang=next;
+  }
+
   const menu=document.querySelector("#accountMenu"),account=document.querySelector("#accountBtn");
   menu?.querySelector(".account-menu-close")?.remove();
   document.addEventListener("pointerdown",event=>{
@@ -3054,10 +3082,12 @@ onAuthStateChanged(auth,async user=>{
   document.addEventListener("keydown",event=>{if(event.key==="Escape")menu?.classList.add("hide")});
   menu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))menu.classList.add("hide")});
 
-  window.applyExtraHomeTranslation=applyExtraHomeTranslation;
+  const initial=document.querySelector("#headerLang")?.value||document.documentElement.lang||"es";
+  applyExtraHomeTranslation(initial);
+  window.applyCompleteHomeLanguage=changeLanguageNow;
 })();
 </script>
-<script id="gca55-unified-language-state">
+<script type="text/plain" id="legacy-gca55-unified-language-state">
 (()=>{
   const TEXT={
     es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
@@ -3076,6 +3106,7 @@ onAuthStateChanged(auth,async user=>{
     const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
     const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
     const profile=document.querySelector("#profileEmail");if(profile)profile.textContent=copy.profile;
+    window.applyCompleteHomeLanguage?.(code);
   }
 
   function enforceLanguage(code){
@@ -3096,15 +3127,25 @@ onAuthStateChanged(auth,async user=>{
     enforceLanguage(preferred);
   };
 
+  [document.querySelector("#headerLang"),document.querySelector("#lang")].forEach(select=>{
+    if(!select)return;
+    select.onchange=event=>{
+      const code=event.target.value;
+      enforceLanguage(code);
+      if(typeof save==="function")save();
+      if(typeof rememberLearningLocation==="function")rememberLearningLocation();
+    };
+  });
+
   document.querySelector("#accountMenu .account-menu-close")?.remove();
-  window.paintCompleteInterface=paintCompleteInterface;
+  const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||document.querySelector("#headerLang")?.value||"es";
+  enforceLanguage(preferred);
   window.setPlatformLanguage=enforceLanguage;
 })();
 </script>
-<script id="gca56-instant-language-switch">
+<script type="text/plain" id="legacy-gca56-instant-language-switch">
 (()=>{
   const IDS=["headerLang","lang"];
-  const LANGUAGES=["es","en","pt","fr","it","de"];
 
   function replaceOldSelector(id){
     const old=document.getElementById(id);
@@ -3114,28 +3155,28 @@ onAuthStateChanged(auth,async user=>{
     return clean;
   }
 
-  function applyLanguage(code,{persist=true,track=true}={}){
-    if(!LANGUAGES.includes(code))code="es";
-    lang=code;
+  function repaintVisibleScreen(code){
+    window.setPlatformLanguage?.(code);
     document.documentElement.lang=code;
-    localStorage.setItem("guaraniAliPreferredLanguage",code);
     IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
 
-    /* Un solo repintado completo por cambio: evita que distintos controladores
-       se sobrescriban y hace visible la traducción sin recargar la página. */
+    if(!document.querySelector("#home")?.classList.contains("hide")){
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      window.applyCompleteHomeLanguage?.(code);
+    }
+    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
+    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
+    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
+    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
     if(typeof translateUI==="function")translateUI();
-    window.paintCompleteInterface?.(code);
-    window.applyExtraHomeTranslation?.(code);
-
-    IDS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
-    if(track)window.courseAnalytics?.("language_selected",{language:code});
-    if(persist&&typeof save==="function")save();
-    if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
   }
 
   function selectLanguage(event){
     const code=event.currentTarget.value;
-    applyLanguage(code);
+    repaintVisibleScreen(code);
+    if(typeof save==="function")save();
+    if(typeof rememberLearningLocation==="function")rememberLearningLocation();
+    requestAnimationFrame(()=>repaintVisibleScreen(code));
   }
 
   const preferred=localStorage.getItem("guaraniAliPreferredLanguage")||window.lang||"es";
@@ -3143,12 +3184,48 @@ onAuthStateChanged(auth,async user=>{
     select.value=preferred;
     select.addEventListener("change",selectLanguage);
   });
-  applyLanguage(preferred,{persist:false,track:false});
-  window.setPlatformLanguage=applyLanguage;
+  repaintVisibleScreen(preferred);
 })();
 </script>
-<script id="gca57-live-language-and-remove-marce">
+<script type="text/plain" id="legacy-gca57-live-language-and-remove-marce">
 (()=>{
+  const LANGUAGE_IDS="#headerLang,#lang";
+  let applying=false;
+
+  function syncLanguage(code,persist=true){
+    if(!["es","en","pt","fr","it","de"].includes(code))code="es";
+    if(applying)return;
+    applying=true;
+    try{
+      localStorage.setItem("guaraniAliPreferredLanguage",code);
+      if(typeof lang!=="undefined")lang=code;
+      document.documentElement.lang=code;
+      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
+      if(typeof translateUI==="function")translateUI();
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      window.applyCompleteHomeLanguage?.(code);
+      window.setPlatformLanguage?.(code);
+      document.querySelectorAll(LANGUAGE_IDS).forEach(select=>{select.value=code});
+      if(persist&&typeof save==="function")save();
+      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
+    }catch(error){console.error("Cambio inmediato de idioma:",error)}
+    finally{applying=false}
+  }
+
+  function repaintAfterLanguageChange(code){
+    syncLanguage(code,true);
+    requestAnimationFrame(()=>syncLanguage(code,false));
+    setTimeout(()=>syncLanguage(code,false),60);
+    setTimeout(()=>syncLanguage(code,false),220);
+  }
+
+  document.addEventListener("change",event=>{
+    const select=event.target.closest?.(LANGUAGE_IDS);
+    if(!select)return;
+    event.stopImmediatePropagation();
+    repaintAfterLanguageChange(select.value);
+  },true);
+
   function removeMarceCourse(){
     ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
       const node=document.querySelector(selector);
@@ -3180,6 +3257,140 @@ onAuthStateChanged(auth,async user=>{
   removeMarceCourse();
   document.addEventListener("DOMContentLoaded",()=>setTimeout(removeMarceCourse,0),{once:true});
   setTimeout(removeMarceCourse,500);
+})();
+</script>
+<script id="gca59-stable-runtime">
+/* GCA59 · estabilización de eventos y cambio de idioma.
+   No modifica Firebase, autenticación, roles, permisos ni reglas de acceso. */
+(()=>{
+  const BUILD="GCA59-ESTABILIZADA";
+  const LANGUAGE_IDS=["headerLang","lang"];
+  const SUPPORTED_LANGUAGES=["es","en","pt","fr","it","de"];
+  let applyingLanguage=false;
+
+  const HOME_EXTRA={
+    es:{words:["Aprende a pensar 🧠","Aprende a hablar 💬","Aprende a sentir en guaraní 💚"],sponsors:["✨ ESPACIO PARA TU MARCA · Llega a una comunidad que ama Paraguay","🇵🇾 Guaraní con Ali · Educación, cultura y comunidad","🤝 ¿QUIERES PATROCINAR? · Escríbenos"],privacy:["Privacidad","Política de privacidad"],follow:"Seguir a Ali Explora",account:["Gestión académica","Solicitar eliminación de cuenta","Cerrar sesión"]},
+    en:{words:["Learn to think 🧠","Learn to speak 💬","Learn to feel in Guaraní 💚"],sponsors:["✨ SPACE FOR YOUR BRAND · Reach a community that loves Paraguay","🇵🇾 Guaraní with Ali · Education, culture and community","🤝 WANT TO SPONSOR? · Write to us"],privacy:["Privacy","Privacy policy"],follow:"Follow Ali Explora",account:["Academic management","Request account deletion","Sign out"]},
+    pt:{words:["Aprenda a pensar 🧠","Aprenda a falar 💬","Aprenda a sentir em guarani 💚"],sponsors:["✨ ESPAÇO PARA SUA MARCA · Alcance uma comunidade que ama o Paraguai","🇵🇾 Guarani com Ali · Educação, cultura e comunidade","🤝 QUER PATROCINAR? · Escreva-nos"],privacy:["Privacidade","Política de privacidade"],follow:"Siga Ali Explora",account:["Gestão acadêmica","Solicitar exclusão da conta","Sair"]},
+    fr:{words:["Apprenez à penser 🧠","Apprenez à parler 💬","Apprenez à ressentir en guarani 💚"],sponsors:["✨ ESPACE POUR VOTRE MARQUE · Touchez une communauté qui aime le Paraguay","🇵🇾 Guarani avec Ali · Éducation, culture et communauté","🤝 VOUS VOULEZ PARRAINER ? · Écrivez-nous"],privacy:["Confidentialité","Politique de confidentialité"],follow:"Suivre Ali Explora",account:["Gestion académique","Demander la suppression du compte","Se déconnecter"]},
+    it:{words:["Impara a pensare 🧠","Impara a parlare 💬","Impara a sentire in guaraní 💚"],sponsors:["✨ SPAZIO PER IL TUO MARCHIO · Raggiungi una comunità che ama il Paraguay","🇵🇾 Guaraní con Ali · Educazione, cultura e comunità","🤝 VUOI SPONSORIZZARE? · Scrivici"],privacy:["Privacy","Informativa sulla privacy"],follow:"Segui Ali Explora",account:["Gestione accademica","Richiedi eliminazione account","Esci"]},
+    de:{words:["Lerne zu denken 🧠","Lerne zu sprechen 💬","Lerne auf Guaraní zu fühlen 💚"],sponsors:["✨ PLATZ FÜR DEINE MARKE · Erreiche eine Community, die Paraguay liebt","🇵🇾 Guaraní mit Ali · Bildung, Kultur und Gemeinschaft","🤝 MÖCHTEST DU SPONSERN? · Schreib uns"],privacy:["Datenschutz","Datenschutzerklärung"],follow:"Ali Explora folgen",account:["Akademische Verwaltung","Kontolöschung beantragen","Abmelden"]}
+  };
+
+  const SURFACE_TEXT={
+    es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
+    en:{nav:["Home","Courses","Practice","Dictionary","Management","Videos","Suggestions"],home:["Keep learning","General Guaraní","From the beginning","Lesson","of","Continue →","Explore other courses","Guaraní for children","Games and adventures","Swear words in Guaraní","Ñe’ẽ vai","Police entrance Guaraní","Preparation","Guaraní for Medicine","Clinical"],profile:"Private account"},
+    pt:{nav:["Início","Cursos","Prática","Dicionário","Gestão","Vídeos","Sugestões"],home:["Continue aprendendo","Guarani geral","Desde o início","Lição","de","Continuar →","Explore outros cursos","Guarani para crianças","Jogos e aventuras","Palavrões em guarani","Ñe’ẽ vai","Guarani para ingresso na Polícia","Preparação","Guarani para Medicina","Clínica"],profile:"Conta privada"},
+    fr:{nav:["Accueil","Cours","Pratique","Dictionnaire","Gestion","Vidéos","Suggestions"],home:["Continuez à apprendre","Guarani général","Depuis le début","Leçon","sur","Continuer →","Explorez d’autres cours","Guarani pour enfants","Jeux et aventures","Gros mots en guarani","Ñe’ẽ vai","Guarani pour l’entrée dans la Police","Préparation","Guarani pour la Médecine","Clinique"],profile:"Compte privé"},
+    it:{nav:["Home","Corsi","Pratica","Dizionario","Gestione","Video","Suggerimenti"],home:["Continua a imparare","Guaraní generale","Dall’inizio","Lezione","di","Continua →","Esplora altri corsi","Guaraní per bambini","Giochi e avventure","Parolacce in guaraní","Ñe’ẽ vai","Guaraní per l’ingresso in Polizia","Preparazione","Guaraní per Medicina","Clinica"],profile:"Account privato"},
+    de:{nav:["Start","Kurse","Übung","Wörterbuch","Verwaltung","Videos","Vorschläge"],home:["Weiterlernen","Allgemeines Guaraní","Von Anfang an","Lektion","von","Weiter →","Weitere Kurse entdecken","Guaraní für Kinder","Spiele und Abenteuer","Schimpfwörter auf Guaraní","Ñe’ẽ vai","Guaraní für den Polizeieintritt","Vorbereitung","Guaraní für Medizin","Klinisch"],profile:"Privates Konto"}
+  };
+  const HOME_KEYS=["continue","general","fromZero",null,null,"continueButton","explore","kids","games","rude","rudeSub","police","prep","medical","clinical"];
+
+  function safeRun(label,operation){
+    try{return operation()}catch(error){console.error(`GCA59_${label}`,error);return undefined}
+  }
+
+  function normalizeLanguage(code){return SUPPORTED_LANGUAGES.includes(code)?code:"es"}
+
+  function syncLanguageSelectors(code){
+    LANGUAGE_IDS.forEach(id=>{const select=document.getElementById(id);if(select&&select.value!==code)select.value=code});
+  }
+
+  function paintSurface(code){
+    const copy=SURFACE_TEXT[code]||SURFACE_TEXT.es;
+    document.querySelectorAll(".bottom-nav .nav-btn i").forEach((node,index)=>{if(copy.nav[index])node.textContent=copy.nav[index]});
+    HOME_KEYS.forEach((key,index)=>{if(!key)return;document.querySelectorAll(`[data-home-text="${key}"]`).forEach(node=>{node.textContent=copy.home[index]})});
+    const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
+    const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
+    const profile=document.querySelector("#profileEmail");if(profile)profile.textContent=copy.profile;
+  }
+
+  function paintExtraHome(code){
+    const copy=HOME_EXTRA[code]||HOME_EXTRA.es;
+    document.querySelectorAll("#home .hero-word").forEach((node,index)=>{if(copy.words[index])node.textContent=copy.words[index]});
+    document.querySelectorAll(".sponsor-item").forEach((node,index)=>{node.textContent=copy.sponsors[index%copy.sponsors.length]});
+    const privacyButton=document.querySelector("#privacySettings");if(privacyButton)privacyButton.textContent=copy.privacy[0];
+    const privacyPolicy=document.querySelector('footer a[href*="privacidad"]');if(privacyPolicy)privacyPolicy.textContent=copy.privacy[1];
+    const follow=document.querySelector(".follow-label");if(follow)follow.textContent=copy.follow;
+    document.querySelectorAll("#accountMenu .mini-btn,#accountMenu #logoutBtn").forEach((node,index)=>{
+      if(copy.account[index])node.textContent=(index===0?"🏫 ":index===1?"🗑️ ":"")+copy.account[index];
+    });
+  }
+
+  function repaintLanguageSurface(code,{translate=true}={}){
+    document.documentElement.lang=code;
+    syncLanguageSelectors(code);
+    if(translate&&typeof translateUI==="function")safeRun("TRANSLATE_UI",()=>translateUI());
+    safeRun("SURFACE_TEXT",()=>paintSurface(code));
+    safeRun("EXTRA_HOME",()=>paintExtraHome(code));
+    syncLanguageSelectors(code);
+  }
+
+  function applyLanguage(next,{persist=true,track=true}={}){
+    const code=normalizeLanguage(next);
+    if(applyingLanguage)return;
+    applyingLanguage=true;
+    try{
+      lang=code;
+      localStorage.setItem("guaraniAliPreferredLanguage",code);
+      repaintLanguageSurface(code);
+      if(track)window.courseAnalytics?.("language_selected",{language:code});
+      if(persist&&typeof save==="function")safeRun("SAVE_LANGUAGE",()=>save());
+      if(persist&&typeof rememberLearningLocation==="function")safeRun("SAVE_LOCATION",()=>rememberLearningLocation());
+    }finally{applyingLanguage=false}
+  }
+
+  LANGUAGE_IDS.forEach(id=>{
+    const select=document.getElementById(id);if(!select)return;
+    select.addEventListener("change",event=>applyLanguage(event.currentTarget.value));
+  });
+
+  /* El progreso remoto conserva el idioma elegido en este dispositivo. */
+  const applySyncedProgressBase=window.applySyncedProgress;
+  if(typeof applySyncedProgressBase==="function")window.applySyncedProgress=data=>{
+    const preferred=normalizeLanguage(localStorage.getItem("guaraniAliPreferredLanguage")||lang||"es");
+    applySyncedProgressBase({...data,lang:preferred});
+    lang=preferred;
+    repaintLanguageSurface(preferred,{translate:false});
+  };
+
+  /* Conserva el comportamiento actual del menú de cuenta sin alterar el login. */
+  const accountMenu=document.querySelector("#accountMenu"),accountButton=document.querySelector("#accountBtn");
+  accountMenu?.querySelector(".account-menu-close")?.remove();
+  document.addEventListener("pointerdown",event=>{
+    if(!accountMenu||accountMenu.classList.contains("hide"))return;
+    if(!accountMenu.contains(event.target)&&!accountButton?.contains(event.target))accountMenu.classList.add("hide");
+  },true);
+  document.addEventListener("keydown",event=>{if(event.key==="Escape")accountMenu?.classList.add("hide")});
+  accountMenu?.addEventListener("click",event=>{if(event.target.closest("a,[data-go],#logoutBtn"))accountMenu.classList.add("hide")});
+
+  /* Conserva exactamente la visibilidad actual del antiguo curso personalizado. */
+  function removeMarceCourse(){
+    ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
+      const node=document.querySelector(selector);if(!node)return;
+      node.classList.add("hide");node.style.setProperty("display","none","important");node.setAttribute("aria-hidden","true");node.setAttribute("inert","");
+    });
+    document.querySelectorAll('option[value="personalized"],option[value="marce"]').forEach(option=>option.remove());
+    const teacherAccess=document.querySelector("#teacherCourseAccess");
+    if(teacherAccess){
+      const label=document.querySelector('label[for="teacherCourseAccess"]'),note=teacherAccess.nextElementSibling;
+      teacherAccess.value="";teacherAccess.style.display="none";label?.classList.add("hide");if(note?.tagName==="SMALL")note.classList.add("hide");
+    }
+    document.querySelectorAll('[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>{node.style.setProperty("display","none","important");node.setAttribute("inert","")});
+    if(location.hash==="#customCourse"||location.hash==="#personalized"){
+      history.replaceState(null,"",location.pathname+location.search+"#home");if(typeof show==="function")show("home");
+    }
+  }
+
+  window.applyExtraHomeTranslation=paintExtraHome;
+  window.paintCompleteInterface=paintSurface;
+  window.setPlatformLanguage=applyLanguage;
+  document.documentElement.dataset.build=BUILD;
+  const preferred=normalizeLanguage(localStorage.getItem("guaraniAliPreferredLanguage")||(typeof lang!=="undefined"?lang:"es"));
+  applyLanguage(preferred,{persist:false,track:false});
+  removeMarceCourse();
+  document.addEventListener("DOMContentLoaded",()=>removeMarceCourse(),{once:true});
 })();
 </script>
 </body>
