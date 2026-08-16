@@ -3442,7 +3442,68 @@ onAuthStateChanged(auth,async user=>{
   window.addEventListener("gca:academic-updated",event=>apply(event.detail));
   document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
   const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
-  window.__GCA63={build:"GCA-63",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+  window.__GCA63={build:"GCA-64",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+})();
+</script>
+<script id="gca64-master-administration-controller">
+(()=>{
+  "use strict";
+  const MASTER_EMAIL="aliciaduartefretes@gmail.com";
+  const normalize=value=>String(value||"").trim().toLowerCase();
+
+  function userEmail(user){
+    return normalize(user?.email||user?.providerData?.find(item=>item?.email)?.email);
+  }
+
+  function enableMasterAdministration(user){
+    if(userEmail(user)!==MASTER_EMAIL)return false;
+    document.body.dataset.userRole="admin";
+    window.canAccessInstitutional=true;
+    window.isCourseAuthor=true;
+    document.querySelectorAll(".staff-entry").forEach(element=>{
+      element.classList.add("visible");
+      element.hidden=false;
+      element.removeAttribute("aria-hidden");
+      element.style.removeProperty("display");
+    });
+    const adminTab=document.getElementById("adminTab");
+    if(adminTab){
+      adminTab.hidden=false;
+      adminTab.classList.remove("role-hidden");
+      adminTab.removeAttribute("aria-hidden");
+      adminTab.style.removeProperty("display");
+    }
+    const adminPane=document.getElementById("adminPane");
+    if(adminPane){
+      adminPane.hidden=false;
+      adminPane.inert=false;
+      adminPane.removeAttribute("aria-hidden");
+      adminPane.style.removeProperty("display");
+    }
+    document.getElementById("staffRoleBadge")?.replaceChildren(document.createTextNode("Área privada de administración"));
+    return true;
+  }
+
+  const previousSetCourseUser=window.setCourseUser;
+  window.setCourseUser=user=>{
+    previousSetCourseUser?.(user);
+    if(enableMasterAdministration(user)){
+      requestAnimationFrame(()=>enableMasterAdministration(user));
+      setTimeout(()=>enableMasterAdministration(user),250);
+    }
+  };
+
+  window.addEventListener("gca:auth-ready",event=>{
+    if(normalize(event.detail?.email)!==MASTER_EMAIL)return;
+    const user=window.currentCourseUser;
+    enableMasterAdministration(user);
+    requestAnimationFrame(()=>enableMasterAdministration(user));
+    setTimeout(()=>enableMasterAdministration(user),500);
+  });
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    enableMasterAdministration(window.currentCourseUser);
+  },{once:true});
 })();
 </script>
 </body>
