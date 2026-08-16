@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA58-PRUEBA-ESTABLE">
+  <meta name="guarani-con-ali-build" content="GCA44-SIN-PANTALLAS-VACIAS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -3208,7 +3208,6 @@ onAuthStateChanged(auth,async user=>{
   }
 
   document.addEventListener("change",event=>{
-    if(window.__GCA58)return;
     const select=event.target.closest?.(LANGUAGE_IDS);
     if(!select)return;
     event.stopImmediatePropagation();
@@ -3246,105 +3245,6 @@ onAuthStateChanged(auth,async user=>{
   removeMarceCourse();
   document.addEventListener("DOMContentLoaded",()=>setTimeout(removeMarceCourse,0),{once:true});
   setTimeout(removeMarceCourse,500);
-})();
-</script>
-<script id="gca58-stable-platform-controller">
-(()=>{
-  "use strict";
-  const BUILD="GCA58-PRUEBA-ESTABLE";
-  const LANGUAGES=new Set(["es","en","pt","fr","it","de"]);
-  const SELECTORS=["headerLang","lang"];
-  const completeLanguageBase=window.setPlatformLanguage;
-  let changing=false;
-
-  function preferredLanguage(fallback="es"){
-    const saved=localStorage.getItem("guaraniAliPreferredLanguage");
-    return LANGUAGES.has(saved)?saved:(LANGUAGES.has(fallback)?fallback:"es");
-  }
-
-  function repaintCurrentView(){
-    if(typeof translateUI==="function")translateUI();
-    if(typeof renderHomeDashboard==="function")renderHomeDashboard();
-    if(typeof window.applyCompleteHomeLanguage==="function")window.applyCompleteHomeLanguage(lang);
-    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
-    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
-    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
-    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
-  }
-
-  function applyLanguage(code,{persist=true}={}){
-    code=LANGUAGES.has(code)?code:"es";
-    if(changing)return;
-    changing=true;
-    try{
-      lang=code;
-      document.documentElement.lang=code;
-      SELECTORS.forEach(id=>{const select=document.getElementById(id);if(select)select.value=code});
-      if(persist)localStorage.setItem("guaraniAliPreferredLanguage",code);
-      if(typeof completeLanguageBase==="function")completeLanguageBase(code);
-      repaintCurrentView();
-      if(persist&&typeof save==="function")save();
-      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
-    }catch(error){console.error("GCA58: no se pudo aplicar el idioma",error)}
-    finally{changing=false}
-  }
-
-  /* Sustituye los selectores para retirar todos los controladores acumulados. */
-  SELECTORS.forEach(id=>{
-    const old=document.getElementById(id);
-    if(!old)return;
-    const clean=old.cloneNode(true);
-    old.replaceWith(clean);
-    clean.value=preferredLanguage(typeof lang!=="undefined"?lang:"es");
-    clean.addEventListener("change",event=>{
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      applyLanguage(event.currentTarget.value);
-      requestAnimationFrame(()=>applyLanguage(event.currentTarget.value,{persist:false}));
-    });
-  });
-
-  /* La nube puede aportar progreso, pero nunca debe deshacer la elección local. */
-  const syncedBase=window.applySyncedProgress;
-  if(typeof syncedBase==="function")window.applySyncedProgress=data=>{
-    const chosen=preferredLanguage(typeof lang!=="undefined"?lang:"es");
-    syncedBase(data?{...data,lang:chosen}:data);
-    applyLanguage(chosen,{persist:false});
-  };
-
-  /* Marce queda fuera de la experiencia sin borrar todavía datos históricos. */
-  function removeLegacyMarceInterface(){
-    ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
-      const node=document.querySelector(selector);
-      if(!node)return;
-      node.hidden=true;
-      node.setAttribute("aria-hidden","true");
-      node.style.setProperty("display","none","important");
-      if("disabled" in node)node.disabled=true;
-    });
-    document.querySelectorAll('option[value="personalized"],option[value="marce"],[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>node.remove());
-    const access=document.getElementById("teacherCourseAccess");
-    if(access){
-      document.querySelector('label[for="teacherCourseAccess"]')?.style.setProperty("display","none","important");
-      if(access.nextElementSibling?.tagName==="SMALL")access.nextElementSibling.style.setProperty("display","none","important");
-      access.hidden=true;
-      access.disabled=true;
-      access.style.setProperty("display","none","important");
-    }
-    if(["#customCourse","#personalized"].includes(location.hash)){
-      history.replaceState(null,"",location.pathname+location.search+"#home");
-      if(typeof show==="function")show("home");
-    }
-  }
-
-  removeLegacyMarceInterface();
-  applyLanguage(preferredLanguage(typeof lang!=="undefined"?lang:"es"),{persist:false});
-  document.addEventListener("DOMContentLoaded",()=>{
-    removeLegacyMarceInterface();
-    applyLanguage(preferredLanguage(),{persist:false});
-  },{once:true});
-  window.setPlatformLanguage=code=>applyLanguage(code);
-  window.__GCA58={build:BUILD,applyLanguage,removeLegacyMarceInterface};
 })();
 </script>
 </body>
