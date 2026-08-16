@@ -1,0 +1,12 @@
+{
+  "name": "guarani-con-ali",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "firebase-admin": "14.2.0"
+  }
+}
