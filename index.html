@@ -2345,7 +2345,8 @@ window.completeNativeGoogleLogin=async(idToken,accessToken)=>{try{if(!idToken)th
 window.courseGoogleLogin=async()=>{let button=document.querySelector("#googleLogin"),status=document.querySelector("#authStatus");if(button?.disabled)return;auth.languageCode=document.documentElement.lang||"es";if(button){button.disabled=true;button.setAttribute("aria-busy","true")}if(status)status.textContent="Conectando con Google…";try{if(window.courseNativeGoogleLogin){let nativeResult=await window.courseNativeGoogleLogin();let nativeUser=auth.currentUser||nativeResult?.user;if(nativeUser)await finalizeGoogleLogin(nativeUser);window.courseAnalytics?.("login",{method:"google_native"});return nativeUser}let result=await signInWithPopup(auth,provider);await finalizeGoogleLogin(result.user);window.courseAnalytics?.("login",{method:"google_popup"});return result.user}catch(error){console.error("Inicio de sesión con Google",error);let code=String(error?.code||"");if(code==="auth/popup-blocked"&&status)status.textContent="Permite la ventana de Google y vuelve a tocar Continuar con Google.";else if(code==="auth/operation-not-supported-in-this-environment"&&status)status.textContent="Este navegador no admite el acceso dentro de la aplicación. Ábrela directamente en Safari o Chrome e inténtalo otra vez.";else showLoginProblem(error)}finally{if(button){button.disabled=false;button.removeAttribute("aria-busy")}}};
 window.courseLogout=()=>signOut(auth);
 const ADMIN_EMAILS=["aliciaduartefretes@gmail.com"],CUSTOM_PROGRAM="Curso personalizado con el Mbo'ehára Marce",normalizeEmail=value=>String(value||"").trim().toLowerCase(),emailAccessKey=value=>encodeURIComponent(normalizeEmail(value));
-const isAdministrator=user=>!!user&&ADMIN_EMAILS.includes(normalizeEmail(user.email));
+const accountEmails=user=>[user?.email,...(Array.isArray(user?.providerData)?user.providerData.map(provider=>provider?.email):[])].map(normalizeEmail).filter(Boolean);
+const isAdministrator=user=>!!user&&accountEmails(user).some(email=>ADMIN_EMAILS.includes(email));
 function lockAdministrativeInterface(user){let tab=document.querySelector("#adminTab"),pane=document.querySelector("#adminPane");if(isAdministrator(user)){tab?.style.removeProperty("display");pane?.style.removeProperty("display");return}document.body.dataset.userRole="student";if(tab){tab.hidden=true;tab.classList.add("role-hidden");tab.style.display="none";tab.setAttribute("aria-hidden","true")}if(pane){pane.hidden=true;pane.inert=true;pane.classList.add("hide");pane.style.display="none";pane.setAttribute("aria-hidden","true")}document.querySelector("#staffRoleBadge")?.replaceChildren(document.createTextNode("Área privada"))}
 onAuthStateChanged(auth,user=>lockAdministrativeInterface(user));
 const isPersonalizedGroup=group=>group?.courseType==="personalized"||normalizeEmail(group?.course).includes("curso personalizado");
@@ -2405,16 +2406,24 @@ function renderInstitutional(){
  document.querySelectorAll(".request-use").forEach(button=>button.onclick=()=>{document.querySelector("#certificateStudent").value=button.dataset.requestStudent;document.querySelector("#certificateForm")?.scrollIntoView({behavior:"smooth",block:"center"});showToast("Alumno seleccionado para emitir su certificado.")});
 }
 window.loadInstitutional=async()=>{
- let status=document.querySelector("#staffStatus");if(!isStaff()){show("home",true);return}
- let admin=isAdministrator(activeUser),adminTab=document.querySelector("#adminTab"),teacherTab=document.querySelector('[data-staff-tab="teacher"]'),adminPane=document.querySelector("#adminPane"),teacherPane=document.querySelector("#teacherPane"),certificateCard=document.querySelector("#certificateForm").closest(".staff-card");currentInstitutionRole=admin?"admin":"teacher";document.body.dataset.userRole=currentInstitutionRole;adminTab.classList.toggle("role-hidden",!admin);adminTab.hidden=!admin;adminTab.style.display=admin?"":"none";adminTab.setAttribute("aria-hidden",String(!admin));adminPane.hidden=!admin;adminPane.inert=!admin;adminPane.setAttribute("aria-hidden",String(!admin));certificateCard.parentElement.removeChild(certificateCard);(admin?document.querySelector("#adminPane .staff-grid"):document.querySelector("#teacherPane .staff-grid")).appendChild(certificateCard);document.querySelector("#staffRoleBadge").textContent=admin?"🛡️ Área privada de administración":"👩‍🏫 Área privada del profesor";document.querySelector("#staffEntryLabel").textContent=admin?"Centro de administración":"Área del profesor";
- adminTab.classList.remove("active");teacherTab.classList.add("active");adminPane.classList.add("hide");teacherPane.classList.remove("hide");let requestCard=document.querySelector("#certificateRequestCard");requestCard.parentElement.removeChild(requestCard);(admin?adminPane:teacherPane).appendChild(requestCard);let customOption=document.querySelector("#customProgramOption"),ownerControls=[document.querySelector("#groupTeacherLabel"),document.querySelector("#groupTeacher"),document.querySelector("#groupTeacherHelp")];if(customOption){customOption.hidden=true;customOption.disabled=true}if(document.querySelector("#groupCourse").value==="personalized")document.querySelector("#groupCourse").selectedIndex=0;ownerControls.forEach(control=>{if(control)control.hidden=true});
+ let status=document.querySelector("#staffStatus"),admin=isAdministrator(activeUser);if(!activeUser||(!admin&&!isStaff())){show("home",true);return}
+ let adminTab=document.querySelector("#adminTab"),teacherTab=document.querySelector('[data-staff-tab="teacher"]'),adminPane=document.querySelector("#adminPane"),teacherPane=document.querySelector("#teacherPane"),certificateCard=document.querySelector("#certificateForm").closest(".staff-card");currentInstitutionRole=admin?"admin":"teacher";document.body.dataset.userRole=currentInstitutionRole;adminTab.classList.toggle("role-hidden",!admin);adminTab.hidden=!admin;adminTab.style.display=admin?"":"none";adminTab.setAttribute("aria-hidden",String(!admin));adminPane.hidden=!admin;adminPane.inert=!admin;adminPane.setAttribute("aria-hidden",String(!admin));(admin?document.querySelector("#adminPane .staff-grid"):document.querySelector("#teacherPane .staff-grid"))?.appendChild(certificateCard);document.querySelector("#staffRoleBadge").textContent=admin?"🛡️ Área privada de administración":"👩‍🏫 Área privada del profesor";document.querySelector("#staffEntryLabel").textContent=admin?"Centro de administración":"Área del profesor";
+ adminTab.classList.remove("active");teacherTab.classList.add("active");adminPane.classList.add("hide");teacherPane.classList.remove("hide");let requestCard=document.querySelector("#certificateRequestCard");(admin?adminPane:teacherPane).appendChild(requestCard);let customOption=document.querySelector("#customProgramOption"),ownerControls=[document.querySelector("#groupTeacherLabel"),document.querySelector("#groupTeacher"),document.querySelector("#groupTeacherHelp")];if(customOption){customOption.hidden=true;customOption.disabled=true}if(document.querySelector("#groupCourse").value==="personalized")document.querySelector("#groupCourse").selectedIndex=0;ownerControls.forEach(control=>{if(control)control.hidden=true});
  status.textContent="Actualizando datos…";
  try{
-  let staffEmail=normalizeEmail(activeUser.email),usersRequest=admin?getDocs(collection(db,"users")):getDocs(query(collection(db,"users"),where("teacherEmails","array-contains",staffEmail))),groupsRequest=admin?getDocs(query(collection(db,"groups"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"groups"),where("teacherEmail","==",staffEmail))),tasksRequest=admin?getDocs(query(collection(db,"assignments"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"assignments"),where("teacherEmail","==",staffEmail))),certRequest=admin?getDocs(query(collection(db,"certificates"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"certificates"),where("issuedBy","==",staffEmail))),inboxRequest=admin?getDocs(query(collection(db,"certificateRequests"),orderBy("createdAt","desc"))):getDocs(query(collection(db,"certificateRequests"),where("teacherEmails","array-contains",staffEmail))),requests=[usersRequest,groupsRequest,tasksRequest,certRequest,inboxRequest];
-  if(admin)requests.push(getDocs(collection(db,"staff")));
-  let results=await Promise.all(requests),[usersSnap,groupsSnap,tasksSnap,certSnap,requestSnap,staffSnap]=results;
-  staffCache.students=usersSnap.docs.map(x=>({id:x.id,uid:x.id,...x.data()})).filter(x=>normalizeEmail(x.email)!==staffEmail);staffCache.groups=groupsSnap.docs.map(x=>({id:x.id,...x.data()}));staffCache.tasks=tasksSnap.docs.map(x=>({id:x.id,...x.data()}));staffCache.certificates=certSnap.docs.map(x=>({id:x.id,...x.data()}));staffCache.requests=requestSnap.docs.map(x=>({id:x.id,...x.data()}));staffCache.teachers=admin&&staffSnap?staffSnap.docs.map(x=>({id:x.id,...x.data()})).filter(x=>x.active):[];if(admin)await repairLegacyMarceEnrollments(staffCache.groups);renderInstitutional();status.textContent=admin?"Vista administrativa privada · datos actualizados":"Vista privada del profesor · únicamente tus alumnos, clases y solicitudes"
- }catch(error){console.error(error);status.textContent=String(error?.code||"").includes("permission-denied")?"Falta publicar las nuevas reglas privadas de Firebase incluidas con esta actualización.":"No pudimos cargar los datos. Revisa la conexión e inténtalo de nuevo."}
+  let staffEmail=normalizeEmail(activeUser.email),requests=admin?[
+   ["students",getDocs(collection(db,"users"))],["groups",getDocs(collection(db,"groups"))],["tasks",getDocs(collection(db,"assignments"))],["certificates",getDocs(collection(db,"certificates"))],["requests",getDocs(collection(db,"certificateRequests"))],["teachers",getDocs(collection(db,"staff"))]
+  ]:[
+   ["students",getDocs(query(collection(db,"users"),where("teacherEmails","array-contains",staffEmail)))],["groups",getDocs(query(collection(db,"groups"),where("teacherEmail","==",staffEmail)))],["tasks",getDocs(query(collection(db,"assignments"),where("teacherEmail","==",staffEmail)))],["certificates",getDocs(query(collection(db,"certificates"),where("issuedBy","==",staffEmail)))],["requests",getDocs(query(collection(db,"certificateRequests"),where("teacherEmails","array-contains",staffEmail)))]
+  ],results=await Promise.allSettled(requests.map(([,request])=>request)),failures=[];
+  staffCache.students=[];staffCache.groups=[];staffCache.tasks=[];staffCache.certificates=[];staffCache.requests=[];staffCache.teachers=[];
+  results.forEach((result,index)=>{let key=requests[index][0];if(result.status==="rejected"){failures.push({key,error:result.reason});console.error(`No se pudo cargar ${key}`,result.reason);return}let rows=result.value.docs.map(item=>({id:item.id,...(key==="students"?{uid:item.id}:{}),...item.data()}));if(key==="students")rows=rows.filter(item=>normalizeEmail(item.email)!==staffEmail);if(key==="teachers")rows=rows.filter(item=>item.active);staffCache[key]=rows});
+  renderInstitutional();
+  if(admin&&staffCache.groups.length)repairLegacyMarceEnrollments(staffCache.groups).catch(error=>console.error("No se pudieron revisar matrículas antiguas",error));
+  if(!failures.length)status.textContent=admin?"Vista administrativa privada · alumnos y estadísticas actualizados":"Vista privada del profesor · únicamente tus alumnos, clases y solicitudes";
+  else if(staffCache.students.length||results[0]?.status==="fulfilled")status.textContent=`Datos de alumnos cargados · ${failures.length} sección${failures.length===1?"":"es"} no pudo${failures.length===1?"":"ieron"} actualizarse`;
+  else status.textContent=failures.some(item=>String(item.error?.code||"").includes("permission-denied"))?"Tu sesión está abierta, pero Firebase rechazó la lectura administrativa.":"No pudimos cargar los alumnos. Comprueba la conexión e inténtalo otra vez.";
+ }catch(error){console.error(error);renderInstitutional();status.textContent="No pudimos cargar los alumnos. Comprueba la conexión e inténtalo otra vez."}
 };
 document.querySelectorAll("[data-staff-tab]").forEach(button=>button.onclick=()=>{if(button.dataset.staffTab==="admin"&&!isAdministrator(activeUser))return;document.querySelectorAll("[data-staff-tab]").forEach(x=>x.classList.toggle("active",x===button));document.querySelector("#teacherPane").classList.toggle("hide",button.dataset.staffTab!=="teacher");document.querySelector("#adminPane").classList.toggle("hide",button.dataset.staffTab!=="admin")});
 document.querySelector("#groupForm").onsubmit=async event=>{event.preventDefault();if(!isStaff())return;let admin=isAdministrator(activeUser),name=document.querySelector("#groupName").value.trim(),selection=document.querySelector("#groupCourse").value,courseType=selection==="personalized"?"personalized":"standard",studentEmails=[...new Set(document.querySelector("#groupStudents").value.split(/[\s,;]+/).map(normalizeEmail).filter(email=>email.includes("@")))];if(!name||!studentEmails.length)return showToast("Agrega al menos un correo de alumno.");if(courseType==="personalized"&&!admin&&!currentCourseKeys.includes("marce"))return showToast("Tu perfil no administra el Curso Marce.");let owner={email:normalizeEmail(activeUser.email),name:currentStaffName||activeUser.displayName||"Profesor",uid:activeUser.uid};if(admin&&courseType==="personalized"){let ownerEmail=normalizeEmail(document.querySelector("#groupTeacher").value),teacher=staffCache.teachers.find(item=>normalizeEmail(item.email)===ownerEmail&&item.courseKeys?.includes("marce"));if(!teacher)return showToast("Primero selecciona al profesor autorizado para el Curso Marce.");owner={email:ownerEmail,name:teacher.name||"Marce",uid:teacher.uid||""}}let course=courseType==="personalized"?CUSTOM_PROGRAM:selection,courseKey=courseType==="personalized"?"marce":"standard";try{let groupRef=await addDoc(collection(db,"groups"),{name,course,courseType,courseKey,teacherUid:owner.uid,ownerTeacherUid:owner.uid,teacherEmail:owner.email,ownerTeacherEmail:owner.email,teacherName:courseType==="personalized"?"Marce":owner.name,studentEmails,createdBy:normalizeEmail(activeUser.email),code:`GCA-${Math.random().toString(36).slice(2,8).toUpperCase()}`,createdAt:serverTimestamp()}),accessBase={groupId:groupRef.id,groupName:name,courseKey,teacherEmail:owner.email,teacherName:courseType==="personalized"?"Marce":owner.name,active:true,createdBy:normalizeEmail(activeUser.email),createdAt:serverTimestamp()};await Promise.all(studentEmails.flatMap(studentEmail=>{let access={...accessBase,studentEmail};return[setDoc(doc(db,"enrollments",`${groupRef.id}__${studentEmail}`),access,{merge:true}),setDoc(doc(db,"courseAccess",emailAccessKey(studentEmail)),access,{merge:true})]}));sessionStorage.removeItem("gcaMarceEnrollmentRepairV4");event.target.reset();await window.loadInstitutional();showToast(`Clase creada y acceso habilitado para ${studentEmails.length} alumno${studentEmails.length===1?"":"s"}.`)}catch(error){console.error(error);showToast("No se pudo completar la matrícula. Verifica las reglas de Firebase e inténtalo nuevamente.")}};
@@ -3442,7 +3451,7 @@ onAuthStateChanged(auth,async user=>{
   window.addEventListener("gca:academic-updated",event=>apply(event.detail));
   document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
   const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
-  window.__GCA63={build:"GCA-65",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+  window.__GCA63={build:"GCA-67",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
 })();
 </script>
 <script id="gca64-master-administration-controller">
@@ -3505,24 +3514,33 @@ onAuthStateChanged(auth,async user=>{
     enableMasterAdministration(window.currentCourseUser);
   },{once:true});
 
-  /* Navegación administrativa independiente de los controladores antiguos. */
+  /* Abre siempre el panel académico original sin depender del enrutador antiguo. */
+  function openMasterAcademicPanel(){
+    const user=window.currentCourseUser;
+    if(!enableMasterAdministration(user))return false;
+    document.getElementById("accountMenu")?.classList.add("hide");
+    const knownViews=["home","catalog","course","lesson","policeCourse","policeLesson","medicalCourse","medicalLesson","kidsCourse","kidsGame","customCourse","sounds","institutional","videos","suggestions"];
+    knownViews.forEach(id=>document.getElementById(id)?.classList.toggle("hide",id!=="institutional"));
+    document.querySelectorAll(".nav-btn").forEach(button=>button.classList.toggle("active",button.dataset.go==="institutional"));
+    history.pushState({view:"institutional"},"","#institutional");
+    window.scrollTo({top:0,behavior:"auto"});
+    const load=()=>{enableMasterAdministration(window.currentCourseUser);window.loadInstitutional?.()};
+    requestAnimationFrame(load);
+    setTimeout(load,180);
+    return true;
+  }
+
   document.addEventListener("click",event=>{
     const trigger=event.target.closest?.('[data-go="institutional"]');
-    if(!trigger)return;
-    const user=window.currentCourseUser;
-    if(!enableMasterAdministration(user))return;
+    if(!trigger||!openMasterAcademicPanel())return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    document.getElementById("accountMenu")?.classList.add("hide");
-    if(typeof show==="function"){
-      show("institutional",true);
-      window.scrollTo({top:0,behavior:"auto"});
-    }else{
-      document.querySelectorAll("main > section").forEach(section=>section.classList.toggle("hide",section.id!=="institutional"));
-      history.pushState({view:"institutional"},"","#institutional");
-    }
-    requestAnimationFrame(()=>window.loadInstitutional?.());
   },true);
+
+  window.addEventListener("gca:auth-ready",event=>{
+    if(normalize(event.detail?.email)!==MASTER_EMAIL||location.hash!=="#institutional")return;
+    setTimeout(openMasterAcademicPanel,100);
+  });
 })();
 </script>
 </body>
