@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA74-RESTAURACION-ORIGINAL">
+  <meta name="guarani-con-ali-build" content="GCA75-IDIOMA-INSTANTANEO">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -3075,7 +3075,7 @@ onAuthStateChanged(auth,async user=>{
   window.applyCompleteHomeLanguage=changeLanguageNow;
 })();
 </script>
-<script id="gca55-unified-language-state">
+<script id="gca55-unified-language-state" type="application/json" data-disabled="gca75">
 (()=>{
   const TEXT={
     es:{nav:["Inicio","Cursos","Práctica","Diccionario","Gestión","Videos","Sugerencias"],home:["Continúa aprendiendo","Guaraní general","Desde cero","Lección","de","Continuar →","Explora otros cursos","Guaraní para niños","Juegos y aventuras","Groserías en guaraní","Ñe’ẽ vai","Ingreso a la Policía","Preparación","Guaraní para Medicina","Clínica"],profile:"Cuenta privada"},
@@ -3131,7 +3131,7 @@ onAuthStateChanged(auth,async user=>{
   window.setPlatformLanguage=enforceLanguage;
 })();
 </script>
-<script id="gca56-instant-language-switch">
+<script id="gca56-instant-language-switch" type="application/json" data-disabled="gca75">
 (()=>{
   const IDS=["headerLang","lang"];
 
@@ -3175,7 +3175,7 @@ onAuthStateChanged(auth,async user=>{
   repaintVisibleScreen(preferred);
 })();
 </script>
-<script id="gca57-live-language-and-remove-marce">
+<script id="gca57-live-language-and-remove-marce" type="application/json" data-disabled="gca75">
 (()=>{
   const LANGUAGE_IDS="#headerLang,#lang";
   let applying=false;
@@ -3245,6 +3245,86 @@ onAuthStateChanged(auth,async user=>{
   removeMarceCourse();
   document.addEventListener("DOMContentLoaded",()=>setTimeout(removeMarceCourse,0),{once:true});
   setTimeout(removeMarceCourse,500);
+})();
+</script>
+<script id="gca75-single-language-controller">
+(()=>{
+  "use strict";
+  const IDS=["headerLang","lang"];
+  const VALID=new Set(["es","en","pt","fr","it","de"]);
+  let applying=false;
+
+  function chosenLanguage(fallback="es"){
+    const stored=localStorage.getItem("guaraniAliPreferredLanguage");
+    return VALID.has(stored)?stored:(VALID.has(fallback)?fallback:"es");
+  }
+
+  function repaintVisibleCourses(){
+    if(!document.querySelector("#course")?.classList.contains("hide")&&typeof renderUnits==="function")renderUnits();
+    if(!document.querySelector("#policeCourse")?.classList.contains("hide")&&typeof renderPoliceUnits==="function")renderPoliceUnits();
+    if(!document.querySelector("#medicalCourse")?.classList.contains("hide")&&typeof renderMedicalUnits==="function")renderMedicalUnits();
+    if(!document.querySelector("#reels")?.classList.contains("hide")&&typeof renderReels==="function")renderReels();
+  }
+
+  function applyLanguage(code,{persist=true}={}){
+    code=VALID.has(code)?code:"es";
+    if(applying)return;
+    applying=true;
+    try{
+      lang=code;
+      document.documentElement.lang=code;
+      localStorage.setItem("guaraniAliPreferredLanguage",code);
+      IDS.forEach(id=>{const selector=document.getElementById(id);if(selector)selector.value=code});
+      if(typeof translateUI==="function")translateUI();
+      if(typeof renderHomeDashboard==="function")renderHomeDashboard();
+      if(typeof window.applyCompleteHomeLanguage==="function")window.applyCompleteHomeLanguage(code);
+      repaintVisibleCourses();
+      IDS.forEach(id=>{const selector=document.getElementById(id);if(selector)selector.value=code});
+      if(persist&&typeof save==="function")save();
+      if(persist&&typeof rememberLearningLocation==="function")rememberLearningLocation();
+    }catch(error){
+      console.error("GCA75: no se pudo aplicar el idioma",error);
+    }finally{
+      applying=false;
+    }
+  }
+
+  /* Clonar retira onchange y listeners heredados: queda exactamente uno por selector. */
+  IDS.forEach(id=>{
+    const old=document.getElementById(id);
+    if(!old)return;
+    const clean=old.cloneNode(true);
+    old.replaceWith(clean);
+    clean.addEventListener("change",event=>{
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      applyLanguage(event.currentTarget.value);
+    });
+  });
+
+  /* La sincronización remota conserva progreso, pero no revierte el idioma elegido localmente. */
+  const syncBase=window.applySyncedProgress;
+  if(typeof syncBase==="function")window.applySyncedProgress=data=>{
+    const preferred=chosenLanguage(typeof lang!=="undefined"?lang:"es");
+    syncBase(data?{...data,lang:preferred}:data);
+    applyLanguage(preferred,{persist:false});
+  };
+
+  /* El curso retirado continúa oculto sin tocar sus datos históricos. */
+  ["#homeMarce","#startCustomHome","#customCourseCard","#customCourse"].forEach(selector=>{
+    const node=document.querySelector(selector);
+    if(!node)return;
+    node.hidden=true;
+    node.classList.add("hide");
+    node.style.setProperty("display","none","important");
+    node.setAttribute("aria-hidden","true");
+  });
+  document.querySelectorAll('option[value="personalized"],option[value="marce"],[data-go="customCourse"],#openCustomCourse,.custom-program-lesson,#openCustomFirstLesson').forEach(node=>node.remove());
+
+  const initial=chosenLanguage(typeof lang!=="undefined"?lang:"es");
+  applyLanguage(initial,{persist:false});
+  window.setPlatformLanguage=code=>applyLanguage(code);
+  window.__GCA75={applyLanguage,build:"GCA75-IDIOMA-INSTANTANEO"};
 })();
 </script>
 </body>
