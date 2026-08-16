@@ -3442,7 +3442,7 @@ onAuthStateChanged(auth,async user=>{
   window.addEventListener("gca:academic-updated",event=>apply(event.detail));
   document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
   const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
-  window.__GCA63={build:"GCA-64",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+  window.__GCA63={build:"GCA-65",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
 })();
 </script>
 <script id="gca64-master-administration-controller">
@@ -3504,6 +3504,25 @@ onAuthStateChanged(auth,async user=>{
   document.addEventListener("DOMContentLoaded",()=>{
     enableMasterAdministration(window.currentCourseUser);
   },{once:true});
+
+  /* Navegación administrativa independiente de los controladores antiguos. */
+  document.addEventListener("click",event=>{
+    const trigger=event.target.closest?.('[data-go="institutional"]');
+    if(!trigger)return;
+    const user=window.currentCourseUser;
+    if(!enableMasterAdministration(user))return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    document.getElementById("accountMenu")?.classList.add("hide");
+    if(typeof show==="function"){
+      show("institutional",true);
+      window.scrollTo({top:0,behavior:"auto"});
+    }else{
+      document.querySelectorAll("main > section").forEach(section=>section.classList.toggle("hide",section.id!=="institutional"));
+      history.pushState({view:"institutional"},"","#institutional");
+    }
+    requestAnimationFrame(()=>window.loadInstitutional?.());
+  },true);
 })();
 </script>
 </body>
