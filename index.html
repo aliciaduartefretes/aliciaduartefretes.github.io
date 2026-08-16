@@ -1741,6 +1741,7 @@ const LOCATION_KEY="guaraniAliLocationV3";
 function captureLearningLocation(view){return{view:view||views.find(x=>!$("#"+x)?.classList.contains("hide"))||"home",lang,unit,phase,step,policeUnit,policeStep,policePhase,medicalUnit,medicalStep,medicalPhase,kidWorld,kidMission,kidStep,kidMapSelected,scrollY:Math.round(window.scrollY||0)}}
 function rememberLearningLocation(view,replaceHistory=true){let place=captureLearningLocation(view);localStorage.setItem(LOCATION_KEY,JSON.stringify(place));if(replaceHistory)history.replaceState(place,"","#"+place.view);return place}
 function show(id,push=false){if(id==="institutional"&&!window.canAccessInstitutional){id="home";showToast("Esta área es privada para profesores autorizados.")}views.forEach(x=>{let el=$("#"+x);if(el)el.classList.toggle("hide",x!==id)});let navTarget=["course","lesson","policeCourse","policeLesson","medicalCourse","medicalLesson","kidsCourse","kidsGame"].includes(id)?"catalog":id;document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.go===navTarget));if(id==="sounds")renderSoundResults($("#soundSearch")?.value||"");if(id==="institutional")window.loadInstitutional?.();let place=captureLearningLocation(id);localStorage.setItem(LOCATION_KEY,JSON.stringify(place));if(push)history.pushState(place,"","#"+id);else history.replaceState(place,"","#"+id);setTimeout(()=>enhancePronunciations($("#"+id)||document),0)}
+window.openCourseView=show;
 function save(){localStorage.setItem("guaraniAliPro",JSON.stringify(state));$("#xp").textContent=state.xp;$("#lives").textContent=state.lives;window.syncCourseProgress?.({...state,lang})}
 function title(i){return lang==="es"?U[i].title:translations[lang][i]}
 function desc(i){return lang==="es"?descriptions.es[i]:(DESCRIPTIONS_I18N[lang]||descriptions.en)[i]}
@@ -2425,6 +2426,24 @@ window.loadInstitutional=async()=>{
   else status.textContent=failures.some(item=>String(item.error?.code||"").includes("permission-denied"))?"Tu sesión está abierta, pero Firebase rechazó la lectura administrativa.":"No pudimos cargar los alumnos. Comprueba la conexión e inténtalo otra vez.";
  }catch(error){console.error(error);renderInstitutional();status.textContent="No pudimos cargar los alumnos. Comprueba la conexión e inténtalo otra vez."}
 };
+/* Única puerta de entrada a Gestión Académica.
+   Valida contra el usuario real de Firebase y abre el panel original. */
+window.openAcademicManagement=async()=>{
+ const admin=isAdministrator(activeUser),authorized=admin||currentInstitutionRole==="teacher";
+ if(!activeUser||!authorized){showToast("Esta área es privada para profesores autorizados.");return false}
+ window.canAccessInstitutional=true;
+ document.body.dataset.userRole=admin?"admin":"teacher";
+ document.getElementById("accountMenu")?.classList.add("hide");
+ window.openCourseView?.("institutional",true);
+ window.scrollTo({top:0,behavior:"auto"});
+ return true;
+};
+function bindAcademicManagementButtons(){
+ document.querySelectorAll('[data-go="institutional"]').forEach(button=>{
+  button.onclick=event=>{event.preventDefault();event.stopPropagation();window.openAcademicManagement()};
+ });
+}
+bindAcademicManagementButtons();
 document.querySelectorAll("[data-staff-tab]").forEach(button=>button.onclick=()=>{if(button.dataset.staffTab==="admin"&&!isAdministrator(activeUser))return;document.querySelectorAll("[data-staff-tab]").forEach(x=>x.classList.toggle("active",x===button));document.querySelector("#teacherPane").classList.toggle("hide",button.dataset.staffTab!=="teacher");document.querySelector("#adminPane").classList.toggle("hide",button.dataset.staffTab!=="admin")});
 document.querySelector("#groupForm").onsubmit=async event=>{event.preventDefault();if(!isStaff())return;let admin=isAdministrator(activeUser),name=document.querySelector("#groupName").value.trim(),selection=document.querySelector("#groupCourse").value,courseType=selection==="personalized"?"personalized":"standard",studentEmails=[...new Set(document.querySelector("#groupStudents").value.split(/[\s,;]+/).map(normalizeEmail).filter(email=>email.includes("@")))];if(!name||!studentEmails.length)return showToast("Agrega al menos un correo de alumno.");if(courseType==="personalized"&&!admin&&!currentCourseKeys.includes("marce"))return showToast("Tu perfil no administra el Curso Marce.");let owner={email:normalizeEmail(activeUser.email),name:currentStaffName||activeUser.displayName||"Profesor",uid:activeUser.uid};if(admin&&courseType==="personalized"){let ownerEmail=normalizeEmail(document.querySelector("#groupTeacher").value),teacher=staffCache.teachers.find(item=>normalizeEmail(item.email)===ownerEmail&&item.courseKeys?.includes("marce"));if(!teacher)return showToast("Primero selecciona al profesor autorizado para el Curso Marce.");owner={email:ownerEmail,name:teacher.name||"Marce",uid:teacher.uid||""}}let course=courseType==="personalized"?CUSTOM_PROGRAM:selection,courseKey=courseType==="personalized"?"marce":"standard";try{let groupRef=await addDoc(collection(db,"groups"),{name,course,courseType,courseKey,teacherUid:owner.uid,ownerTeacherUid:owner.uid,teacherEmail:owner.email,ownerTeacherEmail:owner.email,teacherName:courseType==="personalized"?"Marce":owner.name,studentEmails,createdBy:normalizeEmail(activeUser.email),code:`GCA-${Math.random().toString(36).slice(2,8).toUpperCase()}`,createdAt:serverTimestamp()}),accessBase={groupId:groupRef.id,groupName:name,courseKey,teacherEmail:owner.email,teacherName:courseType==="personalized"?"Marce":owner.name,active:true,createdBy:normalizeEmail(activeUser.email),createdAt:serverTimestamp()};await Promise.all(studentEmails.flatMap(studentEmail=>{let access={...accessBase,studentEmail};return[setDoc(doc(db,"enrollments",`${groupRef.id}__${studentEmail}`),access,{merge:true}),setDoc(doc(db,"courseAccess",emailAccessKey(studentEmail)),access,{merge:true})]}));sessionStorage.removeItem("gcaMarceEnrollmentRepairV4");event.target.reset();await window.loadInstitutional();showToast(`Clase creada y acceso habilitado para ${studentEmails.length} alumno${studentEmails.length===1?"":"s"}.`)}catch(error){console.error(error);showToast("No se pudo completar la matrícula. Verifica las reglas de Firebase e inténtalo nuevamente.")}};
 document.querySelector("#groupForm").addEventListener("submit",()=>sessionStorage.removeItem("gcaMarceEnrollmentRepairV5"));
@@ -3451,7 +3470,7 @@ onAuthStateChanged(auth,async user=>{
   window.addEventListener("gca:academic-updated",event=>apply(event.detail));
   document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
   const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
-  window.__GCA63={build:"GCA-67",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+  window.__GCA63={build:"GCA-68",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
 })();
 </script>
 <script id="gca64-master-administration-controller">
@@ -3514,19 +3533,12 @@ onAuthStateChanged(auth,async user=>{
     enableMasterAdministration(window.currentCourseUser);
   },{once:true});
 
-  /* Abre siempre el panel académico original sin depender del enrutador antiguo. */
+  /* Compatibilidad: la apertura real vive junto al estado autenticado de Firebase. */
   function openMasterAcademicPanel(){
     const user=window.currentCourseUser;
-    if(!enableMasterAdministration(user))return false;
-    document.getElementById("accountMenu")?.classList.add("hide");
-    const knownViews=["home","catalog","course","lesson","policeCourse","policeLesson","medicalCourse","medicalLesson","kidsCourse","kidsGame","customCourse","sounds","institutional","videos","suggestions"];
-    knownViews.forEach(id=>document.getElementById(id)?.classList.toggle("hide",id!=="institutional"));
-    document.querySelectorAll(".nav-btn").forEach(button=>button.classList.toggle("active",button.dataset.go==="institutional"));
-    history.pushState({view:"institutional"},"","#institutional");
-    window.scrollTo({top:0,behavior:"auto"});
-    const load=()=>{enableMasterAdministration(window.currentCourseUser);window.loadInstitutional?.()};
-    requestAnimationFrame(load);
-    setTimeout(load,180);
+    const recognized=enableMasterAdministration(user)||document.body.dataset.userRole==="admin";
+    if(!recognized)return false;
+    if(typeof window.openAcademicManagement==="function")window.openAcademicManagement();
     return true;
   }
 
