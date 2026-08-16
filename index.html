@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA59-ESTABILIZADA">
+  <meta name="guarani-con-ali-build" content="GCA60-ALI-IA">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -2669,7 +2669,77 @@ onAuthStateChanged(auth,async user=>{
   /* Ali IA usa el diccionario y entiende solicitudes de aprendizaje más variadas. */
   function findLexiconMatches(text){const q=norm(text),parts=q.split(/\s+/).filter(x=>x.length>1);let exact=lexicon.filter(item=>parts.some(part=>norm(item[0])===part)||q===norm(item[0]));if(exact.length)return exact.slice(0,5);return lexicon.filter(item=>norm(item[0]).includes(q)||norm(item[1]).includes(q)).slice(0,5)}
   function smartAiReply(text){const q=norm(text),after=(needle)=>text.slice(norm(text).indexOf(needle)+needle.length).replace(/[¿?]/g,"").trim();if(q.includes("certific"))return "En Gestión puedes buscar al alumno por nombre o correo, tocar su nombre y preparar su certificado. Ali IA puede recomendar una decisión, pero la aprobación final queda en manos de la administración.";if(q.includes("groser")||q.includes("insulto")||q.includes("ñe'e vai")||q.includes("nee vai"))return "Groserías en guaraní reúne expresiones organizadas por áreas, prácticas continuas y videos de la Profe Ali.";if(q.includes("practicar")||q.includes("ejercicio"))return "Puedes practicar Escuchar, Comprender, Escribir o Hablar desde Práctica. Si quieres vocabulario fuerte, abre el curso Ñe'ẽ vai. ¿Qué habilidad deseas trabajar?";let target="";if(q.includes("que significa"))target=after("que significa");else if(q.includes("significa"))target=after("significa");else if(q.includes("como se dice")){target=after("como se dice");const found=lexicon.filter(item=>norm(item[1]).includes(norm(target))).slice(0,5);if(found.length)return `Para “${target}” encontré: ${found.map(x=>`${x[0]} (${x[1]})`).join("; ")}.`;}else if(text.trim().split(/\s+/).length<=3)target=text.trim();if(target){const found=findLexiconMatches(target);if(found.length)return found.map(x=>`${x[0]}: ${x[1]}. ${x[2]||""}`).join("\n");}if(q.includes("salud"))return "Para saludar: Maitei. Para preguntar cómo está alguien: Mba'éichapa. Respuesta breve: Iporã, aguyje. Puedes practicarlo en Escuchar o Hablar.";if(q.includes("diccionario")||q.includes("palabra"))return `El diccionario contiene ${lexicon.length} palabras y expresiones basadas principalmente en el Ñe'ẽryru que compartiste. Escribe una palabra en guaraní o pregunta “¿cómo se dice…?”`;if(q.includes("error"))return "Tus errores no desaparecen: las prácticas los repiten hasta que respondas correctamente. Así el avance refleja aprendizaje real.";return "Puedo buscar palabras del Ñe'ẽryru, traducir significados, recomendar una práctica, explicar el curso Groserías en guaraní y orientar certificados. Prueba: “¿Qué significa hayhu?” o “¿Cómo se dice casa?”"}
-  document.querySelector("#aiForm")?.addEventListener("submit",event=>{event.preventDefault();event.stopImmediatePropagation();const text=aiInput.value.trim();if(!text)return;addAi(text,"user");aiInput.value="";const wait=document.createElement("div");wait.className="ai-message bot ai-thinking";wait.textContent="Buscando en el Ñe'ẽryru…";aiMessages.appendChild(wait);aiMessages.scrollTop=aiMessages.scrollHeight;setTimeout(()=>{wait.remove();addAi(smartAiReply(text),"bot")},300)},true);
+  const AI_ERROR_TEXT={
+    authentication_required:"Para usar Ali IA, primero inicia sesión con tu cuenta.",
+    invalid_session:"Tu sesión venció. Vuelve a iniciar sesión y prueba nuevamente.",
+    ai_temporarily_disabled:"Ali IA está desactivada temporalmente por la administración.",
+    daily_limit_reached:"Alcanzaste el límite de IA de hoy. Podrás volver a usarla mañana.",
+    monthly_limit_reached:"Alcanzaste el límite mensual de IA de tu cuenta.",
+    ai_temporarily_unavailable:"Ali IA no pudo responder ahora. Inténtalo nuevamente en unos minutos.",
+    service_unavailable:"El servicio de IA no está disponible en este momento.",
+  };
+  function aiUsageText(usage){
+    if(!usage?.daily||!usage?.monthly)return"";
+    return `Uso: ${usage.daily.used}/${usage.daily.limit} hoy · ${usage.monthly.used}/${usage.monthly.limit} este mes`;
+  }
+  async function callAliApi(method="GET",body){
+    const user=window.currentCourseUser;
+    if(!user?.getIdToken){const error=new Error("authentication_required");error.code="authentication_required";throw error}
+    const token=await user.getIdToken();
+    const response=await fetch("/api/ai",{
+      method,
+      headers:{Authorization:`Bearer ${token}`,...(body?{"Content-Type":"application/json"}:{})},
+      body:body?JSON.stringify(body):undefined,
+    });
+    let payload={};try{payload=await response.json()}catch(error){payload={error:"service_unavailable"}}
+    if(!response.ok){const apiError=new Error(payload.error||"service_unavailable");apiError.code=payload.error||"service_unavailable";apiError.payload=payload;throw apiError}
+    return payload;
+  }
+  function currentAiCourse(){
+    const visible=[...document.querySelectorAll("main>section:not(.hide)")].map(section=>section.id).join(" ").toLowerCase();
+    if(visible.includes("police"))return"police";
+    if(visible.includes("medical"))return"medical";
+    if(visible.includes("kids"))return"kids";
+    if(visible.includes("dictionary"))return"dictionary";
+    if(visible.includes("rude"))return"rude";
+    if(visible.includes("course")||visible.includes("lesson"))return"general";
+    return"";
+  }
+  function renderAiAdminCard(status){
+    if(!status?.isAdmin)return;
+    const host=document.querySelector("#adminPane .staff-grid")||document.querySelector("#adminPane");
+    if(!host)return;
+    let card=document.querySelector("#aiAdminCard");
+    if(!card){card=document.createElement("article");card.id="aiAdminCard";card.className="staff-card";host.prepend(card)}
+    card.innerHTML=`<h3>✨ Control de Ali IA</h3><p class="staff-card-intro">Activa o pausa la IA y define los límites de cada usuario. La clave permanece solamente en Vercel.</p><div class="staff-message" id="aiAdminState">${status.enabled?"✅ IA activa":"⏸️ IA desactivada"}</div><div class="staff-form"><label>Límite diario por usuario<input id="aiDailyLimit" type="number" min="1" max="100" value="${status.usage.daily.limit}"></label><label>Límite mensual por usuario<input id="aiMonthlyLimit" type="number" min="1" max="3000" value="${status.usage.monthly.limit}"></label><div class="staff-actions"><button class="btn" id="aiAdminToggle" type="button">${status.enabled?"Desactivar temporalmente":"Activar Ali IA"}</button><button class="mini-btn" id="aiAdminSaveLimits" type="button">Guardar límites</button></div></div>`;
+    document.querySelector("#aiAdminToggle").onclick=async()=>{
+      const button=document.querySelector("#aiAdminToggle");button.disabled=true;
+      try{const result=await callAliApi("PATCH",{enabled:!status.enabled});await refreshAiAdmin(result.config)}catch(error){showToast(AI_ERROR_TEXT[error.code]||"No se pudo cambiar el estado de la IA.");button.disabled=false}
+    };
+    document.querySelector("#aiAdminSaveLimits").onclick=async()=>{
+      const button=document.querySelector("#aiAdminSaveLimits"),dailyLimit=Number(document.querySelector("#aiDailyLimit").value),monthlyLimit=Number(document.querySelector("#aiMonthlyLimit").value);button.disabled=true;
+      try{await callAliApi("PATCH",{dailyLimit,monthlyLimit});showToast("Límites de Ali IA guardados.");await refreshAiAdmin()}catch(error){showToast(AI_ERROR_TEXT[error.code]||"Revisa los límites ingresados.");button.disabled=false}
+    };
+  }
+  async function refreshAiAdmin(config){
+    try{const status=config?await callAliApi("GET"):await callAliApi("GET");renderAiAdminCard(status)}catch(error){if(error.code!=="authentication_required")console.warn("No se pudo cargar el control de Ali IA",error.code)}
+  }
+  document.querySelector("#adminTab")?.addEventListener("click",()=>refreshAiAdmin());
+  document.querySelector("#aiForm")?.addEventListener("submit",async event=>{
+    event.preventDefault();event.stopImmediatePropagation();
+    const text=aiInput.value.trim();if(!text)return;
+    if(!window.currentCourseUser){addAi(AI_ERROR_TEXT.authentication_required,"bot");openAuth();return}
+    addAi(text,"user");aiInput.value="";
+    const submit=event.currentTarget.querySelector("button[type='submit']"),wait=document.createElement("div");
+    submit.disabled=true;wait.className="ai-message bot ai-thinking";wait.textContent="Consultando el contenido del curso…";aiMessages.appendChild(wait);aiMessages.scrollTop=aiMessages.scrollHeight;
+    try{
+      const result=await callAliApi("POST",{question:text,course:currentAiCourse()});
+      wait.remove();addAi(result.answer,"bot");
+      const usage=aiUsageText(result.usage);if(usage)addAi(usage,"bot");
+    }catch(error){
+      wait.remove();addAi(AI_ERROR_TEXT[error.code]||"No pude responder esta pregunta. Inténtalo nuevamente.","bot");
+    }finally{submit.disabled=false;aiInput.focus()}
+  },true);
 
   /* Guardia global contra tarjetas vacías y rutas cruzadas entre cursos. */
   const renderStudyStable=renderStudy,renderQuizStable=renderQuiz;
@@ -3260,10 +3330,10 @@ onAuthStateChanged(auth,async user=>{
 })();
 </script>
 <script id="gca59-stable-runtime">
-/* GCA59 · estabilización de eventos y cambio de idioma.
+/* GCA60 · estabilización conservada e integración segura de Ali IA.
    No modifica Firebase, autenticación, roles, permisos ni reglas de acceso. */
 (()=>{
-  const BUILD="GCA59-ESTABILIZADA";
+  const BUILD="GCA60-ALI-IA";
   const LANGUAGE_IDS=["headerLang","lang"];
   const SUPPORTED_LANGUAGES=["es","en","pt","fr","it","de"];
   let applyingLanguage=false;
@@ -3288,7 +3358,7 @@ onAuthStateChanged(auth,async user=>{
   const HOME_KEYS=["continue","general","fromZero",null,null,"continueButton","explore","kids","games","rude","rudeSub","police","prep","medical","clinical"];
 
   function safeRun(label,operation){
-    try{return operation()}catch(error){console.error(`GCA59_${label}`,error);return undefined}
+    try{return operation()}catch(error){console.error(`GCA60_${label}`,error);return undefined}
   }
 
   function normalizeLanguage(code){return SUPPORTED_LANGUAGES.includes(code)?code:"es"}
