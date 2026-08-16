@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA58-PRUEBA-ESTABLE">
+  <meta name="guarani-con-ali-build" content="GCA-63-PRUEBA">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -11,7 +11,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>
-    window.GCA_BUILD="GCA-37";
+    window.GCA_BUILD="GCA-63";
     if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(items=>items.forEach(item=>item.unregister())).catch(()=>{});}
     if("caches" in window){caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});}
   </script>
@@ -1775,7 +1775,7 @@ function renderGeneralFinishedScreen(){const body=$("#lessonBody");if(!body)retu
 function finish(){phase="finished";if(!state.done.includes(unit))state.done.push(unit);renderGeneralFinishedScreen();finishReaction(true);window.courseAnalytics?.("unit_completed",{unit_number:unit+1,language:lang});save()}
 function go(id){if(id==="videos")renderReels();if(id==="policeCourse")renderPoliceUnits();window.courseAnalytics?.("screen_viewed",{screen_name:id,language:lang});show(id,true);window.scrollTo(0,0)}
 function quickChallenge(){let t=$("#toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);openUnit(0)}
-function openAuth(){if(!window.currentCourseUser)$("#authModal").classList.remove("hide")}
+function openAuth(){if(window.currentCourseUser)return;if(window.courseAuthReady){$("#authModal").classList.remove("hide");return}window.addEventListener("gca:auth-ready",()=>{if(!window.currentCourseUser)$("#authModal").classList.remove("hide")},{once:true})}
 function closeAuth(){$("#authModal").classList.add("hide");$("#authStatus").textContent=""}
 function offerAuthOnce(){if(!window.currentCourseUser&&!localStorage.getItem("guaraniAliAuthOffered")){localStorage.setItem("guaraniAliAuthOffered","1");setTimeout(openAuth,700)}}
 window.getCourseSnapshot=()=>({...state,lang});
@@ -2331,6 +2331,8 @@ import{initializeAuth,GoogleAuthProvider,signInWithPopup,getRedirectResult,signI
 import{getFirestore,doc,getDoc,setDoc,addDoc,getDocs,collection,query,where,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBuxfSFX3X_2B50KB7LtF_Dr83rNYKwe0g",authDomain:"guaraniconali.firebaseapp.com",projectId:"guaraniconali",storageBucket:"guaraniconali.firebasestorage.app",messagingSenderId:"797059955101",appId:"1:797059955101:web:fff3c84069e822cefb5774",measurementId:"G-9TZF24KWHW"};
 const app=initializeApp(firebaseConfig),auth=initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence,browserSessionPersistence],popupRedirectResolver:browserPopupRedirectResolver}),db=getFirestore(app),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let activeUser=null,syncTimer=null,applyingCloud=false,analytics=null,analyticsModule=null,authSessionVersion=0;
+window.courseAuthReady=false;
+onAuthStateChanged(auth,user=>{window.courseAuthReady=true;window.setCourseUser?.(user);if(user)document.querySelector("#authModal")?.classList.add("hide");window.dispatchEvent(new CustomEvent("gca:auth-ready",{detail:{signedIn:!!user,email:user?.email||""}}))});
 window.enableCourseAnalytics=async()=>{if(!analyticsModule)analyticsModule=await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js");if(!analytics)analytics=analyticsModule.getAnalytics(app);analyticsModule.setAnalyticsCollectionEnabled(analytics,true);window.courseAnalytics=(name,params={})=>analyticsModule.logEvent(analytics,name,params);window.courseAnalytics("analytics_consent",{choice:"accepted"})};
 window.disableCourseAnalytics=()=>{if(analytics&&analyticsModule)analyticsModule.setAnalyticsCollectionEnabled(analytics,false);window.courseAnalytics=null};
 if(localStorage.getItem("guaraniAliAnalytics")==="accepted")window.enableCourseAnalytics();
@@ -3440,7 +3442,7 @@ onAuthStateChanged(auth,async user=>{
   window.addEventListener("gca:academic-updated",event=>apply(event.detail));
   document.addEventListener("DOMContentLoaded",()=>{ensureTools();if(window.__GCA59AcademicSnapshot)apply(window.__GCA59AcademicSnapshot)},{once:true});
   const status=document.getElementById("staffStatus");if(status)new MutationObserver(()=>{if(/no pudimos|falta publicar/i.test(status.textContent))status.dataset.state="error"}).observe(status,{childList:true,subtree:true});
-  window.__GCA62={build:"GCA-62",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
+  window.__GCA63={build:"GCA-63",admin:ADMIN,refresh:()=>window.loadInstitutional?.()};
 })();
 </script>
 </body>
