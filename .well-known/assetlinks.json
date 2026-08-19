@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "py.com.idiomaguarani.app",
       "sha256_cert_fingerprints": [
-        "B1:85:7A:55:A5:52:30:0C:0C:80:C1:8A:13:7F:73:27:FB:CC:7C:7E:D5:FF:6D:8B:BD:A1:C1:AD:B0:2D:C8:52"
+        "32:A2:16:E4:EF:A1:C2:F6:89:65:BD:49:C6:47:AC:6B:69:75:8F:7D:21:43:9B:F9:59:96:25:3A:84:27:DE:70"
       ]
     }
   }
