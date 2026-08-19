@@ -11,15 +11,10 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>
-    window.GCA_BUILD="GCA-37";
+    window.GCA_BUILD="GCA-63";
     if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(items=>items.forEach(item=>item.unregister())).catch(()=>{});}
     if("caches" in window){caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});}
   </script>
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Guaraní con Ali">
-  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <title>Guaraní con Ali · Curso interactivo</title>
@@ -288,6 +283,135 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
       .account-btn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important}
     }
   </style>
+<style id="gca-life-course-styles">
+  .gca-life-shell{max-width:980px;margin:0 auto;padding:34px 18px 90px}
+  .gca-life-back{border:0;background:transparent;color:#6844bf;font:inherit;font-weight:900;cursor:pointer;padding:8px 2px;margin-bottom:12px}
+  .gca-life-hero{position:relative;overflow:hidden;border-radius:30px;padding:34px;background:linear-gradient(135deg,#263b70 0%,#7047c9 62%,#e0678b 100%);color:#fff;box-shadow:0 13px 34px rgba(73,49,135,.22)}
+  .gca-life-hero:after{content:"🗣️";position:absolute;right:26px;bottom:-17px;font-size:105px;opacity:.16;transform:rotate(-8deg)}
+  .gca-life-hero .tag{background:rgba(255,255,255,.94);color:#5e3ab4}
+  .gca-life-hero h2{position:relative;z-index:1;margin:17px 0 9px;font-size:clamp(31px,5vw,49px);line-height:1.05}
+  .gca-life-hero p{position:relative;z-index:1;max-width:670px;margin:0;color:#f5efff;font-size:17px;line-height:1.65}
+  .gca-life-progress{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto;gap:11px;align-items:center;margin-top:25px;max-width:670px}
+  .gca-life-progress-track{height:10px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+  .gca-life-progress-track b{display:block;height:100%;width:0;border-radius:99px;background:#ffd55e;transition:width .3s ease}
+  .gca-life-progress span{font-weight:950;white-space:nowrap}
+  .gca-life-title{margin:38px 4px 17px;font-size:25px}
+  .gca-life-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .gca-life-card{position:relative;display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:14px;align-items:center;border:2px solid #ded5ef;border-radius:23px;padding:19px;background:#fff;color:var(--ink);text-align:left;cursor:pointer;box-shadow:0 6px 0 #e7e0f1;transition:.18s}
+  .gca-life-card:hover{transform:translateY(-2px);border-color:#8b6bd0}
+  .gca-life-card.done{border-color:#9dd7bd;background:linear-gradient(135deg,#fff,#effbf5);box-shadow:0 6px 0 #d6eee2}
+  .gca-life-card-icon{width:56px;height:56px;border-radius:17px;background:#f3effb;display:grid;place-items:center;font-size:29px}
+  .gca-life-card small{display:block;color:#7c6f91;font-weight:850;margin-bottom:4px}
+  .gca-life-card strong{display:block;font-size:18px;line-height:1.25}
+  .gca-life-card p{margin:5px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+  .gca-life-card-status{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#f0eafb;color:#6b47bd;font-size:19px;font-weight:950}
+  .gca-life-card.done .gca-life-card-status{background:#288960;color:#fff}
+  .gca-life-note{margin-top:24px;padding:17px 19px;border-left:5px solid #f0bd3d;border-radius:15px;background:#fff8dd;color:#675b36;line-height:1.55}
+  .gca-life-lesson-head{border-radius:27px;padding:29px;background:linear-gradient(135deg,#f5f0ff,#fff3e8);border:2px solid #ded3f1;box-shadow:0 8px 0 #ebe4f4}
+  .gca-life-lesson-head small{font-weight:950;color:#7654c6;text-transform:uppercase;letter-spacing:.07em}
+  .gca-life-lesson-head h2{font-size:clamp(29px,5vw,43px);margin:9px 0}
+  .gca-life-lesson-head p{color:var(--muted);font-size:16px;line-height:1.55;margin:0}
+  .gca-life-study{margin-top:22px;border:2px solid #e2daed;border-radius:25px;background:#fff;overflow:hidden;box-shadow:0 8px 0 #eee8f4}
+  .gca-life-study-section{padding:25px;border-bottom:1px solid #ece7f2}
+  .gca-life-study-section:last-child{border-bottom:0}
+  .gca-life-study-section h3{margin:0 0 12px;font-size:23px}
+  .gca-life-study-section p{color:var(--muted);line-height:1.68}
+  .gca-life-phrases{display:grid;gap:10px;margin-top:14px}
+  .gca-life-phrase{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px;border:2px solid #e7e0f0;border-radius:16px;background:#fcfbfe}
+  .gca-life-phrase b{font-size:18px;color:#5d3daf}
+  .gca-life-phrase span{color:var(--muted)}
+  .gca-life-speak{width:41px;height:41px;border:0;border-radius:13px;background:#e7fff4;cursor:pointer;font-size:20px}
+  .gca-life-library{margin-top:20px;border:2px solid #d9cbed;border-radius:20px;background:linear-gradient(145deg,#fbf9ff,#fff);overflow:hidden}
+  .gca-life-library-head{padding:20px;background:linear-gradient(135deg,#efe7ff,#fff4e8)}
+  .gca-life-library-head h3{margin:0 0 7px;font-size:22px}
+  .gca-life-library-head p{margin:0;color:#655c73;font-size:14px;line-height:1.55}
+  .gca-life-phrase-group{border-top:1px solid #e8e0f0}
+  .gca-life-phrase-group summary{padding:16px 20px;cursor:pointer;font-weight:950;color:#543798;background:#fff}
+  .gca-life-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 16px 17px}
+  .gca-life-library-item{position:relative;min-height:104px;padding:14px 54px 14px 14px;border:1px solid #e4dcec;border-radius:15px;background:#fcfbfe}
+  .gca-life-library-item strong{display:block;color:#5d3daf;font-size:17px;line-height:1.3}
+  .gca-life-library-item span{display:block;margin-top:5px;color:#5f5868;font-size:14px;line-height:1.4}
+  .gca-life-library-item small{display:block;margin-top:6px;color:#9a4e55;font-weight:750}
+  .gca-life-library-item .gca-life-speak{position:absolute;right:10px;top:10px}
+  .gca-life-tip{padding:15px 17px;border-radius:15px;background:#eef6ff;border:1px solid #cadaee;color:#31516f;line-height:1.55}
+  .gca-life-dialogue{display:grid;gap:9px;margin-top:12px}
+  .gca-life-bubble{max-width:83%;padding:12px 15px;border-radius:16px;background:#f1ecfb;color:#44336b;line-height:1.45}
+  .gca-life-bubble:nth-child(even){justify-self:end;background:#e9faf3;color:#235a47}
+  .gca-life-recipes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:14px}
+  .gca-life-recipe{border:2px solid #ead9b7;border-radius:18px;background:#fffaf0;padding:17px}
+  .gca-life-recipe h4{font-size:19px;margin:0 0 8px}
+  .gca-life-recipe p{font-size:13px;margin:6px 0}
+  .gca-life-culture{margin:-2px -2px 20px;padding:20px;border:1px solid #eadfc9;border-radius:18px;background:linear-gradient(145deg,#fff4d8,#fff)}
+  .gca-life-culture-badge{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;padding:7px 11px;border-radius:999px;background:#fff0bd;color:#6f5211;font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.05em}
+  .gca-life-culture h3{font-size:clamp(25px,4vw,34px)}
+  .gca-life-recipe-tag{display:inline-block;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:#e9fff4;color:#236147;font-size:11px;font-weight:900}
+  .gca-life-recipe-note{color:#6d6256!important;font-style:italic}
+  .gca-life-sources{margin-top:17px;padding:14px 16px;border:1px solid #e5dbc8;border-radius:14px;background:#fff;color:#665d50;font-size:13px;line-height:1.55}
+  .gca-life-sources a{color:#5d3daf;font-weight:850}
+  .gca-life-recipe summary{color:#6a47b7;font-weight:900;cursor:pointer;margin-top:11px}
+  .gca-life-recipe ol{padding-left:19px;color:var(--muted);font-size:13px;line-height:1.55}
+  .gca-life-quiz{margin-top:22px;padding:25px;border:2px solid #dcd2ec;border-radius:25px;background:linear-gradient(145deg,#fff,#faf7ff);box-shadow:0 8px 0 #e9e2f2}
+  .gca-life-quiz small{font-weight:950;color:#6d49bd;text-transform:uppercase;letter-spacing:.08em}
+  .gca-life-quiz h3{font-size:23px;line-height:1.35;margin:9px 0 15px}
+  .gca-life-options{display:grid;gap:9px}
+  .gca-life-option{border:2px solid #ded6ea;border-radius:14px;background:#fff;padding:13px 15px;color:var(--ink);font:inherit;font-weight:850;text-align:left;cursor:pointer}
+  .gca-life-option:hover{border-color:#8a68d1;background:#f8f4ff}
+  .gca-life-option.correct{border-color:#25895f;background:#eaf9f1;color:#176244}
+  .gca-life-option.wrong{border-color:#d86d71;background:#fff0f0;color:#9e3f43}
+  .gca-life-feedback{min-height:26px;margin:13px 0 0;font-weight:850}
+  .gca-life-voice{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px;padding:15px;border-radius:16px;background:#f5f1fc}
+  .gca-life-voice button,.gca-life-next{border:0;border-radius:13px;background:#6842c0;color:#fff;padding:12px 16px;font:inherit;font-weight:950;cursor:pointer}
+  .gca-life-voice span{color:var(--muted);font-size:14px}
+  .gca-life-next{display:none;margin-top:15px;background:#25895f}
+  .gca-life-next.visible{display:inline-flex}
+  .gca-life-mini{--tile-bg:#f1edff;--tile-border:#bdaee9;--tile-shadow:#ad9dde;--tile-accent:#6746b8}
+  .gca-life-mini.theme-diario{--tile-bg:#e8faf5;--tile-border:#9fd9c9;--tile-shadow:#8dccbb;--tile-accent:#23856e}
+  .gca-life-mini.theme-romantico{--tile-bg:#fff0f3;--tile-border:#eab0bd;--tile-shadow:#df9eae;--tile-accent:#bc526c}
+  .gca-life-mini.theme-cocina{--tile-bg:#fff7dc;--tile-border:#eacb70;--tile-shadow:#ddbd5b;--tile-accent:#a36c08}
+  .gca-life-catalog{--life-accent:#6746b8;--life-soft:#f2eeff;--life-border:#bdaee9;position:relative;overflow:hidden;background:linear-gradient(145deg,#fff 48%,var(--life-soft));border-color:var(--life-border)!important}
+  .gca-life-catalog.theme-diario{--life-accent:#23856e;--life-soft:#e9faf5;--life-border:#9fd9c9}
+  .gca-life-catalog.theme-romantico{--life-accent:#bc526c;--life-soft:#fff0f3;--life-border:#eab0bd}
+  .gca-life-catalog.theme-cocina{--life-accent:#a36c08;--life-soft:#fff7dc;--life-border:#eacb70}
+  .gca-life-catalog:after{content:"";position:absolute;right:-32px;top:-34px;width:108px;height:108px;border-radius:50%;background:color-mix(in srgb,var(--life-accent) 10%,transparent);pointer-events:none}
+  .gca-life-catalog .course-card-icon{position:relative;z-index:1;background:var(--life-soft);color:var(--life-accent);border:2px solid var(--life-border)}
+  .gca-life-card-meta{margin:10px 0 14px;color:var(--life-accent);font-size:12px;font-weight:900;line-height:1.4}
+  .gca-life-catalog .gca-life-action{width:auto!important;min-height:40px!important;padding:9px 14px!important;border-radius:12px!important;background:var(--life-accent)!important;box-shadow:none!important;font-size:13px!important;align-self:flex-start}
+  .gca-life-overview{--life-accent:#6746b8;--life-soft:#f2eeff;--life-border:#bdaee9;--life-hero:linear-gradient(135deg,#50359d,#8b66dc)}
+  .gca-life-overview.theme-diario{--life-accent:#187864;--life-soft:#e8f8f3;--life-border:#99d5c5;--life-hero:linear-gradient(135deg,#126b5a,#3fa48d)}
+  .gca-life-overview.theme-romantico{--life-accent:#aa405c;--life-soft:#fff0f3;--life-border:#e7acbb;--life-hero:linear-gradient(135deg,#91354f,#d96c83)}
+  .gca-life-overview.theme-cocina{--life-accent:#8b5c08;--life-soft:#fff6da;--life-border:#e6c565;--life-hero:linear-gradient(135deg,#875b10,#d29b31)}
+  .gca-life-overview-hero{position:relative;overflow:hidden;padding:32px;border-radius:29px;background:var(--life-hero);color:#fff;box-shadow:0 10px 0 color-mix(in srgb,var(--life-accent) 25%,#e9e3f2)}
+  .gca-life-overview-hero:after{content:attr(data-icon);position:absolute;right:24px;bottom:-24px;font-size:126px;opacity:.13;transform:rotate(-8deg)}
+  .gca-life-kicker{display:inline-flex;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.94);color:var(--life-accent);font-size:12px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+  .gca-life-overview-hero h2{position:relative;z-index:1;margin:15px 0 8px;font-size:clamp(31px,5vw,49px);line-height:1.05}
+  .gca-life-overview-hero p{position:relative;z-index:1;max-width:700px;margin:0;color:#fff;font-size:16px;line-height:1.6}
+  .gca-life-meta{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .gca-life-meta span{padding:8px 11px;border-radius:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);font-size:12px;font-weight:900}
+  .gca-life-outcomes{margin:22px 0 0;padding:21px;border:2px solid var(--life-border);border-radius:22px;background:var(--life-soft)}
+  .gca-life-outcomes h3{margin:0 0 12px;font-size:21px;color:var(--life-accent)}
+  .gca-life-outcomes ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+  .gca-life-outcomes li{position:relative;padding:11px 12px 11px 37px;border-radius:14px;background:#fff;color:#524c5c;line-height:1.45}
+  .gca-life-outcomes li:before{content:"✓";position:absolute;left:12px;top:10px;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:var(--life-accent);color:#fff;font-size:11px;font-weight:950}
+  .gca-life-curriculum-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:32px 3px 14px}.gca-life-curriculum-head h3{margin:0;font-size:25px}.gca-life-curriculum-head span{color:var(--muted);font-size:13px;font-weight:850}
+  .gca-life-unit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .gca-life-unit-card{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr) 30px;gap:13px;align-items:center;padding:17px;border:2px solid #e1d9ea;border-radius:20px;background:#fff;color:var(--ink);text-align:left;cursor:pointer;box-shadow:0 6px 0 #ece6f1;transition:.18s}
+  .gca-life-unit-card:hover{transform:translateY(-2px);border-color:var(--life-border)}.gca-life-unit-card.done{border-color:var(--life-border);background:linear-gradient(135deg,#fff,var(--life-soft));box-shadow:0 6px 0 color-mix(in srgb,var(--life-border) 45%,#eee)}
+  .gca-life-unit-number{width:50px;height:50px;display:grid;place-items:center;border-radius:16px;background:var(--life-soft);color:var(--life-accent);font-size:20px;font-weight:950}
+  .gca-life-unit-card strong{display:block;font-size:17px;line-height:1.25}.gca-life-unit-card small{display:block;margin-top:5px;color:var(--muted);line-height:1.35}.gca-life-unit-status{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:var(--life-soft);color:var(--life-accent);font-weight:950}
+  .gca-life-progress-box{margin-top:18px}.gca-life-progress-box div{height:10px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden}.gca-life-progress-box i{display:block;height:100%;border-radius:99px;background:#fff;transition:.25s}.gca-life-progress-box small{display:block;margin-top:7px;color:#fff;font-weight:850}
+  .gca-life-lesson-head{--life-accent:#6746b8;--life-soft:#f2eeff;--life-border:#bdaee9;background:linear-gradient(135deg,var(--life-soft),#fff);border-color:var(--life-border)}
+  .gca-life-lesson-head.theme-diario{--life-accent:#187864;--life-soft:#e8f8f3;--life-border:#99d5c5}.gca-life-lesson-head.theme-romantico{--life-accent:#aa405c;--life-soft:#fff0f3;--life-border:#e7acbb}.gca-life-lesson-head.theme-cocina{--life-accent:#8b5c08;--life-soft:#fff6da;--life-border:#e6c565}
+  .gca-life-lesson-head small{color:var(--life-accent)}
+  .gca-life-objective{margin:16px 0 0;padding:14px 16px;border-left:5px solid var(--life-accent);border-radius:14px;background:#fff;color:#4f4858;line-height:1.55}
+  .gca-life-explanation{padding:22px;border-bottom:1px solid #ece7f2}.gca-life-explanation h3{margin:0 0 10px;font-size:22px}.gca-life-explanation p{margin:0;color:var(--muted);line-height:1.68}.gca-life-example{margin-top:14px;padding:14px 16px;border-radius:15px;background:#f8f5fc;color:#4c4067;line-height:1.55}
+  .gca-life-task{margin-top:15px;padding:16px 18px;border-radius:16px;background:#eef7ff;border:1px solid #cbdff0;color:#31516f;line-height:1.55}.gca-life-task b{display:block;margin-bottom:4px}
+  .gca-life-unit-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}.gca-life-unit-actions button{border:0;border-radius:13px;padding:12px 16px;font:inherit;font-weight:950;cursor:pointer}.gca-life-return{background:#f0eafb;color:#5f3eaa}.gca-life-continue{display:none;background:#26845e;color:#fff}.gca-life-continue.visible{display:inline-flex}
+  .gca-life-recipe{position:relative;overflow:hidden;background:#fff;border-color:#e8d39a}.gca-life-recipe:before{content:attr(data-icon);display:grid;place-items:center;height:92px;margin:-17px -17px 15px;background:linear-gradient(135deg,#fff2c9,#f7df9b);font-size:45px}.gca-life-recipe h4{font-size:20px}.gca-life-recipe-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 11px}.gca-life-recipe-meta span{padding:5px 8px;border-radius:999px;background:#fff3cd;color:#72540e;font-size:11px;font-weight:900}.gca-life-recipe ul{padding-left:19px;color:#655e55;font-size:13px;line-height:1.55}.gca-life-recipe-vocab{margin-top:10px;padding:10px;border-radius:12px;background:#eef8f3;color:#285c49;font-size:12px;line-height:1.5}.gca-life-recipe details{border-top:1px solid #eadfca;margin-top:12px;padding-top:2px}
+  .gca-life-reference-note{margin-top:17px;padding:14px 16px;border:1px solid #e5dbc8;border-radius:14px;background:#fff;color:#665d50;font-size:13px;line-height:1.55}
+  .gca-life-course-supplement{margin-top:27px;padding:22px;border:2px solid var(--life-border);border-radius:23px;background:var(--life-soft)}.gca-life-course-supplement>h3{margin:0 0 7px;color:var(--life-accent);font-size:23px}.gca-life-course-supplement>p{margin:0;color:#655d6d;line-height:1.55}
+  @media(min-width:980px){.gca-life-recipes{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:760px){.gca-life-shell{padding:22px 13px 80px}.gca-life-hero{padding:25px 21px}.gca-life-hero:after{font-size:78px}.gca-life-grid,.gca-life-unit-grid{grid-template-columns:1fr}.gca-life-card{grid-template-columns:49px minmax(0,1fr) 31px;padding:15px 13px}.gca-life-card-icon{width:47px;height:47px;font-size:24px}.gca-life-phrase{grid-template-columns:minmax(0,1fr) auto}.gca-life-phrase span{grid-column:1/2}.gca-life-speak{grid-column:2;grid-row:1/3}.gca-life-recipes,.gca-life-library-grid,.gca-life-outcomes ul{grid-template-columns:1fr}.gca-life-study-section,.gca-life-quiz{padding:20px}.gca-life-bubble{max-width:94%}.gca-life-overview-hero{padding:25px 21px}.gca-life-overview-hero:after{font-size:83px}.gca-life-curriculum-head{align-items:flex-start;flex-direction:column;gap:3px}.gca-life-course-supplement{padding:18px}.gca-life-recipe:before{height:78px}}
+</style>
 </head>
 <body>
 <div class="sponsor-strip" aria-label="Patrocinadores">
@@ -369,7 +493,6 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 <aside class="ai-panel" id="aiPanel" aria-label="Asistente de Guaraní con Ali"><div class="ai-head"><span>✨</span><div><b>Ali IA</b><small>Conversación educativa · en desarrollo</small></div></div><div class="ai-messages" id="aiMessages"><div class="ai-message bot">Mba'éichapa 👋 Soy Ali IA. Puedo explicarte contenidos, buscar en el Ñe'ẽryru, ayudarte a practicar y conversar sobre lo que estás aprendiendo.</div></div><div class="ai-suggestions"><button data-ai-prompt="Explícame cómo saludar">Explicar saludos</button><button data-ai-prompt="¿Cómo se dice casa?">Buscar palabra</button><button data-ai-prompt="Quiero practicar una conversación">Conversar</button></div><form class="ai-form" id="aiForm"><input id="aiInput" placeholder="Pregúntame algo sobre guaraní…" autocomplete="off"><button type="submit">Enviar</button></form></aside>
 <nav class="bottom-nav" aria-label="Navegación principal"><button class="nav-btn active" data-go="home"><span>🏠</span><i data-ui="navHome">Inicio</i></button><button class="nav-btn" data-go="catalog"><span>📚</span><i data-ui="navCourse">Cursos</i></button><button class="nav-btn" data-go="practice"><span>🎯</span><i>Práctica</i></button><button class="nav-btn" data-go="dictionary"><span>📖</span><i>Diccionario</i></button><button class="nav-btn staff-entry" id="staffBottomNav" data-go="institutional"><span>🏫</span><i>Gestión</i></button><button class="nav-btn" data-go="videos"><span>▶️</span><i data-ui="navVideos">Videos</i></button><button class="nav-btn" data-go="suggestions"><span>💡</span><i data-ui="navIdeas">Sugerencias</i></button></nav>
 <div class="network-status" id="networkStatus" role="status" aria-live="polite" hidden>Sin conexión · el progreso local sigue disponible</div>
-<aside class="app-notice" id="appInstallNotice" hidden aria-label="Instalar aplicación"><div class="app-notice-icon">📱</div><div class="app-notice-copy"><b>Instala Guaraní con Ali</b><small>Acceso rápido desde tu pantalla de inicio y experiencia a pantalla completa.</small></div><div class="app-notice-actions"><button class="btn" id="installAppButton">Instalar</button><button class="mini-btn" id="dismissInstallButton" aria-label="Cerrar">Ahora no</button></div></aside>
 <aside class="app-notice" id="appUpdateNotice" hidden aria-label="Actualizar aplicación"><div class="app-notice-icon">✨</div><div class="app-notice-copy"><b>Nueva versión disponible</b><small>Actualiza cuando termines tu actividad para recibir las mejoras.</small></div><div class="app-notice-actions"><button class="btn" id="updateAppButton">Actualizar</button><button class="mini-btn" id="dismissUpdateButton" aria-label="Cerrar">Después</button></div></aside>
 <a class="follow-float" href="https://www.instagram.com/aliexplora/" target="_blank" rel="noopener" aria-label="Seguir a Ali Explora"><span class="follow-label">Seguir a Ali Explora</span>📸</a><span class="ali-watermark" aria-hidden="true">LA PROFE ALI</span>
 <footer><button class="privacy-link" id="privacySettings">Privacidad</button> · <a class="privacy-link" href="/privacidad.html">Política de privacidad</a><small id="buildVersion" hidden></small></footer>
@@ -2446,63 +2569,11 @@ onAuthStateChanged(auth,async user=>{
 </script>
 <script>
 (()=>{
-  const isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true||document.referrer.startsWith("android-app://");
-  document.documentElement.classList.toggle("app-standalone",isStandalone);
   const networkStatus=document.getElementById("networkStatus");
   const updateNetworkStatus=()=>{const offline=!navigator.onLine;networkStatus.hidden=!offline;document.documentElement.classList.toggle("app-offline",offline)};
   window.addEventListener("online",updateNetworkStatus);
   window.addEventListener("offline",updateNetworkStatus);
   updateNetworkStatus();
-
-  let deferredInstallPrompt=null;
-  const installNotice=document.getElementById("appInstallNotice");
-  window.addEventListener("beforeinstallprompt",event=>{
-    event.preventDefault();
-    deferredInstallPrompt=event;
-    if(!isStandalone&&sessionStorage.getItem("gcaInstallDismissed")!=="1")installNotice.hidden=false;
-  });
-  document.getElementById("installAppButton").addEventListener("click",async()=>{
-    if(!deferredInstallPrompt)return;
-    installNotice.hidden=true;
-    deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt=null;
-  });
-  document.getElementById("dismissInstallButton").addEventListener("click",()=>{
-    installNotice.hidden=true;
-    sessionStorage.setItem("gcaInstallDismissed","1");
-  });
-  window.addEventListener("appinstalled",()=>{installNotice.hidden=true;deferredInstallPrompt=null});
-
-  return;/* Caché PWA desactivada temporalmente para asegurar actualizaciones inmediatas. */
-  let refreshing=false;
-  const updateNotice=document.getElementById("appUpdateNotice");
-  const showUpdate=registration=>{
-    if(!registration.waiting)return;
-    updateNotice.hidden=false;
-    document.getElementById("updateAppButton").onclick=()=>{
-      updateNotice.hidden=true;
-      registration.waiting.postMessage({type:"SKIP_WAITING"});
-    };
-  };
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{
-    if(refreshing)return;
-    refreshing=true;
-    location.reload();
-  });
-  document.getElementById("dismissUpdateButton").addEventListener("click",()=>{updateNotice.hidden=true});
-  navigator.serviceWorker.register("/sw.js").then(registration=>{
-    showUpdate(registration);
-    registration.addEventListener("updatefound",()=>{
-      const worker=registration.installing;
-      worker?.addEventListener("statechange",()=>{
-        if(worker.state==="installed"&&navigator.serviceWorker.controller)showUpdate(registration);
-      });
-    });
-    const checkUpdate=()=>registration.update().catch(()=>{});
-    window.addEventListener("focus",checkUpdate);
-    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
-  }).catch(error=>console.warn("No se pudo activar el modo de aplicación",error));
 })();
 </script>
 <script>
@@ -3461,6 +3532,612 @@ onAuthStateChanged(auth,async user=>{
   applyLanguage(preferred,{persist:false,track:false});
   removeMarceCourse();
   document.addEventListener("DOMContentLoaded",()=>removeMarceCourse(),{once:true});
+})();
+</script>
+<script id="gca-life-course-legacy-disabled">
+window.__GCA63LegacyLife=function(){
+  "use strict";
+
+  const LIFE_KEY="gcaLifeCourseV1";
+  const commonPhraseLibrary=[
+    {group:"Encuentros y cortesía",g:"Aguahẽma",s:"Ya llegué."},
+    {group:"Encuentros y cortesía",g:"Aguyje",s:"Gracias."},
+    {group:"Encuentros y cortesía",g:"Cheñyrõmíkena",s:"Discúlpame o perdóname, por favor."},
+    {group:"Encuentros y cortesía",g:"Cheroryete rohechávo",s:"Me alegra mucho verte."},
+    {group:"Encuentros y cortesía",g:"Eguahẽmína",s:"Pasa adelante, por favor."},
+    {group:"Encuentros y cortesía",g:"Eguapymi",s:"Siéntate, por favor."},
+    {group:"Encuentros y cortesía",g:"Eikéna",s:"Entra, por favor."},
+    {group:"Encuentros y cortesía",g:"Néi",s:"Bueno / sí."},
+    {group:"Encuentros y cortesía",g:"Néi, nderoryete",s:"Bueno, eres muy amable."},
+    {group:"Encuentros y cortesía",g:"Nemarangatuete",s:"Eres muy bondadoso/a."},
+    {group:"Encuentros y cortesía",g:"Tereguahẽ porãite",s:"Bienvenido/a."},
+    {group:"Encuentros y cortesía",g:"Tereho porãite",s:"Buen viaje."},
+    {group:"Encuentros y cortesía",g:"Vokoieténte jajoecha jeýne",s:"Muy pronto nos volveremos a ver."},
+    {group:"Atención y ayuda",g:"Ahechakuaáta ndéve",s:"Reconoceré tu ayuda o tu trabajo."},
+    {group:"Atención y ayuda",g:"Ahendu",s:"Escucho."},
+    {group:"Atención y ayuda",g:"Ajapysaka hese",s:"Le presto atención; le escucho."},
+    {group:"Atención y ayuda",g:"Ajesareko",s:"Presto atención."},
+    {group:"Atención y ayuda",g:"Ani rehechagui / Ani repena",s:"No le hagas caso."},
+    {group:"Atención y ayuda",g:"Ani rejepy’apy",s:"No te preocupes."},
+    {group:"Atención y ayuda",g:"Ejeheja ichugui",s:"Déjate de él/ella; no le hagas caso."},
+    {group:"Atención y ayuda",g:"Epoi ichugui",s:"Déjate de él/ella."},
+    {group:"Bienestar y emociones",g:"Añeñandu porã",s:"Me siento bien; estoy con buen ánimo."},
+    {group:"Bienestar y emociones",g:"Añeñandu’i",s:"No me siento bien; estoy decaído/a."},
+    {group:"Bienestar y emociones",g:"Añemyrõ hendive",s:"Estoy disgustado/a o resentido/a con él/ella."},
+    {group:"Bienestar y emociones",g:"Chepy’a heta",s:"Soy indeciso/a."},
+    {group:"Bienestar y emociones",g:"Chepy’a mirĩ",s:"Siento miedo; soy miedoso/a."},
+    {group:"Bienestar y emociones",g:"Chepy’a tarova",s:"Estoy intranquilo/a o nervioso/a."},
+    {group:"Bienestar y emociones",g:"Chepy’a tytýi",s:"Estoy intranquilo/a o inseguro/a."},
+    {group:"Bienestar y emociones",g:"Hesãimba hikuái",s:"Están bien de salud."},
+    {group:"Bienestar y emociones",g:"Hesãipa nde rogayguakuéra?",s:"¿Tus familiares están bien de salud?"},
+    {group:"Bienestar y emociones",g:"Ipy’aju",s:"Es miedoso/a."},
+    {group:"Bienestar y emociones",g:"Okyhyje",s:"Tiene miedo."},
+    {group:"Bienestar y emociones",g:"Ndachepy’apeteĩri",s:"Soy indeciso/a."},
+    {group:"Afecto y relaciones",g:"Ajúnte rohechamívo",s:"Vengo solo a verte."},
+    {group:"Afecto y relaciones",g:"Cheakãraku",s:"Estoy entusiasmado/a o enamorado/a."},
+    {group:"Afecto y relaciones",g:"Che avei",s:"A mí también."},
+    {group:"Afecto y relaciones",g:"Che korasõ perere",s:"Tengo palpitaciones; me late fuerte el corazón."},
+    {group:"Afecto y relaciones",g:"Chemandu’a nderehe",s:"Te recuerdo."},
+    {group:"Afecto y relaciones",g:"Iñakã vai hese",s:"Está perdidamente enamorado/a de él/ella."},
+    {group:"Afecto y relaciones",g:"Rohechaga’uete",s:"Te extraño mucho."},
+    {group:"Preguntas y necesidades",g:"Mba’e piko ndererumi?",s:"¿Qué te trae? / ¿A qué vienes?"},
+    {group:"Preguntas y necesidades",g:"Mba’épa ajapokuaa nderehe?",s:"¿Qué puedo hacer por ti?"},
+    {group:"Preguntas y necesidades",g:"Mba’épa ndererumi ko’árupi?",s:"¿Qué te trae por aquí?"},
+    {group:"Preguntas y necesidades",g:"Mba’épa reikotevẽ?",s:"¿Qué necesitas?"},
+    {group:"Preguntas y necesidades",g:"Mba’épa reipota?",s:"¿Qué quieres?"},
+    {group:"Preguntas y necesidades",g:"Mba’épa rejapo?",s:"¿Qué haces?"},
+    {group:"Palabras delicadas",g:"Itarova",s:"Está loco/a.",n:"Puede resultar ofensiva: úsala con cautela."},
+    {group:"Palabras delicadas",g:"Itavyrai",s:"Está abobado/a; actúa como idiota.",n:"Es despectiva y puede ofender."}
+  ];
+  const modules=[
+    {
+      id:"repaso",icon:"🧠",title:"Repasa lo aprendido",short:"Repaso general",description:"Recuerda saludos y expresiones esenciales antes de seguir.",intro:"Un repaso corto te ayuda a recuperar lo que ya aprendiste y a detectar qué conviene practicar otra vez.",tip:"Escucha cada expresión, repítela en voz alta y trata de recordar el significado antes de leerlo.",
+      phrases:[
+        {g:"Maitei",s:"Hola / saludo",n:"Saludo cordial."},
+        {g:"Mba’éichapa?",s:"¿Cómo estás?",n:"También puede funcionar como saludo."},
+        {g:"Iporã",s:"Bien / bonito",n:"Respuesta positiva frecuente."},
+        {g:"Aguyje",s:"Gracias",n:"Expresión de agradecimiento."},
+        {g:"Jajotopata",s:"Nos vemos",n:"Despedida informal."}
+      ],
+      quiz:{q:"¿Qué significa «Aguyje»?",options:["Buenos días","Gracias","Nos vemos"],answer:1}
+    },
+    {
+      id:"diario",icon:"💬",title:"Palabras más usadas",short:"Uso cotidiano",description:"Más de 45 expresiones para situaciones reales, emociones y encuentros.",intro:"Estas frases aparecen en conversaciones cotidianas. Empieza con cinco expresiones clave y después abre la biblioteca por situaciones.",tip:"En una conversación natural no necesitas traducir palabra por palabra: reconoce la frase completa y úsala en su situación. La forma puede variar según la región y la comunidad.",library:true,
+      phrases:[
+        {g:"Eju ko’ápe",s:"Ven aquí",n:"Para llamar a una persona cercana."},
+        {g:"Eha’arõmi",s:"Espera un poco",n:"Petición breve y cotidiana."},
+        {g:"Jaháma",s:"Vamos ya",n:"Invitación para comenzar a ir."},
+        {g:"Ndaipóri problema",s:"No hay problema",n:"Para tranquilizar o aceptar algo."},
+        {g:"Mbeguekatúpe",s:"Despacio",n:"Para pedir que algo se haga con calma."}
+      ],
+      quiz:{q:"Si quieres decir «Vamos ya», ¿qué expresión usas?",options:["Jaháma","Eha’arõmi","Mbeguekatúpe"],answer:0}
+    },
+    {
+      id:"romantico",icon:"💜",title:"Frases románticas",short:"Afecto con respeto",description:"Expresa cariño de manera amable y apropiada.",intro:"Estas frases sirven para practicar afecto y admiración. Úsalas siempre con respeto y cuando exista confianza.",tip:"Una frase romántica funciona mejor cuando es sincera, apropiada para la relación y no presiona a la otra persona.",
+      phrases:[
+        {g:"Rohayhu",s:"Te amo",n:"Expresión directa de amor."},
+        {g:"Che py’aite guive",s:"De todo corazón",n:"Literalmente comunica algo que nace del corazón."},
+        {g:"Nde resa porã",s:"Tus ojos son hermosos",n:"Cumplido respetuoso."},
+        {g:"Aime porã nendive",s:"Estoy bien contigo",n:"Expresa bienestar en compañía de alguien."},
+        {g:"Rejapo che ára iporã",s:"Haces bonito mi día",n:"Frase afectuosa y positiva."}
+      ],
+      quiz:{q:"¿Cuál es la expresión directa para decir «Te amo»?",options:["Rohayhu","Iporã","Jajotopata"],answer:0}
+    },
+    {
+      id:"cocina",icon:"🍲",title:"Cocina paraguaya",short:"Cultura y recetas",description:"Descubre 15 preparaciones emblemáticas mientras aprendes vocabulario.",intro:"La cocina paraguaya guarda memoria, territorio y lengua. Esta selección reúne quince preparaciones representativas para reconocer sus ingredientes y conversar sobre ellas; no pretende reemplazar una receta familiar ni establecer un ranking absoluto.",tip:"Las cantidades, nombres y técnicas cambian entre familias y regiones. Estas fichas son una introducción cultural: antes de cocinar, consulta una receta completa y revisa alergias, temperaturas y tiempos de cocción.",
+      phrases:[
+        {g:"Tembi’u",s:"Comida",n:"Palabra general para alimentos o comida."},
+        {g:"Avati",s:"Maíz",n:"Ingrediente central de varias recetas paraguayas."},
+        {g:"Kesu",s:"Queso",n:"Préstamo adaptado y muy usado."},
+        {g:"Kamby",s:"Leche",n:"Ingrediente de masas y mezclas."},
+        {g:"Tata",s:"Fuego",n:"También sirve para hablar del calor de cocción."}
+      ],
+      recipes:[
+        {name:"Sopa paraguaya",type:"Horno · salado",note:"Aunque se llama sopa, es una torta salada y firme de maíz.",ingredients:"Harina de maíz, cebolla, queso Paraguay, leche, huevos y grasa o aceite.",steps:["Cocina suavemente la cebolla.","Integra los ingredientes hasta obtener una mezcla espesa.","Hornea en una fuente hasta que esté firme y dorada."]},
+        {name:"Chipa guasu",type:"Horno · maíz tierno",note:"Su textura es húmeda y su protagonista es el maíz fresco.",ingredients:"Maíz tierno, queso Paraguay, huevos, leche, cebolla y grasa o aceite.",steps:["Muele o procesa el maíz tierno.","Incorpora el queso, los huevos, la leche y la cebolla cocida.","Hornea hasta que el centro cuaje y la superficie se dore."]},
+        {name:"Mbejú",type:"Sartén · mandioca",note:"Una preparación granulada por dentro y dorada por fuera.",ingredients:"Almidón de mandioca, queso Paraguay, manteca o grasa, sal y un poco de leche.",steps:["Frota los ingredientes hasta formar migas húmedas.","Distribuye una capa en una sartén caliente.","Cocina ambos lados hasta que la preparación se una y se dore."]},
+        {name:"Chipa",type:"Horno · panificado",note:"Tiene muchas formas y variantes regionales, especialmente en Semana Santa.",ingredients:"Almidón de mandioca, queso Paraguay, huevos, grasa o manteca, leche y, según la familia, anís.",steps:["Integra los ingredientes sin trabajar de más la masa.","Forma argollas, bastones u otras figuras.","Hornea hasta que las piezas crezcan levemente y se doren."]},
+        {name:"Vorí vorí",type:"Caldo · bolitas de maíz",note:"Un caldo reconfortante cuyo nombre alude a las bolitas que contiene.",ingredients:"Pollo o carne, verduras, caldo, harina de maíz y queso Paraguay.",steps:["Prepara un caldo sabroso con la carne y las verduras.","Forma bolitas pequeñas con harina de maíz, queso y un poco de caldo.","Agrégalas al caldo y cocina hasta que queden tiernas."]},
+        {name:"Pajagua mascada",type:"Fritura · mandioca",note:"También aparece escrito como payaguá mascada.",ingredients:"Mandioca cocida, carne molida, cebolla o cebollita, ajo, sal y especias.",steps:["Haz un puré con la mandioca cocida.","Mézclalo con la carne y los condimentos.","Forma tortitas y fríelas con cuidado hasta dorarlas."]},
+        {name:"Pastel mandi’o",type:"Fritura · relleno",note:"Es un pastel de masa de mandioca muy asociado a celebraciones y puestos populares.",ingredients:"Mandioca cocida, harina de maíz, carne, cebolla, huevo y condimentos.",steps:["Prepara una masa flexible con la mandioca y la harina.","Rellena porciones con una mezcla de carne bien cocida.","Cierra los pasteles y fríelos hasta que estén dorados."]},
+        {name:"Kivevé",type:"Dulce-salado · zapallo",note:"El equilibrio entre zapallo, maíz y queso cambia según la familia.",ingredients:"Zapallo, harina de maíz, leche, queso Paraguay y azúcar o sal según la versión.",steps:["Cocina el zapallo hasta que esté blando y hazlo puré.","Añade leche y harina de maíz poco a poco.","Cocina removiendo y termina con queso."]},
+        {name:"Koserevá",type:"Dulce · cítricos",note:"También se escribe coserevá y suele elaborarse con naranja agria.",ingredients:"Cáscara o fruta de naranja agria, azúcar o miel de caña y agua.",steps:["Lava y prepara la fruta para suavizar su amargor.","Cocínala lentamente con el endulzante y agua.","Deja reducir hasta obtener un almíbar espeso."]},
+        {name:"Miel de caña con queso Paraguay",type:"Postre · contraste",note:"Un postre sencillo que combina dulzor intenso y queso fresco.",ingredients:"Miel de caña y queso Paraguay fresco.",steps:["Corta el queso en porciones.","Sirve la miel de caña encima o al lado.","Disfruta el contraste sin necesidad de cocción."]},
+        {name:"Pira chyryry",type:"Pescado · ribereño",note:"Preparación ligada a comunidades cercanas al río; el pescado disponible cambia por zona.",ingredients:"Pescado fresco, limón, sal, ajo, harina o fécula y aceite.",steps:["Limpia, corta y sazona bien el pescado.","Pásalo ligeramente por harina o fécula si la versión lo requiere.","Cocínalo hasta que esté completamente hecho y dorado."]},
+        {name:"Kavure norteño",type:"Fuego · tradición",note:"Panificado cocido tradicionalmente alrededor de un palo, cerca de las brasas.",ingredients:"Almidón de mandioca, queso Paraguay, grasa o manteca, leche, huevo y sal.",steps:["Forma una masa maleable con los ingredientes.","Colócala alrededor de un palo limpio apto para cocción.","Gira cerca del fuego hasta que quede cocida y dorada."]},
+        {name:"Locro paraguayo",type:"Guiso · maíz",note:"Plato sustancioso de cocción lenta, con versiones de carne o más vegetales.",ingredients:"Maíz blanco, carne, cebolla, zapallo, verduras y condimentos.",steps:["Remoja el maíz cuando la variedad lo requiera.","Cocínalo lentamente con la carne y las verduras.","Ajusta el caldo y los condimentos cuando el maíz esté tierno."]},
+        {name:"Jopara",type:"Guiso · maíz y poroto",note:"Se consume especialmente al comenzar octubre y simboliza abundancia frente al Karai Octubre.",ingredients:"Maíz, porotos, zapallo, cebolla, verduras y, según la versión, carne.",steps:["Remoja y cocina los granos hasta que comiencen a ablandarse.","Añade las verduras y los condimentos.","Continúa a fuego lento hasta lograr un guiso unido y espeso."]},
+        {name:"Kaguyjy",type:"Postre · maíz",note:"Mazamorra paraguaya de maíz; puede servirse con leche, azúcar o miel.",ingredients:"Maíz blanco para mazamorra, agua y, para servir, leche, azúcar o miel.",steps:["Prepara el maíz siguiendo el tratamiento indicado para la variedad.","Cocínalo lentamente hasta que quede muy tierno.","Sirve tibio o frío con el acompañamiento elegido."]}
+      ],
+      quiz:{q:"¿Qué significa «Avati»?",options:["Queso","Maíz","Leche"],answer:1}
+    }
+  ];
+
+  function escapeHtml(value){
+    return String(value).replace(/[&<>\"']/g,function(char){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[char]});
+  }
+  function getState(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(LIFE_KEY)||"{}");
+      return {completed:Array.isArray(saved.completed)?saved.completed.filter(function(id){return modules.some(function(module){return module.id===id})}):[]};
+    }catch(error){return {completed:[]}}
+  }
+  function saveState(state){
+    try{localStorage.setItem(LIFE_KEY,JSON.stringify(state))}catch(error){}
+  }
+  function isCompleted(id){return getState().completed.includes(id)}
+  function completeModule(id){
+    const state=getState();
+    if(!state.completed.includes(id))state.completed.push(id);
+    saveState(state);
+  }
+  function openView(id){
+    if(typeof go==="function")go(id);
+    else if(typeof show==="function")show(id,true);
+    else{
+      document.querySelectorAll("main > section").forEach(function(section){section.classList.toggle("hide",section.id!==id)});
+    }
+    document.querySelectorAll(".bottom-nav button").forEach(function(button){button.classList.toggle("active",button.dataset.go==="catalog")});
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function addEntryPoints(){
+    const carousel=document.querySelector("#home .course-carousel");
+    if(carousel&&!document.querySelector(".gca-life-mini")){
+      carousel.insertAdjacentHTML("beforeend",modules.map(function(module,index){
+        return '<button class="mini-course gca-life-mini" type="button" data-life-open="'+index+'"><span class="art-icon">'+module.icon+'</span><strong>'+escapeHtml(module.title)+'</strong><small>'+escapeHtml(module.short)+'</small><i class="gca-life-action">Empezar</i></button>';
+      }).join(""));
+    }
+    const grid=document.querySelector("#catalog .course-grid");
+    if(grid&&!document.querySelector(".gca-life-catalog")){
+      grid.insertAdjacentHTML("beforeend",modules.map(function(module,index){
+        const amount=module.recipes?module.recipes.length+" recetas":module.library?commonPhraseLibrary.length+" frases":module.phrases.length+" expresiones";
+        return '<article class="course-card gca-life-catalog"><div class="course-card-icon">'+module.icon+'</div><h3>'+escapeHtml(module.title)+'</h3><p>'+escapeHtml(module.description)+'</p><div class="course-card-stats"><span>📘 '+amount+'</span><span>Curso</span></div><button class="btn gca-life-action" type="button" data-life-open="'+index+'">Empezar</button></article>';
+      }).join(""));
+    }
+  }
+  function createViews(){
+    const main=document.querySelector("main");
+    if(!main||document.querySelector("#lifeLesson"))return;
+    main.insertAdjacentHTML("beforeend",'<section id="lifeLesson" class="hide"><div class="gca-life-shell"><button class="gca-life-back" type="button" data-life-back>← Volver a cursos</button><div id="gcaLifeLessonContent"></div></div></section>');
+    if(typeof views!=="undefined"&&Array.isArray(views)){
+      if(!views.includes("lifeLesson"))views.push("lifeLesson");
+    }
+  }
+  function updateEntryPoints(){
+    document.querySelectorAll("[data-life-open]").forEach(function(button){
+      const module=modules[Number(button.dataset.lifeOpen)];
+      if(!module)return;
+      const done=isCompleted(module.id);
+      const card=button.closest(".gca-life-mini,.gca-life-catalog")||button;
+      card.classList.toggle("done",done);
+      const action=card.querySelector(".gca-life-action");
+      if(action)action.textContent=done?"Repetir":"Empezar";
+    });
+  }
+  function renderPhrases(module){
+    return '<div class="gca-life-phrases">'+module.phrases.map(function(item,index){return '<div class="gca-life-phrase"><b>'+escapeHtml(item.g)+'</b><span>'+escapeHtml(item.s)+'<small style="display:block;margin-top:3px">'+escapeHtml(item.n)+'</small></span><button class="gca-life-speak" type="button" data-life-speak="'+index+'" aria-label="Escuchar '+escapeHtml(item.g)+'">🔊</button></div>'}).join("")+'</div>';
+  }
+  function renderPhraseLibrary(module){
+    if(!module.library)return "";
+    const groups=Array.from(new Set(commonPhraseLibrary.map(function(item){return item.group})));
+    return '<div class="gca-life-library"><div class="gca-life-library-head"><h3>🗂️ Biblioteca de frases cotidianas</h3><p>Más de 45 expresiones organizadas por situación. Abre una categoría y escucha cada frase.</p></div>'+groups.map(function(group,groupIndex){
+      const items=commonPhraseLibrary.map(function(item,index){return {item:item,index:index}}).filter(function(entry){return entry.item.group===group});
+      return '<details class="gca-life-phrase-group" '+(groupIndex===0?'open':'')+'><summary>'+escapeHtml(group)+' · '+items.length+' frases</summary><div class="gca-life-library-grid">'+items.map(function(entry){return '<article class="gca-life-library-item"><strong>'+escapeHtml(entry.item.g)+'</strong><span>'+escapeHtml(entry.item.s)+'</span>'+(entry.item.n?'<small>'+escapeHtml(entry.item.n)+'</small>':'')+'<button class="gca-life-speak" type="button" data-life-library-speak="'+entry.index+'" aria-label="Escuchar '+escapeHtml(entry.item.g)+'">🔊</button></article>'}).join("")+'</div></details>';
+    }).join("")+'<p class="gca-life-sources">Las formas pueden variar por comunidad. Conviene revisar ortografía, pronunciación y contexto con docentes o hablantes nativos antes de incorporar expresiones nuevas.</p></div>';
+  }
+  function renderRecipes(module){
+    if(!module.recipes)return "";
+    return '<div class="gca-life-study-section"><div class="gca-life-culture"><span class="gca-life-culture-badge">🇵🇾 Cultura paraguaya</span><h3>Recetas de Paraguay</h3><p>Quince preparaciones para descubrir ingredientes, historias y vocabulario. Cada ficha es una introducción: las recetas familiares pueden variar.</p></div><div class="gca-life-recipes">'+module.recipes.map(function(recipe){return '<article class="gca-life-recipe"><span class="gca-life-recipe-tag">'+escapeHtml(recipe.type)+'</span><h4>'+escapeHtml(recipe.name)+'</h4><p class="gca-life-recipe-note">'+escapeHtml(recipe.note)+'</p><p><b>Ingredientes base:</b> '+escapeHtml(recipe.ingredients)+'</p><details><summary>Ver preparación breve</summary><ol>'+recipe.steps.map(function(step){return '<li>'+escapeHtml(step)+'</li>'}).join("")+'</ol></details></article>'}).join("")+'</div><div class="gca-life-sources">Las recetas familiares pueden variar. Revisa cantidades, alergias y cocción segura antes de preparar un plato.</div></div>';
+  }
+  function renderDialogue(module){
+    if(!module.dialogue)return "";
+    return '<div class="gca-life-study-section"><h3>🗨️ Conversación real</h3><p>Lee una línea, escucha las expresiones de arriba y representa ambos papeles.</p><div class="gca-life-dialogue">'+module.dialogue.map(function(line){return '<div class="gca-life-bubble">'+escapeHtml(line)+'</div>'}).join("")+'</div></div>';
+  }
+  function renderVoice(module){
+    if(!module.voice)return "";
+    return '<div class="gca-life-study-section"><h3>🎙️ Tu turno</h3><p>'+escapeHtml(module.voice.hint)+'</p><div class="gca-life-voice"><button type="button" data-life-voice>Usar micrófono</button><button type="button" data-life-target>Escuchar modelo</button><span id="gcaLifeVoiceResult">Objetivo: '+escapeHtml(module.voice.target)+'</span></div></div>';
+  }
+  let currentModule=0;
+  function renderLesson(index){
+    currentModule=Math.max(0,Math.min(modules.length-1,Number(index)||0));
+    const module=modules[currentModule];
+    const completed=isCompleted(module.id);
+    const host=document.querySelector("#gcaLifeLessonContent");
+    if(!host)return;
+    host.innerHTML='<div class="gca-life-lesson-head"><small>Curso práctico</small><h2>'+module.icon+' '+escapeHtml(module.title)+'</h2><p>'+escapeHtml(module.intro)+'</p></div><div class="gca-life-study"><div class="gca-life-study-section"><h3>📖 Aprende y escucha</h3><div class="gca-life-tip">💡 '+escapeHtml(module.tip)+'</div>'+renderPhrases(module)+renderPhraseLibrary(module)+'</div>'+renderVoice(module)+renderDialogue(module)+renderRecipes(module)+'</div><div class="gca-life-quiz"><small>Comprueba lo aprendido</small><h3>'+escapeHtml(module.quiz.q)+'</h3><div class="gca-life-options">'+module.quiz.options.map(function(option,optionIndex){return '<button type="button" class="gca-life-option" data-life-answer="'+optionIndex+'">'+escapeHtml(option)+'</button>'}).join("")+'</div><p class="gca-life-feedback" id="gcaLifeFeedback">'+(completed?'✅ Ya completaste este curso. Puedes repetirlo.':'Elige una respuesta.')+'</p><button class="gca-life-next '+(completed?'visible':'')+'" type="button" data-life-next>Volver a cursos →</button></div>';
+  }
+  function speak(text,button){
+    if(typeof playPronunciation==="function"){
+      try{playPronunciation(text,button);return}catch(error){}
+    }
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(text);
+      utterance.lang="es-PY";
+      utterance.rate=.78;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+  function normalizeSpeech(value){
+    return String(value||"").toLocaleLowerCase("es").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zñ]/g,"");
+  }
+  function startVoicePractice(){
+    const module=modules[currentModule];
+    const result=document.querySelector("#gcaLifeVoiceResult");
+    const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!module.voice||!Recognition){
+      if(result)result.textContent="El reconocimiento de voz no está disponible aquí. Puedes escuchar y repetir igualmente.";
+      return;
+    }
+    const recognition=new Recognition();
+    recognition.lang="es-PY";
+    recognition.interimResults=false;
+    recognition.maxAlternatives=3;
+    if(result)result.textContent="Escuchando… di «"+module.voice.target+"».";
+    recognition.onresult=function(event){
+      const heard=Array.from(event.results[0]).map(function(item){return item.transcript}).join(" / ");
+      const match=normalizeSpeech(heard).includes(normalizeSpeech(module.voice.target));
+      if(result)result.textContent=(match?"✅ Se reconoció: ":"🔁 Se escuchó: ")+heard+(match?"":" · Inténtalo otra vez lentamente.");
+    };
+    recognition.onerror=function(){if(result)result.textContent="No se pudo usar el micrófono. Revisa el permiso o practica con el botón de audio."};
+    try{recognition.start()}catch(error){if(result)result.textContent="El micrófono ya está activo o no pudo iniciarse."}
+  }
+  function handleAnswer(button){
+    const module=modules[currentModule];
+    const selected=Number(button.dataset.lifeAnswer);
+    const feedback=document.querySelector("#gcaLifeFeedback");
+    const options=button.parentElement.querySelectorAll(".gca-life-option");
+    options.forEach(function(option){option.classList.remove("correct","wrong")});
+    if(selected===module.quiz.answer){
+      button.classList.add("correct");
+      completeModule(module.id);
+      if(feedback)feedback.textContent="✅ ¡Correcto! El curso quedó completado.";
+      document.querySelector("[data-life-next]")?.classList.add("visible");
+      updateEntryPoints();
+    }else{
+      button.classList.add("wrong");
+      if(feedback)feedback.textContent="Todavía no. Revisa las expresiones de arriba e inténtalo otra vez.";
+    }
+  }
+  function bindEvents(){
+    document.addEventListener("click",function(event){
+      const openButton=event.target.closest("[data-life-open]");
+      if(openButton){renderLesson(openButton.dataset.lifeOpen);openView("lifeLesson");return}
+      if(event.target.closest("[data-life-back]")){openView("catalog");return}
+      const speakButton=event.target.closest("[data-life-speak]");
+      if(speakButton){speak(modules[currentModule].phrases[Number(speakButton.dataset.lifeSpeak)].g,speakButton);return}
+      const librarySpeakButton=event.target.closest("[data-life-library-speak]");
+      if(librarySpeakButton){
+        const libraryItem=commonPhraseLibrary[Number(librarySpeakButton.dataset.lifeLibrarySpeak)];
+        if(libraryItem)speak(libraryItem.g,librarySpeakButton);
+        return;
+      }
+      if(event.target.closest("[data-life-target]")&&modules[currentModule].voice){speak(modules[currentModule].voice.target,event.target.closest("button"));return}
+      if(event.target.closest("[data-life-voice]")){startVoicePractice();return}
+      const answerButton=event.target.closest("[data-life-answer]");
+      if(answerButton){handleAnswer(answerButton);return}
+      if(event.target.closest("[data-life-next]")){openView("catalog")}
+    });
+  }
+  function init(){
+    createViews();
+    addEntryPoints();
+    updateEntryPoints();
+    bindEvents();
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+};
+</script>
+<script id="gca64-professional-courses">
+(function(){
+  "use strict";
+
+  const LIFE_KEY="gcaLifeCourseV2";
+  const LEGACY_KEY="gcaLifeCourseV1";
+  const P=function(g,s,n){return {g:g,s:s,n:n||""}};
+  const Q=function(q,options,answer,why){return {q:q,options:options,answer:answer,why:why}};
+
+  const commonPhraseLibrary=[
+    ["Encuentros y cortesía","Aguahẽma","Ya llegué.","Se usa al anunciar la llegada."],
+    ["Encuentros y cortesía","Aguyje","Gracias.","Agradecimiento general."],
+    ["Encuentros y cortesía","Cheñyrõmíkena","Discúlpame, por favor.","La terminación -mína suaviza la petición."],
+    ["Encuentros y cortesía","Cheroryete rohechávo","Me alegra mucho verte.","Expresa alegría ante un encuentro."],
+    ["Encuentros y cortesía","Eguahẽmína","Pasa adelante, por favor.","Invitación amable para acercarse."],
+    ["Encuentros y cortesía","Eguapymi","Siéntate, por favor.","Petición breve y cordial."],
+    ["Encuentros y cortesía","Eikéna","Entra, por favor.","-na aporta un tono de invitación."],
+    ["Encuentros y cortesía","Tereguahẽ porãite","Bienvenido/a.","Deseo amable al recibir a alguien."],
+    ["Encuentros y cortesía","Tereho porãite","Que te vaya muy bien.","Despedida con buen deseo."],
+    ["Encuentros y cortesía","Vokoieténte jajoecha jeýne","Muy pronto nos volveremos a ver.","Expresa expectativa de reencuentro."],
+    ["Atención y ayuda","Ahendu","Escucho.","También puede implicar comprensión según el contexto."],
+    ["Atención y ayuda","Ajapysaka hese","Le presto atención.","Indica escucha atenta."],
+    ["Atención y ayuda","Ajesareko","Presto atención / observo.","Puede referirse a mirar con cuidado."],
+    ["Atención y ayuda","Ani rejepy’apy","No te preocupes.","Sirve para tranquilizar."],
+    ["Atención y ayuda","Mba’épa ajapokuaa nderehe?","¿Qué puedo hacer por ti?","Ofrecimiento de ayuda."],
+    ["Atención y ayuda","Eha’arõmi","Espera un poco.","Petición breve."],
+    ["Atención y ayuda","Eñe’ẽ mbegueve","Habla más despacio.","Útil cuando no se comprende."],
+    ["Atención y ayuda","Ikatúpa ere jey?","¿Puedes decirlo otra vez?","Petición para repetir."],
+    ["Bienestar y emociones","Añeñandu porã","Me siento bien.","Estado físico o anímico positivo."],
+    ["Bienestar y emociones","Nañeñanduporãi","No me siento bien.","Estado físico o anímico negativo."],
+    ["Bienestar y emociones","Chekane’õ","Estoy cansado/a.","Expresa cansancio."],
+    ["Bienestar y emociones","Chepy’a tarova","Estoy intranquilo/a o nervioso/a.","Expresión emocional coloquial."],
+    ["Bienestar y emociones","Chepy’a guapy","Estoy tranquilo/a.","Literalmente comunica calma interior."],
+    ["Bienestar y emociones","Okyhyje","Tiene miedo.","Se refiere a una tercera persona."],
+    ["Bienestar y emociones","Hesãipa nde rogayguakuéra?","¿Está bien tu familia?","Pregunta por el bienestar familiar."],
+    ["Bienestar y emociones","Hesãimba hikuái","Todos están bien de salud.","Respuesta sobre varias personas."],
+    ["Preguntas y necesidades","Mba’épa reikotevẽ?","¿Qué necesitas?","Pregunta directa por una necesidad."],
+    ["Preguntas y necesidades","Mba’épa reipota?","¿Qué quieres?","Pregunta por una preferencia."],
+    ["Preguntas y necesidades","Mba’épa rejapo?","¿Qué haces?","Pregunta por una acción."],
+    ["Preguntas y necesidades","Moõpa reho?","¿Adónde vas?","Pregunta por destino."],
+    ["Preguntas y necesidades","Moõguápa nde?","¿De dónde eres?","Pregunta por procedencia."],
+    ["Preguntas y necesidades","Araka’épa?","¿Cuándo?","Pregunta temporal."],
+    ["Preguntas y necesidades","Mba’érepa?","¿Por qué?","Pregunta por una causa."],
+    ["Preguntas y necesidades","Mboypa?","¿Cuánto?","Pregunta por cantidad o precio."],
+    ["Movimiento y tiempo","Jaháma","Vamos ya.","Invitación para salir o empezar."],
+    ["Movimiento y tiempo","Ajúma","Ya vengo / ya llego.","Indica llegada o retorno cercano."],
+    ["Movimiento y tiempo","Ko’ág̃a","Ahora.","Referencia al momento presente."],
+    ["Movimiento y tiempo","Upéi","Después.","Conector para ordenar acciones."],
+    ["Movimiento y tiempo","Ko’ẽrõ","Mañana.","Día siguiente."],
+    ["Movimiento y tiempo","Kuehe","Ayer.","Día anterior."],
+    ["Afecto y relaciones","Chemandu’a nderehe","Me acuerdo de ti.","Expresa recuerdo."],
+    ["Afecto y relaciones","Rohechaga’u","Te extraño.","Expresa ausencia."],
+    ["Afecto y relaciones","Rohayhu","Te amo / te quiero.","Afecto directo; el contexto marca la intensidad."],
+    ["Afecto y relaciones","Che py’aite guive","De todo corazón.","Refuerza sinceridad."],
+    ["Afecto y relaciones","Aime porã nendive","Estoy bien contigo.","Expresa bienestar en compañía."],
+    ["Afecto y relaciones","Aipota rohecha","Quiero verte.","Deseo de encuentro."],
+    ["Reparar la conversación","Ndaikuaái","No sé.","Reconoce falta de información."],
+    ["Reparar la conversación","Ndaikumbýi","No entiendo.","Pide apoyo de manera clara."],
+    ["Reparar la conversación","Ndahendúi","No escuché.","Indica un problema de audición."],
+    ["Reparar la conversación","Mbegueve, ikatúpa?","Más despacio, ¿puede ser?","Petición cortés en conversación."],
+    ["Reparar la conversación","Ehai chéve","Escríbeme.","Solicita apoyo escrito."],
+    ["Reparar la conversación","He’ise…","Significa…","Sirve para explicar una palabra."]
+  ].map(function(row){return {group:row[0],g:row[1],s:row[2],n:row[3]}});
+
+  const recipeBook=[
+    {name:"Sopa paraguaya",icon:"🥘",type:"Horno · maíz",time:"70 min",yield:"8 porciones",note:"Torta salada de maíz, cebolla y queso; su nombre conserva una historia propia aunque no sea líquida.",ingredients:["500 g de harina de maíz","3 cebollas medianas","300 g de queso Paraguay","500 ml de leche","4 huevos","80 g de manteca o ⅓ taza de aceite","Sal"],steps:["Cocina la cebolla a fuego bajo hasta que quede blanda, sin quemarla.","Mezcla la harina de maíz con la leche y deja hidratar 10 minutos.","Añade huevos, grasa, cebolla y la mitad del queso.","Pasa a una fuente engrasada y distribuye el queso restante.","Hornea a 180 °C durante 40–50 minutos, hasta que el centro esté firme y la superficie dorada."],vocab:"avati ku’i: harina de maíz · sevói: cebolla · kesu: queso"},
+    {name:"Chipa guasu",icon:"🌽",type:"Horno · maíz tierno",time:"75 min",yield:"8 porciones",note:"Preparación húmeda hecha con granos de maíz fresco; suele acompañar carnes y reuniones familiares.",ingredients:["1 kg de maíz tierno desgranado","2 cebollas","300 g de queso Paraguay","4 huevos","250 ml de leche","80 g de manteca o aceite","Sal"],steps:["Procesa el maíz sin convertirlo en un líquido completamente liso.","Cocina la cebolla hasta que esté transparente.","Une maíz, cebolla, huevos, leche, grasa y queso desmenuzado.","Vierte en una fuente engrasada.","Hornea a 180 °C durante 45–55 minutos, hasta que cuaje y se dore."],vocab:"avati ky: maíz tierno · kamby: leche · ryguasu rupi’a: huevo"},
+    {name:"Mbeju",icon:"🫓",type:"Sartén · almidón",time:"30 min",yield:"6 unidades",note:"Torta quebradiza y dorada cuya mezcla parece arena húmeda antes de cocinarse.",ingredients:["500 g de almidón de mandioca","250 g de queso Paraguay","100 g de manteca","80–120 ml de leche","1 cucharadita de sal"],steps:["Mezcla almidón, sal y manteca frotando con las manos.","Agrega el queso desmenuzado.","Incorpora leche poco a poco: deben formarse migas húmedas, no una masa compacta.","Distribuye una capa de 1 cm en una sartén caliente y presiona apenas.","Cocina 3–4 minutos por lado hasta que se una y quede dorado."],vocab:"mandi’o aramirõ: almidón de mandioca · ñembojehe’a: mezcla"},
+    {name:"Chipa",icon:"🥯",type:"Horno · almidón",time:"50 min",yield:"18 unidades",note:"Panificado de almidón y queso con numerosas formas y variantes familiares.",ingredients:["500 g de almidón de mandioca","300 g de queso Paraguay","2 huevos","100 g de manteca","100–160 ml de leche","1 cucharadita de sal","Anís, opcional"],steps:["Mezcla manteca, huevos, sal y queso.","Añade el almidón y une sin amasar en exceso.","Agrega leche gradualmente hasta obtener una masa moldeable.","Forma argollas o bastones del mismo tamaño.","Hornea a 200 °C entre 18 y 25 minutos; deben quedar cocidos y apenas dorados."],vocab:"chipa apo: preparación de chipa · tatakua: horno tradicional"},
+    {name:"Vorí vorí",icon:"🍲",type:"Caldo · bolitas de maíz",time:"95 min",yield:"6 porciones",note:"Caldo sustancioso con pequeñas bolitas de maíz y queso.",ingredients:["1 pollo troceado o 800 g de carne","1 cebolla","1 zanahoria","1 locote","2 litros de agua o caldo","250 g de harina de maíz","150 g de queso Paraguay","Sal y hierbas"],steps:["Dora ligeramente la carne y añade las verduras.","Cubre con líquido y cocina hasta formar un caldo sabroso.","Mezcla harina de maíz, queso y cucharadas de caldo hasta poder formar bolitas pequeñas.","Agrega los voríes al caldo en hervor suave.","Cocina 12–15 minutos más, hasta que las bolitas estén tiernas y la carne completamente cocida."],vocab:"vori: bolita · ryguasu: pollo · tykueti: caldo"},
+    {name:"Pajagua mascada",icon:"🟤",type:"Fritura · mandioca",time:"65 min",yield:"12 unidades",note:"Tortita de mandioca y carne, crocante por fuera y tierna por dentro.",ingredients:["1 kg de mandioca","400 g de carne molida","1 cebolla","2 dientes de ajo","Cebollita de verdeo","Comino, sal y pimienta","Aceite para freír"],steps:["Hierve la mandioca hasta que esté tierna, retira la fibra central y haz un puré.","Cocina la carne con cebolla, ajo y condimentos; deja enfriar.","Une el puré con la preparación de carne y ajusta la sazón.","Forma tortitas del mismo grosor.","Fríe en aceite caliente hasta dorar y escurre sobre papel; el centro debe quedar bien caliente."],vocab:"mandi’o: mandioca · so’o: carne · chyryry: freír"},
+    {name:"Pastel mandi’o",icon:"🥟",type:"Fritura · relleno",time:"100 min",yield:"12 unidades",note:"Pastel de masa de mandioca con relleno de carne bien condimentado.",ingredients:["1 kg de mandioca","150 g de harina de maíz","400 g de carne","1 cebolla","2 huevos duros","Cebollita, sal y comino","Aceite para freír"],steps:["Hierve la mandioca, retira fibras y prepara un puré sin grumos.","Añade harina de maíz y sal hasta obtener una masa flexible.","Cocina la carne con cebolla y condimentos; agrega huevo picado al final.","Estira porciones de masa, coloca relleno y sella bien los bordes.","Fríe hasta dorar o cocina en horno fuerte si prefieres una versión menos grasa."],vocab:"tembi’u apu’a: porción formada · myenyhẽ: rellenar"},
+    {name:"Kiveve",icon:"🎃",type:"Cazuela · zapallo",time:"45 min",yield:"6 porciones",note:"Crema espesa de zapallo, maíz y queso con equilibrio dulce o salado según la casa.",ingredients:["1 kg de zapallo","150 g de harina de maíz","500 ml de leche","200 g de queso Paraguay","2 cucharadas de azúcar, opcional","Sal"],steps:["Cocina el zapallo hasta que esté blando y haz un puré.","Calienta el puré con la leche a fuego bajo.","Agrega harina de maíz en lluvia mientras remueves.","Cocina 10–15 minutos hasta espesar.","Incorpora queso y ajusta sal o dulzor."],vocab:"andai: zapallo · hu’ũ: blando · mbojehe’a: mezclar"},
+    {name:"Kosereva",icon:"🍊",type:"Dulce · cítricos",time:"90 min + reposo",yield:"6 porciones",note:"Dulce de naranja agria en almíbar; el reposo y los cambios de agua moderan el amargor.",ingredients:["6 naranjas agrias","500–700 g de azúcar","1 litro de agua","Clavo de olor, opcional"],steps:["Lava la fruta y retira solo la capa exterior más intensa de la cáscara.","Corta en tiras o gajos y remoja; cambia el agua varias veces para reducir el amargor.","Hierve hasta que la cáscara esté tierna y escurre.","Prepara un almíbar con agua y azúcar.","Cocina la fruta en el almíbar a fuego bajo hasta que quede brillante y el líquido espese."],vocab:"narã: naranja · he’ẽ: dulce · hái: ácido"},
+    {name:"Miel de caña con queso",icon:"🍯",type:"Postre · sin cocción",time:"5 min",yield:"4 porciones",note:"Contraste sencillo entre miel intensa y queso fresco.",ingredients:["250 g de queso Paraguay","120 ml de miel de caña"],steps:["Mantén el queso refrigerado hasta servir.","Corta porciones del mismo tamaño.","Sirve la miel encima o al costado para que cada persona regule la cantidad."],vocab:"eíra: miel · kesu: queso · he’ẽ: dulce"},
+    {name:"Pira chyryry",icon:"🐟",type:"Sartén · pescado",time:"35 min",yield:"4 porciones",note:"Pescado frito o salteado, asociado a zonas ribereñas y al pescado disponible en cada región.",ingredients:["800 g de filetes de pescado","2 limones","2 dientes de ajo","Sal y pimienta","100 g de harina o fécula, opcional","Aceite"],steps:["Revisa que el pescado esté limpio y sin espinas grandes.","Sazona con limón, ajo, sal y pimienta durante 10 minutos.","Seca ligeramente y pasa por harina si deseas una superficie más crocante.","Cocina por tandas en aceite caliente.","Verifica que el interior esté opaco y completamente cocido."],vocab:"pira: pescado · chyryry: fritura/salteado · juky: sal"},
+    {name:"Kavure",icon:"🔥",type:"Brasas · almidón",time:"55 min",yield:"10 unidades",note:"Masa de almidón y queso que tradicionalmente se cocina alrededor de un palo cerca de las brasas.",ingredients:["500 g de almidón de mandioca","250 g de queso Paraguay","2 huevos","80 g de manteca","100–150 ml de leche","Sal"],steps:["Une huevos, manteca, queso y sal.","Añade almidón y leche hasta obtener una masa firme.","Forma cilindros alrededor de un soporte limpio y apto para calor, o prepara bastones para horno.","Gira cerca de brasas estables sin contacto directo con llamas.","Cocina hasta que la superficie esté dorada y el interior firme."],vocab:"tata: fuego · mbichy: asar · yvyra: palo/madera"},
+    {name:"Locro paraguayo",icon:"🥣",type:"Olla · maíz",time:"2 h 30 min",yield:"8 porciones",note:"Guiso de maíz blanco de cocción lenta, sustancioso y adaptable.",ingredients:["500 g de maíz blanco para locro","700 g de carne","1 cebolla","1 zanahoria","500 g de zapallo","2,5 litros de agua","Sal, ajo y hierbas"],steps:["Remoja el maíz desde la noche anterior si la variedad lo requiere.","Cocina maíz y carne en abundante agua a hervor suave.","Retira espuma y agrega cebolla, ajo y zanahoria.","Añade zapallo cuando el maíz comience a ablandarse.","Continúa hasta que el grano esté tierno y el caldo espeso; ajusta la sal al final."],vocab:"avati tupi: maíz blanco · mbopupu: hervir · so’o: carne"},
+    {name:"Jopara",icon:"🫘",type:"Guiso · maíz y poroto",time:"2 h",yield:"8 porciones",note:"Guiso de granos asociado al inicio de octubre y a la idea de abundancia compartida.",ingredients:["300 g de maíz blanco","300 g de porotos","500 g de zapallo","1 cebolla","1 locote","2 litros de agua","Carne, opcional","Sal y hierbas"],steps:["Remoja maíz y porotos por separado.","Comienza la cocción con el maíz y añade los porotos según su tiempo de ablandamiento.","Agrega cebolla, locote y carne si la versión la incluye.","Incorpora zapallo para aportar cuerpo al caldo.","Cocina a fuego bajo hasta que ambos granos estén tiernos."],vocab:"kumanda: poroto · avati: maíz · jopara: mezcla"},
+    {name:"Kaguyjy",icon:"🌾",type:"Postre · maíz",time:"2 h 30 min",yield:"8 porciones",note:"Mazamorra de maíz blanco que puede servirse con leche, azúcar o miel.",ingredients:["500 g de maíz blanco para mazamorra","2,5 litros de agua","Leche, azúcar o miel para servir","Canela, opcional"],steps:["Lava y remoja el maíz según indique la variedad.","Cocina en abundante agua a hervor suave.","Remueve y agrega agua caliente si fuera necesario.","Continúa hasta que el grano esté muy tierno y el líquido cremoso.","Sirve tibio o frío con el acompañamiento elegido."],vocab:"avati: maíz · kamby: leche · eíra: miel"}
+  ];
+
+  const courses=[
+    {
+      id:"repaso",icon:"🧠",title:"Repasa lo aprendido",short:"Bases para volver a hablar",description:"Consolida saludos, presentación, bienestar y despedidas mediante cuatro unidades.",level:"Inicial",duration:"30–40 min",skills:"Comprensión · interacción",
+      outcomes:["Elegir un saludo adecuado según la situación.","Presentarte y preguntar datos básicos.","Responder cómo te sientes con frases breves.","Cerrar una conversación con cortesía."],
+      units:[
+        {id:"saludos",title:"Saludos con intención",summary:"Formalidad, momento y respuesta.",objective:"Reconocer y usar saludos breves sin traducir palabra por palabra.",explain:"Un saludo funciona como una secuencia: abrir, preguntar y responder. Mba’éichapa puede ser saludo y también una pregunta por el estado de la persona. Iporã funciona como respuesta breve positiva.",example:"A: Maitei, mba’éichapa? · B: Iporã, ha nde? · A: Iporã avei.",phrases:[P("Maitei","Hola / saludo","Neutral y cordial."),P("Mba’éichapa?","¿Cómo estás?","También abre una conversación."),P("Iporã","Bien","Respuesta positiva breve."),P("Ha nde?","¿Y tú?","Devuelve la pregunta."),P("Iporã avei","Bien también","Respuesta completa y natural.")],dialogue:["A: Maitei, mba’éichapa?","B: Iporã, ha nde?","A: Iporã avei."],task:"Representa el diálogo dos veces: primero leyendo y luego mirando solo la traducción.",quiz:[Q("¿Qué expresión devuelve la pregunta «¿y tú?»?",["Ha nde?","Aguyje","Jajotopata"],0,"Ha nde? mantiene el intercambio y da turno a la otra persona."),Q("¿Qué respuesta breve comunica que estás bien?",["Iporã","Maitei","Moõpa?"],0,"Iporã expresa una valoración positiva y funciona como respuesta breve.")]},
+        {id:"presentacion",title:"Presentarte con claridad",summary:"Nombre, procedencia y ocupación.",objective:"Dar tres datos personales y formular dos preguntas básicas.",explain:"Para decir el nombre se usa Che réra…; para preguntar, Mba’éichapa nde réra? La procedencia se expresa con Che …gua, donde -gua indica origen o pertenencia.",example:"Che réra Ana. Che Paraguaigua. Che mbo’ehára. = Me llamo Ana. Soy de Paraguay. Soy profesora.",phrases:[P("Che réra…","Me llamo…","Literalmente: mi nombre."),P("Mba’éichapa nde réra?","¿Cómo te llamas?","Pregunta por el nombre."),P("Moõguápa nde?","¿De dónde eres?","Pregunta por procedencia."),P("Che Paraguaigua","Soy de Paraguay","-gua indica procedencia."),P("Che temimbo’e","Soy estudiante","Presentación de ocupación o rol.")],dialogue:["A: Mba’éichapa nde réra?","B: Che réra Ana. Ha nde?","A: Che réra Luis. Moõguápa nde?","B: Che Paraguaigua."],task:"Sustituye Ana y Paraguay por tus propios datos y graba una presentación de 15 segundos.",quiz:[Q("¿Qué estructura sirve para decir tu nombre?",["Che réra…","Che róga…","Che py’a…"],0,"Che réra significa «mi nombre» y presenta cómo te llamas."),Q("¿Qué aporta -gua en Paraguaigua?",["Procedencia","Plural","Negación"],0,"-gua relaciona a la persona con su lugar de origen o pertenencia.")]},
+        {id:"bienestar",title:"Hablar de cómo te sientes",summary:"Bienestar, cansancio y necesidad.",objective:"Expresar un estado físico o emocional y preguntar por otra persona.",explain:"En guaraní muchas sensaciones se expresan desde el cuerpo o el ánimo. Conviene aprender la frase completa: Chekane’õ no necesita un verbo equivalente a «estar».",example:"A: Mba’éichapa reime? · B: Añeñandu porã, hákatu chekane’õ. = ¿Cómo estás? Me siento bien, pero estoy cansado/a.",phrases:[P("Mba’éichapa reime?","¿Cómo estás?","Pregunta por el estado actual."),P("Añeñandu porã","Me siento bien","Estado positivo."),P("Nañeñanduporãi","No me siento bien","La negación rodea la expresión."),P("Chekane’õ","Estoy cansado/a","Estado físico."),P("Che y’uhéi","Tengo sed","Necesidad física.")],dialogue:["A: Mba’éichapa reime?","B: Añeñandu porã, hákatu chekane’õ.","A: Epytu’umi. = Descansa un poco."],task:"Elige dos estados distintos y crea respuestas verdaderas para hoy.",quiz:[Q("¿Cómo dices «estoy cansado/a»?",["Chekane’õ","Che y’uhéi","Iporã"],0,"Chekane’õ expresa cansancio."),Q("¿Cuál comunica que no te sientes bien?",["Nañeñanduporãi","Añeñandu porã","Aguyje"],0,"La forma negativa Na-…-i convierte la idea en «no me siento bien».")]},
+        {id:"cierre",title:"Agradecer y despedirte",summary:"Cerrar sin cortar la conversación.",objective:"Elegir una despedida y responder a un agradecimiento de forma apropiada.",explain:"Una despedida puede anunciar un reencuentro, desear buen camino o simplemente cerrar con agradecimiento. La opción correcta depende de la relación y del momento.",example:"Aguyje nde rehe. Jajotopata ko’ẽrõ. = Gracias por tu ayuda. Nos vemos mañana.",phrases:[P("Aguyje","Gracias","Agradecimiento general."),P("Aguyje ndéve","Gracias a ti","Agradecimiento dirigido."),P("Jajotopata","Nos vemos","Despedida cotidiana."),P("Tereho porãite","Que te vaya muy bien","Buen deseo al despedir."),P("Jajoecha jeýne","Nos volveremos a ver","Expectativa de reencuentro.")],dialogue:["A: Aháma. = Ya me voy.","B: Iporã. Tereho porãite.","A: Aguyje. Jajotopata."],task:"Cierra tres situaciones: una clase, una visita familiar y una conversación con un amigo.",quiz:[Q("¿Qué expresión es una despedida cotidiana?",["Jajotopata","Mba’éichapa?","Che réra…"],0,"Jajotopata equivale a «nos vemos»."),Q("¿Cuál incluye un buen deseo para quien se va?",["Tereho porãite","Aguyje ndéve","Iporã avei"],0,"Tereho porãite desea que la persona vaya bien.")]}
+      ]
+    },
+    {
+      id:"diario",icon:"💬",title:"Palabras más usadas",short:"Guaraní para situaciones reales",description:"Aprende expresiones frecuentes por función, no como una lista aislada.",level:"Inicial",duration:"45–60 min",skills:"Interacción · escucha",library:true,
+      outcomes:["Pedir algo de manera breve y amable.","Ubicar acciones en presente, pasado y futuro cercano.","Expresar necesidades y emociones cotidianas.","Reparar una conversación cuando no entiendes."],
+      units:[
+        {id:"pedidos",title:"Pedir y responder",summary:"Órdenes suaves y cortesía.",objective:"Formular peticiones cotidianas sin sonar brusco.",explain:"El imperativo puede sonar directo. Partículas como -mi, -mína y -na suelen suavizar la petición. La entonación y la relación entre hablantes también importan.",example:"Eha’arõmína sapy’ami. = Espera, por favor, un momentito.",phrases:[P("Ejumína ko’ápe","Ven aquí, por favor","Petición suavizada."),P("Eha’arõmi","Espera un poco","-mi reduce la fuerza."),P("Eguapymi","Siéntate, por favor","Invitación cordial."),P("Eikéna","Entra, por favor","Invitación a pasar."),P("Eme’ẽ chéve","Dame / entrégame","Puede suavizarse con -mína.")],dialogue:["A: Eikéna ha eguapymi.","B: Aguyje.","A: Eha’arõmína sapy’ami."],task:"Convierte tres órdenes en peticiones amables usando -mi, -mína o -na.",quiz:[Q("¿Qué elemento suaviza Eha’arõmi?",["-mi","e-","ha-"],0,"-mi puede aportar un tono diminutivo o cortés."),Q("¿Cuál es una invitación para sentarse?",["Eguapymi","Jaháma","Ko’ẽrõ"],0,"Eguapymi significa «siéntate, por favor».")]},
+        {id:"necesidades",title:"Necesidades y preferencias",summary:"Querer, necesitar y ofrecer.",objective:"Preguntar qué necesita alguien y responder con una frase completa.",explain:"Reikotevẽ pregunta por necesidad; reipota pregunta por deseo o preferencia. Para responder, Aikotevẽ… expresa necesidad y Aipota… expresa lo que quieres.",example:"Mba’épa reikotevẽ? Aikotevẽ y. = ¿Qué necesitas? Necesito agua.",phrases:[P("Mba’épa reikotevẽ?","¿Qué necesitas?","Pregunta por necesidad."),P("Aikotevẽ pytyvõ","Necesito ayuda","Respuesta con aikotevẽ."),P("Mba’épa reipota?","¿Qué quieres?","Pregunta por deseo."),P("Aipota y","Quiero agua","Respuesta con aipota."),P("Ikatúpa chepytyvõ?","¿Puedes ayudarme?","Petición de ayuda.")],dialogue:["A: Mba’épa reikotevẽ?","B: Aikotevẽ pytyvõ.","A: Iporã. Mba’épepa? = Bien. ¿En qué?"],task:"Escribe dos necesidades reales y una preferencia usando Aikotevẽ y Aipota.",quiz:[Q("¿Qué verbo expresa necesidad?",["Aikotevẽ","Aipota","Aha"],0,"Aikotevẽ significa «necesito»."),Q("¿Cómo preguntas «qué quieres»?",["Mba’épa reipota?","Moõpa reho?","Araka’épa?"],0,"Reipota corresponde a «quieres».")]},
+        {id:"tiempo",title:"Tiempo y movimiento",summary:"Ahora, después, ayer y mañana.",objective:"Ordenar acciones breves y decir cuándo ocurren.",explain:"Los marcadores temporales pueden colocarse al inicio para orientar al oyente. Ko’ág̃a sitúa la acción ahora; upéi la conecta con la siguiente; kuehe y ko’ẽrõ distinguen ayer y mañana.",example:"Ko’ág̃a amba’apo, upéi aháta. = Ahora trabajo; después iré.",phrases:[P("Ko’ág̃a","Ahora","Momento presente."),P("Upéi","Después","Ordena la siguiente acción."),P("Kuehe","Ayer","Día anterior."),P("Ko’ẽrõ","Mañana","Día siguiente."),P("Jaháma","Vamos ya","Inicio de movimiento.")],dialogue:["A: Araka’épa jaha? = ¿Cuándo vamos?","B: Ko’ág̃a ndaikatúi. Ko’ẽrõ jaháta. = Ahora no puedo. Mañana iremos."],task:"Ordena una rutina de tres acciones usando ko’ág̃a y upéi.",quiz:[Q("¿Qué palabra significa «después»?",["Upéi","Kuehe","Ko’ág̃a"],0,"Upéi enlaza una acción posterior."),Q("¿Cuál se refiere al día siguiente?",["Ko’ẽrõ","Kuehe","Araka’e"],0,"Ko’ẽrõ significa «mañana».")]},
+        {id:"emociones",title:"Emociones en contexto",summary:"Calma, miedo y preocupación.",objective:"Nombrar estados emocionales sin confundir quién los experimenta.",explain:"Che- marca experiencias propias en varias expresiones; o- suele señalar a una tercera persona en verbos como okyhyje. Aprende el sujeto junto con la frase.",example:"Chepy’a guapy, ha’e katu okyhyje. = Yo estoy tranquilo/a, pero él/ella tiene miedo.",phrases:[P("Chepy’a guapy","Estoy tranquilo/a","Estado propio."),P("Chepy’a tarova","Estoy nervioso/a","Intranquilidad."),P("Okyhyje","Tiene miedo","Tercera persona."),P("Ani rejepy’apy","No te preocupes","Tranquiliza a otra persona."),P("Avy’a","Estoy feliz","Alegría propia.")],dialogue:["A: Rejepy’apýpa? = ¿Estás preocupado/a?","B: Héẽ, chepy’a tarova.","A: Ani rejepy’apy. Aime nendive. = No te preocupes. Estoy contigo."],task:"Identifica quién siente cada emoción y cambia una frase de primera a tercera persona.",quiz:[Q("¿Cuál se refiere a una tercera persona que tiene miedo?",["Okyhyje","Chepy’a guapy","Avy’a"],0,"La forma o- orienta la frase hacia él o ella."),Q("¿Qué frase tranquiliza a otra persona?",["Ani rejepy’apy","Chepy’a tarova","Ndaikuaái"],0,"Ani rejepy’apy equivale a «no te preocupes».")]},
+        {id:"reparar",title:"Cuando no entiendes",summary:"Pedir repetición y aclaración.",objective:"Mantener la conversación aunque falte una palabra o no escuches bien.",explain:"Una persona competente no entiende todo siempre: sabe pedir apoyo. Distingue no saber, no entender y no escuchar; luego pide repetición, menor velocidad o escritura.",example:"Ndaikumbýi. Ikatúpa ere jey mbegueve? = No entiendo. ¿Puedes repetirlo más despacio?",phrases:[P("Ndaikuaái","No sé","Falta de conocimiento."),P("Ndaikumbýi","No entiendo","Falta de comprensión."),P("Ndahendúi","No escuché","Problema auditivo."),P("Ikatúpa ere jey?","¿Puedes decirlo otra vez?","Pide repetición."),P("Eñe’ẽ mbegueve","Habla más despacio","Pide menor velocidad.")],dialogue:["A: Ko’ẽrõ ñañe’ẽta jey. = Mañana hablaremos otra vez.","B: Ndahendúi. Ikatúpa ere jey?","A: Héẽ. Ko’ẽrõ, mbeguekatúpe."],task:"Practica una secuencia de reparación: explica el problema y pide una acción concreta.",quiz:[Q("Si oíste el sonido pero no comprendiste el significado, dices…",["Ndaikumbýi","Ndahendúi","Jaháma"],0,"Ndaikumbýi se refiere a no comprender."),Q("¿Qué petición solicita repetición?",["Ikatúpa ere jey?","Moõguápa nde?","Mba’épa reipota?"],0,"Ere jey significa «di otra vez».")]}
+      ]
+    },
+    {
+      id:"romantico",icon:"💗",title:"Frases románticas",short:"Afecto con respeto y contexto",description:"Expresa cariño, admiración y deseo de encuentro sin presionar.",level:"Inicial–intermedio",duration:"35–45 min",skills:"Expresión · pragmática",
+      outcomes:["Distinguir cariño, amor y admiración.","Construir cumplidos como frases completas.","Expresar recuerdo o ausencia.","Invitar y responder respetando los límites."],
+      units:[
+        {id:"afecto",title:"Decir lo que sientes",summary:"Cariño directo y sincero.",objective:"Elegir una expresión afectiva según la cercanía de la relación.",explain:"Rohayhu puede expresar «te quiero» o «te amo»; el tono y la relación determinan su fuerza. Eres responsable de usarla solo cuando exista confianza.",example:"Rohayhu che py’aite guive. = Te quiero/amo de todo corazón.",phrases:[P("Rohayhu","Te quiero / te amo","La relación determina la intensidad."),P("Rohayhueterei","Te quiero muchísimo","-eterei intensifica."),P("Che py’aite guive","De todo corazón","Refuerza sinceridad."),P("Aime porã nendive","Estoy bien contigo","Bienestar compartido."),P("Nde tuicha mba’e chéve","Eres importante para mí","Afecto sin exageración.")],dialogue:["A: Nde tuicha mba’e chéve.","B: Nde avei chéve. = Tú también para mí.","A: Aime porã nendive."],task:"Ordena las expresiones de menor a mayor intensidad y explica en qué relación usarías cada una.",quiz:[Q("¿Qué forma intensifica Rohayhu?",["Rohayhueterei","Rohechaga’u","Aguyje"],0,"-eterei aporta la idea de mucha intensidad."),Q("¿Cuál expresa bienestar en compañía?",["Aime porã nendive","Chemandu’a nderehe","Jajotopata"],0,"Aime porã nendive significa «estoy bien contigo».")]},
+        {id:"cumplidos",title:"Cumplidos respetuosos",summary:"Admirar sin reducir a la persona.",objective:"Formular cumplidos positivos sobre expresión, manera de ser y presencia.",explain:"Un cumplido completo suele incluir aquello que se valora y una cualidad. Conviene alternar rasgos físicos con cualidades personales y evitar comentarios invasivos.",example:"Nde pukavy iporãiterei. = Tu sonrisa es muy hermosa.",phrases:[P("Nde pukavy iporã","Tu sonrisa es hermosa","Cumplido amable."),P("Nde resa iporã","Tus ojos son hermosos","Frase completa con iporã."),P("Nde py’aporã","Tienes buen corazón","Valora bondad."),P("Nde katupyry","Eres capaz / hábil","Reconoce una cualidad."),P("Cherory rohechávo","Me alegra verte","Valora el encuentro.")],dialogue:["A: Nde pukavy iporãiterei.","B: Aguyje. Nde py’aporã avei.","A: Cherory rohechávo."],task:"Crea un cumplido sobre una cualidad personal y otro sobre la alegría de encontrarse.",quiz:[Q("¿Cuál valora una cualidad interior?",["Nde py’aporã","Nde resa iporã","Rohechaga’u"],0,"Py’aporã se asocia con bondad o buen corazón."),Q("¿Qué frase expresa alegría al ver a alguien?",["Cherory rohechávo","Nde katupyry","Aipota rohecha"],0,"Cherory rohechávo comunica «me alegra verte».")]},
+        {id:"ausencia",title:"Recordar y extrañar",summary:"Distancia, recuerdo y reencuentro.",objective:"Expresar ausencia sin convertirla en exigencia.",explain:"Chemandu’a nderehe comunica recuerdo; rohechaga’u expresa extrañar. Aipota rohecha expresa deseo de ver, pero no obliga a la otra persona.",example:"Rohechaga’u, ha aipota rohecha ikatúramo. = Te extraño y quiero verte si es posible.",phrases:[P("Chemandu’a nderehe","Me acuerdo de ti","Recuerdo afectuoso."),P("Rohechaga’u","Te extraño","Ausencia emocional."),P("Rohechaga’ueterei","Te extraño mucho","Forma intensificada."),P("Aipota rohecha","Quiero verte","Deseo de encuentro."),P("Jajoecha jeýne","Nos volveremos a ver","Esperanza de reencuentro.")],dialogue:["A: Chemandu’a nderehe.","B: Che avei. Rohechaga’u.","A: Jajoecha jeýne ko’ẽrõ. = Nos veremos otra vez mañana."],task:"Transforma «te extraño» en un mensaje respetuoso que proponga, pero no exija, un encuentro.",quiz:[Q("¿Qué frase significa «me acuerdo de ti»?",["Chemandu’a nderehe","Aime porã nendive","Nde katupyry"],0,"Mandua se relaciona con recordar."),Q("¿Cuál expresa esperanza de reencuentro?",["Jajoecha jeýne","Rohechaga’u","Che py’aite guive"],0,"Jajoecha jeýne proyecta un nuevo encuentro.")]},
+        {id:"invitaciones",title:"Invitar y respetar la respuesta",summary:"Preguntar, escuchar y aceptar.",objective:"Formular una invitación abierta y responder sin presión.",explain:"Una invitación respetuosa se formula como pregunta. La otra persona puede aceptar, proponer otro momento o decir que no. El aprendizaje incluye también cómo recibir esa respuesta.",example:"Reipotápa jajotopa ko’ẽrõ? = ¿Quieres que nos encontremos mañana?",phrases:[P("Reipotápa jajotopa?","¿Quieres que nos encontremos?","Invitación abierta."),P("Ikatúpa rohenói?","¿Puedo llamarte?","Pide permiso."),P("Héẽ, aipota","Sí, quiero","Aceptación."),P("Ko’ẽrõ ndaikatúi","Mañana no puedo","Límite temporal."),P("Ndaipóri problema","No hay problema","Acepta la respuesta sin presión.")],dialogue:["A: Reipotápa jajotopa ko’ẽrõ?","B: Ko’ẽrõ ndaikatúi.","A: Ndaipóri problema. Araka’épa ikatu? = No hay problema. ¿Cuándo se puede?"],task:"Practica tres respuestas a una invitación: aceptar, rechazar y proponer otro momento.",quiz:[Q("¿Qué frase pide permiso antes de llamar?",["Ikatúpa rohenói?","Aipota rohecha","Rohayhueterei"],0,"Ikatúpa formula una solicitud de permiso."),Q("¿Cuál recibe una negativa sin presionar?",["Ndaipóri problema","Ko’ẽrõ ndaikatúi","Héẽ, aipota"],0,"Ndaipóri problema comunica aceptación tranquila de la respuesta.")]}
+      ]
+    },
+    {
+      id:"cocina",icon:"🍲",title:"Cocina paraguaya",short:"Lengua, técnica y 15 recetas",description:"Aprende ingredientes, acciones y descripciones mientras cocinas.",level:"Inicial–intermedio",duration:"60–90 min",skills:"Lectura · cultura",recipes:recipeBook,
+      outcomes:["Reconocer ingredientes centrales en guaraní.","Comprender acciones frecuentes de una receta.","Describir sabor, temperatura y textura.","Seguir una secuencia y explicar un plato."],
+      units:[
+        {id:"ingredientes",title:"Ingredientes esenciales",summary:"Maíz, mandioca, queso y más.",objective:"Reconocer diez ingredientes y relacionarlos con platos concretos.",explain:"El vocabulario culinario combina palabras guaraníes, préstamos adaptados y nombres que circulan en contextos bilingües. Aprende la palabra dentro de una combinación útil.",example:"Sopa paraguaya oguereko avati ku’i, sevói ha kesu. = La sopa paraguaya lleva harina de maíz, cebolla y queso.",phrases:[P("Avati","Maíz","Ingrediente base."),P("Mandi’o","Mandioca","Raíz rica en almidón."),P("Kesu","Queso","Préstamo muy extendido."),P("Kamby","Leche","Líquido lácteo."),P("Ryguasu rupi’a","Huevo de gallina","Literalmente huevo de gallina."),P("Sevói","Cebolla","Préstamo de uso cotidiano.")],dialogue:["A: Mba’épa oguereko mbeju? = ¿Qué lleva el mbeju?","B: Oguereko aramirõ, kesu ha kamby. = Lleva almidón, queso y leche."],task:"Clasifica los ingredientes de tres recetas en cereal, raíz, lácteo, proteína y condimento.",quiz:[Q("¿Qué palabra significa mandioca?",["Mandi’o","Avati","Kamby"],0,"Mandi’o es mandioca."),Q("¿Qué combinación significa «huevo de gallina»?",["Ryguasu rupi’a","Avati ku’i","Kesu Paraguay"],0,"Ryguasu es gallina y rupi’a es huevo.")]},
+        {id:"acciones",title:"Acciones de preparación",summary:"Cortar, mezclar, hervir y asar.",objective:"Interpretar instrucciones básicas de cocina y distinguir métodos de cocción.",explain:"Las recetas se comprenden mejor si separas ingrediente, acción y resultado. Mbojehe’a es mezclar; mbopupu es hacer hervir; mbichy es asar o tostar.",example:"Eikytĩ sevói ha embojehe’a kesu ndive. = Corta la cebolla y mézclala con el queso.",phrases:[P("Kytĩ","Cortar","Acción con cuchillo."),P("Mbojehe’a","Mezclar","Unir ingredientes."),P("Mbopupu","Hervir","Cocinar en líquido."),P("Mbojy","Cocinar","Acción general."),P("Mbichy","Asar / tostar","Cocción con calor seco."),P("Chyryry","Freír / saltear","Cocción con grasa.")],dialogue:["A: Mba’éicha ñambosako’i? = ¿Cómo preparamos?","B: Ñaikytĩ, ñambojehe’a ha ñambojy. = Cortamos, mezclamos y cocinamos."],task:"Ordena las acciones de una receta sencilla y explica qué utensilio necesita cada una.",quiz:[Q("¿Qué acción significa mezclar?",["Mbojehe’a","Mbopupu","Kytĩ"],0,"Mbojehe’a es unir o mezclar."),Q("¿Qué acción usa calor seco o brasas?",["Mbichy","Chyryry","Mbopupu"],0,"Mbichy se relaciona con asar o tostar.")]},
+        {id:"sabores",title:"Sabor, temperatura y textura",summary:"Describir antes de opinar.",objective:"Describir un plato con al menos tres cualidades observables.",explain:"Una descripción útil no se limita a «rico». Puedes indicar sabor, temperatura y textura. Algunas formas cambian con la oración; aquí se practican expresiones frecuentes y comprensibles.",example:"Ko tembi’u haku, he’ẽmi ha hu’ũ. = Esta comida está caliente, un poco dulce y blanda.",phrases:[P("He","Sabroso/a","Valoración positiva."),P("He’ẽ","Dulce","Sabor dulce."),P("Juky","Sal / salado según contexto","También nombra la sal."),P("Haku","Caliente","Temperatura alta."),P("Ro’ysã","Fresco / frío","Temperatura baja."),P("Hu’ũ","Blando/a","Textura suave."),P("Hatã","Duro/a","Textura firme.")],dialogue:["A: Mba’éichapa pe kiveve? = ¿Cómo está el kiveve?","B: He, haku ha hu’ũ. = Está rico, caliente y blando."],task:"Describe sopa paraguaya, mbeju y kiveve usando una palabra de sabor, una de temperatura y una de textura.",quiz:[Q("¿Qué palabra describe una textura blanda?",["Hu’ũ","Hatã","Haku"],0,"Hu’ũ significa blando o suave."),Q("¿Qué palabra indica temperatura alta?",["Haku","Ro’ysã","He’ẽ"],0,"Haku significa caliente.")]},
+        {id:"secuencia",title:"Leer una receta",summary:"Orden, cantidades y señales.",objective:"Seguir una preparación identificando inicio, secuencia y punto final.",explain:"Una receta profesional indica cantidad, acción, tiempo y señal de cocción. Primero reúne todo; después sigue el orden; al final verifica textura, temperatura y cocción segura.",example:"Ñepyrũrã eikytĩ sevói. Upéi embojehe’a. Ipahápe embojy. = Primero corta la cebolla. Después mezcla. Al final cocina.",phrases:[P("Ñepyrũrã","Primero / para comenzar","Abre una secuencia."),P("Upéi","Después","Continúa el orden."),P("Ipahápe","Al final","Cierra el proceso."),P("Sapy’ami","Un momento / un poco de tiempo","Duración breve."),P("Mbeguekatúpe","Lentamente","Modo de acción."),P("Oĩma","Ya está / está listo","Indica finalización.")],dialogue:["A: Oĩmapa? = ¿Ya está listo?","B: Ne’ĩra. Mbeguekatúpe oñembojy. = Todavía no. Se está cocinando lentamente."],task:"Toma una receta de la galería y subraya cantidad, acción, tiempo y señal de cocción.",quiz:[Q("¿Qué conector indica el paso final?",["Ipahápe","Upéi","Ñepyrũrã"],0,"Ipahápe marca el final de una secuencia."),Q("¿Qué expresión indica que algo ya está listo?",["Oĩma","Ne’ĩra","Sapy’ami"],0,"Oĩma comunica que ya está o ya terminó.")]},
+        {id:"explicar",title:"Presentar un plato",summary:"Origen, ingredientes y experiencia.",objective:"Explicar un plato en cuatro frases breves y ordenadas.",explain:"Una buena presentación responde: qué es, qué lleva, cómo se prepara y cómo se siente al comerlo. No necesitas memorizar una historia larga: conecta datos concretos.",example:"Mbeju ha’e tembi’u mandi’o aramirõgui ojejapóva. Oguereko kesu. Oñembojy sarténpe. He ha ikyrỹi. = El mbeju se hace con almidón de mandioca, lleva queso, se cocina en sartén y es sabroso y crocante.",phrases:[P("Ha’e tembi’u…","Es una comida…","Presenta el plato."),P("Oguereko…","Lleva / contiene…","Enumera ingredientes."),P("Ojejapo…gui","Se hace de/con…","Explica composición."),P("Oñembojy…pe","Se cocina en…","Indica el medio."),P("Iporã oñekarúvo…","Es bueno para comer cuando…","Relaciona ocasión.")],dialogue:["A: Mba’épa pe mbeju? = ¿Qué es el mbeju?","B: Ha’e tembi’u aramirõ ha kesu oguerekóva. = Es una comida que lleva almidón y queso.","A: Moõpa oñembojy?","B: Sarténpe."],task:"Elige una receta y prepara una presentación de 30 segundos: nombre, ingredientes, técnica y cualidad.",quiz:[Q("¿Qué estructura introduce los ingredientes?",["Oguereko…","Ipahápe…","Oĩma"],0,"Oguereko significa «tiene» o «contiene»."),Q("¿Qué estructura explica de qué está hecho?",["Ojejapo…gui","Ha’e tembi’u…","Iporã…"],0,"Ojejapo…gui expresa «se hace de/con…».")]}
+      ]
+    }
+  ];
+
+  function escapeHtml(value){
+    return String(value==null?"":value).replace(/[&<>\"']/g,function(char){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[char]});
+  }
+  function theme(course){return "theme-"+course.id}
+  function getState(){
+    try{
+      const current=JSON.parse(localStorage.getItem(LIFE_KEY)||"{}");
+      const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||"{}");
+      const completed=Array.from(new Set([].concat(Array.isArray(legacy.completed)?legacy.completed:[],Array.isArray(current.completed)?current.completed:[])));
+      return {completed:completed,unitCompleted:Array.isArray(current.unitCompleted)?current.unitCompleted:[]};
+    }catch(error){return {completed:[],unitCompleted:[]}}
+  }
+  function saveState(state){try{localStorage.setItem(LIFE_KEY,JSON.stringify(state))}catch(error){}}
+  function unitKey(course,unit){return course.id+":"+unit.id}
+  function isUnitDone(course,unit){
+    const state=getState();
+    const courseUnits=state.unitCompleted.filter(function(key){return key.indexOf(course.id+":")===0});
+    return state.unitCompleted.includes(unitKey(course,unit))||(state.completed.includes(course.id)&&courseUnits.length===0);
+  }
+  function completedCount(course){return course.units.filter(function(unit){return isUnitDone(course,unit)}).length}
+  function isCourseDone(course){return completedCount(course)===course.units.length}
+  function completeUnit(course,unit){
+    const state=getState();
+    const key=unitKey(course,unit);
+    if(!state.unitCompleted.includes(key))state.unitCompleted.push(key);
+    const done=course.units.every(function(item){return state.unitCompleted.includes(unitKey(course,item))});
+    if(done&&!state.completed.includes(course.id))state.completed.push(course.id);
+    saveState(state);
+  }
+  function openView(id){
+    if(typeof go==="function")go(id);
+    else if(typeof show==="function")show(id,true);
+    else document.querySelectorAll("main > section").forEach(function(section){section.classList.toggle("hide",section.id!==id)});
+    document.querySelectorAll(".bottom-nav button").forEach(function(button){button.classList.toggle("active",button.dataset.go==="catalog")});
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function addEntryPoints(){
+    const carousel=document.querySelector("#home .course-carousel");
+    if(carousel&&!document.querySelector(".gca64-life-mini")){
+      carousel.insertAdjacentHTML("beforeend",courses.map(function(course,index){
+        return '<button class="mini-course gca-life-mini gca64-life-mini '+theme(course)+'" type="button" data-life-open="'+index+'" aria-label="Abrir '+escapeHtml(course.title)+'"><span class="art-icon"><span class="course-emoji">'+course.icon+'</span></span><strong>'+escapeHtml(course.title)+'</strong><small>'+course.units.length+' unidades · '+escapeHtml(course.short)+'</small><i class="gca-life-mini-arrow" aria-hidden="true">→</i></button>';
+      }).join(""));
+    }
+    const grid=document.querySelector("#catalog .course-grid");
+    if(grid&&!document.querySelector(".gca64-life-catalog")){
+      grid.insertAdjacentHTML("beforeend",courses.map(function(course,index){
+        return '<article class="course-card gca-life-catalog gca64-life-catalog '+theme(course)+'"><div class="course-card-icon">'+course.icon+'</div><h3>'+escapeHtml(course.title)+'</h3><p>'+escapeHtml(course.description)+'</p><div class="gca-life-card-meta">'+course.units.length+' unidades · '+escapeHtml(course.level)+' · '+escapeHtml(course.duration)+'</div><button class="btn gca-life-action" type="button" data-life-open="'+index+'">Ver curso →</button></article>';
+      }).join(""));
+    }
+  }
+  function createView(){
+    const main=document.querySelector("main");
+    if(!main||document.querySelector("#lifeLesson"))return;
+    main.insertAdjacentHTML("beforeend",'<section id="lifeLesson" class="hide"><div class="gca-life-shell"><div id="gcaLifeLessonContent"></div></div></section>');
+    if(typeof views!=="undefined"&&Array.isArray(views)&&!views.includes("lifeLesson"))views.push("lifeLesson");
+  }
+  function updateEntryPoints(){
+    document.querySelectorAll("[data-life-open]").forEach(function(button){
+      const course=courses[Number(button.dataset.lifeOpen)];
+      if(!course)return;
+      const card=button.closest(".gca64-life-mini,.gca64-life-catalog")||button;
+      const count=completedCount(course);
+      card.classList.toggle("done",count===course.units.length);
+      const action=card.querySelector(".gca-life-action");
+      if(action)action.textContent=count===course.units.length?"Revisar curso →":count>0?"Continuar →":"Ver curso →";
+    });
+  }
+  function renderPhraseList(phrases){
+    return '<div class="gca-life-phrases">'+phrases.map(function(item,index){
+      return '<div class="gca-life-phrase"><b>'+escapeHtml(item.g)+'</b><span>'+escapeHtml(item.s)+(item.n?'<small style="display:block;margin-top:4px">'+escapeHtml(item.n)+'</small>':'')+'</span><button class="gca-life-speak" type="button" data-life-speak="'+index+'" aria-label="Escuchar '+escapeHtml(item.g)+'">🔊</button></div>';
+    }).join("")+'</div>';
+  }
+  function renderDialogue(unit){
+    if(!unit.dialogue||!unit.dialogue.length)return "";
+    return '<div class="gca-life-study-section"><h3>🗨️ Conversación modelo</h3><p>Lee ambas voces. Después repite sin mirar la traducción.</p><div class="gca-life-dialogue">'+unit.dialogue.map(function(line){return '<div class="gca-life-bubble">'+escapeHtml(line)+'</div>'}).join("")+'</div></div>';
+  }
+  function renderLibrary(){
+    const groups=Array.from(new Set(commonPhraseLibrary.map(function(item){return item.group})));
+    return '<div class="gca-life-course-supplement"><h3>🗂️ Biblioteca de 52 expresiones</h3><p>Material de consulta organizado por intención comunicativa. Escucha y guarda frases completas, no palabras aisladas.</p><div class="gca-life-library">'+groups.map(function(group,groupIndex){
+      const items=commonPhraseLibrary.map(function(item,index){return {item:item,index:index}}).filter(function(entry){return entry.item.group===group});
+      return '<details class="gca-life-phrase-group" '+(groupIndex===0?'open':'')+'><summary>'+escapeHtml(group)+' · '+items.length+'</summary><div class="gca-life-library-grid">'+items.map(function(entry){return '<article class="gca-life-library-item"><strong>'+escapeHtml(entry.item.g)+'</strong><span>'+escapeHtml(entry.item.s)+'</span><small>'+escapeHtml(entry.item.n)+'</small><button class="gca-life-speak" type="button" data-life-library-speak="'+entry.index+'" aria-label="Escuchar '+escapeHtml(entry.item.g)+'">🔊</button></article>'}).join("")+'</div></details>';
+    }).join("")+'</div><div class="gca-life-reference-note"><b>Consejo de estudio:</b> elige cinco expresiones por semana, úsalas en situaciones concretas y vuelve a ellas hasta producirlas sin leer.</div></div>';
+  }
+  function renderRecipes(recipes){
+    return '<div class="gca-life-course-supplement"><h3>🍽️ Recetario didáctico</h3><p>Quince preparaciones con cantidades orientativas, rendimiento, pasos completos y vocabulario. Las versiones familiares pueden variar.</p><div class="gca-life-recipes">'+recipes.map(function(recipe){
+      return '<article class="gca-life-recipe" data-icon="'+escapeHtml(recipe.icon)+'"><span class="gca-life-recipe-tag">'+escapeHtml(recipe.type)+'</span><h4>'+escapeHtml(recipe.name)+'</h4><div class="gca-life-recipe-meta"><span>⏱ '+escapeHtml(recipe.time)+'</span><span>🍽 '+escapeHtml(recipe.yield)+'</span></div><p class="gca-life-recipe-note">'+escapeHtml(recipe.note)+'</p><details><summary>Ingredientes y preparación</summary><h5>Ingredientes</h5><ul>'+recipe.ingredients.map(function(item){return '<li>'+escapeHtml(item)+'</li>'}).join("")+'</ul><h5>Preparación</h5><ol>'+recipe.steps.map(function(step){return '<li>'+escapeHtml(step)+'</li>'}).join("")+'</ol><div class="gca-life-recipe-vocab"><b>Guaraní útil:</b> '+escapeHtml(recipe.vocab)+'</div></details></article>';
+    }).join("")+'</div><div class="gca-life-reference-note"><b>Antes de cocinar:</b> revisa alergias, manipula carnes y huevos con higiene, evita probar masas crudas y controla con cuidado el horno, las brasas y el aceite caliente.</div></div>';
+  }
+  let currentCourse=0;
+  let currentUnit=0;
+  let quizIndex=0;
+  function renderCourse(index){
+    currentCourse=Math.max(0,Math.min(courses.length-1,Number(index)||0));
+    const course=courses[currentCourse];
+    const count=completedCount(course);
+    const percent=Math.round(count/course.units.length*100);
+    const host=document.querySelector("#gcaLifeLessonContent");
+    if(!host)return;
+    host.innerHTML='<button class="gca-life-back" type="button" data-life-back>← Volver a todos los cursos</button><div class="gca-life-overview '+theme(course)+'"><div class="gca-life-overview-hero" data-icon="'+course.icon+'"><span class="gca-life-kicker">Ruta de aprendizaje · '+escapeHtml(course.level)+'</span><h2>'+course.icon+' '+escapeHtml(course.title)+'</h2><p>'+escapeHtml(course.description)+'</p><div class="gca-life-meta"><span>⏱ '+escapeHtml(course.duration)+'</span><span>🎯 '+escapeHtml(course.skills)+'</span><span>📚 '+course.units.length+' unidades</span></div><div class="gca-life-progress-box"><div><i style="width:'+percent+'%"></i></div><small>'+count+' de '+course.units.length+' unidades completadas · '+percent+'%</small></div></div><div class="gca-life-outcomes"><h3>Al terminar podrás</h3><ul>'+course.outcomes.map(function(item){return '<li>'+escapeHtml(item)+'</li>'}).join("")+'</ul></div><div class="gca-life-curriculum-head"><h3>Programa del curso</h3><span>Explicación · ejemplos · práctica · evaluación</span></div><div class="gca-life-unit-grid">'+course.units.map(function(unit,unitIndex){const done=isUnitDone(course,unit);return '<button class="gca-life-unit-card '+(done?'done':'')+'" type="button" data-life-unit="'+unitIndex+'"><span class="gca-life-unit-number">'+(unitIndex+1)+'</span><span><strong>'+escapeHtml(unit.title)+'</strong><small>'+escapeHtml(unit.summary)+'</small></span><span class="gca-life-unit-status">'+(done?'✓':'→')+'</span></button>'}).join("")+'</div>'+(course.library?renderLibrary():"")+(course.recipes?renderRecipes(course.recipes):"")+'</div>';
+    updateEntryPoints();
+  }
+  function renderUnit(courseIndex,unitIndex){
+    currentCourse=Math.max(0,Math.min(courses.length-1,Number(courseIndex)||0));
+    const course=courses[currentCourse];
+    currentUnit=Math.max(0,Math.min(course.units.length-1,Number(unitIndex)||0));
+    const unit=course.units[currentUnit];
+    quizIndex=0;
+    const host=document.querySelector("#gcaLifeLessonContent");
+    if(!host)return;
+    host.innerHTML='<button class="gca-life-back" type="button" data-life-course-back>← Volver al programa</button><div class="gca-life-lesson-head '+theme(course)+'"><small>Unidad '+(currentUnit+1)+' de '+course.units.length+' · '+escapeHtml(course.title)+'</small><h2>'+escapeHtml(unit.title)+'</h2><p>'+escapeHtml(unit.summary)+'</p><div class="gca-life-objective"><b>Objetivo:</b> '+escapeHtml(unit.objective)+'</div></div><div class="gca-life-study"><div class="gca-life-explanation"><h3>Comprende antes de practicar</h3><p>'+escapeHtml(unit.explain)+'</p><div class="gca-life-example"><b>Ejemplo en contexto</b><br>'+escapeHtml(unit.example)+'</div></div><div class="gca-life-study-section"><h3>📖 Vocabulario y expresiones</h3>'+renderPhraseList(unit.phrases)+'</div>'+renderDialogue(unit)+'<div class="gca-life-study-section"><div class="gca-life-task"><b>Actividad de aplicación</b>'+escapeHtml(unit.task)+'</div></div></div><div class="gca-life-quiz" id="gcaLifeQuiz"></div>';
+    renderQuizQuestion();
+  }
+  function renderQuizQuestion(){
+    const course=courses[currentCourse];
+    const unit=course.units[currentUnit];
+    const question=unit.quiz[quizIndex];
+    const quiz=document.querySelector("#gcaLifeQuiz");
+    if(!quiz||!question)return;
+    quiz.innerHTML='<small>Comprobación '+(quizIndex+1)+' de '+unit.quiz.length+'</small><h3>'+escapeHtml(question.q)+'</h3><div class="gca-life-options">'+question.options.map(function(option,index){return '<button type="button" class="gca-life-option" data-life-answer="'+index+'">'+escapeHtml(option)+'</button>'}).join("")+'</div><p class="gca-life-feedback" id="gcaLifeFeedback">Elige una respuesta y recibe una explicación.</p><div class="gca-life-unit-actions"><button class="gca-life-return" type="button" data-life-course-back>Volver al programa</button><button class="gca-life-continue" type="button" data-life-quiz-next>'+(quizIndex+1<unit.quiz.length?'Siguiente comprobación →':'Completar unidad ✓')+'</button></div>';
+  }
+  function speak(text){
+    if(typeof playPronunciation==="function"){try{playPronunciation(text);return}catch(error){}}
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(text);
+      utterance.lang="es-PY";
+      utterance.rate=.78;
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+  function handleAnswer(button){
+    const course=courses[currentCourse];
+    const question=course.units[currentUnit].quiz[quizIndex];
+    const selected=Number(button.dataset.lifeAnswer);
+    const options=button.parentElement.querySelectorAll(".gca-life-option");
+    const feedback=document.querySelector("#gcaLifeFeedback");
+    options.forEach(function(option){option.classList.remove("correct","wrong")});
+    if(selected===question.answer){
+      button.classList.add("correct");
+      options.forEach(function(option){option.disabled=true});
+      if(feedback)feedback.textContent="✅ Correcto. "+question.why;
+      document.querySelector("[data-life-quiz-next]")?.classList.add("visible");
+    }else{
+      button.classList.add("wrong");
+      if(feedback)feedback.textContent="Todavía no. Vuelve al ejemplo y compara la función de cada opción.";
+    }
+  }
+  function nextQuiz(){
+    const course=courses[currentCourse];
+    const unit=course.units[currentUnit];
+    if(quizIndex+1<unit.quiz.length){quizIndex++;renderQuizQuestion();document.querySelector("#gcaLifeQuiz")?.scrollIntoView({behavior:"smooth",block:"start"});return}
+    completeUnit(course,unit);
+    renderCourse(currentCourse);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function bindEvents(){
+    if(document.documentElement.dataset.gca64LifeBound)return;
+    document.documentElement.dataset.gca64LifeBound="1";
+    document.addEventListener("click",function(event){
+      const openButton=event.target.closest("[data-life-open]");
+      if(openButton){renderCourse(openButton.dataset.lifeOpen);openView("lifeLesson");return}
+      if(event.target.closest("[data-life-back]")){openView("catalog");return}
+      const unitButton=event.target.closest("[data-life-unit]");
+      if(unitButton){renderUnit(currentCourse,unitButton.dataset.lifeUnit);window.scrollTo({top:0,behavior:"smooth"});return}
+      if(event.target.closest("[data-life-course-back]")){renderCourse(currentCourse);window.scrollTo({top:0,behavior:"smooth"});return}
+      const speakButton=event.target.closest("[data-life-speak]");
+      if(speakButton){speak(courses[currentCourse].units[currentUnit].phrases[Number(speakButton.dataset.lifeSpeak)].g);return}
+      const libraryButton=event.target.closest("[data-life-library-speak]");
+      if(libraryButton){const item=commonPhraseLibrary[Number(libraryButton.dataset.lifeLibrarySpeak)];if(item)speak(item.g);return}
+      const answerButton=event.target.closest("[data-life-answer]");
+      if(answerButton){handleAnswer(answerButton);return}
+      if(event.target.closest("[data-life-quiz-next]")){nextQuiz()}
+    });
+  }
+  function init(){
+    createView();
+    addEntryPoints();
+    updateEntryPoints();
+    bindEvents();
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
 })();
 </script>
 </body>
