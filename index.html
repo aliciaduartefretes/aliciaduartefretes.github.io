@@ -2858,7 +2858,7 @@ onAuthStateChanged(auth,async user=>{
   renderPoliceQuiz=function(){policeUnit=Math.max(0,Math.min(POLICE_LESSONS.length-1,Number(policeUnit)||0));const questions=POLICE_LESSONS[policeUnit]?.questions;if(!Array.isArray(questions)||!questions.length){renderPoliceStudy();return}if(policeStep>=questions.length){policePhase="finished";renderPoliceFinishedScreen();return}policeStep=Math.max(0,Number(policeStep)||0);try{renderPoliceQuizStable()}catch(error){console.error("POLICE_QUIZ_RECOVERY",error);policeStep=0;renderPoliceStudy()}}
   function renderPoliceFinishedScreen(){const u=POLICE_LESSONS[policeUnit]||POLICE_LESSONS[0],needed=u.exam?75:70,stored=Number(state.policeScores[policeUnit]),score=policeFinishedScore!==null&&Number.isFinite(policeFinishedScore)?policeFinishedScore:Number.isFinite(stored)?stored:0,passed=policeFinishedPassed||state.policeDone.includes(policeUnit)||score>=needed,body=$("#policeLessonBody");if(!body)return;$("#policeProgress").style.width="100%";$("#policeLessonLabel").textContent=passed?"Lección aprobada":"Repaso recomendado";body.innerHTML=`<div class="finished"><div class="score-ring" style="--score:${score*3.6}deg"><b>${score}%</b></div><h2>${passed?"¡Lección aprobada!":"Vamos a reforzarla"}</h2><p>${passed?"La lección quedó completada.":`Necesitas ${needed} %. Puedes intentarlo nuevamente.`}</p><button class="btn" id="policeReturn">${passed?"Volver al módulo":"Reintentar"}</button></div>`;$("#policeReturn").onclick=()=>passed?(renderPoliceUnits(),show("policeCourse",true),window.scrollTo(0,0)):openPoliceLesson(policeUnit)}
   finishPoliceLesson=function(){const u=POLICE_LESSONS[policeUnit],total=u.questions.length,score=Math.round(policeCorrect/total*100),needed=u.exam?75:70,passed=score>=needed;policePhase="finished";policeFinishedScore=score;policeFinishedPassed=passed;state.policeScores[policeUnit]=Math.max(state.policeScores[policeUnit]||0,score);if(passed&&!state.policeDone.includes(policeUnit))state.policeDone.push(policeUnit);state.policeDone.sort((a,b)=>a-b);renderPoliceFinishedScreen();finishReaction(passed);save();window.courseAnalytics?.("police_lesson_completed",{lesson_number:policeUnit+1,score,passed})}
-  function restoreVisibleLearningCard(){const generalVisible=!$("#lesson")?.classList.contains("hide"),policeVisible=!$("#policeLesson")?.classList.contains("hide"),medicalVisible=!$("#medicalLesson")?.classList.contains("hide");if(generalVisible&&!$("#lessonBody")?.innerText.trim())phase==="finished"?renderGeneralFinishedScreen():phase==="quiz"?renderQuiz():renderStudy();if(policeVisible&&!$("#policeLessonBody")?.innerText.trim())policePhase==="finished"?renderPoliceFinishedScreen():policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();if(medicalVisible&&!$("#medicalLessonBody")?.innerText.trim())medicalPhase==="finished"?renderMedicalFinishedScreen():medicalPhase==="quiz"?renderMedicalQuiz():renderMedicalStudy()}
+  function restoreVisibleLearningCard(){const generalVisible=!$("#lesson")?.classList.contains("hide"),policeVisible=!$("#policeLesson")?.classList.contains("hide"),medicalVisible=!$("#medicalLesson")?.classList.contains("hide");if(generalVisible&&!(($("#lessonBody")?.innerText||$("#lessonBody")?.textContent||"").trim()))phase==="finished"?renderGeneralFinishedScreen():phase==="quiz"?renderQuiz():renderStudy();if(policeVisible&&!(($("#policeLessonBody")?.innerText||$("#policeLessonBody")?.textContent||"").trim()))policePhase==="finished"?renderPoliceFinishedScreen():policePhase==="quiz"?renderPoliceQuiz():renderPoliceStudy();if(medicalVisible&&!(($("#medicalLessonBody")?.innerText||$("#medicalLessonBody")?.textContent||"").trim()))medicalPhase==="finished"?renderMedicalFinishedScreen():medicalPhase==="quiz"?renderMedicalQuiz():renderMedicalStudy()}
   const learningCardObserver=new MutationObserver(()=>queueMicrotask(restoreVisibleLearningCard));learningCardObserver.observe($("#lessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#policeLessonBody"),{childList:true,subtree:true});learningCardObserver.observe($("#medicalLessonBody"),{childList:true,subtree:true});window.addEventListener("error",()=>setTimeout(restoreVisibleLearningCard,0));window.addEventListener("unhandledrejection",()=>setTimeout(restoreVisibleLearningCard,0));setTimeout(restoreVisibleLearningCard,0);
   /* El acceso a Medicina se enlaza una sola vez en GCA46, donde queda aislado
      del motor de Policía. Se elimina este enlace anterior para evitar dos
@@ -4423,6 +4423,407 @@ window.__GCA63LegacyLife=function(){
   function ensureMedicalEditorialLanguage(){if(lang!=='pt')return;lang='es';const main=$('#lang'),header=$('#headerLang');if(main)main.value='es';if(header)header.value='es';save();showToast('La edición médica en portugués está en revisión. Abrimos la versión completa en español.')}
   const gca65MedicalRenderBase=renderMedicalUnits;renderMedicalUnits=function(){ensureMedicalEditorialLanguage();gca65MedicalRenderBase();refreshSpecialPanels();decorateModules();refreshProjectNotes();refreshCounts()};
   refreshCounts();renderUnits();renderHomeDashboard();refreshGeneralPanel();refreshSpecialPanels();decorateModules();refreshProjectNotes();renderKidsMap();
+})();
+</script>
+<script id="gca66-complete-general-language-layer">
+(function(){
+  "use strict";
+
+  const SUPPORTED=["es","en","pt","fr","it","de"];
+  const GENERAL_COPY={
+    es:{
+      back:"← Volver a todos los cursos",path:"Tu camino de aprendizaje",pathSub:"Cada unidad incluye teoría visual, ejemplos y evaluación.",
+      cardTitle:"Guaraní general",cardDescription:"Expresiones cotidianas, vocabulario, cultura y conversación para comenzar a comunicarte.",enter:"Entrar al curso →",fromZero:"Curso tradicional para aprender desde cero",
+      units:"unidades",practice:"prácticas",languages:"idiomas",skills:["comprender","usar","evaluar"],
+      eyebrow:"Ruta profesional · Nivel inicial",overviewTitle:"Una base completa para comunicarte",overviewText:"Dieciséis unidades organizadas en cuatro módulos. Cada unidad combina comprensión, vocabulario, ejemplo contextual y evaluación.",
+      kpis:["unidades","prácticas","idiomas"],outcomes:["Presentarte y sostener un encuentro breve.","Comprender sonidos, pronombres y estructuras esenciales.","Hablar de familia, rutina, emociones y tiempo.","Pedir ayuda, reparar una conversación y hacer una compra."],progress:"Progreso del curso",
+      followTitle:"📱 Sigue aprendiendo con la Profe Ali",followText:"Videos cortos de guaraní, cultura paraguaya y pronunciación.",followButton:"Seguir a @aliexplora en Instagram",
+      source:"<b>Enfoque pedagógico:</b> contenido creado para aprender paso a paso, practicar en contexto y comprobar el avance.",spanishOnly:"Contenido en español",spanishNotice:"Este curso está disponible en español. Cambiamos el idioma para mostrarte todo el contenido."
+    },
+    en:{
+      back:"← Back to all courses",path:"Your learning path",pathSub:"Each unit includes visual theory, examples and assessment.",
+      cardTitle:"General Guaraní",cardDescription:"Everyday expressions, vocabulary, culture and conversation to start communicating.",enter:"Enter course →",fromZero:"A traditional course for beginners",
+      units:"units",practice:"checks",languages:"languages",skills:["understand","use","assess"],
+      eyebrow:"Professional pathway · Beginner",overviewTitle:"A complete foundation for communication",overviewText:"Sixteen units in four modules. Every unit combines comprehension, vocabulary, a contextual example and assessment.",
+      kpis:["units","checks","languages"],outcomes:["Introduce yourself and hold a brief exchange.","Understand essential sounds, pronouns and structures.","Talk about family, routine, emotions and time.","Ask for help, repair a conversation and make a purchase."],progress:"Course progress",
+      followTitle:"📱 Keep learning with Profe Ali",followText:"Short videos about Guaraní, Paraguayan culture and pronunciation.",followButton:"Follow @aliexplora on Instagram",
+      source:"<b>Learning approach:</b> content designed for step-by-step study, contextual practice and progress checks.",spanishOnly:"Content in Spanish",spanishNotice:"This course is available in Spanish. We changed the language so you can view all of its content."
+    },
+    pt:{
+      back:"← Voltar a todos os cursos",path:"Seu caminho de aprendizagem",pathSub:"Cada unidade inclui teoria visual, exemplos e avaliação.",
+      cardTitle:"Guarani geral",cardDescription:"Expressões cotidianas, vocabulário, cultura e conversação para começar a se comunicar.",enter:"Entrar no curso →",fromZero:"Curso tradicional para aprender desde o início",
+      units:"unidades",practice:"práticas",languages:"idiomas",skills:["compreender","usar","avaliar"],
+      eyebrow:"Rota profissional · Nível inicial",overviewTitle:"Uma base completa para se comunicar",overviewText:"Dezesseis unidades organizadas em quatro módulos. Cada unidade combina compreensão, vocabulário, exemplo contextual e avaliação.",
+      kpis:["unidades","práticas","idiomas"],outcomes:["Apresentar-se e manter uma conversa breve.","Compreender sons, pronomes e estruturas essenciais.","Falar de família, rotina, emoções e tempo.","Pedir ajuda, reparar uma conversa e fazer uma compra."],progress:"Progresso do curso",
+      followTitle:"📱 Continue aprendendo com a Profe Ali",followText:"Vídeos curtos sobre guarani, cultura paraguaia e pronúncia.",followButton:"Seguir @aliexplora no Instagram",
+      source:"<b>Abordagem pedagógica:</b> conteúdo criado para aprender passo a passo, praticar em contexto e verificar o progresso.",spanishOnly:"Conteúdo em espanhol",spanishNotice:"Este curso está disponível em espanhol. Mudamos o idioma para mostrar todo o conteúdo."
+    },
+    fr:{
+      back:"← Retour à tous les cours",path:"Votre parcours d’apprentissage",pathSub:"Chaque unité comprend une théorie visuelle, des exemples et une évaluation.",
+      cardTitle:"Guarani général",cardDescription:"Expressions quotidiennes, vocabulaire, culture et conversation pour commencer à communiquer.",enter:"Accéder au cours →",fromZero:"Cours traditionnel pour débuter",
+      units:"unités",practice:"exercices",languages:"langues",skills:["comprendre","utiliser","évaluer"],
+      eyebrow:"Parcours professionnel · Débutant",overviewTitle:"Une base complète pour communiquer",overviewText:"Seize unités organisées en quatre modules. Chaque unité combine compréhension, vocabulaire, exemple contextualisé et évaluation.",
+      kpis:["unités","exercices","langues"],outcomes:["Vous présenter et tenir un bref échange.","Comprendre les sons, pronoms et structures essentiels.","Parler de famille, de routine, d’émotions et de temps.","Demander de l’aide, réparer l’échange et faire un achat."],progress:"Progression du cours",
+      followTitle:"📱 Continuez à apprendre avec Profe Ali",followText:"De courtes vidéos sur le guarani, la culture paraguayenne et la prononciation.",followButton:"Suivre @aliexplora sur Instagram",
+      source:"<b>Approche pédagogique :</b> un contenu conçu pour apprendre progressivement, pratiquer en contexte et vérifier ses acquis.",spanishOnly:"Contenu en espagnol",spanishNotice:"Ce cours est disponible en espagnol. La langue a été changée afin d’afficher tout le contenu."
+    },
+    it:{
+      back:"← Torna a tutti i corsi",path:"Il tuo percorso di apprendimento",pathSub:"Ogni unità include teoria visuale, esempi e valutazione.",
+      cardTitle:"Guaraní generale",cardDescription:"Espressioni quotidiane, vocabolario, cultura e conversazione per iniziare a comunicare.",enter:"Entra nel corso →",fromZero:"Corso tradizionale per iniziare da zero",
+      units:"unità",practice:"esercizi",languages:"lingue",skills:["comprendere","usare","valutare"],
+      eyebrow:"Percorso professionale · Principiante",overviewTitle:"Una base completa per comunicare",overviewText:"Sedici unità organizzate in quattro moduli. Ogni unità combina comprensione, vocabolario, esempio contestuale e valutazione.",
+      kpis:["unità","esercizi","lingue"],outcomes:["Presentarti e sostenere un breve scambio.","Comprendere suoni, pronomi e strutture essenziali.","Parlare di famiglia, routine, emozioni e tempo.","Chiedere aiuto, riparare una conversazione e fare un acquisto."],progress:"Progresso del corso",
+      followTitle:"📱 Continua a imparare con la Profe Ali",followText:"Brevi video sul guaraní, la cultura paraguaiana e la pronuncia.",followButton:"Segui @aliexplora su Instagram",
+      source:"<b>Approccio didattico:</b> contenuti pensati per imparare passo dopo passo, praticare nel contesto e verificare i progressi.",spanishOnly:"Contenuto in spagnolo",spanishNotice:"Questo corso è disponibile in spagnolo. Abbiamo cambiato la lingua per mostrarti tutti i contenuti."
+    },
+    de:{
+      back:"← Zurück zu allen Kursen",path:"Dein Lernweg",pathSub:"Jede Einheit enthält visuelle Theorie, Beispiele und eine Lernkontrolle.",
+      cardTitle:"Allgemeines Guaraní",cardDescription:"Alltägliche Ausdrücke, Wortschatz, Kultur und Gespräche für den Einstieg in die Kommunikation.",enter:"Kurs öffnen →",fromZero:"Traditioneller Anfängerkurs",
+      units:"Einheiten",practice:"Übungen",languages:"Sprachen",skills:["verstehen","anwenden","überprüfen"],
+      eyebrow:"Professioneller Lernweg · Anfänger",overviewTitle:"Eine vollständige Grundlage zum Kommunizieren",overviewText:"Sechzehn Einheiten in vier Modulen. Jede Einheit verbindet Verstehen, Wortschatz, ein Kontextbeispiel und eine Lernkontrolle.",
+      kpis:["Einheiten","Übungen","Sprachen"],outcomes:["Dich vorstellen und ein kurzes Gespräch führen.","Wichtige Laute, Pronomen und Strukturen verstehen.","Über Familie, Routine, Gefühle und Zeit sprechen.","Um Hilfe bitten, Gespräche klären und einkaufen."],progress:"Kursfortschritt",
+      followTitle:"📱 Lerne mit Profe Ali weiter",followText:"Kurze Videos über Guaraní, paraguayische Kultur und Aussprache.",followButton:"@aliexplora auf Instagram folgen",
+      source:"<b>Lernansatz:</b> Inhalte zum schrittweisen Lernen, Üben im Kontext und Überprüfen des Fortschritts.",spanishOnly:"Inhalt auf Spanisch",spanishNotice:"Dieser Kurs ist auf Spanisch verfügbar. Die Sprache wurde umgestellt, damit alle Inhalte angezeigt werden."
+    }
+  };
+
+  function language(){
+    const selected=document.querySelector("#headerLang")?.value||document.querySelector("#lang")?.value;
+    const code=typeof lang!=="undefined"?lang:selected;
+    return SUPPORTED.includes(code)?code:"es";
+  }
+  function text(selector,value){const node=document.querySelector(selector);if(node&&value!==undefined)node.textContent=value}
+  function paintOverview(copy){
+    const panel=document.querySelector("#generalProOverview");if(!panel)return;
+    text("#generalProOverview .pro-eyebrow",copy.eyebrow);
+    text("#generalProOverview h3",copy.overviewTitle);
+    text("#generalProOverview .pro-overview-top p",copy.overviewText);
+    panel.querySelectorAll(".pro-kpi small").forEach(function(node,index){if(copy.kpis[index])node.textContent=copy.kpis[index]});
+    panel.querySelectorAll(".pro-outcome").forEach(function(node,index){if(copy.outcomes[index])node.textContent=copy.outcomes[index]});
+    const progressLabel=panel.querySelector(".pro-progress-head span");if(progressLabel)progressLabel.textContent=copy.progress;
+  }
+  function paintGeneral(code){
+    code=SUPPORTED.includes(code)?code:language();const copy=GENERAL_COPY[code]||GENERAL_COPY.es;
+    text("#course .course-back button",copy.back);
+    text("#course .course-head h2",copy.path);
+    text("#course .course-head p",copy.pathSub);
+    text("#course .course-head [data-ui='unitsTag']","16 "+copy.units.toLocaleUpperCase()+" · "+(code==="es"?"NIVEL INICIAL":code==="en"?"BEGINNER LEVEL":code==="pt"?"NÍVEL INICIAL":code==="fr"?"NIVEAU DÉBUTANT":code==="it"?"LIVELLO INIZIALE":"ANFÄNGERNIVEAU"));
+    document.querySelectorAll("#course .unit-skill-chips").forEach(function(row){row.querySelectorAll("span").forEach(function(node,index){if(copy.skills[index])node.textContent=copy.skills[index]})});
+    text("#course .insta-cta h3",copy.followTitle);text("#course .insta-cta p",copy.followText);text("#course .insta-cta a",copy.followButton);
+    const source=document.querySelector("#course .sources");if(source)source.innerHTML=copy.source;
+    const card=document.querySelector("#openGeneralCourse")?.closest(".course-card");
+    if(card){const heading=card.querySelector("h3"),description=card.querySelector("p"),button=card.querySelector("button"),stats=card.querySelectorAll(".course-card-stats span");if(heading)heading.textContent=copy.cardTitle;if(description)description.textContent=copy.cardDescription;if(button)button.textContent=copy.enter;if(stats[0])stats[0].textContent="16 "+copy.units;if(stats[1])stats[1].textContent="64 "+copy.practice;if(stats[2])stats[2].textContent="6 "+copy.languages}
+    text("#start strong",copy.cardTitle);text("#start small",copy.fromZero);
+    paintOverview(copy);
+  }
+  function paintRecentCourseAvailability(code){
+    const copy=GENERAL_COPY[code]||GENERAL_COPY.es;
+    document.querySelectorAll(".gca64-life-catalog").forEach(function(card){
+      card.setAttribute("lang","es");
+      const meta=card.querySelector(".gca-life-card-meta");if(!meta)return;
+      if(!meta.dataset.gca66Base)meta.dataset.gca66Base=meta.textContent;
+      meta.textContent=meta.dataset.gca66Base+" · "+copy.spanishOnly;
+    });
+    document.querySelectorAll(".gca64-life-mini").forEach(function(card){
+      card.setAttribute("lang","es");
+      const meta=card.querySelector("small");if(!meta)return;
+      if(!meta.dataset.gca66Base)meta.dataset.gca66Base=meta.textContent;
+      meta.textContent=meta.dataset.gca66Base+" · "+copy.spanishOnly;
+    });
+  }
+  function repaint(code){paintGeneral(code);paintRecentCourseAvailability(code)}
+
+  if(typeof renderUnits==="function"){
+    const baseRenderUnits=renderUnits;
+    renderUnits=function(){baseRenderUnits();paintGeneral(language())};
+  }
+  if(typeof translateUI==="function"){
+    const baseTranslateUI=translateUI;
+    translateUI=function(){baseTranslateUI();repaint(language())};
+  }
+  document.addEventListener("change",function(event){
+    if(!event.target.closest?.("#headerLang,#lang"))return;
+    const code=SUPPORTED.includes(event.target.value)?event.target.value:"es";
+    (window.queueMicrotask||function(callback){Promise.resolve().then(callback)})(function(){repaint(code)});
+    requestAnimationFrame(function(){repaint(code)});
+    setTimeout(function(){repaint(code)},120);
+  },true);
+  document.addEventListener("click",function(event){
+    const button=event.target.closest?.("[data-life-open]");if(!button)return;
+    const code=language();if(code==="es")return;
+    if(typeof window.setPlatformLanguage==="function")window.setPlatformLanguage("es");
+    else{lang="es";document.querySelectorAll("#headerLang,#lang").forEach(function(select){select.value="es"});if(typeof translateUI==="function")translateUI()}
+    if(typeof showToast==="function")showToast((GENERAL_COPY[code]||GENERAL_COPY.en).spanishNotice);
+  },true);
+  repaint(language());
+})();
+</script>
+<script id="gca67-medical-portuguese-complete">
+(function(){
+  "use strict";
+
+  /* GCA67: revisão editorial integral do curso de Medicina em português.
+     Esta camada é deliberadamente isolada para preservar todos os cursos,
+     dados de progresso, autenticação e traduções consolidadas em GCA66. */
+  const PT_PHRASES=[
+    ["Ou que","O que"],["ou paciente","o paciente"],["ou profissional","o profissional"],["ou curso","o curso"],["ou contexto","o contexto"],["ou atendimento","o atendimento"],["ou documento","o documento"],["ou relato","o relato"],["ou motivo","o motivo"],["ou problema","o problema"],["ou tratamento","o tratamento"],["ou exame","o exame"],["ou hospital","o hospital"],["ou medicamento","o medicamento"],["ou resultado","o resultado"],["ou caso","o caso"],["ou risco","o risco"],["ou diagnóstico","o diagnóstico"],["ou procedimento","o procedimento"],["ou consentimento","o consentimento"],["ou objeto","o objeto"],["ou animal","o animal"],["ou produto","o produto"],["ou centro","o centro"],["ou órgão","o órgão"],["ou intérprete","o intérprete"],["ou estado","o estado"],["ou episódio","o episódio"],["ou módulo","o módulo"],["ou uso","o uso"],["ou achado","o achado"],["ou protocolo","o protocolo"],["ou cuidado","o cuidado"],
+    ["o dor","a dor"],["um dor","uma dor"],["ou mudança","a mudança"],["um mudança","uma mudança"],["Esse mudança","Essa mudança"],["o gravidez","a gravidez"],["ao gravidez","à gravidez"],["o embalagem","a embalagem"],["O embalagem","A embalagem"],["seu mãe","sua mãe"],["seu família","sua família"],["seu forma","sua forma"],["seu experiência","sua experiência"],["a atendimento","o atendimento"],["A atendimento","O atendimento"],
+    ["doençaes","doenças"],["datosse","dados"],["Estosse","Esses"],["estosse","esses"],["quantosse","quantos"],["partosse","partos"],["medicamentossea","medicamentosa"],["medicamentosse","medicamentos"],["tratamentosse","tratamentos"],["hábitosse","hábitos"],["alimentosse","alimentos"],
+    ["se refere-se","refere-se"],["refere-se aqui","refere-se, neste caso"],["além disso de","além da"],["deve verificarse","deve ser verificado"],["devem verificarse","devem ser verificadas"],["deve evaluarse","deve ser avaliado"],["deve estudiarse","deve ser investigado"],["deve abordarse","deve ser abordada"],["deve confirmarse","deve ser confirmada"],["pode entenderse","pode ser entendido"],["podem requerir","podem exigir"],["no culpabilizante","sem culpabilização"],["linguagem neutral","linguagem neutra"],["linguagem claro e respeitoso","linguagem clara e respeitosa"],
+    ["dar a luz","dar à luz"],["dor lumbar","dor lombar"],["dor torácico","dor torácica"],["falta de aire","falta de ar"],["estado de conciencia","estado de consciência"],["perda de conocimiento","perda de consciência"],["sinais de alarmas","sinais de alerta"],["signos de alerta","sinais de alerta"],["signos de deterioro","sinais de piora"],["controles prenatales","acompanhamento pré-natal"],["control prenatal","acompanhamento pré-natal"],["controles preventivos","exames preventivos"],["tomarlo","tomá-lo"],["interpretarlo","interpretá-la"],["publicarla","publicá-la"],["ignorarla","ignorá-la"],["capturarlo","capturá-lo"],["provocarlo","provocá-lo"],
+    ["Quantos anos tem?","Quantos anos você tem?"],["Como se chama?","Como você se chama?"],["Onde nasceu?","Onde você nasceu?"],["Está grávida atualmente?","Você está grávida atualmente?"],["Tem fluxo","Tem corrimento"],["cor das fezes","cor das fezes"],["fezes negras","fezes escuras"],["com suas próprias palavras","com as próprias palavras"],["responder por o paciente","responder pelo paciente"]
+  ];
+
+  const PT_WORDS={
+    identificación:"identificação",interrogatorio:"interrogatório",ayudan:"ajudam",llama:"chama",nació:"nasceu",año:"ano",años:"anos",sensibles:"sensíveis",hablar:"falar",confianza:"confiança",forman:"fazem",comprensible:"compreensível",riesgos:"riscos",aclare:"esclareça",estigmatice:"estigmatize",todavía:"ainda",alguien:"alguém",hubo:"houve",corazón:"coração",actitud:"atitude",neutralidad:"neutralidade",etiquetas:"rótulos",despectivas:"pejorativos",utilidad:"utilidade",integrarse:"integrar-se",personales:"pessoais",previas:"prévias",internaciones:"internações",cirugías:"cirurgias",medicación:"medicação",manera:"maneira",afecciones:"condições",históricamente:"historicamente",frecuentes:"frequentes",práctica:"prática",sitúan:"situam",estuvo:"esteve",pasada:"passada",aquello:"aquilo",ayer:"ontem",actualidad:"atualidade",llevar:"levar",ayudar:"ajudar",presionar:"pressionar",memoria:"memória",buscan:"buscam",sigue:"segue",secuencia:"sequência",sintió:"sentiu",anamnesis:"anamnese",regaño:"repreensão",cambiar:"mudar",inmediatamente:"imediatamente",muestra:"mostra",empezó:"começou",inducir:"induzir",empiece:"comece",ubica:"situa",ubique:"localize",idea:"ideia",mayor:"maior",explorarse:"ser investigada",ojo:"olho",oído:"ouvido",nombrar:"nomear",señalar:"indicar",reducen:"reduzem",presentación:"apresentação",dosis:"dose",horario:"horário",adherencia:"adesão",beneficio:"benefício",dio:"deu",produce:"produz",malo:"ruim",incluye:"inclui",color:"cor",verificables:"verificáveis",cualquier:"qualquer",adivinar:"adivinhar",errores:"erros",general:"geral",expresiones:"expressões",convierte:"transforma",camina:"caminha",oye:"ouve",oír:"ouvir",visión:"visão",fatiga:"cansaço",idéntica:"idêntica",entendió:"entendeu",malentendidos:"mal-entendidos",sencillas:"simples",permiso:"permissão",anticipar:"antecipar",maniobra:"manobra",hará:"fará",deténgase:"interrompa",expresan:"expressam",acompañarse:"ser acompanhadas",siéntese:"sente-se",voy:"vou",observarle:"observar você",quitarse:"tirar a roupa",ropa:"roupa",acuéstese:"deite-se",póngase:"fique",sentarse:"sentar-se",rechazo:"recusa",continúa:"continua",retirarse:"ser retirado",tosa:"tussa",fuerte:"forte",levantarse:"levantar-se",ponerse:"ficar",mirará:"observará",culpa:"culpa",mantenerse:"manter-se",ordenar:"organizar",meta:"objetivo",profesionales:"profissionais",hola:"olá",llamo:"chamo",examinarle:"examinar você",examinar:"examinar",comienza:"começa",ocurrirá:"acontecerá",aceptar:"aceitar",rechazar:"recusar",producen:"produzem",malestar:"mal-estar",bilingüe:"bilíngue",competencia:"competência",lingüístico:"linguístico",herramienta:"ferramenta",sustituto:"substituto",hablan:"falam",estereotipos:"estereótipos",varían:"variam",descriptiva:"descritiva",observó:"observou",creció:"cresceu",anuncie:"anuncie",clínicamente:"clinicamente",visibles:"visíveis",hallazgos:"achados",conoce:"conhece",sirven:"servem",realizó:"realizou",explicaré:"explicarei",tecnicismos:"termos técnicos",reproche:"repreensão",aleja:"afasta",proceso:"processo",puntada:"pontada",punzante:"em pontada",desplaza:"desloca",percibido:"percebido",larga:"longa",duelen:"doem",hincharse:"inchar",lectura:"leitura",etiquetarla:"rotulá-la",cambia:"muda",extendiendo:"espalhando-se",salen:"surgem",viendo:"observando",describiendo:"descrevendo",supuesto:"pressuposto",conclusiones:"conclusões",prematuras:"precipitadas",evalúa:"avalia",percibe:"percebe",contagio:"contágio",cutáneas:"cutâneas",relacionan:"relacionam",remedios:"remédios",mantenga:"mantenha",cree:"acredita",usó:"usou",aplicó:"aplicou",parecidos:"semelhantes",conservar:"manter",compartir:"compartilhar",aparecieron:"surgiram",retrase:"adie",perfectamente:"perfeitamente",hablada:"falada",picó:"picou",allí:"ali",caminar:"caminhar",esencial:"essencial",vecino:"vizinho",mano:"mão",prioritaria:"prioritária",ofrecer:"oferecer",consejos:"orientações",peligrosos:"perigosas",contacte:"contate",servicios:"serviços",toxicología:"toxicologia",correspondientes:"correspondentes",trajo:"trouxe",tres:"três",deporte:"esporte",ciertas:"determinadas",ocurrir:"acontecer",pruebas:"exames",realizan:"são realizados",juzgar:"julgar",suponga:"presuma",género:"gênero",parejas:"parceiros",legales:"legais",hablaremos:"falaremos",esto:"isto",jerga:"jargão",ridiculiza:"ridiculariza",comunicarse:"comunicar-se",terceros:"terceiros",lee:"lê",fotografiar:"fotografar",contiene:"contém",obliga:"obriga",adelantar:"antecipar",reemplazar:"substituir",digestión:"digestão",expresión:"expressão",hambre:"fome",órgano:"órgão",intestinales:"intestinais",incómodos:"desconfortáveis",normalice:"normalize",deshidratación:"desidratação",evacúa:"evacua",valorar:"avaliar",tolerancia:"tolerância",geriatría:"geriatria",cómodo:"confortável",evalúe:"avalie",ayudas:"recursos",visuales:"visuais",diferencie:"diferencie",olvida:"esquece",preservan:"preservam",olvidos:"esquecimentos",olvido:"esquecimento",automáticamente:"automaticamente",obstetricia:"obstetrícia",culpabilizante:"culpabilizante",active:"acione",extendido:"ampliado",hijo:"filho",nacer:"nascer",hijos:"filhos",recientes:"recentes",hablante:"falante",descenso:"descida",imponerse:"ser imposta",casera:"caseira",asociarse:"estar associado",hematología:"hematologia",indicadon:"indicado",amarillento:"amarelado",aparecen:"aparecem",golpe:"trauma",compuesto:"composto",salida:"saída",oscuras:"escuras",revisarse:"ser revisado",algunos:"alguns",cambian:"mudam",activo:"ativo",midió:"mediu",marcó:"marcou",recientemente:"recentemente",mostró:"mostrou",necesitan:"precisam",tacto:"toque",transmisión:"transmissão",amenazas:"ameaças",encuesta:"entrevista",potenciales:"potenciais",deterioro:"piora",recomiende:"recomende",regresar:"retornar",clase:"tipo",tomara:"tomasse",mejoría:"melhora",tableta:"comprimido",precio:"preço",aislados:"isolados",criterio:"critério",duerme:"dorme",ambiguas:"ambíguas",fácilmente:"facilmente",respeta:"respeita",conocer:"conhecer",razonamiento:"raciocínio",nefrología:"nefrologia",concluya:"conclua",origen:"origem",pulmón:"pulmão",clave:"chave",incontinencia:"incontinência",urinarias:"urinárias",vocabulario:"vocabulário",describen:"descrevem",contener:"conter",olor:"odor",dulce:"doce",hematuria:"hematúria",organizan:"organizam",continencia:"continência",contenerse:"conter-se",abordarse:"ser abordada",establecer:"estabelecer",establece:"estabelece",poca:"pouca",nocturna:"noturna",sudor:"suor",valore:"avalie",pida:"peça",quítese:"tire",cuestionario:"questionário",largo:"longo",caracterice:"caracterize",brusco:"súbito",exacto:"exato",temblar:"tremer",cayó:"caiu",suelo:"chão",vio:"viu",hechos:"fatos",siguiente:"seguinte",golpes:"traumas",pensamiento:"pensamentos",diríjase:"dirija-se",espacio:"espaço",bienestar:"bem-estar",alegría:"alegria",disfruta:"gosta",produzca:"cause",conmigo:"comigo",relajar:"relaxar",dejar:"deixar",secreto:"sigilo",ignorarse:"ser ignoradas",respetando:"respeitando",amplia:"ampla",alimentaria:"alimentar",horarios:"horários",disponibles:"disponíveis",clasificar:"classificar",economía:"realidade econômica",plan:"plano",expresarse:"ser expressa",consume:"consome",voluntad:"vontade",terapéutica:"terapêutica",involuntario:"involuntária",haber:"ter",delgado:"magro",kilogramos:"quilogramas",delgadez:"magreza",kilos:"quilos",ubicarse:"ser contextualizada",opinión:"opinião",apariencia:"aparência",correctamente:"corretamente",nutricionales:"nutricionais",analiza:"analise",actúa:"aja",exigen:"exigem",reposo:"repouso",dificultad:"dificuldade",dificultades:"dificuldades",lesión:"lesão",lesiones:"lesões",masa:"massa",bulto:"nódulo",oncología:"oncologia",cardiología:"cardiologia",dermatología:"dermatologia",gastroenterología:"gastroenterologia",infectología:"infectologia",urología:"urologia",neumología:"pneumologia",neurología:"neurologia",nutrición:"nutrição",localización:"localização",irradiación:"irradiação",presión:"pressão",respiratorias:"respiratórias",respiratorios:"respiratórios",urinarios:"urinários",renales:"renais",asociados:"associados",decisiones:"decisões",recomendaciones:"recomendações",suposiciones:"suposições",prácticas:"práticas",palabras:"palavras",situación:"situação",situaciones:"situações",precisión:"precisão",lengua:"língua",comprendido:"compreendido",señal:"sinal",señales:"sinais",alarmas:"alerta",ausencia:"ausência",necesidad:"necessidade",conclusión:"conclusão",condiciones:"condições",acompañan:"acompanham",acompañar:"acompanhar",directa:"direta",complementan:"complementam",reemplazan:"substituem",integran:"integram",preferencias:"preferências",intención:"intenção",conversación:"conversa",abiertas:"abertas",permiten:"permitem",describir:"descrever",describa:"descreva",experiencia:"experiência",propias:"próprias",hallazgo:"achado",evaluar:"avaliar",actuar:"agir",sirve:"serve",seguridad:"segurança",mejora:"melhora",respuesta:"resposta",pregunta:"pergunta",después:"depois",situacion:"situação",evaluación:"avaliação",información:"informação",comunicación:"comunicação",lingüística:"linguística",clínico:"clínico",clínica:"clínica",actual:"atual",rápidamente:"rapidamente",inmediato:"imediato",inmediata:"imediata",tratamiento:"tratamento",tratamientos:"tratamentos",enfermedad:"doença",enfermedades:"doenças",síntoma:"sintoma",síntomas:"sintomas",sangrado:"sangramento",mareado:"tonto",mareos:"tonturas",fiebre:"febre",flema:"catarro",riñón:"rim",riñones:"rins",vejiga:"bexiga",alimentos:"alimentos",alimentación:"alimentação",acompañante:"acompanhante",mujer:"mulher",hombre:"homem",cabeza:"cabeça",pecho:"peito",espalda:"costas",brazo:"braço",pierna:"perna",piel:"pele",sangre:"sangue",apetito:"apetite",agua:"água",náuseas:"náuseas",vómito:"vômito",vómitos:"vômitos",diarrea:"diarreia",cansancio:"cansaço",hinchazón:"inchaço",picazón:"coceira",conciencia:"consciência",debilidad:"fraqueza",sueño:"sono",ánimo:"humor",cambio:"mudança",cambios:"mudanças",hábitos:"hábitos",actividad:"atividade",actividades:"atividades",lección:"lição",enseña:"ensina",sustituye:"substitui",reemplaza:"substitui",traducción:"tradução",aislada:"isolada",aisladas:"isoladas",entiende:"entende",comprenda:"entenda",comprender:"compreender",ocurrió:"aconteceu",ocurre:"acontece",ocurren:"acontecem",comenzó:"começou",duró:"durou",mejoró:"melhorou",empeora:"piora",empeoró:"piorou",aumentó:"aumentou",perdió:"perdeu",tomó:"tomou",utilizó:"utilizou",siente:"sente",presenta:"apresenta",tiene:"tem",tienen:"têm",tuvo:"teve",están:"estão",hay:"há",fue:"foi",son:"são",pero:"mas",sin:"sem",hasta:"até",según:"conforme",dónde:"onde",cuándo:"quando",cómo:"como",cuánto:"quanto",cuántos:"quantos",cuántas:"quantas",qué:"que",cuál:"qual"
+  };
+  Object.assign(PT_WORDS,{
+    quantosse:"quantos",examen:"exame",estudio:"exame",estudios:"exames",suponer:"presumir",hizo:"fez",activar:"acionar",aire:"ar",tragar:"engolir",cierre:"encerramento",requieren:"exigem",piernas:"pernas",sí:"sim",si:"se",ni:"nem",límites:"limites",pide:"pede",urgencia:"urgência",hinchan:"incham",imagen:"imagem",expresar:"expressar",referirse:"referir-se",heces:"fezes",signos:"sinais",termómetro:"termômetro",perdido:"perdido",remedio:"remédio",lo:"o",pie:"pé",saludo:"saudação",pasos:"etapas",cáncer:"câncer",apareció:"surgiu",sensible:"sensível",mordió:"mordeu",retrasar:"atrasar",producto:"produto",etiqueta:"rótulo",vomitar:"vomitar",embarazada:"grávida",días:"dias",acuosa:"aquosa",lumbar:"lombar",objetos:"objetos",orientación:"orientação",orden:"ordem",producir:"produzir",beneficio:"benefício",cierre:"encerramento",limites:"limites",puedo:"posso",presentarse:"apresentar-se",desea:"deseja",cambió:"mudou",procedimiento:"procedimento",hacerlo:"fazê-lo",introduce:"introduz",mancha:"mancha",roncha:"vergão",urticaria:"urticária",contacto:"contato",convivientes:"pessoas que convivem",nuevo:"novo",nuevos:"novos",jabón:"sabão",poner:"colocar",mientras:"enquanto",mordedura:"mordida",mordeduras:"mordidas",posible:"possível",posibles:"possíveis",sustancia:"substância",ingirió:"ingeriu",bromas:"brincadeiras",análisis:"análise",respetuosas:"respeitosas",vuelva:"volte",generar:"gerar",veces:"vezes",cualquiera:"qualquer",hacer:"fazer",prefiera:"prefira",quno:"que o",únicamente:"unicamente",patrón:"padrão",turbia:"turva",tossesir:"tossir",parálisis:"paralisia",episodio:"episódio",hermana:"irmã",orientao:"orienta o",ubicao:"situa o",correspondiente:"correspondente",correspondiente:"correspondente",capturá:"capturar",vía:"via",comió:"comeu",profesión:"profissão",preguntarle:"perguntar à pessoa",prueba:"exame",evitarse:"ser evitado",elige:"escolha",molestias:"desconfortos",suele:"costuma",epigastrio:"epigástrio",distintas:"diferentes",ella:"ela",masticar:"mastigar",cosas:"coisas",reducir:"reduzir",ruido:"ruído",aa:"à",prenatal:"pré-natal",varios:"vários",reproductivas:"reprodutivas",llega:"chega",adaptarse:"adaptar-se",vitales:"vitais",compromiso:"comprometimento",seuda:"pseudo",moretón:"hematoma",preguntarse:"ser perguntado",cuadro:"quadro",requerir:"exigir",verificarse:"ser verificado",poco:"pouco",hablarle:"falar com a pessoa",juicio:"julgamento",costado:"flanco",dóin:"doem",ganas:"vontade",volumen:"volume",sea:"seja",sufijo:"sufixo",cortés:"gentil",cefalea:"dor de cabeça",conocimiento:"consciência",pérdida:"perda",fuerza:"força",testigo:"testemunha",recuperó:"recuperou",substituna:"substituem a",bajar:"diminuir",inicià:"inicia a",escolhà:"escolha a",perguntà:"pergunta a",melhorà:"melhora a",orientà:"orienta a",parà:"para a",todà:"toda a",llamadà:"chamada a",indicà:"indica a",ajudà:"ajuda a",faltao:"falta o"
+  });
+  Object.assign(PT_WORDS,{
+    asumir:"presumir",extiende:"se espalha",aporta:"fornece",ojos:"olhos",anticipa:"antecipa",detiene:"interrompe",saludar:"cumprimentar",llamada:"chamada",reduce:"reduz",propios:"próprios",crecimiento:"crescimento",crece:"cresce",crecer:"crescer",explicarse:"ser explicado",sentencia:"sentença",aislado:"isolado",siguientes:"seguintes",control:"controle",burla:"zombaria",exactamente:"exatamente",servicio:"serviço",estructurada:"estruturada",simultánea:"simultânea",hinchado:"inchado",fotografía:"fotografia",animales:"animais",hacerse:"ser feito",empeoramiento:"piora",varias:"várias",picadura:"picada",picaduras:"picadas",preguntando:"perguntando",signo:"sinal",eso:"isso",nadie:"ninguém",apoya:"apoia",tuberculosis:"tuberculose",señala:"indica",suaviza:"torna mais gentil",prioriza:"prioriza",presenció:"presenciou",alcanza:"alcança",corresponde:"corresponde",pálido:"pálido",evidente:"evidente",remoto:"remoto",continua:"contínua",intermitente:"intermitente",múltiples:"múltiplas",transmisión:"transmissão",urgentemente:"com urgência",aprendida:"aprendida",criterio:"critério",prolongada:"prolongada",íntima:"íntima",origen:"origem",contener:"conter",repentina:"repentina",establecer:"estabelecer",establece:"estabelece",poca:"pouca",nocturna:"noturna",profundamente:"profundamente",rigidez:"rigidez",repetidamente:"repetidamente",convulsivo:"convulsivo",posterior:"posterior",absoluto:"absoluto",suficientes:"suficientes",cotidiana:"cotidiana",habitualmente:"habitualmente",disciplinada:"disciplinada",descuidada:"descuidada",intencional:"intencional",involuntaria:"involuntária",correcta:"correta",correcto:"correto"
+  });
+  Object.assign(PT_WORDS,{
+    tosseer:"tossir",hecha:"ver",sustituir:"substituir",sitúao:"situa o",indispensable:"indispensável",silencio:"silêncio",coherente:"coerente",acuerdo:"acordo",fiable:"confiável",sale:"sai",estudiante:"estudante",importancia:"importância",desplazamiento:"deslocamento",medirle:"medir",anatómico:"anatômico",extensión:"extensão",dispersarse:"espalhar-se",extenderse:"estender-se",confirmarse:"ser confirmado",percibida:"percebida",clavar:"cravar",intervenir:"intervir",prioritarios:"prioritários",provocarlo:"provocá-lo",empeorar:"piorar",lingüísticas:"linguísticas",usarse:"ser usado",vientre:"ventre",flujo:"corrimento",produjo:"produziu",darse:"ser realizado",resuelve:"resolve",diferencianda:"diferenciando",sitúà:"situa a",necesitar:"precisar",lleva:"dura",punza:"dá pontadas",contenga:"prenda",sacudidas:"abalos",representar:"representar",facilita:"facilita",circunstancias:"circunstâncias",auscultar:"auscultar",salen:"surgem",ronchas:"vergões",toca:"toca",preventivos:"preventivos",vigente:"vigente",formula:"formula",consciente:"consciente",individualizado:"individualizado",descartar:"descartar",investigue:"investigue",posteriores:"posteriores",justifica:"justifica",determine:"determine",conserve:"mantenha",indique:"indique",salvo:"exceto",provocar:"provocar",confidencial:"confidencial",será:"será",solicita:"solicita",honestas:"honestas",relativo:"relacionado",insiste:"insiste",justificativa:"justificativa",entrar:"entrar",tamaño:"tamanho",variar:"variar",abarcar:"abranger",resultar:"ser",representar:"representar",fale:"fale",responda:"responda",gritar:"gritar",dura:"dura",regularmente:"regularmente",aparece:"aparece",marcas:"marcas",estabilizar:"estabilizar",viajou:"viajou",epidemiológicos:"epidemiológicos",líquidas:"líquidas",revisar:"revisar",autoriza:"autoriza",espera:"espera",literal:"literal",compare:"compare",modificadores:"modificadores",guiado:"guiado",respire:"respire",complete:"complete",resulta:"é",especialmente:"especialmente",siga:"siga",descansar:"descansar",abre:"abre",impor:"impor",manterei:"manterei",doces:"doces",acompanha:"acompanha",combine:"combine",repita:"repita"
+  });
+  Object.assign(PT_WORDS,{término:"termo",guaraní:"guarani",camine:"caminhe",neutral:"neutra"});
+
+  function replaceWord(text,word,replacement){
+    const escaped=word.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const pattern=new RegExp("(^|[^\\p{L}])"+escaped+"(?=$|[^\\p{L}])","giu");
+    return text.replace(pattern,function(match,prefix){
+      const raw=match.slice(prefix.length),capital=raw&&raw[0]===raw[0].toUpperCase();
+      return prefix+(capital?replacement.charAt(0).toUpperCase()+replacement.slice(1):replacement);
+    });
+  }
+  function cleanPortuguese(value){
+    let text=String(value==null?"":value);
+    PT_PHRASES.forEach(function(pair){text=text.split(pair[0]).join(pair[1])});
+    Object.keys(PT_WORDS).forEach(function(word){text=replaceWord(text,word,PT_WORDS[word])});
+    text=text.replace(/\bsi\b/gi,function(x){return x[0]==="S"?"Se":"se"})
+      .replace(/\bni\b/gi,"nem")
+      .replace(/\bNo (?=(basta|deve|substitui|confirma|determina|elimina|equivale|anuncie|indique|recomende|conclua|responda|entende|há|tem|pode|precisa|exige|julgue|presuma|introduza|atrase|seja|foi|é|está|lembra)\b)/g,"Não ")
+      .replace(/\bno (?=(basta|deve|substitui|confirma|determina|elimina|equivale|anuncie|indique|recomende|conclua|responda|entende|há|tem|pode|precisa|exige|julgue|presuma|introduza|atrase|seja|foi|é|está|lembra)\b)/g,"não ")
+      .replace(/\bno (?=(para|completar|estigmatize|verificadas|adie|consiste|um|dói|fez|elimina|equivale|culpa|confirma|determina|recomenda|responde|entende|lembra|se|foi|introduz|substitui)\b)/gi,"não ")
+      .replace(/(^|[^\p{L}])no(?=;)/giu,"$1não").replace(/\bsí\b/gi,"sim")
+      .replace(/(^|[^\p{L}])em a(?=$|[^\p{L}])/giu,"$1na").replace(/(^|[^\p{L}])em o(?=$|[^\p{L}])/giu,"$1no")
+      .replace(/(^|[^\p{L}])de a(?=$|[^\p{L}])/giu,"$1da").replace(/(^|[^\p{L}])de o(?=$|[^\p{L}])/giu,"$1do")
+      .replace(/(^|[^\p{L}])a a(?=$|[^\p{L}])/giu,"$1à").replace(/(^|[^\p{L}])a o(?=$|[^\p{L}])/giu,"$1ao")
+      .replace(/(^|[^\p{L}])por a(?=$|[^\p{L}])/giu,"$1pela").replace(/(^|[^\p{L}])por o(?=$|[^\p{L}])/giu,"$1pelo")
+      .replace(/\bDói a costas\b/g,"Doem as costas").replace(/\bseu própria\b/gi,"sua própria").replace(/\buma nódulo\b/gi,"um nódulo")
+      .replace(/\bum massa\b/gi,"uma massa").replace(/\bum lesão\b/gi,"uma lesão").replace(/\bo mudança\b/gi,"a mudança").replace(/\bum mudança\b/gi,"uma mudança").replace(/\bdor intenso\b/gi,"dor intensa").replace(/\batendimento oportuna\b/gi,"atendimento oportuno")
+      .replace(/\ba pessoa idosa, a um ritmo\b/gi,"a pessoa idosa, em um ritmo").replace(/\bcor amarelado\b/gi,"cor amarelada")
+      .replace(/\bHa aumentado de peso\b/g,"Aumentou de peso").replace(/\bHa perdido peso\b/g,"Perdeu peso")
+      .replace(/\buma sola frase\b/gi,"uma única frase").replace(/\bpor uma sola leitura\b/gi,"com uma única leitura").replace(/\bdeixar sola à pessoa\b/gi,"deixar a pessoa sozinha")
+      .replace(/\bse são realizados\b/gi,"são feitas").replace(/\bcontroles médicos\b/gi,"acompanhamento médico").replace(/\bcontrol, a resposta\b/gi,"acompanhamento, a resposta")
+      .replace(/\brefere-se dor\b/gi,"refere dor").replace(/\binterpretá-la corretamente\b/gi,"interpretá-los corretamente")
+      .replace(/\buma sola resposta\b/gi,"uma única resposta").replace(/\bha perdido peso\b/gi,"perdeu peso")
+      .replace(/\buso cotidianão\b/gi,"uso cotidiano").replace(/\bumo atendimento clínica\b/gi,"um atendimento clínico")
+      .replace(/\bo origem\b/gi,"a origem").replace(/\bem este contexto\b/gi,"neste contexto").replace(/\buma mudança involuntária\b/g,"Uma mudança involuntária")
+      .replace(/\bgravidez atual, controles, partos\b/gi,"gravidez atual, acompanhamento pré-natal, partos")
+      .replace(/\bque controles conhece ou realizou\b/gi,"quais exames preventivos conhece ou realizou")
+      .replace(/\bse se realiza o controle\b/gi,"se o acompanhamento é realizado")
+      .replace(/\bO que (pergunta|palavra|frase|prática|instrução|conduta|elemento|informação|animal|objeto|remédio|ordem|atitude)\b/g,"Qual $1")
+      .replace(/\bAlém disso da dor\b/gi,"Além da dor").replace(/\bse se espalha\b/gi,"se espalha")
+      .replace(/\bcomunicação deve ser descritiva e neutral\b/gi,"comunicação deve ser descritiva e neutra")
+      .replace(/\bseu cor\b/gi,"sua cor").replace(/\bsangue u outra\b/gi,"sangue ou outra")
+      .replace(/\bum nódulo, nódulo ou massa\b/gi,"um nódulo ou uma massa").replace(/\bnódulo, nódulo ou lesão\b/gi,"massa, nódulo ou lesão")
+      .replace(/\bdevem ser explicado\b/gi,"devem ser explicados").replace(/\bse interpreta\b/gi,"é interpretado")
+      .replace(/\bSe usa para\b/g,"É usado para").replace(/\bse usa para\b/g,"é usado para")
+      .replace(/\bpalavra chave\b/gi,"palavra-chave").replace(/\bse quite uma prenda\b/gi,"tire uma peça de roupa")
+      .replace(/\bSe realiza controles médicos\b/gi,"Faz acompanhamento médico").replace(/\bha perdido peso\b/gi,"perdeu peso")
+      .replace(/\bPiru expressa magreza ou perda de peso neste contexto\b/g,"Neste contexto, piru expressa magreza ou perda de peso")
+      .replace(/\bO dor\b/g,"A dor").replace(/\bo dor\b/g,"a dor").replace(/\balém disso intensidade, duração, irradiação e fatores\b/gi,"também intensidade, duração, irradiação e fatores")
+      .replace(/\bconfirme que significa para a pessoa\b/gi,"confirme o que cada termo significa para a pessoa")
+      .replace(/\binterrompa se a pessoa retira seu consentimento\b/gi,"interrompa se a pessoa retirar o consentimento")
+      .replace(/\bdevem ser acompanhado de\b/gi,"devem ser acompanhadas de").replace(/\bIntegra saudação\b/g,"Integre saudação").replace(/\bA objetivo\b/g,"O objetivo")
+      .replace(/\bPrimeiro confirme que observou a pessoa, desde quando\b/gi,"Primeiro confirme o que a pessoa observou e desde quando")
+      .replace(/\bexpressar nódulo, nódulo ou massa\b/gi,"expressar nódulo ou massa").replace(/\bA prevenção se aborda\b/g,"A prevenção deve ser abordada")
+      .replace(/\bse fez ou fez realizar um exame\b/gi,"realizou um exame").replace(/\bembora a frequência real deve\b/gi,"mas a frequência real deve")
+      .replace(/\bSe há sinais de alerta\b/g,"Se houver sinais de alerta").replace(/\bse pica, dói\b/gi,"se coça, dói")
+      .replace(/\bse activa o atendimento\b/gi,"o atendimento é acionado").replace(/\bidentificar perfeitamente ao animal\b/gi,"identificar o animal com precisão")
+      .replace(/\bAnte uma possível intoxicação, determine que substância foi\b/gi,"Diante de uma possível intoxicação, identifique a substância")
+      .replace(/\bMantenha a embalagem se é seguro\b/gi,"Preserve a embalagem se for seguro").replace(/\bNão indique vômito\b/gi,"Não induza vômito")
+      .replace(/\ba conversação será privada, dentro de os limites\b/gi,"a conversa será privada, dentro dos limites")
+      .replace(/\bLê cada situação\b/g,"Leia cada situação").replace(/\be lembra que\b/gi,"e lembre-se de que")
+      .replace(/\bdescrição do cor\b/gi,"descrição da cor").replace(/\buma rótulo\b/gi,"um rótulo")
+      .replace(/\brecursos visuais ou auditivas\b/gi,"recursos visuais ou auditivos")
+      .replace(/\bUse o término que a paciente prefira\b/gi,"Use o termo que a paciente preferir").replace(/\bconforme a falante\b/gi,"conforme a pessoa")
+      .replace(/\bRuguy significa seu sangue\b/gi,"Ruguy significa sangue").replace(/\bo descida menstrual\b/gi,"a descida menstrual")
+      .replace(/\bincômodo urinária\b/gi,"incômodo urinário").replace(/\bResolve situações clínicas\b/g,"Resolva situações clínicas")
+      .replace(/\bdevem ser feito com\b/gi,"devem ser feitas com").replace(/\bdevem ser abordada sem\b/gi,"devem ser abordados sem")
+      .replace(/\bAnte falta de ar\b/g,"Diante de falta de ar").replace(/\bser acompanhado de demonstração\b/gi,"ser acompanhadas de demonstração").replace(/\bquando seja útil\b/gi,"quando for útil")
+      .replace(/\bQuando seja possível\b/g,"Quando for possível").replace(/\bescute ao paciente\b/gi,"escute o paciente").replace(/\bum testemunha\b/gi,"uma testemunha")
+      .replace(/\bclassificar à pessoa\b/gi,"classificar a pessoa").replace(/\bse aja conforme\b/gi,"age-se conforme")
+      .replace(/\bQual pergunta é indicado\b/g,"Qual pergunta é indicada").replace(/\bpara residência atual\b/gi,"para a residência atual")
+      .replace(/\bAlém disso de\b/gi,"Além de").replace(/\bmedidas de prevenção devem ser explicados\b/gi,"medidas de prevenção devem ser explicadas")
+      .replace(/\bAnte (uma|um|alteração|risco|sangue|falta|dor)\b/g,"Diante de $1")
+      .replace(/\bconfirme o que cada termo significa para a pessoa cada sintoma\b/gi,"confirme o que cada sintoma significa para a pessoa")
+      .replace(/\benquanto o atendimento é acionado correspondente\. não adie\b/gi,"enquanto aciona o atendimento indicado. Não adie")
+      .replace(/\btirar a roupa a roupa\b/gi,"tirar a roupa").replace(/\bcomo deseja ser chamada a pessoa\b/gi,"como a pessoa deseja ser chamada")
+      .replace(/\ba as pessoas\b/gi,"as pessoas").replace(/\bcontatos respiratórios devem ser perguntado\b/gi,"contatos respiratórios devem ser investigados")
+      .replace(/\bViagens e contatos devem ser perguntado\b/gi,"Viagens e contatos devem ser investigados")
+      .replace(/\bQual informação deve ser verificado\b/g,"Qual informação deve ser verificada")
+      .replace(/\bQual objeto pode ajudar se se transporta com segurança\b/gi,"Qual objeto pode ajudar se for transportado com segurança")
+      .replace(/\buma exame\b/gi,"um exame").replace(/\btomá-o\b/gi,"tomá-lo").replace(/\bcapturar-o\b/gi,"capturá-lo")
+      .replace(/\bQual pergunta consulta um exame de VIH\b/gi,"Qual pergunta trata de um exame de HIV").replace(/\bSe realizou um exame de VIH\b/gi,"Fez um exame de HIV")
+      .replace(/\bÉ uma sinal\b/g,"É um sinal").replace(/\bde esta entrevista\b/gi,"desta entrevista")
+      .replace(/\bQual conduta respeita a uma pessoa idosa\b/gi,"Qual conduta respeita uma pessoa idosa")
+      .replace(/\bconfirmar que região indica a pessoa\b/gi,"confirmar qual região a pessoa indica")
+      .replace(/\bProcura medicamentos que produzem dano\b/gi,"Procura medicamentos que causam dano")
+      .replace(/\bser concretas e ser verificado com retorno de informação\b/gi,"ser concretas e ter a compreensão verificada com retorno de informação")
+      .replace(/\bO curso autoriza a indicar\b/gi,"O curso permite indicar").replace(/\bA sequência vai de vínculo e escuta a avaliação e acordo\b/gi,"A sequência vai do vínculo e da escuta à avaliação e ao acordo")
+      .replace(/\bA sequência va de\b/gi,"A sequência vai de")
+      .replace(/\buma pedido\b/gi,"um pedido").replace(/\bunicamente\b/gi,"apenas").replace(/\bve bem\b/gi,"enxerga bem")
+      .replace(/É uma sinal/g,"É um sinal").replace(/\bsinal respiratória\b/gi,"sinal respiratório")
+      .replace(/\bapenas o cor da comprimido\b/gi,"apenas a cor do comprimido").replace(/\bprofissional o centro\b/gi,"profissional ou um centro")
+      .replace(/\bo achado e seu gravidade\b/gi,"o achado e sua gravidade").replace(/\bculpabilizar à paciente\b/gi,"culpabilizar a paciente")
+      .replace(/\bculpar a uma pessoa\b/gi,"culpar uma pessoa").replace(/\besperar a que se repita\b/gi,"esperar que se repita")
+      .replace(/\benviar a casa sem avaliar\b/gi,"mandar para casa sem avaliar").replace(/\bexcluir à pessoa\b/gi,"excluir a pessoa")
+      .replace(/\bfalar claro\b/gi,"falar com clareza").replace(/\bno uma sentença\b/gi,"não uma sentença")
+      .replace(/\bobservar ao paciente\b/gi,"observar o paciente").replace(/\bindicado à costas\b/gi,"indicadas as costas")
+      .replace(/\bcolocar a ninguém\b/gi,"colocar ninguém").replace(/\bsubstitui sempre ao paciente\b/gi,"substitui sempre o paciente")
+      .replace(/\bpergunta se chega em seu tempo habitual\b/gi,"pergunta se ocorre na época habitual")
+      .replace(/\bpergunta se percebe o contato\b/gi,"pergunta se há sensibilidade ao toque")
+      .replace(/\bfrente a qualquer\b/gi,"diante de qualquer").replace(/\bfrente a associados sem perguntar\b/gi,"diante de sintomas associados sem perguntar")
+      .replace(/^Se usa\b/g,"É usado").replace(/\bO que três dados são prioritários\b/g,"Quais são os três dados prioritários")
+      .replace(/\bdor no peito intenso\b/gi,"dor intensa no peito").replace(/\bneste caso ao último período\b/gi,"neste caso, ao último período")
+      .replace(/\bconversação segura\b/gi,"conversa segura").replace(/\bRepreender ao paciente\b/gi,"Repreender o paciente")
+      .replace(/\bSe corre ao braço ou à costas\b/gi,"Irradia para o braço ou para as costas")
+      .replace(/\bno determinam\b/gi,"não determinam").replace(/\bUma resposta «no lembrança»\b/gi,"Uma resposta «não me lembro»")
+      .replace(/\bO objetivo no é\b/gi,"O objetivo não é").replace(/\bSe no há compreensão suficiente\b/gi,"Se não houver compreensão suficiente")
+      .replace(/\bAnte possível intoxicação\b/gi,"Diante de possível intoxicação")
+      .replace(/\bA dor exige também intensidade, duração, irradiação e fatores que agravam ou aliviam\b/gi,"Além da localização, caracterize a intensidade, a duração, a irradiação e os fatores que agravam ou aliviam a dor")
+      .replace(/\bUma história útil segue uma sequência: quando começou, como começou, como evoluiu, que se tentou e como respondeu\b/gi,"Uma história útil segue uma sequência: quando começou, como começou, como evoluiu, o que foi tentado e qual foi a resposta")
+      .replace(/\bem prática atual\b/gi,"na prática atual").replace(/\bse utiliza em expressões\b/gi,"é usado em expressões")
+      .replace(/\bAs instruções em guarani devem ser breves, respeitosas e ser acompanhadas\b/gi,"As instruções em guarani devem ser breves, respeitosas e acompanhadas")
+      .replace(/\bSe existe risco imediato\b/gi,"Se houver risco imediato").replace(/\bunicamente por uma frase\b/gi,"apenas com base em uma frase")
+      .replace(/\bO que melhor resume melhor\b/g,"O que melhor resume").replace(/\bpergunta se\b/gi,"pergunta se")
+      .replace(/\s+([,.;:!?])/g,"$1").replace(/\s{2,}/g," ").trim();
+    return text;
+  }
+
+  const PT_META=[
+    ["Receber o paciente com respeito","Iniciar a consulta com uma saudação adequada ao momento e uma pergunta aberta."],
+    ["Identificação e motivo da consulta","Coletar dados básicos sem transformar a entrevista em um interrogatório frio."],
+    ["Antecedentes familiares","Investigar antecedentes familiares relevantes com linguagem clara e compreensível."],
+    ["Antecedentes pessoais","Investigar doenças prévias, internações, cirurgias, alergias e tratamentos."],
+    ["História da doença atual","Reconstruir o início, a evolução e os tratamentos do problema atual."],
+    ["Dor e localização corporal","Perguntar onde dói e localizar a região sem induzir respostas."],
+    ["Medicamentos e resposta ao tratamento","Identificar o que o paciente tomou, quem indicou e qual foi o efeito."],
+    ["Revisão geral de sintomas","Investigar sintomas gerais por sistemas sem perder de vista a queixa principal."],
+    ["Explicação do exame geral","Dar instruções simples, pedir permissão e antecipar cada manobra."],
+    ["Consulta integrada e avaliação","Organizar uma entrevista inicial completa, respeitosa e segura."],
+    ["Oncologia: surgimento e evolução de uma lesão","Perguntar quando surgiu uma massa ou lesão e como evoluiu ao longo do tempo."],
+    ["Oncologia: prevenção, exames e comunicação","Conversar sobre exames preventivos sem culpabilizar."],
+    ["Cardiologia: dor no peito e sinais de alerta","Caracterizar a dor no peito e reconhecer quando acionar atendimento urgente."],
+    ["Cardiologia: antecedentes e exame","Investigar pressão arterial, cansaço, edema e antecedentes, além de explicar as manobras do exame."],
+    ["Dermatologia: descrição das lesões da pele","Perguntar pela localização, pelo aspecto, pela sensibilidade, pela coceira e pela evolução das lesões."],
+    ["Dermatologia: exposições, contágio e cuidados","Investigar contatos, produtos, animais, ambiente e tratamentos prévios."],
+    ["Mordidas e picadas: entrevista imediata","Identificar o que aconteceu, quando, onde e quais sintomas surgiram."],
+    ["Intoxicações: substância, via e segurança","Coletar informações essenciais sem induzir vômitos nem oferecer orientações perigosas."],
+    ["Saúde sexual: entrevista respeitosa e confidencial","Pedir permissão e investigar antecedentes, sintomas, exames e prevenção sem estigma."],
+    ["Avaliação do Módulo 2: Especialidades I","Integrar a comunicação oncológica, cardiovascular, dermatológica, toxicológica e de saúde sexual."],
+    ["Gastroenterologia: dor, náuseas e digestão","Localizar desconfortos digestivos e caracterizar dor, náuseas, apetite e vômitos."],
+    ["Gastroenterologia: evacuações e sinais de alerta","Perguntar com clareza sobre diarreia, sangramento, cor das fezes e vômitos de alerta."],
+    ["Geriatria: função, sentidos e autonomia","Investigar alimentação, mobilidade, visão, audição, memória e eliminação sem infantilizar."],
+    ["Obstetrícia: gravidez e antecedentes","Perguntar sobre gravidez, acompanhamento pré-natal e partos com privacidade e sem culpabilização."],
+    ["Ginecologia: ciclo, sangramento e sintomas","Investigar menstruação, regularidade, dor, corrimento e sangramento com precisão."],
+    ["Hematologia: sangramento, anemia e hematomas","Perguntar sobre sangramento, cansaço, palidez e hematomas espontâneos."],
+    ["Infectologia: febre e início da doença","Reconstruir o início da febre, sua evolução e os sintomas associados."],
+    ["Infectologia: sintomas e transmissão","Investigar sintomas digestivos, respiratórios e urinários, além de contatos relevantes."],
+    ["Infectologia: tratamentos, adesão e sinais de alerta","Revisar medicamentos utilizados, resposta, adesão e sinais de piora."],
+    ["Avaliação do Módulo 3: Especialidades II","Integrar entrevistas digestivas, geriátricas, gineco-obstétricas, hematológicas e infecciosas."],
+    ["Nefrologia e urologia: dor e antecedentes","Localizar dor lombar ou renal e investigar antecedentes urinários relevantes."],
+    ["Urologia: características da urina","Investigar frequência, dor, volume, aspecto da urina, sangue e incontinência."],
+    ["Pneumologia: tosse, catarro e antecedentes","Caracterizar tosse, expectoração, febre, perda de peso e possíveis exposições."],
+    ["Pneumologia: respiração e exame guiado","Perguntar sobre falta de ar e dor no peito, além de orientar manobras respiratórias simples."],
+    ["Neurologia: dor de cabeça, tontura e consciência","Investigar dor de cabeça, tontura, vômitos e alterações do estado de consciência."],
+    ["Neurologia: convulsão, força e fala","Reconstruir um episódio convulsivo e reconhecer déficit neurológico focal."],
+    ["Saúde mental: escuta e avaliação respeitosa","Conversar sobre humor, sono, pensamentos e segurança sem estigma."],
+    ["Nutrição: hábitos e diversidade alimentar","Investigar alimentação cotidiana, hidratação e acesso a alimentos sem culpabilizar."],
+    ["Nutrição: mudanças de peso e contexto clínico","Investigar mudanças de peso, apetite e fatores associados sem estigma corporal."],
+    ["Avaliação do Módulo 4: Especialidades III","Integrar entrevistas renais, respiratórias, neurológicas, de saúde mental e nutricionais."]
+  ];
+
+  const MEDICAL_GUARANI_STRINGS=new Set((typeof MEDICAL_LESSONS!=="undefined"?MEDICAL_LESSONS:[]).flatMap(function(lesson){return(lesson.phrases||[]).map(function(pair){return pair[0]})}));
+  function isMedicalGuarani(value){
+    const text=String(value||"").trim();
+    return MEDICAL_GUARANI_STRINGS.has(text)||/^(Aguyje|Araka|Che héra|Emombe|Eñ|Egu|Epu|Hasýpa|Ikat|Jajotopata|Karai|Kuñakarai|Mitã|Mba|Mboy|Moõ|Nde|Neñe|Osẽpa|Oñ|Oĩpa|Pire$|Pohã$|Reho|Reip|Reisu|Rejep|Reke|Revy|Rey|Re’u|Tuguy$)/i.test(text);
+  }
+
+  function reviseLesson(lesson,index){
+    ["title","source","objective","intro","key"].forEach(function(field){lesson[field]=cleanPortuguese(lesson[field])});
+    lesson.phrases=(lesson.phrases||[]).map(function(pair){return [pair[0],cleanPortuguese(pair[1])]});
+    lesson.questions=(lesson.questions||[]).map(function(question){
+      question.prompt=cleanPortuguese(question.prompt);question.answer=isMedicalGuarani(question.answer)?question.answer:cleanPortuguese(question.answer);
+      question.options=(question.options||[]).map(function(option){return isMedicalGuarani(option)?option:cleanPortuguese(option)});question.explain=cleanPortuguese(question.explain);
+      if(question.explain)question.explain=question.explain.charAt(0).toUpperCase()+question.explain.slice(1);return question;
+    });
+    if(PT_META[index]){lesson.title=PT_META[index][0];lesson.objective=PT_META[index][1]}
+  }
+  if(typeof MEDICAL_LESSONS_PT!=="undefined")MEDICAL_LESSONS_PT.forEach(reviseLesson);
+
+  const MEDICAL_CATALOG={
+    es:{title:"Guaraní para Medicina",description:"Comunicación clínica, entrevista al paciente, síntomas, examen físico y práctica progresiva.",stats:["4 módulos completos","40 lecciones","Español y portugués"],button:"Comenzar curso →"},
+    pt:{title:"Guarani para Medicina",description:"Comunicação clínica, entrevista com o paciente, sintomas, exame físico e prática progressiva.",stats:["4 módulos completos","40 lições","Espanhol e português"],button:"Começar curso →"}
+  };
+  function paintMedicalCatalog(){
+    const card=$("#openMedicalCourse")?.closest(".course-card"),copy=MEDICAL_CATALOG[lang==="pt"?"pt":"es"];if(!card)return;
+    const title=card.querySelector("h3"),description=card.querySelector("p"),button=card.querySelector("#openMedicalCourse"),stats=card.querySelectorAll(".course-card-stats span");
+    if(title)title.textContent=copy.title;if(description)description.textContent=copy.description;if(button)button.textContent=copy.button;
+    copy.stats.forEach(function(value,index){if(stats[index])stats[index].textContent=value});
+  }
+  function paintMedicalSurface(){
+    const pt=lang==="pt",root=$("#medicalCourse");if(!root)return;
+    const back=root.querySelector("[data-med-back]");if(back)back.textContent=pt?"← Voltar a todos os cursos":"← Volver a todos los cursos";
+    const stats=root.querySelectorAll(".medical-hero .course-card-stats span");
+    if(stats[0])stats[0].textContent=pt?"📚 Formação clínica progressiva":"📚 Formación clínica progresiva";
+    if(stats[1])stats[1].textContent=pt?"🧭 4 módulos completos":"🧭 4 módulos completos";
+    if(stats[2])stats[2].textContent=pt?"📚 40 lições":"📚 40 lecciones";
+    const note=root.querySelector(".source-note");if(note)note.innerHTML=pt
+      ?"<b>Escopo do curso:</b> material educativo de comunicação linguística. Não substitui formação profissional, protocolos, interpretação qualificada nem julgamento clínico."
+      :"<b>Alcance del curso:</b> material educativo de comunicación lingüística. No sustituye formación profesional, protocolos, interpretación calificada ni criterio clínico.";
+    const panel=$("#medicalProOverview");if(panel){
+      const eyebrow=panel.querySelector(".professional-eyebrow"),heading=panel.querySelector("h3"),paragraph=panel.querySelector("p"),kpis=panel.querySelectorAll(".professional-kpi"),items=panel.querySelectorAll(".professional-outcomes li"),progress=panel.querySelector(".professional-progress-label");
+      if(eyebrow)eyebrow.textContent=pt?"Rota profissional · Comunicação clínica":"Ruta profesional · Comunicación clínica";
+      if(heading)heading.textContent=pt?"Entrevistar com clareza, respeito e segurança":"Entrevistar con claridad, respeto y seguridad";
+      if(paragraph)paragraph.textContent=pt?"Quatro módulos completos com quarenta lições clínicas, leitura contextualizada, vocabulário em guarani e avaliações progressivas.":"Cuatro módulos completos con cuarenta lecciones clínicas, lectura contextualizada, vocabulario en guaraní y evaluaciones progresivas.";
+      const values=pt?[["4","módulos completos"],["40","lições"],["70%","domínio mínimo"]]:[["4","módulos completos"],["40","lecciones"],["70%","dominio mínimo"]];
+      kpis.forEach(function(kpi,index){if(values[index])kpi.innerHTML="<b>"+values[index][0]+"</b><span>"+values[index][1]+"</span>"});
+      const outcomes=pt?["Receber o paciente e conduzir uma entrevista inicial.","Perguntar sobre sintomas e antecedentes com linguagem respeitosa.","Explicar etapas do exame e confirmar a compreensão.","Reconhecer sinais de alerta e os limites do conteúdo linguístico."]:["Recibir al paciente y conducir una entrevista inicial.","Preguntar por síntomas y antecedentes con lenguaje respetuoso.","Explicar etapas del examen y confirmar la comprensión.","Reconocer señales de alerta y los límites del contenido lingüístico."];
+      items.forEach(function(item,index){if(outcomes[index])item.textContent=outcomes[index]});if(progress)progress.textContent=pt?"Progresso clínico":"Progreso clínico";
+    }
+  }
+
+  /* Substitui apenas o renderizador da lista médica. Assim removemos o bloqueio
+     editorial antigo sem modificar os demais cursos nem o estado do usuário. */
+  renderMedicalUnits=function(){
+    const lessons=activeMedicalLessons(),t=MEDICAL_UI[lang==="pt"?"pt":"es"];
+    translateMedicalShell();paintMedicalSurface();paintMedicalCatalog();
+    const draw=function(id,start,end){const root=$(id);if(!root)return;root.innerHTML=lessons.slice(start,end).map(function(u,j){
+      const i=start+j,done=state.medicalDone.includes(i),score=state.medicalScores[i];
+      return '<article class="police-unit medical-unit" data-med-i="'+i+'"><div class="number">'+(i+1)+'</div><div><h4>'+u.icon+' '+u.title+'</h4><p>'+u.source+' · '+u.questions.length+' '+t.activities+(Number.isFinite(score)?' · '+t.best+' '+score+'%':'')+'</p></div><div class="status">'+(done?'✅':'▶️')+'</div></article>';
+    }).join("")};
+    draw("#medicalUnits",0,10);draw("#medicalUnits2",10,20);draw("#medicalUnits3",20,30);draw("#medicalUnits4",30,40);
+    document.querySelectorAll(".medical-unit").forEach(function(card){card.onclick=function(){openMedicalLesson(Number(card.dataset.medI))}});
+    $("#medicalAuthorBadge")?.classList.toggle("hide",!window.isCourseAuthor);
+  };
+  renderMedicalRecovery=function(message){
+    const body=$("#medicalLessonBody"),pt=lang==="pt";if(!body)return;$("#medicalProgress").style.width="18%";$("#medicalLessonLabel").textContent=pt?"Guarani para Medicina":"Guaraní para Medicina";
+    body.innerHTML='<div class="police-study"><div class="callout"><b>🩺 '+(pt?'Vamos continuar':'Continuemos')+'</b><br>'+(message||(pt?'A lição foi recuperada corretamente.':'La lección se recuperó correctamente.'))+'</div><div class="study-actions"><button class="btn" id="medicalRecover">'+(pt?'Abrir a lição':'Abrir la lección')+' →</button></div></div>';
+    $("#medicalRecover").onclick=function(){medicalUnit=0;medicalStep=0;medicalPhase="study";renderMedicalStudy()};
+  };
+  if(typeof translateUI==="function"){
+    const gca67TranslateBase=translateUI;translateUI=function(){gca67TranslateBase();paintMedicalCatalog();paintMedicalSurface()};
+  }
+  document.addEventListener("change",function(event){if(!event.target.closest?.("#headerLang,#lang"))return;setTimeout(function(){paintMedicalCatalog();paintMedicalSurface()},0)},true);
+  window.GCA67_MEDICAL_PT_AUDIT=function(){
+    const values=MEDICAL_LESSONS_PT.flatMap(function(lesson){return[lesson.title,lesson.source,lesson.objective,lesson.intro,lesson.key].concat(lesson.phrases.map(function(x){return x[1]}),lesson.questions.flatMap(function(q){return[q.prompt,q.answer].concat(q.options,q.explain)}))});
+    const spanish=/\b(identificación|interrogatorio|ayudan|llama|nació|sensibles|hablar|confianza|comprensible|riesgos|todavía|alguien|hubo|corazón|actitud|personales|previas|cirugías|medicación|manera|históricamente|práctica|estuvo|pasada|ayer|llevar|presionar|memoria|secuencia|sintió|anamnesis|cambiar|empezó|inducir|ojo|oído|dosis|horario|adherencia|cualquier|errores|expresiones|visión|permiso|maniobra|siéntese|póngase|rechazo|profesionales|ocurrió|lesión|masa|oncología|cardiología|dermatología|gastroenterología|infectología|urología|neumología|neurología|nutrición|localización|irradiación|presión|dificultad|sangrado|evaluación|información|comunicación|seguridad|situación|respuesta|después|conclusión|condiciones|alimentaria|disponibles|kilogramos|nutricionales)\b/i;
+    return{lessons:MEDICAL_LESSONS_PT.length,questions:MEDICAL_LESSONS_PT.reduce(function(total,lesson){return total+lesson.questions.length},0),phrases:MEDICAL_LESSONS_PT.reduce(function(total,lesson){return total+lesson.phrases.length},0),mixed:values.filter(function(value){return spanish.test(value)}).map(function(value){return value}).slice(0,100)};
+  };
+  paintMedicalCatalog();paintMedicalSurface();
 })();
 </script>
 </body>
