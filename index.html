@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA96-LIVE-DUELS-POMBERO-DISTRICTS">
+  <meta name="guarani-con-ali-build" content="GCA99-CLEAN-HUD-DISTRIBUTED-QUIZZES">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -5877,13 +5877,13 @@ window.__GCA63LegacyLife=function(){
     runtime.waterZones=[[90,90,48,"Laguna central"],[-520,430,72,"Salto Cristal"],[545,-345,58,"Playa Ysyry"]].map(([x,z,r,name])=>({x,z,r,name,y:terrainHeight(x,z)+.3}));runtime.obstacles.forEach(obstacle=>{if(obstacle.water)obstacle.active=false});runtime.gca91Animated=[];
     const rock=gca78Material(0x4f5147,"stone",.96),rockLight=gca78Material(0x73786a,"stone",.94),waterMat=new THREE.MeshStandardMaterial({color:0x54d8ef,emissive:0x087b96,emissiveIntensity:.32,transparent:true,opacity:.82,roughness:.08,metalness:.08,side:THREE.DoubleSide}),cliff=new THREE.Group();
     for(let i=0;i<22;i++){const mesh=new THREE.Mesh(new THREE.DodecahedronGeometry(3.4+seeded(191000+i)*3.2,1),i%3?rock:rockLight),angle=i/22*Math.PI*1.15+.98,x=Math.cos(angle)*(17+seeded(191100+i)*5),y=5+seeded(191200+i)*18,z=Math.sin(angle)*8;mesh.scale.set(1.2,.85,1);mesh.position.set(x,y,z);cliff.add(mesh)}
-    const curtain=new THREE.Mesh(new THREE.PlaneGeometry(24,27,12,16),waterMat),foam=new THREE.Mesh(new THREE.TorusGeometry(10.5,1.2,10,48),new THREE.MeshStandardMaterial({color:0xe8ffff,emissive:0x7ee9ff,emissiveIntensity:.42,transparent:true,opacity:.68,roughness:.2}));curtain.position.set(0,13.4,3.9);foam.rotation.x=Math.PI/2;foam.position.set(0,.5,-5);cliff.add(curtain,foam);cliff.position.set(-520,terrainHeight(-520,468),468);scene3d.add(shadows(cliff));const sign=gca91TextSprite("SALTO CRISTAL","Cascada · Y · Ñehendu","#097e91");sign.position.set(-495,terrainHeight(-495,385)+7,385);scene3d.add(sign);runtime.gca91Animated.push({type:"waterfall",group:cliff,curtain,foam,baseY:curtain.position.y});
-    const beach=new THREE.Mesh(new THREE.CircleGeometry(52,64),gca78Material(0xf0c76b,"sand",.98));beach.rotation.x=-Math.PI/2;beach.scale.set(1.55,1,.72);beach.position.set(505,terrainHeight(505,-292)+.12,-292);beach.receiveShadow=true;scene3d.add(beach);const beachSign=gca91TextSprite("PLAYA YSYRY","Ysyry · río","#176f8f");beachSign.position.set(474,terrainHeight(474,-245)+6,-245);beachSign.scale.set(10.5,2.6,1);scene3d.add(beachSign);
+    const curtain=new THREE.Mesh(new THREE.PlaneGeometry(24,27,12,16),waterMat),foam=new THREE.Mesh(new THREE.TorusGeometry(10.5,1.2,10,48),new THREE.MeshStandardMaterial({color:0xe8ffff,emissive:0x7ee9ff,emissiveIntensity:.42,transparent:true,opacity:.68,roughness:.2}));curtain.position.set(0,13.4,3.9);foam.rotation.x=Math.PI/2;foam.position.set(0,.5,-5);cliff.add(curtain,foam);cliff.position.set(-520,terrainHeight(-520,468),468);scene3d.add(shadows(cliff));gca99RoadSign(scene3d,"SALTO CRISTAL","Cascada",-495,385,"#097e91",-.15);runtime.gca91Animated.push({type:"waterfall",group:cliff,curtain,foam,baseY:curtain.position.y});
+    const beach=new THREE.Mesh(new THREE.CircleGeometry(52,64),gca78Material(0xf0c76b,"sand",.98));beach.rotation.x=-Math.PI/2;beach.scale.set(1.55,1,.72);beach.position.set(505,terrainHeight(505,-292)+.12,-292);beach.receiveShadow=true;scene3d.add(beach);gca99RoadSign(scene3d,"PLAYA YSYRY","Río",474,-245,"#176f8f",.25);
     [[476,-282,0xf0475d],[510,-270,0x2e9dd7],[545,-285,0xf2c437]].forEach(([x,z,color],index)=>{const group=new THREE.Group(),pole=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,4.2,8),gca78Material(0x87502f,"wood",.9)),shade=new THREE.Mesh(new THREE.ConeGeometry(2.4,.9,16,1,true),gca78Material(color,"cloth",.76)),mat=new THREE.Mesh(new THREE.BoxGeometry(3.4,.14,1.25),gca78Material(index%2?0x28a98d:0xf6e8bd,"cloth",.84));pole.position.y=2.1;shade.position.y=4.2;mat.position.set(2,.16,0);group.add(pole,shade,mat);group.position.set(x,terrainHeight(x,z),z);scene3d.add(shadows(group))})
   }
 
   function gca91CreateCave(x,z,rotation,label){
-    const group=new THREE.Group(),stone=gca78Material(0x50544c,"stone",.98),moss=gca78Material(0x315e37,"leaf",.94),dark=new THREE.MeshBasicMaterial({color:0x07110e,side:THREE.DoubleSide});for(let i=0;i<12;i++){const angle=Math.PI*(i/11),mesh=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4+(i%3)*.55,1),i%4?stone:moss);mesh.position.set(Math.cos(angle)*7,Math.sin(angle)*7.1+1.1,0);mesh.scale.set(1.2,1,1.55);group.add(mesh)}const mouth=new THREE.Mesh(new THREE.PlaneGeometry(11.5,9.5),dark);mouth.position.set(0,4.3,.8);group.add(mouth);for(let i=0;i<5;i++){const crystal=new THREE.Mesh(new THREE.ConeGeometry(.35,.9+i*.12,6),new THREE.MeshStandardMaterial({color:i%2?0x7be7ff:0xb987ff,emissive:i%2?0x167f99:0x59319b,emissiveIntensity:.8}));crystal.position.set(-3.2+i*1.55,.55,.2);group.add(crystal)}group.position.set(x,terrainHeight(x,z),z);group.rotation.y=rotation;scene3d.add(shadows(group));const sign=gca91TextSprite(label,"Kuára · cueva","#3c6256");sign.position.set(x+Math.sin(rotation)*9,terrainHeight(x,z)+9,z+Math.cos(rotation)*9);sign.scale.set(8.5,2.15,1);scene3d.add(sign);runtime.caves.push({group,x,z,label})
+    const group=new THREE.Group(),stone=gca78Material(0x50544c,"stone",.98),moss=gca78Material(0x315e37,"leaf",.94),dark=new THREE.MeshBasicMaterial({color:0x07110e,side:THREE.DoubleSide});for(let i=0;i<12;i++){const angle=Math.PI*(i/11),mesh=new THREE.Mesh(new THREE.DodecahedronGeometry(2.4+(i%3)*.55,1),i%4?stone:moss);mesh.position.set(Math.cos(angle)*7,Math.sin(angle)*7.1+1.1,0);mesh.scale.set(1.2,1,1.55);group.add(mesh)}const mouth=new THREE.Mesh(new THREE.PlaneGeometry(11.5,9.5),dark);mouth.position.set(0,4.3,.8);group.add(mouth);for(let i=0;i<5;i++){const crystal=new THREE.Mesh(new THREE.ConeGeometry(.35,.9+i*.12,6),new THREE.MeshStandardMaterial({color:i%2?0x7be7ff:0xb987ff,emissive:i%2?0x167f99:0x59319b,emissiveIntensity:.8}));crystal.position.set(-3.2+i*1.55,.55,.2);group.add(crystal)}group.position.set(x,terrainHeight(x,z),z);group.rotation.y=rotation;scene3d.add(shadows(group));gca99RoadSign(scene3d,label,"Kuára",x+Math.sin(rotation)*9,z+Math.cos(rotation)*9,"#3c6256",rotation);runtime.caves.push({group,x,z,label})
   }
 
   function gca91CreateBuilding(x,z,w,d,h,color){
@@ -5891,7 +5891,7 @@ window.__GCA63LegacyLife=function(){
   }
 
   function gca91AddCity(){
-    runtime.cityBuildings=[];const roadMat=gca78Material(0x343c43,"stone",.94),roadA=new THREE.Mesh(new THREE.PlaneGeometry(215,18),roadMat),roadB=new THREE.Mesh(new THREE.PlaneGeometry(18,185),roadMat);roadA.rotation.x=roadB.rotation.x=-Math.PI/2;roadA.position.set(360,terrainHeight(360,455)+.11,455);roadB.position.set(360,terrainHeight(360,455)+.12,455);scene3d.add(roadA,roadB);[[305,420,13,12,17,0xe78255],[342,420,12,11,23,0xf2b94d],[385,420,15,12,20,0x5da7c6],[430,420,12,13,26,0xd97166],[310,495,16,13,20,0x7b8ed0],[365,500,14,12,28,0xe8a750],[420,500,17,14,18,0x55a78d]].forEach(item=>gca91CreateBuilding(...item));const citySign=gca91TextSprite("VILLA ÑE'Ẽ","Ciudad de las palabras","#244c69");citySign.position.set(360,terrainHeight(360,375)+7,375);scene3d.add(citySign)
+    runtime.cityBuildings=[];const roadMat=gca78Material(0x343c43,"stone",.94),roadA=new THREE.Mesh(new THREE.PlaneGeometry(215,18),roadMat),roadB=new THREE.Mesh(new THREE.PlaneGeometry(18,185),roadMat);roadA.rotation.x=roadB.rotation.x=-Math.PI/2;roadA.position.set(360,terrainHeight(360,455)+.11,455);roadB.position.set(360,terrainHeight(360,455)+.12,455);scene3d.add(roadA,roadB);[[305,420,13,12,17,0xe78255],[342,420,12,11,23,0xf2b94d],[385,420,15,12,20,0x5da7c6],[430,420,12,13,26,0xd97166],[310,495,16,13,20,0x7b8ed0],[365,500,14,12,28,0xe8a750],[420,500,17,14,18,0x55a78d]].forEach(item=>gca91CreateBuilding(...item));gca99RoadSign(scene3d,"VILLA ÑE'Ẽ","Ciudad de las palabras",360,375,"#244c69",0)
   }
 
   function gca91CreateMotorcycle(x,z,color,index){
@@ -6412,6 +6412,180 @@ window.__GCA63LegacyLife=function(){
     const before=(runtime.legends||[]).length,result=gca97BaseCreateLegend(kind,x,z,index),created=(runtime.legends||[]).slice(before);
     if(kind==="pombero")created.forEach(gca97UpgradePombero);return result
   };
+
+  /* GCA98 · Seis mundos visuales, dificultad progresiva y economía de aprendizaje.
+     Mantiene intactos presencia, chat, coordenadas compartidas, progreso y reglas Firebase. */
+  const GCA98_REGIONS=[
+    {id:"centro",name:"Capital, cerros y Paraná",icon:"🏙️",levels:"1–4",accent:"#e4573d",sky:0x4e9fe0,bottom:0xbfe9f3,difficulty:"Descubridor",identity:"Costanera, edificios, cerros y chacras"},
+    {id:"artes",name:"Artes y lago Ypacaraí",icon:"🧵",levels:"5–8",accent:"#a43d83",sky:0x54b8e8,bottom:0xd7f3ed,difficulty:"Explorador",identity:"Ñandutí, cerámica, frutillas y lago"},
+    {id:"serranias",name:"Serranías y Gran Paraná",icon:"💦",levels:"9–12",accent:"#187f9d",sky:0x318fcf,bottom:0xc6eef0,difficulty:"Rastreador",identity:"Saltos, playas, puentes y ciudad"},
+    {id:"misiones",name:"Energía, puertos y misiones",icon:"⚡",levels:"13–16",accent:"#9b4a32",sky:0x587fba,bottom:0xe7d8c2,difficulty:"Guardián",identity:"Represa, puerto, ruinas y observatorio"},
+    {id:"chaco",name:"Ruinas, bosques y Chaco",icon:"🌵",levels:"17–20",accent:"#9a632c",sky:0x73a7c8,bottom:0xead49d,difficulty:"Maestro",identity:"Bosque norteño, estancia y suelo chaqueño"},
+    {id:"pantanal",name:"Pantanal y rutas artesanas",icon:"🦜",levels:"21–24",accent:"#246e61",sky:0x3b8eb4,bottom:0xc9ead9,difficulty:"Experto",identity:"Humedales, pasarelas, yerba y alfarería"}
+  ];
+  function gca98RegionIndex(){return Math.max(0,Math.min(5,Math.floor((gca81GlobalLevel()-1)/4)))}
+  function gca98Region(){return GCA98_REGIONS[gca98RegionIndex()]}
+  function gca98Tier(){return gca98RegionIndex()}
+  function gca98RegionMaterial(kind,palette,options={}){return gca93Material(kind,palette,{roughness:.9,bumpScale:.18,repeat:10,...options})}
+  function gca99RoadSign(root,title,subtitle,x,z,accent="#285c4b",rotation=0){
+    /* Los carteles de ruta y ciudad se retiraron: repetían información, flotaban
+       sobre el paisaje y competían con la exploración. Conservamos la función
+       como un no-op para no romper llamadas de mundos anteriores. */
+    const anchor=new THREE.Group();anchor.name="GCA100-sign-anchor-disabled";anchor.position.set(x,gca93TerrainHeight(x,z),z);return anchor
+  }
+  function gca98AddLabel(root,title,subtitle,x,z,accent){return gca99RoadSign(root,title,subtitle,x,z,accent)}
+  function gca98Building(root,x,z,{w=14,d=12,h=18,color="#d9b172",roof="#8c3e32",glass="#5aa6bb",label=""}={}){
+    const group=new THREE.Group(),wall=gca98RegionMaterial("stucco",[color,"#f7e1ba","#8a6646"],{repeat:5}),roofMat=gca98RegionMaterial("roof",[roof,"#c56a4b","#512820"],{repeat:6}),glassMat=new THREE.MeshPhysicalMaterial({color:glass,transparent:true,opacity:.66,roughness:.08,metalness:.12,clearcoat:.65});
+    gca93Box(group,w,h,d,0,h/2,0,wall);gca93Box(group,w+.8,.55,d+.8,0,h+.28,0,roofMat);const floors=Math.max(2,Math.floor(h/3.1));for(let floor=0;floor<floors;floor++)for(let side=-1;side<=1;side+=2)for(let col=-1;col<=1;col++){const pane=gca93Box(group,w*.19,.92,.08,col*w*.28,1.85+floor*3.05,side*(d/2+.05),glassMat,false);if(side<0)pane.rotation.y=Math.PI}group.position.set(x,gca93TerrainHeight(x,z),z);root.add(group);return group
+  }
+  function gca98Water(root,x,z,r,color=0x178fa8,name="Ysyry"){
+    const sand=gca93OrganicShape(x,z,r+12,70,.14,gca98RegionMaterial("sand",["#d6b96f","#f0d793","#ac8749"],{repeat:18}),.12),water=gca93OrganicShape(x,z,r,72,.12,new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.82,roughness:.1,metalness:.04,clearcoat:.85,side:THREE.DoubleSide}),.34);root.add(sand,water);runtime.waterZones.push({x,z,r:r*.82,name,y:water.position.y});return water
+  }
+  function gca98Palm(root,x,z,scale=1){const group=new THREE.Group(),wood=gca98RegionMaterial("wood",["#765034","#a87548","#4b301f"],{repeat:4}),leaf=new THREE.MeshStandardMaterial({color:0x287442,roughness:.87});gca93Cylinder(group,.24*scale,.42*scale,7.4*scale,0,3.7*scale,0,wood,12);for(let i=0;i<9;i++){const blade=new THREE.Mesh(new THREE.CapsuleGeometry(.11*scale,2.5*scale,6,10),leaf);blade.position.set(Math.sin(i/9*Math.PI*2)*1.2*scale,7.2*scale,Math.cos(i/9*Math.PI*2)*1.2*scale);blade.rotation.z=Math.cos(i/9*Math.PI*2)*1.05;blade.rotation.x=Math.sin(i/9*Math.PI*2)*1.05;group.add(blade)}group.position.set(x,gca93TerrainHeight(x,z),z);root.add(group)}
+  function gca98CapitalWorld(root){
+    const water=gca98Water(root,-590,-520,124,0x167fa2,"Bahía de Asunción"),promenade=gca98RegionMaterial("cobble",["#a7a293","#d4d0c2","#6d6b66"],{repeat:24});gca93Ribbon([[-690,-390],[-610,-420],[-520,-405],[-440,-350]],18,promenade,root,.28);
+    const towers=[[-655,-330,22,15,38],[-612,-345,18,14,48],[-568,-326,20,15,32],[-520,-348,24,16,54],[-470,-318,18,13,43],[-430,-342,22,16,35]];towers.forEach((item,index)=>gca98Building(root,item[0],item[1],{w:item[2],d:item[3],h:item[4],color:["#d9a56d","#d4c4a0","#c98762"][index%3],roof:index%2?"#3f6177":"#8c3a31",glass:index%2?"#4ca6c2":"#6e9ab2",label:index===2?"ASUNCIÓN":""}));
+    for(let i=0;i<4;i++){const boat=new THREE.Group(),hull=new THREE.Mesh(new THREE.CapsuleGeometry(1.5,5.2,7,18),gca98RegionMaterial("wood",[i%2?"#2d6e8b":"#9a3e35","#d27252","#2b2823"],{repeat:4}));hull.rotation.z=Math.PI/2;hull.scale.set(1,.3,.72);boat.add(hull);boat.position.set(-650+i*48,water.position.y+.1,-520+(i%2)*28);boat.rotation.y=.4+i*.55;root.add(boat)}
+    gca99RoadSign(root,"ASUNCIÓN","Bahía y centro",-545,-285,"#a83f35",.08);runtime.wordSpots.push({x:-620,z:-365,label:"en la costanera"},{x:-500,z:-360,label:"entre los edificios"})
+  }
+  function gca98ArtsWorld(root){
+    gca98Water(root,-500,-515,104,0x1496ad,"Lago Ypacaraí");const soil=gca98RegionMaterial("earth",["#7a4529","#aa7044","#4a2d1d"],{repeat:20}),plot=new THREE.Mesh(new THREE.PlaneGeometry(120,78),soil);plot.rotation.x=-Math.PI/2;plot.position.set(-330,gca93TerrainHeight(-330,-500)+.22,-500);root.add(plot);
+    for(let row=0;row<7;row++)for(let col=0;col<12;col++){const plant=new THREE.Group(),leaf=new THREE.Mesh(new THREE.IcosahedronGeometry(.42,1),new THREE.MeshStandardMaterial({color:0x2b7c3e,roughness:.87})),berry=new THREE.Mesh(new THREE.ConeGeometry(.2,.48,10),new THREE.MeshStandardMaterial({color:0xe83249,roughness:.65}));leaf.scale.set(1.35,.44,1);berry.rotation.x=Math.PI;berry.position.set(.14,.12,.2);plant.add(leaf,berry);const x=-382+col*9,z=-530+row*9;plant.position.set(x,gca93TerrainHeight(x,z)+.35,z);root.add(plant)}
+    const clay=new THREE.MeshStandardMaterial({color:0xb75e36,roughness:.93});for(let i=0;i<12;i++){const pot=new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(.4,0),new THREE.Vector2(1.15,.2),new THREE.Vector2(1.3,1.4),new THREE.Vector2(.8,2),new THREE.Vector2(.95,2.25)],24),clay),x=-580+(i%4)*18,z=-330+Math.floor(i/4)*18;pot.position.set(x,gca93TerrainHeight(x,z),z);pot.scale.setScalar(1.3+(i%3)*.22);root.add(pot)}
+    for(let i=0;i<16;i++)gca93Tree(-640+(i%8)*38,-160+Math.floor(i/8)*48,{scale:.85+(i%3)*.12,blossom:[0xf28db5,0xf2c84b,0xf3eee3][i%3],color:0x2d7041});gca99RoadSign(root,"AREGUÁ","Lago y artes",-515,-285,"#8d3f81",-.06);runtime.wordSpots.push({x:-350,z:-470,label:"entre las frutillas"},{x:-545,z:-320,label:"en la feria de cerámica"})
+  }
+  function gca98ParanaWorld(root){
+    const water=gca98Water(root,570,-505,150,0x087d9f,"Gran Paraná"),sand=gca98RegionMaterial("sand",["#dfbd68","#f4dc95","#b18a47"],{repeat:24}),beach=new THREE.Mesh(new THREE.PlaneGeometry(310,95),sand);beach.rotation.x=-Math.PI/2;beach.position.set(455,gca93TerrainHeight(455,-395)+.25,-395);beach.rotation.z=-.12;root.add(beach);for(let i=0;i<10;i++)gca98Palm(root,350+i*34,-355-(i%2)*18,.8+(i%3)*.12);
+    const wood=gca98RegionMaterial("wood",["#67412b","#986441","#3f271c"],{repeat:12});for(let i=0;i<34;i++)gca93Box(root,7,.24,3.2,365+i*8,gca93TerrainHeight(365+i*8,-475)+.42,-475,wood);
+    [[410,-600,18,14,34],[460,-615,21,14,46],[515,-610,17,13,39],[565,-620,22,16,53],[620,-600,19,14,42]].forEach((item,index)=>gca98Building(root,item[0],item[1],{w:item[2],d:item[3],h:item[4],color:index%2?"#c7b58d":"#d88f65",roof:"#365e79",glass:"#52b3cc",label:index===3?"CIUDAD DEL ESTE":""}));
+    const bridgeMat=new THREE.MeshStandardMaterial({color:0xd8e0df,metalness:.44,roughness:.45});gca93Box(root,210,1.4,9,470,gca93TerrainHeight(470,-540)+8,-540,bridgeMat);for(let i=0;i<7;i++)gca93Cylinder(root,.45,.7,15,380+i*31,gca93TerrainHeight(470,-540)+1.5,-540,bridgeMat,16);gca99RoadSign(root,"CIUDAD DEL ESTE","Paraná y saltos",500,-290,"#176f8d",.04);runtime.wordSpots.push({x:420,z:-420,label:"en la playa"},{x:520,z:-560,label:"junto al puente"})
+  }
+  function gca98MissionsWorld(root){
+    const brick=gca98RegionMaterial("cobble",["#8d452f","#bd6b48","#55291f"],{repeat:12,bumpScale:.28}),ruins=new THREE.Group();for(let row=0;row<4;row++)for(let col=0;col<8;col++){const h=5+((row*3+col)%5)*1.8;gca93Box(ruins,3,h,3,(col-3.5)*8,h/2,(row-1.5)*11,brick);if(col<7&&(row+col)%3!==0)gca93Box(ruins,8,1.2,3,(col-3)*8,h+.2,(row-1.5)*11,brick)}ruins.position.set(-520,gca93TerrainHeight(-520,-430),-430);root.add(ruins);
+    const dam=new THREE.Group(),concrete=gca98RegionMaterial("stucco",["#aeb9b7","#e3e5dd","#737f7f"],{repeat:8});gca93Box(dam,110,22,16,0,11,0,concrete);for(let i=-4;i<=4;i++)gca93Cylinder(dam,3.2,3.7,18,i*12,9,10,new THREE.MeshStandardMaterial({color:0x346e8d,metalness:.3,roughness:.48}),24);dam.position.set(500,gca93TerrainHeight(500,-470),-470);root.add(dam);
+    const observatory=new THREE.Group(),wall=gca98RegionMaterial("stucco",["#d5bd93","#f0ddba","#947553"],{repeat:6}),dome=new THREE.MeshStandardMaterial({color:0x70859b,metalness:.52,roughness:.42});gca93Cylinder(observatory,8,9,8,0,4,0,wall,30);const cap=new THREE.Mesh(new THREE.SphereGeometry(8.1,28,18,0,Math.PI*2,0,Math.PI/2),dome);cap.position.y=8;observatory.add(cap);observatory.position.set(-360,gca93TerrainHeight(-360,-580),-580);root.add(observatory);gca99RoadSign(root,"ENCARNACIÓN","Misiones y río",-500,-315,"#88402e",-.05);runtime.wordSpots.push({x:-505,z:-400,label:"entre las ruinas"},{x:-360,z:-560,label:"junto al observatorio"})
+  }
+  function gca98ChacoWorld(root){
+    const dry=gca93OrganicShape(-480,-470,170,78,.22,gca98RegionMaterial("earth",["#8d5930","#c17a42","#5a371f"],{repeat:30,bumpScale:.26}),.2);root.add(dry);const ranch=new THREE.Group(),wood=gca98RegionMaterial("wood",["#704025","#a56b3d","#432719"],{repeat:8}),metal=new THREE.MeshStandardMaterial({color:0xa14431,metalness:.28,roughness:.62});gca93Box(ranch,44,8,24,0,4,0,wood);gca93Box(ranch,49,.8,29,0,9.4,0,metal);ranch.position.set(-530,gca93TerrainHeight(-530,-455),-455);root.add(ranch);
+    const tower=new THREE.Group(),steel=new THREE.MeshStandardMaterial({color:0x6f7f82,metalness:.7,roughness:.35}),tank=new THREE.MeshStandardMaterial({color:0xb5c5c4,metalness:.46,roughness:.42});for(let side=-1;side<=1;side+=2){gca93Cylinder(tower,.16,.22,22,side*3,11,side*3,steel,10);gca93Cylinder(tower,.16,.22,22,side*3,11,-side*3,steel,10)}const bowl=new THREE.Mesh(new THREE.CylinderGeometry(6.2,5.4,7.5,28),tank);bowl.position.y=24;tower.add(bowl);tower.position.set(-350,gca93TerrainHeight(-350,-530),-530);root.add(tower);
+    for(let i=0;i<26;i++){const cactus=new THREE.Group(),green=new THREE.MeshStandardMaterial({color:i%3?0x4d7a3e:0x688642,roughness:.95}),x=-690+(i%13)*38,z=-235+Math.floor(i/13)*58;gca93Cylinder(cactus,.35,.48,3.2,0,1.6,0,green,10);if(i%2===0){const arm=gca93Cylinder(cactus,.2,.24,1.6,.65,1.9,0,green,9);arm.rotation.z=Math.PI/2.7}cactus.position.set(x,gca93TerrainHeight(x,z),z);root.add(cactus)}for(let i=0;i<22;i++)gca93Tree(-700+(i%11)*55,-40+Math.floor(i/11)*55,{scale:.7+(i%4)*.1,color:0x285f38,mango:i%8===0});gca99RoadSign(root,"FILADELFIA","Bosque y Chaco",-520,-300,"#87582b",.06);runtime.wordSpots.push({x:-520,z:-420,label:"en la estancia"},{x:-350,z:-510,label:"junto al tanque de agua"})
+  }
+  function gca98PantanalWorld(root){
+    [[-585,-500,92],[-410,-570,78],[-260,-470,64]].forEach((item,index)=>gca98Water(root,item[0],item[1],item[2],[0x1f8795,0x287c86,0x3a8f7f][index],"Humedal del Pantanal"));const wood=gca98RegionMaterial("wood",["#65412b","#9b6d47","#40281c"],{repeat:14});gca93Ribbon([[-700,-355],[-580,-390],[-480,-425],[-360,-410],[-250,-445]],9,wood,root,2.2);
+    for(let i=0;i<9;i++){const house=new THREE.Group(),wall=gca98RegionMaterial("stucco",[i%2?"#cf9e67":"#e2bb7c","#f3dbad","#8d633f"],{repeat:5}),roof=gca98RegionMaterial("roof",[i%2?"#315f70":"#8d3f31","#c26144","#43261f"],{repeat:5}),x=-650+(i%5)*95,z=-260-Math.floor(i/5)*120;gca93Box(house,16,7,12,0,9,0,wall);gca93Box(house,18,.65,14,0,13,0,roof);[-6,6].forEach(px=>[-4,4].forEach(pz=>gca93Cylinder(house,.22,.3,6,px,3,pz,wood,10)));house.position.set(x,gca93TerrainHeight(x,z),z);root.add(house)}
+    const yerba=new THREE.MeshStandardMaterial({color:0x2f7140,roughness:.94});for(let row=0;row<8;row++)for(let col=0;col<13;col++){const bush=new THREE.Mesh(new THREE.IcosahedronGeometry(.9,2),yerba),x=220+col*23,z=-600+row*23;bush.scale.set(1.3,.86,1.1);bush.position.set(x,gca93TerrainHeight(x,z)+.85,z);root.add(bush)}gca99RoadSign(root,"CONCEPCIÓN","Pantanal y artesanía",-470,-285,"#246658",-.04);runtime.wordSpots.push({x:-560,z:-380,label:"sobre la pasarela"},{x:270,z:-540,label:"en la ruta de la yerba"})
+  }
+  function gca98ApplyRegion(root){
+    const region=gca98Region(),regionRoot=new THREE.Group();regionRoot.name=`GCA98-${region.id}`;root.add(regionRoot);runtime.gca98Region=region;runtime.gca98RegionRoot=regionRoot;[gca98CapitalWorld,gca98ArtsWorld,gca98ParanaWorld,gca98MissionsWorld,gca98ChacoWorld,gca98PantanalWorld][gca98RegionIndex()](regionRoot);
+    scene3d.background.setHex(region.sky);if(scene3d.fog?.color)scene3d.fog.color.setHex(region.sky);if(runtime.skyRoot?.material?.uniforms){runtime.skyRoot.material.uniforms.top.value.setHex(region.sky);runtime.skyRoot.material.uniforms.bottom.value.setHex(region.bottom)}renderer.toneMappingExposure=[1.08,1.12,1.05,.98,1.08,1.02][gca98RegionIndex()];
+    const place=overlay?.querySelector("#gca92CityPlace"),name=overlay?.querySelector("#gca92CityName");if(name)name.textContent=`${region.icon} ${runtime.gca92Theme?.city||region.name}`;if(place)place.textContent=`Mundo ${gca98RegionIndex()+1} · ${region.name} · ${region.difficulty}`;gca98EnsureUI();gca98EnableCoinStore();return regionRoot
+  }
+
+  function gca98SafeArray(value){return Array.isArray(value)?value:[]}
+  function gca98QuizStats(){state.kidsQuizStats=state.kidsQuizStats&&typeof state.kidsQuizStats==="object"?state.kidsQuizStats:{total:0,correct:0,streak:0};return state.kidsQuizStats}
+  function gca98Question(seed,tier=gca98Tier(),step=0){
+    const words=GCA91_CHALLENGE_WORDS,number=Math.abs(Math.floor(Number(seed)||1))+step*17,item=words[number%words.length],others=words.filter(word=>word.g!==item.g),mode=(tier+step)%4;let prompt,answer,options=[];
+    if(mode===0){prompt=`¿Cómo se dice «${item.s}» en guaraní?`;answer=item.g;options=[item.g,...others.slice(number%Math.max(1,others.length-5),number%Math.max(1,others.length-5)+5).map(word=>word.g)]}
+    else if(mode===1){prompt=`¿Qué significa «${item.g}»?`;answer=item.s;options=[item.s,...others.slice(number%Math.max(1,others.length-5),number%Math.max(1,others.length-5)+5).map(word=>word.s)]}
+    else if(mode===2){prompt=`${item.e} Elegí la palabra en guaraní que corresponde a «${item.s}».`;answer=item.g;options=[item.g,...others.filter(word=>word.e!==item.e).slice(0,5).map(word=>word.g)]}
+    else{prompt="¿Cuál pareja está correctamente relacionada?";answer=`${item.g} — ${item.s}`;options=[answer,...others.slice(0,5).map((word,index)=>`${word.g} — ${others[(index+2)%others.length].s}`)]}
+    options=[...new Set(options)].slice(0,4);while(options.length<4)options.push(mode===1?others[options.length].s:others[options.length].g);const shift=number%options.length;options=[...options.slice(shift),...options.slice(0,shift)];return{prompt,answer,options,correctIndex:options.indexOf(answer),emoji:item.e,item}
+  }
+  function gca98QuestionCount(){const stats=gca98QuizStats(),tier=gca98Tier(),base=1+Math.floor(tier/2),accuracy=stats.total?stats.correct/stats.total:.65;return Math.max(1,Math.min(3,base+(stats.total>=6&&accuracy>.84?1:0)-(stats.total>=4&&accuracy<.45?1:0)))}
+  function gca98EnsureUI(){
+    if(!overlay)return;let style=document.querySelector("#gca98Style");if(!style){style=document.createElement("style");style.id="gca98Style";style.textContent=`#gca98LearningPanel,#gca98Store{position:absolute;inset:0;z-index:240;background:rgba(5,28,24,.58);backdrop-filter:blur(7px);display:grid;place-items:center;padding:18px}#gca98LearningPanel[hidden],#gca98Store[hidden]{display:none}.gca98-card{width:min(680px,94vw);max-height:88vh;overflow:auto;background:linear-gradient(155deg,#fffdf3,#eafff3);border:3px solid #9cd9bc;border-radius:30px;box-shadow:0 24px 70px #001b1470;padding:24px;color:#193f35}.gca98-card header{display:flex;gap:14px;align-items:center}.gca98-card header>span{font-size:48px}.gca98-card small{font-weight:900;color:#2c7863;letter-spacing:.06em}.gca98-card h2{margin:5px 0 14px;font-size:clamp(24px,4vw,38px);line-height:1.08}.gca98-progress{height:9px;background:#dbe9df;border-radius:9px;overflow:hidden;margin:12px 0 18px}.gca98-progress i{display:block;height:100%;background:linear-gradient(90deg,#1f9f78,#f0b72c)}.gca98-prompt{text-align:center;background:#fff;border:2px solid #cfe4d8;border-radius:22px;padding:18px;font-size:clamp(20px,3vw,30px);font-weight:900}.gca98-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.gca98-options button,.gca98-shop-grid button,.gca98-close{min-height:64px;border:2px solid #b9d9ca;border-radius:18px;background:#fff;color:#163c32;font:900 18px system-ui;padding:12px;box-shadow:0 5px 0 #9abfad;cursor:pointer}.gca98-options button.correct{background:#c9f5d8;border-color:#28a965}.gca98-options button.wrong{background:#ffd9d4;border-color:#da5d4b}.gca98-result{min-height:26px;text-align:center;font-weight:900;margin:13px 0 0}.gca98-shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.gca98-shop-grid button{display:grid;gap:3px}.gca98-shop-grid button span{font-size:34px}.gca98-shop-grid button small{letter-spacing:0;color:#507166}.gca98-shop-grid button[disabled]{opacity:.55;cursor:not-allowed}.gca98-wallet{display:flex;justify-content:space-between;align-items:center;background:#fff4bc;border-radius:18px;padding:12px 16px;margin:12px 0}.gca98-parent-note{font-size:13px;line-height:1.4;color:#5b665f;background:#f4f2ea;border-radius:14px;padding:11px}.gca98-close{width:100%;margin-top:14px;background:#194f40;color:#fff;box-shadow:0 5px 0 #0b3026}#gca92Coins{cursor:pointer;pointer-events:auto!important}.gca98-store-title{display:flex;justify-content:space-between;align-items:center}@media(max-width:620px){#gca98LearningPanel,#gca98Store{padding:8px}.gca98-card{padding:16px;border-radius:22px}.gca98-options,.gca98-shop-grid{grid-template-columns:1fr}.gca98-shop-grid{max-height:45vh;overflow:auto}.gca98-card h2{font-size:24px}.gca98-prompt{font-size:19px;padding:13px}.gca98-options button{min-height:54px;font-size:16px}}`;document.head.appendChild(style)}
+    if(!overlay.querySelector("#gca98LearningPanel")){const panel=document.createElement("div");panel.id="gca98LearningPanel";panel.hidden=true;overlay.appendChild(panel)}
+    if(!overlay.querySelector("#gca98Store")){const store=document.createElement("div");store.id="gca98Store";store.hidden=true;overlay.appendChild(store)}
+  }
+  function gca98RenderQuiz(){
+    const session=runtime.gca98Quiz,panel=overlay?.querySelector("#gca98LearningPanel");if(!session||!panel)return;const question=session.questions[session.index],region=gca98Region();panel.hidden=false;panel.innerHTML=`<section class="gca98-card"><header><span>${session.purpose==="life"?"🐊":session.purpose==="crop"?"🌱":"🧠"}</span><div><small>${gca91Safe(region.difficulty.toUpperCase())} · PREGUNTA ${session.index+1}/${session.questions.length}</small><h2>${session.purpose==="life"?"Recuperá una vida":session.purpose==="crop"?"Acelerá tu mandioca":"Reto de aprendizaje"}</h2></div></header><div class="gca98-progress"><i style="width:${session.index/session.questions.length*100}%"></i></div><div class="gca98-prompt"><span>${question.emoji}</span><br>${gca91Safe(question.prompt)}</div><div class="gca98-options">${question.options.map((option,index)=>`<button type="button" data-gca98-answer="${index}">${gca91Safe(option)}</button>`).join("")}</div><p class="gca98-result" id="gca98Result">Elegí una respuesta</p></section>`;panel.querySelectorAll("[data-gca98-answer]").forEach(button=>button.onclick=()=>gca98AnswerQuiz(Number(button.dataset.gca98Answer),button))
+  }
+  function gca98OpenQuiz({purpose="learning",item=null,croc=null}={}){
+    if(runtime.challengeOpen||runtime.gca98Quiz)return;gca98EnsureUI();const count=gca98QuestionCount(),seed=Math.floor((runtime.clock||1)*997)+gca81GlobalLevel()*113+(purpose==="life"?71:purpose==="crop"?37:0),questions=Array.from({length:count},(_,index)=>gca98Question(seed,gca98Tier(),index));runtime.gca98Quiz={purpose,item,croc,questions,index:0,correct:0,needed:Math.max(1,Math.ceil(count*.67))};runtime.challengeOpen=true;runtime.gca98PreviousInvulnerable=runtime.invulnerableUntil||0;runtime.invulnerableUntil=Number.POSITIVE_INFINITY;gca98RenderQuiz()
+  }
+  function gca98FinishQuiz(){
+    const session=runtime.gca98Quiz,panel=overlay?.querySelector("#gca98LearningPanel");if(!session)return;const passed=session.correct>=session.needed,stats=gca98QuizStats();if(passed){stats.streak=(stats.streak||0)+1;if(session.purpose==="crop"&&session.item){const item=session.item;item.stage="ready";item.plantedAt=Date.now()-15000;item.sprouted=true;item.group.clear();item.group.add(...gca92CassavaPlantMesh(2).children);gca78Reward("🌱","¡La mandi'o creció con tu respuesta!")}else if(session.purpose==="life"){runtime.health=Math.min(3,(runtime.health||0)+1);drawHealth();state.kidsCoins=(Number(state.kidsCoins)||0)+2;gca78Reward("❤️","Vida recuperada · +2 monedas")}state.xp=(state.xp||0)+4+session.correct*2;playKidSound("correct")}else{stats.streak=0;gca80Mood("🌱","Podés intentarlo otra vez");playKidSound("wrong")}save();gca92EnsureHud(runtime.gca92Theme);setTimeout(()=>{if(panel)panel.hidden=true;runtime.gca98Quiz=null;runtime.challengeOpen=false;runtime.invulnerableUntil=(runtime.clock||0)+3;gca98EnableCoinStore();updateInteraction()},900)
+  }
+  function gca98AnswerQuiz(answer,button){
+    const session=runtime.gca98Quiz;if(!session)return;const question=session.questions[session.index],ok=answer===question.correctIndex,stats=gca98QuizStats();stats.total=(stats.total||0)+1;if(ok){stats.correct=(stats.correct||0)+1;session.correct++}const panel=overlay?.querySelector("#gca98LearningPanel");panel?.querySelectorAll("[data-gca98-answer]").forEach(candidate=>{candidate.disabled=true;const index=Number(candidate.dataset.gca98Answer);if(index===question.correctIndex)candidate.classList.add("correct")});button.classList.add(ok?"correct":"wrong");const result=panel?.querySelector("#gca98Result");if(result)result.textContent=ok?"¡Excelente!":"La respuesta correcta quedó marcada.";playKidSound(ok?"correct":"wrong");save();setTimeout(()=>{session.index++;session.index<session.questions.length?gca98RenderQuiz():gca98FinishQuiz()},820)
+  }
+
+  function gca98ReadyCassava(item){if(!item||item.stage!=="growing")return false;item.stage="ready";item.plantedAt=Date.now()-15000;item.sprouted=true;item.group.clear();item.group.add(...gca92CassavaPlantMesh(2).children);return true}
+  const gca98BaseHarvest=gca92Harvest;
+  gca92Harvest=function(item){if(item?.stage==="growing"){gca98OpenQuiz({purpose:"crop",item});return}gca98BaseHarvest(item);gca98EnableCoinStore()};
+  const gca98BaseInteraction=updateInteraction;
+  updateInteraction=function(){
+    gca98BaseInteraction();const button=overlay?.querySelector("#gca75Action");if(!button||!avatar||runtime.challengeOpen)return;if(runtime.activeInteractive?.type==="cassava"&&runtime.activeInteractive.stage==="growing"){button.querySelector("span").textContent="🧠";button.querySelector("small").textContent="Responder para acelerar"}
+    if((runtime.health||3)<3){const near=(runtime.crocodiles||[]).map(croc=>({croc,distance:Math.hypot(avatar.position.x-croc.group.position.x,avatar.position.z-croc.group.position.z)})).filter(item=>item.distance<9).sort((a,b)=>a.distance-b.distance)[0];if(near){runtime.activeInteractive={type:"gca98JakareLife",croc:near.croc};button.hidden=false;button.querySelector("span").textContent="🐊";button.querySelector("small").textContent="Quiz para recuperar vida"}}
+  };
+  const gca98BasePerform=performInteraction;
+  performInteraction=function(){if(runtime.activeInteractive?.type==="gca98JakareLife"){gca98OpenQuiz({purpose:"life",croc:runtime.activeInteractive.croc});return}gca98BasePerform()};
+
+  function gca98EnableCoinStore(){gca98EnsureUI();const coin=overlay?.querySelector("#gca92Coins"),hud=overlay?.querySelector("#gca92CityHud");if(hud)hud.style.pointerEvents="auto";if(!coin)return;coin.setAttribute("role","button");coin.setAttribute("tabindex","0");coin.title="Abrir tienda de monedas";coin.onclick=gca98OpenStore;coin.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();gca98OpenStore()}}}
+  function gca98OpenStore(){
+    if(runtime.challengeOpen)return;gca98EnsureUI();const store=overlay.querySelector("#gca98Store"),coins=Number(state.kidsCoins)||0;runtime.challengeOpen=true;store.hidden=false;store.innerHTML=`<section class="gca98-card"><div class="gca98-store-title"><div><small>ECONOMÍA TRANSPARENTE</small><h2>🎒 Puesto del explorador</h2></div></div><div class="gca98-wallet"><b>Tu saldo</b><strong>🪙 ${coins}</strong></div><div class="gca98-shop-grid"><button type="button" data-gca98-shop="fertilizer"><span>🌱</span><b>Abono rápido</b><small>6 monedas · madura lo sembrado</small></button><button type="button" data-gca98-shop="heart"><span>❤️</span><b>Recuperar vida</b><small>18 monedas · máximo 3 vidas</small></button><button type="button" data-gca98-shop="compass"><span>🧭</span><b>Pista luminosa</b><small>10 monedas · revela objetivos</small></button></div><h3>Paquetes de monedas</h3><div class="gca98-shop-grid"><button type="button" disabled><span>🪙</span><b>Paquete inicial</b><small>Disponible con Play Billing</small></button><button type="button" disabled><span>🪙🪙</span><b>Paquete aventura</b><small>Disponible con Play Billing</small></button><button type="button" disabled><span>🎨</span><b>Cosméticos</b><small>Sin ventaja competitiva</small></button></div><p class="gca98-parent-note">Las compras reales quedan desactivadas hasta integrar facturación, comprobación del servidor y control adulto. No hay cajas sorpresa ni premios aleatorios.</p><button class="gca98-close" type="button" data-gca98-store-close>Seguir jugando</button></section>`;store.querySelectorAll("[data-gca98-shop]").forEach(button=>button.onclick=()=>gca98BuyStoreItem(button.dataset.gca98Shop));store.querySelector("[data-gca98-store-close]").onclick=gca98CloseStore
+  }
+  function gca98CloseStore(){const store=overlay?.querySelector("#gca98Store");if(store)store.hidden=true;runtime.challengeOpen=false;updateInteraction()}
+  function gca98BuyStoreItem(type){
+    const costs={fertilizer:6,heart:18,compass:10},cost=costs[type],coins=Number(state.kidsCoins)||0;if(coins<cost){gca80Mood("🪙","Todavía no tenés suficientes monedas");playKidSound("wrong");return}if(type==="heart"&&(runtime.health||3)>=3){gca80Mood("❤️","Ya tenés todas tus vidas");return}if(type==="fertilizer"&&!(runtime.gca92Cassava||[]).some(item=>item.stage==="growing")){gca80Mood("🌱","Primero sembrá mandi'o");return}state.kidsCoins=coins-cost;if(type==="heart"){runtime.health=Math.min(3,(runtime.health||0)+1);drawHealth()}if(type==="fertilizer")(runtime.gca92Cassava||[]).forEach(gca98ReadyCassava);if(type==="compass"){runtime.echoUntil=(runtime.clock||0)+30;(runtime.objects||[]).filter(object=>!object.collected).forEach(object=>object.revealDistance=Math.max(object.revealDistance||52,170))}save();gca92EnsureHud(runtime.gca92Theme);playKidSound("unlock");gca80Mood(type==="heart"?"❤️":type==="fertilizer"?"🌱":"🧭",type==="heart"?"Vida recuperada":type==="fertilizer"?"La cosecha está lista":"Los objetivos ahora brillan");runtime.challengeOpen=false;gca98OpenStore()
+  }
+
+  const gca98BaseBuildWorld=buildOpenWorldV2;
+  buildOpenWorldV2=function(){const result=gca98BaseBuildWorld();gca98ApplyRegion(result);gca93PrepareDiscoverySpots();return result};
+
+  /* GCA99 · HUD limpio, cartelería física y desafíos distribuidos.
+     La red, el chat y la presencia continúan activos: solo se retiran sus controles
+     permanentes para devolverle espacio visual al mundo. */
+  const GCA99_EXPERIENCE_COPY={
+    es:{play:"Jugar",sub:"Mundo Guaraní 3D",title:"Mundo Guaraní 3D",intro:"Explora Paraguay, supera desafíos y practica guaraní en un mundo multijugador.",audience:"Adolescentes y adultos",enter:"Jugar →"},
+    en:{play:"Play",sub:"Guaraní 3D World",title:"Guaraní 3D World",intro:"Explore Paraguay, complete challenges and practise Guaraní in a multiplayer world.",audience:"Teens and adults",enter:"Play →"},
+    pt:{play:"Jogar",sub:"Mundo Guarani 3D",title:"Mundo Guarani 3D",intro:"Explore o Paraguai, supere desafios e pratique guarani em um mundo multijogador.",audience:"Adolescentes e adultos",enter:"Jogar →"},
+    fr:{play:"Jouer",sub:"Monde guarani 3D",title:"Monde guarani 3D",intro:"Explorez le Paraguay, relevez des défis et pratiquez le guarani dans un monde multijoueur.",audience:"Adolescents et adultes",enter:"Jouer →"},
+    it:{play:"Gioca",sub:"Mondo guaraní 3D",title:"Mondo guaraní 3D",intro:"Esplora il Paraguay, supera sfide e pratica il guaraní in un mondo multigiocatore.",audience:"Adolescenti e adulti",enter:"Gioca →"},
+    de:{play:"Spielen",sub:"Guaraní-3D-Welt",title:"Guaraní-3D-Welt",intro:"Erkunde Paraguay, meistere Herausforderungen und übe Guaraní in einer Mehrspielerwelt.",audience:"Jugendliche und Erwachsene",enter:"Spielen →"}
+  };
+  function gca99RenameExperience(){
+    const currentLanguage=(document.documentElement.lang||"es").slice(0,2),copy=GCA99_EXPERIENCE_COPY[currentLanguage]||GCA99_EXPERIENCE_COPY.es,set=(selector,value)=>{const node=document.querySelector(selector);if(node)node.textContent=value};
+    const homeTitle=document.querySelector("#homeKids strong"),homeSub=document.querySelector("#homeKids small");if(homeTitle){homeTitle.removeAttribute("data-home-text");homeTitle.textContent=copy.play}if(homeSub){homeSub.removeAttribute("data-home-text");homeSub.textContent=copy.sub}
+    set("#startKidsHome strong",copy.play);set("#startKidsHome small",`${copy.sub} · ${currentLanguage==="es"?"Nuevo":currentLanguage==="pt"?"Novo":currentLanguage==="fr"?"Nouveau":currentLanguage==="it"?"Nuovo":currentLanguage==="de"?"Neu":"New"}`);
+    const card=document.querySelectorAll("#catalog .course-card")[1];if(card){const title=card.querySelector("h3"),intro=card.querySelector("p"),stats=card.querySelectorAll(".course-card-stats span"),button=card.querySelector("button");if(title)title.textContent=copy.title;if(intro)intro.textContent=copy.intro;if(stats[2])stats[2].textContent=copy.audience;if(button)button.textContent=copy.enter}
+    set("#kidsCourse .kids-hero .tag","🇵🇾 AVENTURA 3D EN PARAGUAY");set("#kidsCourse .kids-hero h2",copy.title);set("#kidsCourse .kids-hero p",copy.intro);set("#kidsCourse .kids-start-quest",copy.enter);set("#kidsCourse .kids-map-title .tag","🧭 MUNDOS");set("#kidsCourse .kids-map-title h2","Elegí tu próxima ruta");set("#kidsCourse .kids-map-title p","Cada nivel abre nuevos lugares, desafíos y encuentros.");set("#kidsCourse .kid-passport b","Bitácora del jugador");set("#kidsCourse .kid-passport p","Completa las misiones de cada mundo para sumar estrellas e insignias.");
+    const note=document.querySelector("#kidsCourse .kid-adult-note");if(note)note.innerHTML="🎮 <b>Consejo:</b> explora con calma, escucha las palabras y usa los desafíos para practicar guaraní.";
+    document.querySelectorAll(".staff-table th").forEach(cell=>{if(cell.textContent.trim()==="Niños")cell.textContent="Juego"})
+  }
+  const gca99BaseTranslateCourseShell=window.translateCourseShell;if(typeof gca99BaseTranslateCourseShell==="function")window.translateCourseShell=function(){gca99BaseTranslateCourseShell();gca99RenameExperience()};
+  const gca99BaseRenderHomeDashboard=window.renderHomeDashboard;if(typeof gca99BaseRenderHomeDashboard==="function")window.renderHomeDashboard=function(){gca99BaseRenderHomeDashboard();gca99RenameExperience()};
+  const gca99BaseTranslateUI=typeof translateUI==="function"?translateUI:null;if(gca99BaseTranslateUI)translateUI=function(){gca99BaseTranslateUI();gca99RenameExperience()};
+  document.addEventListener("change",event=>{if(event.target?.matches?.("#headerLang,#lang"))requestAnimationFrame(gca99RenameExperience)});
+
+  function gca99UpgradeJasy(item){
+    if(!item?.group||item.kind!=="jasy"||item.group.userData.gca99Jasy)return item;const group=item.group;group.scale.setScalar(1.34);group.children.forEach(child=>{if(child.isSprite)child.visible=false});
+    const gold=new THREE.MeshStandardMaterial({color:0xffd652,roughness:.58,emissive:0xffb000,emissiveIntensity:.34}),leaf=new THREE.MeshStandardMaterial({color:0x44a85d,roughness:.82}),aura=new THREE.Mesh(new THREE.RingGeometry(1.05,1.52,40),new THREE.MeshBasicMaterial({color:0xffdf62,transparent:true,opacity:.26,side:THREE.DoubleSide,depthWrite:false}));aura.rotation.x=-Math.PI/2;aura.position.y=.04;group.add(aura);
+    for(let i=0;i<5;i++){const flower=new THREE.Mesh(new THREE.SphereGeometry(.11,10,7),i%2?gold:leaf),angle=i/5*Math.PI*2;flower.position.set(Math.sin(angle)*1.2,.2,Math.cos(angle)*1.2);group.add(flower)}
+    group.userData.gca99Jasy=true;item.gca99Jasy=true;return item
+  }
+
+  const gca99BaseRenderQuiz=gca98RenderQuiz;
+  gca98RenderQuiz=function(){gca99BaseRenderQuiz();const session=runtime.gca98Quiz,panel=overlay?.querySelector("#gca98LearningPanel");if(!session||!panel)return;const icon=panel.querySelector("header>span"),title=panel.querySelector("header h2");if(session.purpose==="jasy"){if(icon)icon.textContent="🌟";if(title)title.textContent="Desafío de Jasy Jateré"}else if(session.purpose==="discovery"){if(icon)icon.textContent="🔎";if(title)title.textContent="Reto de exploración"}}
+  const gca99BaseFinishQuiz=gca98FinishQuiz;
+  gca98FinishQuiz=function(){const session=runtime.gca98Quiz,passed=session&&session.correct>=session.needed;if(passed&&(session.purpose==="jasy"||session.purpose==="discovery")){const reward=session.purpose==="jasy"?3:2;state.kidsCoins=(Number(state.kidsCoins)||0)+reward;gca78Reward(session.purpose==="jasy"?"🌟":"🪙",session.purpose==="jasy"?`Jasy Jateré te regala ${reward} monedas`:`Reto superado · +${reward} monedas`)}gca99BaseFinishQuiz()};
+
+  const gca99BaseCollectObject=collectObject;
+  collectObject=function(object){const before=collected;gca99BaseCollectObject(object);if(collected>before&&collected===1&&collected<roundItems.length&&!runtime.gca99DiscoveryQuiz){runtime.gca99DiscoveryQuiz=true;setTimeout(()=>{if(!finished&&!runtime.challengeOpen)gca98OpenQuiz({purpose:"discovery",item:object})},720)}};
+
+  function gca99AnimateJasy(dt){
+    if(!avatar||runtime.briefing||runtime.rescuing||runtime.challengeOpen)return;(runtime.legends||[]).filter(item=>item.kind==="jasy").forEach((item,index)=>{gca99UpgradeJasy(item);item.homeX??=item.x;item.homeZ??=item.z;item.gca99Angle??=index*2.4;item.gca99Angle+=dt*(.2+index*.025);const radius=5+index*2,nx=item.homeX+Math.sin(item.gca99Angle)*radius,nz=item.homeZ+Math.cos(item.gca99Angle)*radius;if(!gca95PointBlocked(nx,nz,.3)){item.x=nx;item.z=nz;item.group.position.x=nx;item.group.position.z=nz}item.group.position.y=gca93TerrainHeight(item.x,item.z)+Math.sin(runtime.clock*2+index)*.08;const distance=Math.hypot(avatar.position.x-item.x,avatar.position.z-item.z);if(distance<3.8&&!item.gca99QuizDone&&runtime.clock>(runtime.gca99JasyCooldown||0)){item.gca99QuizDone=true;runtime.gca99JasyCooldown=runtime.clock+18;gca80Mood("🌟","Jasy Jateré quiere jugar");gca98OpenQuiz({purpose:"jasy",item})}})
+  }
+  const gca99BaseAnimateWorld=gca91AnimateWorld;gca91AnimateWorld=function(dt,moving){gca99BaseAnimateWorld(dt,moving);gca99AnimateJasy(dt)};
+
+  gca81Hint=function(){const target=gca81CurrentTarget();if(!target||runtime.missionPhase!=="find")return;runtime.lastProgressAt=runtime.clock;gca80Mood("💡",mission===1?"Escucha: la pista está cerca":"Hay una pista cerca del camino");if(mission===1)gca81PlayClue()};
+
+  const gca99BaseBuildWorld=buildOpenWorldV2;
+  buildOpenWorldV2=function(){const result=gca99BaseBuildWorld();runtime.gca99DiscoveryQuiz=false;(runtime.legends||[]).filter(item=>item.kind==="jasy").forEach(gca99UpgradeJasy);scene3d?.traverse(object=>{if(object.isSprite)object.visible=false});return result};
+  gca99RenameExperience();
+  window.GCA100_3D_AUDIT=()=>({version:"GCA100",buildMarker:document.documentElement.dataset.gcaBuild,essentialControlsOnly:true,persistentMissionCard:false,persistentCompass:false,socialButtonsHidden:true,cityCardHidden:true,routeSignsRemoved:true,chatPreserved:true,multiplayerPreserved:true,progressPreserved:true,quizTriggers:["pombero","jasy-jatere","first-word-discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameButton:"Jugar",firebaseRulesUnchanged:true});
+  window.GCA99_3D_AUDIT=()=>({version:"GCA99",buildMarker:document.documentElement.dataset.gcaBuild,minimalHud:true,persistentMissionCard:false,persistentCompass:false,socialButtonsHidden:true,chatPreserved:true,multiplayerPreserved:true,progressPreserved:true,physicalRoadSigns:0,floatingWorldLabels:false,quizTriggers:["pombero","jasy-jatere","discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameLabel:"Mundo Guaraní 3D",firebaseRulesUnchanged:true});
+  window.GCA98_3D_AUDIT=()=>({version:"GCA98",buildMarker:document.documentElement.dataset.gcaBuild,uniqueWorldCount:GCA98_REGIONS.length,worlds:GCA98_REGIONS.map((region,index)=>({world:index+1,name:region.name,levels:region.levels,identity:region.identity,difficulty:region.difficulty})),currentWorld:gca98RegionIndex()+1,currentRegion:runtime.gca98Region?.name||null,progressiveQuizTier:gca98Tier()+1,adaptiveQuestionCount:gca98QuestionCount(),cassavaQuizAcceleration:true,jakareLifeQuiz:true,earnedCoinStore:true,realMoneyPurchasesEnabled:false,lootBoxes:false,randomPaidRewards:false,parentGateRequiredBeforeBilling:true,existingProgressPreserved:true,multiplayerPreserved:true,chatPreserved:true,firebaseRulesUnchanged:true});
   window.GCA97_3D_AUDIT=()=>({version:"GCA97",buildMarker:document.documentElement.dataset.gcaBuild,pomberoRedesigned:true,pomberoApproximateHeight:6.2,pomberoGlowingEyes:true,pomberoDarkCloak:true,pomberoQuestionsPreserved:true,pomberoPatrolPreserved:true,pomberoChasePreserved:true,cityCount:GCA92_CITIES.length,cityThemes:GCA92_CITIES.map(theme=>({city:theme.city,identity:theme.place,kind:theme.kind})),fullyIndependentCityLayouts:false,sharedProceduralBase:true,firebaseRulesUnchanged:true,multiplayerPreserved:true});
   window.GCA96_3D_AUDIT=()=>({version:"GCA96",buildMarker:document.documentElement.dataset.gcaBuild,playerDuelsAcrossLevels:true,duelDistance:18,multipleChoiceInsideWorld:true,pomberoPatrol:true,pomberoChase:true,pomberoEducationalEncounter:true,pomberoLifeConsequence:true,neighborhoods:runtime.gca96Neighborhoods||null,playableHouses:(runtime.playableHouses||[]).length,linea27:Boolean(runtime.linea27),itaguaBus:Boolean(runtime.gca95ItaguaBus),itaguaBusNearTown:true,multiplayerPreserved:true,chatPreserved:true,firebaseRulesUnchanged:true});
   window.GCA95_3D_AUDIT=()=>({version:"GCA95",buildMarker:document.documentElement.dataset.gcaBuild,sweptCollision:true,collisionSampleStep:.24,doorOnlyHouseEntry:true,oneStoryHeightFixed:true,terrainClampEveryFrame:true,worldBoundary:872,expandedArea:runtime.gca95ExpandedArea||null,itaguaBus:Boolean(runtime.gca95ItaguaBus),crocodiles:(runtime.crocodiles||[]).length,pomberos:(runtime.legends||[]).filter(item=>item.kind==="pombero").length,multiplayerPreserved:true,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",chatPreserved:true,firebaseRulesUnchanged:true});
@@ -6428,7 +6602,7 @@ window.__GCA63LegacyLife=function(){
   window.GCA88_3D_AUDIT=()=>({version:"GCA88",buildMarker:document.documentElement.dataset.gcaBuild,sameDetailedAvatarModel:true,runtimeSnapshotIsolation:true,bodyDepthTestingPreserved:true,xrayOnlyMarker:true,remoteAnimationRig:true,chatPreserved:true,realtimeRulesCompatible:true,visibleRemotePlayers:runtime.remotePlayers?.size||0,remoteSnapshot:[...(runtime.remotePlayers||new Map()).values()].map(remote=>({name:remote.name,pet:remote.pet,position:remote.group.position.toArray(),target:remote.target.toArray(),hasDetailedRig:Boolean(remote.group.userData.remoteRig),bodyMeshes:(()=>{let count=0;remote.group.traverse(object=>{if(object.isMesh&&object!==remote.group.userData.physicalMarker)count++});return count})()}))});
   window.GCA89_3D_AUDIT=()=>({version:"GCA89",buildMarker:document.documentElement.dataset.gcaBuild,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",currentPlayerLevel:gca81GlobalLevel(),remoteLevels:[...(runtime.remotePlayers||new Map()).values()].map(remote=>remote.level||1),wordAudioOnlyOnCollection:true,silentVisualHints:true,centralWordCardRemovedOnCollection:true,compactPortraitHud:true,firebaseRulesCompatible:true,chatPreserved:true});
   window.GCA90_3D_AUDIT=()=>({version:"GCA90",buildMarker:document.documentElement.dataset.gcaBuild,rootCause:"18-second eviction plus render-loop-only heartbeat",presenceGraceSeconds:GCA90_PRESENCE_GRACE_MS/1000,hardStaleSeconds:GCA90_HARD_STALE_MS/1000,independentHeartbeatSeconds:GCA90_HEARTBEAT_MS/1000,serverTimestamps:true,visibilityWake:true,onlineWake:true,pageshowWake:true,automaticFirebaseReconnect:true,fullProfileRestoreAfterReconnect:true,connectionAwareWrites:true,noRemovalBetweenLevels:true,lowerBandwidthMovementUpdates:true,firebaseRulesUnchanged:true,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",chatPreserved:true,remotePresence:[...(runtime.remotePlayers||new Map()).values()].map(remote=>({name:remote.name,lastSeen:remote.lastSeen,reconnecting:remote.reconnecting,missingSince:remote.missingSince||0}))});
-  document.documentElement.dataset.gcaBuild="GCA97";
+  document.documentElement.dataset.gcaBuild="GCA100";
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",buildOverlay,{once:true});else buildOverlay();
 })();
 </script>
@@ -6612,6 +6786,127 @@ window.__GCA63LegacyLife=function(){
   @media(max-width:760px){#gca92CityHud{min-width:210px;max-width:calc(100vw - 190px);padding:6px 8px;border-radius:15px;grid-template-columns:30px minmax(0,1fr) auto;gap:6px}#gca92CityIcon{width:30px;height:30px;border-radius:9px;font-size:18px}#gca92CityName{font-size:10px}#gca92CityPlace{font-size:7px}#gca92Coins{padding:6px 7px;font-size:9px}}
   @media(max-width:430px) and (orientation:portrait){#gca92CityHud{bottom:max(10px,env(safe-area-inset-bottom));min-width:0;width:auto;max-width:178px;grid-template-columns:28px minmax(0,1fr) auto;padding:5px 6px;border-width:1.5px;border-radius:13px;box-shadow:0 4px 0 rgba(4,30,27,.5),0 8px 16px rgba(6,34,29,.22)}#gca92CityIcon{width:28px;height:28px;font-size:16px}#gca92CityPlace{display:none}#gca92CityName{font-size:9px}#gca92Coins{padding:5px;font-size:8px}.gca73-joystick{width:96px!important;height:96px!important}.gca73-knob{width:46px!important;height:46px!important;margin:-23px!important}.gca75-action{width:58px!important;min-width:58px!important;height:58px!important}}
   @media(prefers-reduced-motion:reduce){#gca92CityHud{backdrop-filter:none}}
+</style>
+<style id="gca99-clean-game-ui">
+  /* El mundo y las interacciones son la interfaz. Las tarjetas permanentes se
+     mantienen en el DOM para no romper sus sistemas, pero dejan de tapar el juego. */
+  #gca73Game :is(
+    #gca81Objective,
+    #gca76Compass,
+    #gca83FinderButton,
+    #gca83ChatButton,
+    #gca83Tracker,
+    #gca82LiveStatus,
+    #gca73Round,
+    .gca73-round,
+    .gca78-resources,
+    #gca80Zone,
+    .gca73-hint,
+    #gca73Word,
+    .gca73-word
+  ){display:none!important}
+
+  /* Sin tarjetas de ciudad, saldo ni rótulos inferiores durante la partida. */
+  #gca73Game #gca92CityHud,
+  #gca73Game #gca92Coins,
+  #gca73Game #gca81LevelLegend{display:none!important}
+
+  /* La red y el chat siguen funcionando internamente. Sus paneles solo aparecen
+     cuando otra interacción existente los abre; ya no tienen botones flotantes. */
+  #gca83FinderPanel[hidden],#gca83ChatPanel[hidden]{display:none!important}
+
+  /* Compatibilidad histórica: el HUD sigue existiendo para progreso y monedas,
+     pero ya no se presenta encima del mundo. */
+  #gca92CityHud{
+    left:auto!important;
+    right:max(14px,env(safe-area-inset-right))!important;
+    top:auto!important;
+    bottom:max(92px,calc(env(safe-area-inset-bottom) + 84px))!important;
+    display:none!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    transform:none!important;
+    backdrop-filter:none!important;
+    pointer-events:auto!important
+  }
+  #gca92CityIcon,#gca92CityHud>div{display:none!important}
+  #gca92Coins{
+    display:block!important;
+    padding:7px 10px!important;
+    border:2px solid rgba(255,255,255,.82)!important;
+    border-radius:999px!important;
+    background:rgba(10,55,47,.84)!important;
+    color:#fff!important;
+    box-shadow:0 5px 16px rgba(0,0,0,.2)!important;
+    font-size:10px!important;
+    line-height:1!important;
+    backdrop-filter:blur(8px)!important
+  }
+  #gca73Game.gca82-lobby-open #gca92CityHud{display:none!important}
+
+  @media(max-width:720px){
+    #gca73Back,#gca73Sound{
+      top:max(8px,env(safe-area-inset-top))!important;
+      width:38px!important;
+      height:38px!important;
+      font-size:17px!important
+    }
+    #gca73Back{left:max(8px,env(safe-area-inset-left))!important}
+    #gca73Sound{right:max(8px,env(safe-area-inset-right))!important}
+    .gca76-health{
+      left:max(52px,calc(env(safe-area-inset-left) + 46px))!important;
+      top:max(9px,env(safe-area-inset-top))!important;
+      padding:5px 7px!important;
+      font-size:13px!important;
+      letter-spacing:0!important
+    }
+    .gca73-joystick{
+      left:max(12px,env(safe-area-inset-left))!important;
+      bottom:max(12px,env(safe-area-inset-bottom))!important;
+      width:92px!important;
+      height:92px!important;
+      border-width:2px!important
+    }
+    .gca73-knob{
+      width:44px!important;
+      height:44px!important;
+      margin:-22px!important;
+      border-width:3px!important
+    }
+    .gca75-action{
+      right:max(12px,env(safe-area-inset-right))!important;
+      bottom:max(12px,env(safe-area-inset-bottom))!important;
+      width:58px!important;
+      min-width:58px!important;
+      height:58px!important;
+      padding:5px!important;
+      font-size:20px!important
+    }
+    .gca75-action small{font-size:7px!important}
+    #gca92CityHud{
+      right:max(10px,env(safe-area-inset-right))!important;
+      bottom:max(80px,calc(env(safe-area-inset-bottom) + 72px))!important
+    }
+    #gca92Coins{padding:6px 8px!important;font-size:9px!important}
+    #gca80Mood{
+      right:50%!important;
+      bottom:max(18px,env(safe-area-inset-bottom))!important;
+      max-width:56vw!important;
+      transform:translate(50%,12px) scale(.72)!important
+    }
+    #gca80Mood.show{transform:translate(50%,0) scale(1)!important}
+  }
+
+  @media(max-width:430px) and (orientation:portrait){
+    #gca92CityHud{bottom:max(76px,calc(env(safe-area-inset-bottom) + 68px))!important}
+    .gca78-reward{bottom:max(86px,calc(env(safe-area-inset-bottom) + 78px))!important}
+  }
 </style>
 </body>
 </html>
