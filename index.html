@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta name="guarani-con-ali-build" content="GCA100-JUGAR-CLEAN-HUD-DISTRIBUTED-QUIZZES">
+  <meta name="guarani-con-ali-build" content="GCA101-JUGAR-MULTIPLAYER-HUD-RESTORED">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Curso interactivo y visual para aprender guaraní paraguayo con la Profe Ali.">
@@ -6583,7 +6583,8 @@ window.__GCA63LegacyLife=function(){
   const gca99BaseBuildWorld=buildOpenWorldV2;
   buildOpenWorldV2=function(){const result=gca99BaseBuildWorld();runtime.gca99DiscoveryQuiz=false;(runtime.legends||[]).filter(item=>item.kind==="jasy").forEach(gca99UpgradeJasy);scene3d?.traverse(object=>{if(object.isSprite)object.visible=false});return result};
   gca99RenameExperience();
-  window.GCA100_3D_AUDIT=()=>({version:"GCA100",buildMarker:document.documentElement.dataset.gcaBuild,essentialControlsOnly:true,persistentMissionCard:false,persistentCompass:false,socialButtonsHidden:true,cityCardHidden:true,routeSignsRemoved:true,chatPreserved:true,multiplayerPreserved:true,progressPreserved:true,quizTriggers:["pombero","jasy-jatere","first-word-discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameButton:"Jugar",firebaseRulesUnchanged:true});
+  window.GCA101_3D_AUDIT=()=>({version:"GCA101",buildMarker:document.documentElement.dataset.gcaBuild,essentialControlsOnly:true,persistentMissionCard:false,persistentCompass:false,livePlayerCountVisible:true,playerMapVisible:true,playerFinderVisible:true,worldChatVisible:true,physicalRemotePlayers:true,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",cityCardHidden:true,routeSignsRemoved:true,multiplayerPreserved:true,progressPreserved:true,quizTriggers:["pombero","jasy-jatere","first-word-discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameButton:"Jugar",firebaseRulesUnchanged:true});
+  window.GCA100_3D_AUDIT=()=>({version:"GCA100",buildMarker:document.documentElement.dataset.gcaBuild,essentialControlsOnly:true,persistentMissionCard:false,persistentCompass:false,socialButtonsHidden:false,playerCountVisible:true,cityCardHidden:true,routeSignsRemoved:true,chatPreserved:true,multiplayerPreserved:true,progressPreserved:true,quizTriggers:["pombero","jasy-jatere","first-word-discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameButton:"Jugar",firebaseRulesUnchanged:true});
   window.GCA99_3D_AUDIT=()=>({version:"GCA99",buildMarker:document.documentElement.dataset.gcaBuild,minimalHud:true,persistentMissionCard:false,persistentCompass:false,socialButtonsHidden:true,chatPreserved:true,multiplayerPreserved:true,progressPreserved:true,physicalRoadSigns:0,floatingWorldLabels:false,quizTriggers:["pombero","jasy-jatere","discovery","cassava","jakare","multiplayer"],jasyFriendlyEncounter:true,teenAndAdultPositioning:true,gameLabel:"Mundo Guaraní 3D",firebaseRulesUnchanged:true});
   window.GCA98_3D_AUDIT=()=>({version:"GCA98",buildMarker:document.documentElement.dataset.gcaBuild,uniqueWorldCount:GCA98_REGIONS.length,worlds:GCA98_REGIONS.map((region,index)=>({world:index+1,name:region.name,levels:region.levels,identity:region.identity,difficulty:region.difficulty})),currentWorld:gca98RegionIndex()+1,currentRegion:runtime.gca98Region?.name||null,progressiveQuizTier:gca98Tier()+1,adaptiveQuestionCount:gca98QuestionCount(),cassavaQuizAcceleration:true,jakareLifeQuiz:true,earnedCoinStore:true,realMoneyPurchasesEnabled:false,lootBoxes:false,randomPaidRewards:false,parentGateRequiredBeforeBilling:true,existingProgressPreserved:true,multiplayerPreserved:true,chatPreserved:true,firebaseRulesUnchanged:true});
   window.GCA97_3D_AUDIT=()=>({version:"GCA97",buildMarker:document.documentElement.dataset.gcaBuild,pomberoRedesigned:true,pomberoApproximateHeight:6.2,pomberoGlowingEyes:true,pomberoDarkCloak:true,pomberoQuestionsPreserved:true,pomberoPatrolPreserved:true,pomberoChasePreserved:true,cityCount:GCA92_CITIES.length,cityThemes:GCA92_CITIES.map(theme=>({city:theme.city,identity:theme.place,kind:theme.kind})),fullyIndependentCityLayouts:false,sharedProceduralBase:true,firebaseRulesUnchanged:true,multiplayerPreserved:true});
@@ -6602,7 +6603,7 @@ window.__GCA63LegacyLife=function(){
   window.GCA88_3D_AUDIT=()=>({version:"GCA88",buildMarker:document.documentElement.dataset.gcaBuild,sameDetailedAvatarModel:true,runtimeSnapshotIsolation:true,bodyDepthTestingPreserved:true,xrayOnlyMarker:true,remoteAnimationRig:true,chatPreserved:true,realtimeRulesCompatible:true,visibleRemotePlayers:runtime.remotePlayers?.size||0,remoteSnapshot:[...(runtime.remotePlayers||new Map()).values()].map(remote=>({name:remote.name,pet:remote.pet,position:remote.group.position.toArray(),target:remote.target.toArray(),hasDetailedRig:Boolean(remote.group.userData.remoteRig),bodyMeshes:(()=>{let count=0;remote.group.traverse(object=>{if(object.isMesh&&object!==remote.group.userData.physicalMarker)count++});return count})()}))});
   window.GCA89_3D_AUDIT=()=>({version:"GCA89",buildMarker:document.documentElement.dataset.gcaBuild,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",currentPlayerLevel:gca81GlobalLevel(),remoteLevels:[...(runtime.remotePlayers||new Map()).values()].map(remote=>remote.level||1),wordAudioOnlyOnCollection:true,silentVisualHints:true,centralWordCardRemovedOnCollection:true,compactPortraitHud:true,firebaseRulesCompatible:true,chatPreserved:true});
   window.GCA90_3D_AUDIT=()=>({version:"GCA90",buildMarker:document.documentElement.dataset.gcaBuild,rootCause:"18-second eviction plus render-loop-only heartbeat",presenceGraceSeconds:GCA90_PRESENCE_GRACE_MS/1000,hardStaleSeconds:GCA90_HARD_STALE_MS/1000,independentHeartbeatSeconds:GCA90_HEARTBEAT_MS/1000,serverTimestamps:true,visibilityWake:true,onlineWake:true,pageshowWake:true,automaticFirebaseReconnect:true,fullProfileRestoreAfterReconnect:true,connectionAwareWrites:true,noRemovalBetweenLevels:true,lowerBandwidthMovementUpdates:true,firebaseRulesUnchanged:true,sharedRoomAcrossAllLevels:runtime.live?.room==="level-1",chatPreserved:true,remotePresence:[...(runtime.remotePlayers||new Map()).values()].map(remote=>({name:remote.name,lastSeen:remote.lastSeen,reconnecting:remote.reconnecting,missingSince:remote.missingSince||0}))});
-  document.documentElement.dataset.gcaBuild="GCA100";
+  document.documentElement.dataset.gcaBuild="GCA101";
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",buildOverlay,{once:true});else buildOverlay();
 })();
 </script>
@@ -6793,10 +6794,6 @@ window.__GCA63LegacyLife=function(){
   #gca73Game :is(
     #gca81Objective,
     #gca76Compass,
-    #gca83FinderButton,
-    #gca83ChatButton,
-    #gca83Tracker,
-    #gca82LiveStatus,
     #gca73Round,
     .gca73-round,
     .gca78-resources,
@@ -6811,9 +6808,11 @@ window.__GCA63LegacyLife=function(){
   #gca73Game #gca92Coins,
   #gca73Game #gca81LevelLegend{display:none!important}
 
-  /* La red y el chat siguen funcionando internamente. Sus paneles solo aparecen
-     cuando otra interacción existente los abre; ya no tienen botones flotantes. */
+  /* El multijugador queda accesible sin recuperar el HUD grande: contador,
+     mapa de exploradores, seguimiento y chat usan sus controles compactos. */
   #gca83FinderPanel[hidden],#gca83ChatPanel[hidden]{display:none!important}
+  #gca82LiveStatus:not([hidden]){display:flex!important}
+  #gca83Tracker:not([hidden]){display:grid!important}
 
   /* Compatibilidad histórica: el HUD sigue existiendo para progreso y monedas,
      pero ya no se presenta encima del mundo. */
@@ -6859,6 +6858,29 @@ window.__GCA63LegacyLife=function(){
     }
     #gca73Back{left:max(8px,env(safe-area-inset-left))!important}
     #gca73Sound{right:max(8px,env(safe-area-inset-right))!important}
+    #gca82LiveStatus:not([hidden]){
+      left:50%!important;
+      right:auto!important;
+      top:max(9px,env(safe-area-inset-top))!important;
+      max-width:112px!important;
+      padding:5px 8px!important;
+      font-size:8px!important;
+      transform:translateX(-50%)!important
+    }
+    #gca83FinderButton,#gca83ChatButton{
+      right:max(8px,env(safe-area-inset-right))!important;
+      display:flex!important;
+      width:40px!important;
+      min-width:40px!important;
+      height:38px!important;
+      padding:0!important;
+      justify-content:center!important;
+      border-radius:12px!important
+    }
+    #gca83FinderButton{top:max(54px,calc(env(safe-area-inset-top) + 46px))!important}
+    #gca83ChatButton{top:max(97px,calc(env(safe-area-inset-top) + 89px))!important}
+    #gca83FinderButton b,#gca83ChatButton b{display:none!important}
+    #gca83FinderButton span,#gca83ChatButton span{font-size:18px!important}
     .gca76-health{
       left:max(52px,calc(env(safe-area-inset-left) + 46px))!important;
       top:max(9px,env(safe-area-inset-top))!important;
