@@ -1,12 +1,12 @@
 {
-  "name": "guarani-con-ali",
-  "version": "1.0.0",
+  "name": "nalvi-paso-7b",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "24.x"
+  "scripts": {
+    "test:reinforcement": "node --test ai/tests/reinforcement-engine.test.mjs",
+    "validate:paso-7b": "node scripts/validate-paso-7B.mjs"
   },
-  "dependencies": {
-    "firebase-admin": "13.10.0"
+  "engines": {
+    "node": ">=20"
   }
 }

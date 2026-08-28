@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "NALVI-REINFORCEMENT-EXISTING-1",
+  "activities": [
+    {
+      "id": "general-u01-significado-mba-eichapa",
+      "courseId": "general",
+      "learningObjectiveId": "GG-LO-001",
+      "conceptIds": ["GG-C-001"],
+      "skill": "comprehension",
+      "difficulty": "foundation-1",
+      "type": "multiple-choice"
+    },
+    {
+      "id": "general-u01-elegir-aguyje",
+      "courseId": "general",
+      "learningObjectiveId": "GG-LO-001",
+      "conceptIds": ["GG-C-001"],
+      "skill": "comprehension",
+      "difficulty": "foundation-1",
+      "type": "multiple-choice"
+    },
+    {
+      "id": "general-u01-escuchar-jajotopata",
+      "courseId": "general",
+      "learningObjectiveId": "GG-LO-001",
+      "conceptIds": ["GG-C-001"],
+      "skill": "listening",
+      "difficulty": "foundation-1",
+      "type": "listening"
+    }
+  ]
+}

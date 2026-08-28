@@ -4,6 +4,91 @@
  * Los nombres internos GCA/KUAA se conservan para no romper compatibilidad.
  */
 
+/* Arranque estable: ningún fragmento heredado es pintable antes de READY. */
+html[data-nalvi-boot="booting"] {
+  min-height: 100%;
+  overflow: hidden;
+  background: #f6f7fb;
+}
+
+html[data-nalvi-boot="booting"] body {
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(70, 83, 184, 0.10), transparent 28rem),
+    radial-gradient(circle at 88% 18%, rgba(15, 139, 129, 0.09), transparent 26rem),
+    #f6f7fb;
+}
+
+html[data-nalvi-boot="booting"] body > :not(#nalviBoot) {
+  visibility: hidden !important;
+}
+
+#nalviBoot {
+  display: none;
+}
+
+html[data-nalvi-boot="booting"] #nalviBoot {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.nalvi-boot-card {
+  display: grid;
+  min-width: min(280px, calc(100vw - 48px));
+  justify-items: center;
+  gap: 14px;
+  padding: 28px 32px;
+  border: 1px solid rgba(198, 206, 221, 0.86);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 60px rgba(25, 32, 53, 0.13);
+  color: #20265f;
+  font-family: "Nunito", Inter, ui-sans-serif, system-ui, sans-serif;
+  backdrop-filter: blur(14px);
+}
+
+.nalvi-boot-card strong {
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.nalvi-boot-card small {
+  color: #59647a;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.nalvi-boot-mark {
+  display: flex;
+  gap: 7px;
+}
+
+.nalvi-boot-mark i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4653b8;
+  animation: nalviBootPulse 900ms ease-in-out infinite alternate;
+}
+
+.nalvi-boot-mark i:nth-child(2) { animation-delay: 150ms; }
+.nalvi-boot-mark i:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes nalviBootPulse {
+  from { opacity: 0.35; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nalvi-boot-mark i { animation: none; }
+}
+
 :root {
   color-scheme: light;
 
@@ -98,6 +183,15 @@
   --nalvi-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --nalvi-transition-fast: 140ms var(--nalvi-ease);
   --nalvi-transition: 220ms var(--nalvi-ease);
+}
+
+/* NALVI es la identidad central: el hero personal heredado no forma parte del Home. */
+#home .hero {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#home .hero-art {
+  display: none !important;
 }
 
 html {
@@ -629,29 +723,6 @@ body > header .brand small {
   color: var(--nalvi-primary-700);
 }
 
-.follow-float {
-  width: auto;
-  height: 40px;
-  padding: 0 13px;
-  border: 1px solid var(--nalvi-border);
-  border-radius: var(--nalvi-radius-pill);
-  background: var(--nalvi-surface);
-  box-shadow: var(--nalvi-shadow-md);
-  color: var(--nalvi-text-secondary);
-  font-size: 0;
-}
-
-.follow-float::after {
-  content: "Ali Explora ↗";
-  font-size: 11px;
-  font-weight: 850;
-}
-
-.follow-float .follow-label,
-.ali-watermark {
-  display: none !important;
-}
-
 /* Primitivas compartidas */
 :where(.btn, .mini-btn, .google-btn, .guest-btn, .course-back button, .back) {
   border-radius: var(--nalvi-radius-md);
@@ -1019,7 +1090,8 @@ dialog::backdrop {
     width: 56px !important;
     min-width: 56px !important;
     max-width: 56px !important;
-    height: 40px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     padding: 0 4px !important;
   }
 
@@ -1035,10 +1107,10 @@ dialog::backdrop {
 
   body > header .stats {
     display: grid !important;
-    grid-template-columns: 36px 52px 38px !important;
+    grid-template-columns: 40px 56px 44px !important;
     justify-content: end !important;
     width: 100% !important;
-    min-width: 126px !important;
+    min-width: 140px !important;
     max-width: none !important;
     flex: none !important;
     gap: 3px !important;
@@ -1054,8 +1126,8 @@ dialog::backdrop {
     width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
-    height: 40px !important;
-    min-height: 40px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     padding: 4px !important;
     font-size: 9px !important;
   }
@@ -1063,6 +1135,9 @@ dialog::backdrop {
   body > header .account-btn {
     display: grid !important;
     place-items: center !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
     border-radius: 50% !important;
   }
 
@@ -1247,5 +1322,374 @@ dialog::backdrop {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* ================================================================
+   PASO 7A.5 · Pulido visual de la ruta de Guaraní General
+   Alcance intencional: #course y su presentación. No altera lógica.
+   ================================================================ */
+
+#course .course-head {
+  padding-bottom: var(--nalvi-space-5);
+}
+
+#course .course-head h2 {
+  margin-bottom: var(--nalvi-space-2);
+}
+
+#generalProOverview .pro-course-overview {
+  display: grid;
+  gap: var(--nalvi-space-4);
+  padding: var(--nalvi-space-6);
+}
+
+#generalProOverview .pro-overview-top,
+#generalProOverview .pro-progress,
+#generalProOverview .route-method,
+#generalProOverview .route-next-focus {
+  margin: 0;
+}
+
+#generalProOverview .route-method {
+  display: grid;
+  gap: var(--nalvi-space-2);
+}
+
+#generalProOverview .route-method-label {
+  color: var(--nalvi-text-muted);
+  font-size: var(--nalvi-text-xs);
+  font-weight: var(--nalvi-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#generalProOverview .pro-outcomes {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--nalvi-space-2);
+  margin: 0;
+}
+
+#generalProOverview .pro-outcome.route-method-step {
+  display: flex;
+  min-width: 0;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 8px;
+  text-align: center;
+}
+
+#generalProOverview .pro-outcome.route-method-step::before {
+  content: none !important;
+  display: none !important;
+}
+
+#generalProOverview .route-method-icon {
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+}
+
+#generalProOverview .route-next-focus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--nalvi-space-4);
+  padding: var(--nalvi-space-4);
+  border: 1px solid var(--nalvi-border);
+  border-radius: var(--nalvi-radius-lg);
+  background: var(--nalvi-surface-subtle);
+}
+
+#generalProOverview .route-next-focus > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+#generalProOverview .route-next-focus span,
+#generalProOverview .route-next-focus small {
+  color: var(--nalvi-text-muted);
+  font-size: var(--nalvi-text-xs);
+  line-height: 1.35;
+}
+
+#generalProOverview .route-next-focus strong {
+  color: var(--nalvi-text);
+  font-size: var(--nalvi-text-md);
+  line-height: 1.25;
+}
+
+#generalProOverview .route-continue-button,
+#generalProOverview .route-overview-toggle {
+  min-height: 44px;
+  border-radius: var(--nalvi-radius-md);
+  font: inherit;
+  font-weight: var(--nalvi-weight-bold);
+  cursor: pointer;
+}
+
+#generalProOverview .route-continue-button {
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  background: var(--nalvi-primary-600);
+  color: var(--nalvi-text-inverse);
+  box-shadow: var(--nalvi-shadow-sm);
+}
+
+#generalProOverview .route-overview-toggle {
+  justify-self: start;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--nalvi-primary-700);
+  text-align: left;
+}
+
+#generalProOverview .route-continue-button:focus-visible,
+#generalProOverview .route-overview-toggle:focus-visible,
+#course .unit:focus-visible {
+  outline: 3px solid var(--nalvi-focus);
+  outline-offset: 3px;
+}
+
+#generalProOverview .route-overview-compact {
+  gap: var(--nalvi-space-3);
+  padding-block: var(--nalvi-space-4);
+}
+
+#generalProOverview .route-overview-compact .pro-overview-top,
+#generalProOverview .route-overview-compact .route-method {
+  display: none;
+}
+
+#course .general-module {
+  margin-bottom: var(--nalvi-space-7);
+}
+
+#course .general-module-head {
+  margin-bottom: var(--nalvi-space-3);
+}
+
+#course .general-module .unit {
+  min-height: 116px;
+  margin: 11px 0;
+  padding: 15px 16px;
+  gap: var(--nalvi-space-4);
+}
+
+#course .general-module .unit-icon {
+  width: 64px;
+  height: 64px;
+  font-size: 29px;
+}
+
+#course .general-module .unit h3 {
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+
+#course .general-module .unit p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+#course .general-module .unit-meta {
+  margin-top: 6px;
+}
+
+#course .general-module .unit-skill-chips {
+  margin-top: 6px;
+  gap: 5px;
+}
+
+#course .unit {
+  scroll-margin-bottom: calc(98px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 760px) {
+  #course {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  #course .course-back {
+    margin-top: var(--nalvi-space-3);
+  }
+
+  #course .course-head {
+    padding: 15px 0 13px !important;
+  }
+
+  #course .course-head h2 {
+    margin: 6px 0 4px;
+    font-size: clamp(1.75rem, 8vw, 2.15rem);
+  }
+
+  #course .course-head p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  #course.route-intro-compact .course-head {
+    padding-block: 10px !important;
+  }
+
+  #course.route-intro-compact .course-head p {
+    display: none;
+  }
+
+  #generalProOverview .pro-course-overview {
+    gap: 12px;
+    padding: 15px 14px;
+    border-radius: 20px;
+  }
+
+  #generalProOverview .pro-overview-top {
+    gap: 10px;
+  }
+
+  #generalProOverview .pro-overview-top h3 {
+    margin: 5px 0;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  #generalProOverview .pro-overview-top p {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  #generalProOverview .pro-kpis {
+    gap: 6px;
+  }
+
+  #generalProOverview .pro-kpi {
+    padding: 8px 6px;
+  }
+
+  #generalProOverview .pro-outcomes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  #generalProOverview .pro-outcome.route-method-step {
+    min-height: 46px;
+    gap: 5px;
+    padding: 7px 5px;
+    font-size: 10px;
+  }
+
+  #generalProOverview .route-method-icon {
+    font-size: 16px;
+  }
+
+  #generalProOverview .route-next-focus {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 9px;
+    padding: 11px;
+    border-radius: 15px;
+  }
+
+  #generalProOverview .route-next-focus small {
+    display: none;
+  }
+
+  #generalProOverview .route-next-focus strong {
+    font-size: 14px;
+  }
+
+  #generalProOverview .route-continue-button {
+    min-width: 92px;
+    padding-inline: 11px;
+    font-size: 12px;
+  }
+
+  #generalProOverview .route-overview-toggle {
+    font-size: 12px;
+  }
+
+  #generalProOverview .route-overview-compact {
+    padding-block: 12px;
+  }
+
+  #course .general-module {
+    margin-bottom: 19px;
+  }
+
+  #course .general-module-head {
+    margin-bottom: 7px;
+    padding: 10px 12px;
+  }
+
+  #course .general-module-head h3 {
+    margin-bottom: 2px;
+    font-size: 16px;
+  }
+
+  #course .general-module-head p {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  #course .general-module .unit {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    min-height: 106px;
+    margin: 9px 0;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 18px;
+  }
+
+  #course .general-module .unit-icon {
+    width: 52px;
+    height: 52px;
+    font-size: 24px;
+  }
+
+  #course .general-module .unit h3 {
+    margin: 0 0 3px;
+    font-size: 15px;
+  }
+
+  #course .general-module .unit p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  #course .general-module .unit-meta {
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  #course .general-module .unit-skill-chips {
+    flex-wrap: nowrap;
+    overflow: hidden;
+    margin-top: 4px;
+    gap: 3px;
+  }
+
+  #course .general-module .unit-skill-chips span {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  #course .general-module .arrow {
+    display: grid;
+    width: 24px;
+    min-width: 24px;
+    place-items: center;
+    font-size: 19px;
+  }
+
+  #course .sources {
+    margin-bottom: calc(104px + env(safe-area-inset-bottom));
   }
 }

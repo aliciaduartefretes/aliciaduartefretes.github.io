@@ -1,0 +1,41 @@
+{
+  "governanceVersion": "1.0.0-pilot",
+  "languageVariant": "gug-PY",
+  "authorityOrder": ["A", "A-", "B+", "B", "C", "D"],
+  "normativePrimarySources": ["S-001", "S-002"],
+  "documentedUsageSources": ["S-003", "S-004"],
+  "complementarySources": ["S-005", "S-006", "S-007"],
+  "existingPlatformContentSource": "S-008",
+  "validationFlow": [
+    "source",
+    "structuredExtraction",
+    "provenance",
+    "contrast",
+    "conflictDetection",
+    "humanReview",
+    "expertVerified",
+    "allowedForGeneration"
+  ],
+  "generationGate": {
+    "requiredValidationStatus": "expertVerified",
+    "requiresAllowedForGeneration": true,
+    "requiresNoOpenConflict": true
+  },
+  "incompleteAreas": [
+    "tabla consolidada de diminutivos y aumentativos",
+    "inventario completo de alomorfos oral y nasal",
+    "catálogo lema por lema de clases verbales",
+    "frecuencia equilibrada de uso",
+    "niveles pedagógicos propios",
+    "registros coloquial, formal, regional y profesional",
+    "ejemplos conversacionales y profesionales suficientemente validados",
+    "cuestiones que requieren revisión humana"
+  ],
+  "blockedConflicts": ["C-001", "C-002"],
+  "unknownDataPolicy": "No inventar. Marcar unreviewed o conflict y mantener allowedForGeneration en false.",
+  "massImportEnabled": false,
+  "connectedToCourseEngine": false,
+  "connectedToFirebase": false,
+  "connectedToOpenAI": "serverFilteredReadOnly",
+  "openAIEligibleRecordsAtStep7B": 0
+}

@@ -1,0 +1,21 @@
+{
+  "registryVersion": "1.0.0-pilot",
+  "languageVariant": "gug-PY",
+  "sources": [
+    {
+      "id": "S-008",
+      "sourceTitle": "NALVI PASO 2B — actividades existentes de Guaraní General",
+      "sourceAuthor": "Equipo NALVI",
+      "sourceInstitution": "NALVI",
+      "sourceYear": 2026,
+      "sourceURL": "urn:nalvi:paso-2b:general-activities",
+      "sourcePage": "assets/js/kuaa-general-activities.js; tres actividades piloto",
+      "validationStatus": "unreviewed",
+      "authorityLevel": "C",
+      "sourceKind": "pedagogicalMaterial",
+      "coverage": ["existingActivities", "candidateVocabulary", "candidateTranslations"],
+      "qualityNotes": "Material pedagógico existente. No constituye autoridad lingüística y debe contrastarse con las fuentes A/A- antes de aprobarse.",
+      "provenanceRisk": "medium"
+    }
+  ]
+}

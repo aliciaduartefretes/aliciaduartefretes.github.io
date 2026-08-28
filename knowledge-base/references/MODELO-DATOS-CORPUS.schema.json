@@ -1,0 +1,609 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kuaa.example/schemas/linguistic-corpus.schema.json",
+  "title": "KUAA — Corpus lingüístico base del guaraní paraguayo",
+  "description": "Propuesta de estructura. No representa una carga masiva ni habilita generación automática.",
+  "type": "object",
+  "required": ["schemaVersion", "languageVariant", "records"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.5.0"
+    },
+    "languageVariant": {
+      "type": "string",
+      "const": "gug-PY"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/source" },
+          { "$ref": "#/$defs/linguisticRule" },
+          { "$ref": "#/$defs/lexeme" },
+          { "$ref": "#/$defs/conjugationPattern" },
+          { "$ref": "#/$defs/example" },
+          { "$ref": "#/$defs/conflict" }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "validationStatus": {
+      "type": "string",
+      "enum": [
+        "unreviewed",
+        "sourceVerified",
+        "expertVerified",
+        "conflict",
+        "rejected",
+        "deprecated"
+      ]
+    },
+    "authorityLevel": {
+      "type": "string",
+      "enum": ["A", "A-", "B+", "B", "C", "D"]
+    },
+    "commonRecord": {
+      "type": "object",
+      "required": [
+        "id",
+        "recordType",
+        "languageVariant",
+        "validationStatus",
+        "allowedForGeneration",
+        "sourceReferences",
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "recordType": {
+          "type": "string"
+        },
+        "languageVariant": {
+          "type": "string",
+          "const": "gug-PY"
+        },
+        "validationStatus": {
+          "$ref": "#/$defs/validationStatus"
+        },
+        "allowedForGeneration": {
+          "type": "boolean"
+        },
+        "sourceReferences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/sourceReference"
+          }
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "changeHistory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["date", "summary"],
+            "properties": {
+              "date": { "type": "string", "format": "date-time" },
+              "summary": { "type": "string" },
+              "reviewerId": { "type": ["string", "null"] }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "sourceReference": {
+      "type": "object",
+      "required": [
+        "sourceId",
+        "sourceTitle",
+        "sourceAuthor",
+        "sourceInstitution",
+        "sourceYear",
+        "sourceURL",
+        "sourcePage",
+        "validationStatus"
+      ],
+      "properties": {
+        "sourceId": { "type": "string" },
+        "sourceTitle": { "type": "string", "minLength": 1 },
+        "sourceAuthor": { "type": "string", "minLength": 1 },
+        "sourceInstitution": { "type": "string", "minLength": 1 },
+        "sourceYear": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1500, "maximum": 2100 },
+            { "type": "string", "pattern": "^[0-9]{4}(-[0-9]{4})?$" }
+          ]
+        },
+        "sourceURL": { "type": "string", "format": "uri" },
+        "sourcePage": {
+          "type": "string",
+          "description": "Página impresa, rango, sección o localizador estable. No dejar vacío en documentos paginados."
+        },
+        "sourceEdition": { "type": ["string", "null"] },
+        "sourceLocatorType": {
+          "type": "string",
+          "enum": ["printedPage", "pdfPage", "section", "corpusOccurrence", "webPage"]
+        },
+        "sourceForm": {
+          "type": ["string", "null"],
+          "description": "Forma exactamente observada, solo cuando sea breve y legalmente almacenable."
+        },
+        "validationStatus": { "$ref": "#/$defs/validationStatus" }
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": ["object", "null"],
+      "required": ["reviewerId", "reviewerRole", "reviewedAt", "decision"],
+      "properties": {
+        "reviewerId": { "type": "string" },
+        "reviewerRole": {
+          "type": "string",
+          "enum": ["linguist", "academyMember", "teacher", "editor", "administrator"]
+        },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "decision": {
+          "type": "string",
+          "enum": ["approved", "approvedWithNotes", "needsChanges", "rejected"]
+        },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": [
+            "recordType",
+            "sourceTitle",
+            "sourceAuthor",
+            "sourceInstitution",
+            "sourceYear",
+            "sourceURL",
+            "authorityLevel",
+            "sourceKind",
+            "coverage",
+            "qualityNotes"
+          ],
+          "properties": {
+            "recordType": { "const": "source" },
+            "sourceTitle": { "type": "string" },
+            "sourceAuthor": { "type": "string" },
+            "sourceInstitution": { "type": "string" },
+            "sourceYear": {
+              "oneOf": [
+                { "type": "integer", "minimum": 1500, "maximum": 2100 },
+                { "type": "string" }
+              ]
+            },
+            "sourceURL": { "type": "string", "format": "uri" },
+            "sourceEdition": { "type": ["string", "null"] },
+            "authorityLevel": { "$ref": "#/$defs/authorityLevel" },
+            "sourceKind": {
+              "type": "string",
+              "enum": [
+                "officialGrammar",
+                "officialDictionary",
+                "officialCorpus",
+                "institutionalPolicy",
+                "academicArticle",
+                "specializedBook",
+                "terminologyProject",
+                "pedagogicalMaterial"
+              ]
+            },
+            "coverage": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "qualityNotes": { "type": "string" },
+            "copyrightNotes": { "type": "string" },
+            "provenanceRisk": {
+              "type": "string",
+              "enum": ["none", "low", "medium", "high"]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "linguisticRule": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": ["recordType", "domain", "topic", "statement", "constraints"],
+          "properties": {
+            "recordType": { "const": "linguisticRule" },
+            "domain": {
+              "type": "string",
+              "enum": ["phonology", "morphology", "verbSystem", "syntax", "semantics", "orthography", "pragmatics"]
+            },
+            "topic": { "type": "string" },
+            "statement": { "type": "string" },
+            "constraints": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "appliesTo": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "exceptions": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "oralNasalCondition": {
+              "type": "string",
+              "enum": ["oral", "nasal", "both", "notApplicable", "requiresReview"]
+            },
+            "morphemeOrder": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "exampleIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "conflictIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "lexeme": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": ["recordType", "normalizedForm", "partOfSpeech", "senses", "variants", "frequency"],
+          "properties": {
+            "recordType": { "const": "lexeme" },
+            "normalizedForm": { "type": "string", "minLength": 1 },
+            "sourceForms": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "partOfSpeech": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "noun",
+                  "adjective",
+                  "verb",
+                  "adverb",
+                  "pronoun",
+                  "postposition",
+                  "conjunction",
+                  "interjection",
+                  "particle",
+                  "other"
+                ]
+              },
+              "minItems": 1
+            },
+            "senses": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "glossEs"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "definitionGuarani": { "type": ["string", "null"] },
+                  "glossEs": { "type": "string" },
+                  "register": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["neutral", "colloquial", "formal", "professional", "regional", "archaic", "literary", "unknown"]
+                    }
+                  },
+                  "contexts": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "professionalDomains": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "exampleIds": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "pedagogicalLevel": {
+              "type": ["string", "null"],
+              "enum": [null, "starter", "basic", "intermediate", "advanced", "specialized", "unassigned"]
+            },
+            "variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["form", "type", "validationStatus"],
+                "properties": {
+                  "form": { "type": "string" },
+                  "type": {
+                    "type": "string",
+                    "enum": ["orthographic", "phonological", "regional", "register", "historical", "sourceOriginal"]
+                  },
+                  "validationStatus": { "$ref": "#/$defs/validationStatus" },
+                  "sourceReferenceIds": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "frequency": {
+              "type": "object",
+              "required": ["status", "method", "coverageWarning"],
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["unmeasured", "measured", "insufficientEvidence"]
+                },
+                "method": { "type": ["string", "null"] },
+                "corpusId": { "type": ["string", "null"] },
+                "queryDate": { "type": ["string", "null"], "format": "date" },
+                "rawCount": { "type": ["integer", "null"], "minimum": 0 },
+                "normalizedRate": { "type": ["number", "null"], "minimum": 0 },
+                "coverageWarning": { "type": "string" }
+              },
+              "additionalProperties": false
+            },
+            "verbData": {
+              "oneOf": [
+                { "$ref": "#/$defs/verbData" },
+                { "type": "null" }
+              ]
+            },
+            "termStatus": {
+              "type": ["string", "null"],
+              "enum": [null, "proposed", "attested", "academyApproved", "deprecated"]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "verbData": {
+      "type": "object",
+      "required": ["patternId", "transitivity", "stemBehavior"],
+      "properties": {
+        "patternId": { "type": "string" },
+        "transitivity": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["intransitive", "transitive", "bitransitive", "variable", "unknown"]
+          }
+        },
+        "stemBehavior": {
+          "type": "string",
+          "enum": ["invariable", "variable", "suppletive", "defective", "unipersonal", "requiresReview"]
+        },
+        "oralNasal": {
+          "type": "string",
+          "enum": ["oral", "nasal", "mixed", "requiresReview"]
+        },
+        "irregularForms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["person", "form"],
+            "properties": {
+              "person": { "type": "string" },
+              "form": { "type": "string" },
+              "notes": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "allowedVoices": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "conjugationPattern": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": [
+            "recordType",
+            "officialLabel",
+            "pedagogicalAliases",
+            "personMarkers",
+            "stemBehavior",
+            "negativePattern"
+          ],
+          "properties": {
+            "recordType": { "const": "conjugationPattern" },
+            "officialLabel": { "type": "string" },
+            "pedagogicalAliases": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "personMarkers": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["person", "number", "marker"],
+                "properties": {
+                  "person": { "type": "string", "enum": ["1", "2", "3"] },
+                  "number": { "type": "string", "enum": ["singular", "plural"] },
+                  "clusivity": { "type": ["string", "null"], "enum": [null, "inclusive", "exclusive"] },
+                  "marker": { "type": "string" },
+                  "oralVariant": { "type": ["string", "null"] },
+                  "nasalVariant": { "type": ["string", "null"] }
+                },
+                "additionalProperties": false
+              }
+            },
+            "stemBehavior": { "type": "string" },
+            "negativePattern": {
+              "type": "object",
+              "required": ["status"],
+              "properties": {
+                "status": { "$ref": "#/$defs/validationStatus" },
+                "ruleIds": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "additionalProperties": false
+            },
+            "voiceRuleIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "tenseAspectModeRuleIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "eligibleLexemeIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "conflictIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "example": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": [
+            "recordType",
+            "exampleType",
+            "text",
+            "translationEs",
+            "generated",
+            "rights"
+          ],
+          "properties": {
+            "recordType": { "const": "example" },
+            "exampleType": {
+              "type": "string",
+              "enum": ["normativeParadigm", "attestedUsage", "generatedCandidate"]
+            },
+            "text": { "type": "string" },
+            "normalizedText": { "type": ["string", "null"] },
+            "normalizationNotes": { "type": "string" },
+            "translationEs": { "type": ["string", "null"] },
+            "generated": { "type": "boolean" },
+            "ruleIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "lexemeIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "contexts": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rights": {
+              "type": "object",
+              "required": ["storagePolicy", "notes"],
+              "properties": {
+                "storagePolicy": {
+                  "type": "string",
+                  "enum": ["briefQuotation", "referenceOnly", "licensed", "publicDomain", "originalKUAA"]
+                },
+                "license": { "type": ["string", "null"] },
+                "notes": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "conflictVariant": {
+      "type": "object",
+      "required": ["label", "claim", "sourceReferences"],
+      "properties": {
+        "label": { "type": "string" },
+        "claim": { "type": "string" },
+        "sourceReferences": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourceReference" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "conflict": {
+      "allOf": [
+        { "$ref": "#/$defs/commonRecord" },
+        {
+          "type": "object",
+          "required": [
+            "recordType",
+            "topic",
+            "variantA",
+            "variantB",
+            "sourceA",
+            "sourceB",
+            "needsHumanReview",
+            "automaticUseBlocked"
+          ],
+          "properties": {
+            "recordType": { "const": "conflict" },
+            "topic": { "type": "string" },
+            "variantA": { "$ref": "#/$defs/conflictVariant" },
+            "variantB": { "$ref": "#/$defs/conflictVariant" },
+            "sourceA": { "$ref": "#/$defs/sourceReference" },
+            "sourceB": { "$ref": "#/$defs/sourceReference" },
+            "needsHumanReview": { "const": true },
+            "automaticUseBlocked": { "const": true },
+            "workingHypothesis": { "type": ["string", "null"] },
+            "resolution": { "type": ["string", "null"] },
+            "resolvedAt": { "type": ["string", "null"], "format": "date-time" }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}
