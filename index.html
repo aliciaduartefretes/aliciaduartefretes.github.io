@@ -2827,11 +2827,15 @@ onAuthStateChanged(auth,async user=>{
     const sourceIndex=generalQueue[generalQueuePos],q=quizData(unit)[sourceIndex],button=$("#check");
     if(checked){generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish();return}
     const ok=selected===q[1];checked=true;
-    if(!ok)generalQueue.push(sourceIndex);
-    const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}. Esta pregunta volverá al final.`;
+    const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}.`;
     playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));
     document.querySelectorAll("#lessonBody .answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});
-    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);button.disabled=false;button.textContent=UI[lang].next;button.onclick=()=>{generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish()};
+    if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);
+    if(!ok&&!document.querySelector("#lessonBody .kuaa-activity")){
+      const optionId=q[2].findIndex(value=>value===q[1]),legacyActivity={id:`general-legacy-u${unit+1}-q${sourceIndex+1}`,courseId:"general",conceptId:`GENERAL-U${unit+1}`,conceptIds:[`GENERAL-U${unit+1}`],learningObjectiveId:`GENERAL-U${unit+1}-OBJECTIVE`,skill:"vocabulary",difficulty:"legacy",type:"multiple-choice",prompt:q[0],options:q[2].map((value,index)=>({id:`option-${index}`,label:value})),correctOptionId:`option-${optionId}`};
+      window.dispatchEvent(new CustomEvent("nalvi:legacy-answer-scored",{detail:{activity:legacyActivity,result:{value:selected,correct:false},uiLocale:lang,scoredLocally:true,canScoreWithoutAI:true,target:"#lessonBody"}}));
+    }
+    button.disabled=false;button.textContent=UI[lang].next;button.onclick=()=>{generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish()};
   };
   renderGeneralFinishedScreen=function(){
     const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
@@ -7246,6 +7250,7 @@ try{
 <script src="assets/js/nalvi-guarani-general-route.js"></script>
 <script src="assets/js/kuaa-activity-renderer.js"></script>
 <script src="assets/js/nalvi-reinforcement-client.js"></script>
+<script type="module" src="assets/js/nalvi-intervention-client.mjs"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-VISUAL-STABLE-1"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
 </body>
