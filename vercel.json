@@ -3,11 +3,59 @@
   "functions": {
     "api/generate-reinforcement-activity.js": {
       "maxDuration": 15
+    },
+    "api/plan-pedagogical-intervention.js": {
+      "maxDuration": 15
+    },
+    "api/generate-adaptive-intervention-plan.js": {
+      "maxDuration": 20
+    },
+    "api/record-learning-attempt.js": {
+      "maxDuration": 15
     }
   },
   "headers": [
     {
       "source": "/api/generate-reinforcement-activity",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/api/plan-pedagogical-intervention",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/api/generate-adaptive-intervention-plan",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/api/record-learning-attempt",
       "headers": [
         {
           "key": "Cache-Control",

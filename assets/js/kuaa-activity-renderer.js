@@ -51,6 +51,8 @@
 
   function shell(target, activity, language, body, typeLabel) {
     const copy = copyFor(language);
+    delete target.dataset.nalviSubmissionLocked;
+    target.dataset.nalviActivityStartedAt = String(Date.now());
     target.innerHTML = `<div class="quiz kuaa-activity" data-kuaa-activity="${escapeHtml(activity.id || "activity")}" data-activity-type="${escapeHtml(normalizeType(activity.type))}"><small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(typeLabel || copy.activity)}</small><h3>${escapeHtml(localize(activity.prompt, language))}</h3>${activity.instruction ? `<p class="kuaa-activity-instruction">${escapeHtml(localize(activity.instruction, language))}</p>` : ""}${body}<div id="feedback" aria-live="polite"></div></div>`;
     return target.querySelector(".kuaa-activity");
   }
@@ -63,9 +65,36 @@
   }
 
   function submit(target, activity, context, result) {
-    if (typeof context.onSubmit === "function") return context.onSubmit(result, activity);
-    defaultResult(target, result, context.language);
-    return result;
+    if (target.dataset.nalviSubmissionLocked === "true") return { ignored: true, reason: "SUBMISSION_ALREADY_EVALUATED" };
+    target.dataset.nalviSubmissionLocked = "true";
+    const responseTime = Math.max(0, Date.now() - Number(target.dataset.nalviActivityStartedAt || Date.now()));
+    const scoredResult = { ...result, responseTime };
+    const progression = window.NALVI_PROGRESSION?.evaluateActivityResult({
+      activity,
+      result: scoredResult,
+      uiLocale: context.language,
+      atObjectiveBoundary: Boolean(activity.objectiveBoundary)
+    }) || {
+      decision: scoredResult.correct ? "CONTINUE_PRACTICE" : "BLOCK_AND_INTERVENE",
+      canAdvance: scoredResult.correct === true,
+      canComplete: false,
+      reason: scoredResult.correct ? "progressionClientUnavailableSafePractice" : "progressionClientUnavailableSafeBlock"
+    };
+    const outcome = typeof context.onSubmit === "function"
+      ? context.onSubmit({ ...scoredResult, progression }, activity)
+      : (defaultResult(target, scoredResult, context.language), scoredResult);
+    target.dispatchEvent(new CustomEvent("nalvi:activity-scored", {
+      bubbles: true,
+      detail: {
+        activity,
+        result: { ...scoredResult },
+        progression,
+        uiLocale: context.language,
+        scoredLocally: true,
+        canScoreWithoutAI: true
+      }
+    }));
+    return { outcome, progression };
   }
 
   function renderChoice(target, activity, context, prelude = "") {
@@ -154,7 +183,7 @@
     target.querySelectorAll("[data-kuaa-right]").forEach(button => button.addEventListener("click", () => {
       if (!left || matched.has(button.dataset.kuaaRight)) return;
       const correct = left.dataset.kuaaLeft === button.dataset.kuaaRight;
-      if (!correct) return defaultResult(target, { correct: false }, language);
+      if (!correct) return submit(target, activity, context, { value: { left: left.dataset.kuaaLeft, right: button.dataset.kuaaRight }, correct: false });
       matched.add(button.dataset.kuaaRight); left.classList.remove("selected"); left.classList.add("matched"); button.classList.add("matched"); left = null;
       if (matched.size === pairs.length) submit(target, activity, context, { value: [...matched], correct: true });
     }));
@@ -221,7 +250,7 @@
         onSubmit: answer => {
           selected = answer.value;
           checked = false;
-          checkAnswer();
+          checkAnswer(answer.progression, { fromDynamicActivity: true });
         }
       });
       return result;

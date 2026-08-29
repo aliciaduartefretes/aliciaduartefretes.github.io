@@ -2801,9 +2801,28 @@ onAuthStateChanged(auth,async user=>{
   const BUILD="GCA45-CONTINUAR-Y-REPETIR-ERRORES";
   document.documentElement.dataset.build=BUILD;
 
-  /* GUARANÍ GENERAL: el error pasa al final; al completar, abre la unidad siguiente. */
+  /* GUARANÍ GENERAL: una única compuerta decide si se practica o se completa. */
   let generalQueue=[],generalQueuePos=0,generalQueueUnit=-1;
+  let generalCompletionAuthorized=false,lastGeneralProgression=null,lastGeneralActivity=null;
   const startGeneralQueue=()=>{generalQueue=quizData(unit).map((_,i)=>i);generalQueuePos=0;generalQueueUnit=unit;step=0;checked=false;selected=""};
+  const generalActivityFor=(sourceIndex,q)=>{
+    const migrated=(window.KUAA_GENERAL_ACTIVITY_DATA?.activities||[]).find(item=>item.legacy?.unit===unit&&item.legacy?.question===sourceIndex);
+    if(migrated)return migrated;
+    const objective=window.NALVI_GUARANI_GENERAL_CURRICULUM?.getLearningObjectiveForLegacyUnit?.(unit)||{};
+    const optionId=q[2].findIndex(value=>value===q[1]);
+    return {id:`general-legacy-u${unit+1}-q${sourceIndex+1}`,courseId:"general",conceptId:objective.conceptIds?.[0]||`GENERAL-U${unit+1}`,conceptIds:objective.conceptIds||[`GENERAL-U${unit+1}`],learningObjectiveId:objective.id||`GENERAL-U${unit+1}-OBJECTIVE`,requiredSkills:objective.skills||["vocabulary"],skill:objective.skills?.[0]||"vocabulary",difficulty:objective.difficulty||"foundation-1",type:"multiple-choice",prompt:q[0],options:q[2].map((value,index)=>({id:`option-${index}`,label:value,value})),correctOptionId:`option-${optionId}`};
+  };
+  const restartGeneralPractice=(excludeIndex=-1)=>{
+    const indexes=quizData(unit).map((_,index)=>index),start=Math.max(0,indexes.findIndex(index=>index!==excludeIndex));
+    generalQueue=start>0?[...indexes.slice(start),...indexes.slice(0,start)]:indexes;
+    phase="quiz";generalQueuePos=0;generalQueueUnit=unit;step=generalQueue[0]||0;checked=false;selected="";renderQuiz();save();
+  };
+  const finishGeneralBeforeProgressionGate=finish;
+  finish=function(){
+    if(!generalCompletionAuthorized){restartGeneralPractice(step);return}
+    generalCompletionAuthorized=false;
+    return finishGeneralBeforeProgressionGate();
+  };
   const generalStudyWithQueue=renderStudy;
   renderStudy=function(){
     generalStudyWithQueue();
@@ -2823,25 +2842,55 @@ onAuthStateChanged(auth,async user=>{
     document.querySelectorAll("#lessonBody .answer").forEach(b=>b.onclick=()=>{if(checked)return;document.querySelectorAll("#lessonBody .answer").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");selected=b.dataset.a;$("#check").disabled=false});
     $("#check").onclick=checkAnswer;
   };
-  checkAnswer=function(){
+  checkAnswer=function(precomputedProgression=null,{fromDynamicActivity=false}={}){
     const sourceIndex=generalQueue[generalQueuePos],q=quizData(unit)[sourceIndex],button=$("#check");
-    if(checked){generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish();return}
+    if(!q||!button||button.dataset.processing==="true")return;
+    button.dataset.processing="true";button.disabled=true;
     const ok=selected===q[1];checked=true;
+    const activity=generalActivityFor(sourceIndex,q);
+    const progression=precomputedProgression||window.NALVI_PROGRESSION?.evaluateActivityResult({activity,result:{value:selected,correct:ok,responseTime:0},uiLocale:lang,atObjectiveBoundary:false})||{decision:ok?"CONTINUE_PRACTICE":"BLOCK_AND_INTERVENE",canAdvance:ok,canComplete:false};
+    lastGeneralProgression=progression;lastGeneralActivity=activity;
     const fb=$("#feedback");fb.className=`feedback ${ok?"ok":"no"} reaction-pop`;fb.textContent=ok?UI[lang].correct:`${UI[lang].wrong}: ${q[1]}.`;
     playReaction(ok?"correct":"wrong");animateExerciseReaction(ok,$("#lessonBody"));
     document.querySelectorAll("#lessonBody .answer").forEach(x=>{x.disabled=true;if(x.dataset.a===q[1])x.classList.add("answer-correct");else if(x.dataset.a===selected&&!ok)x.classList.add("answer-wrong")});
     if(ok)state.xp+=10;else state.lives=Math.max(0,state.lives-1);
-    if(!ok&&!document.querySelector("#lessonBody .kuaa-activity")){
-      const optionId=q[2].findIndex(value=>value===q[1]),legacyActivity={id:`general-legacy-u${unit+1}-q${sourceIndex+1}`,courseId:"general",conceptId:`GENERAL-U${unit+1}`,conceptIds:[`GENERAL-U${unit+1}`],learningObjectiveId:`GENERAL-U${unit+1}-OBJECTIVE`,skill:"vocabulary",difficulty:"legacy",type:"multiple-choice",prompt:q[0],options:q[2].map((value,index)=>({id:`option-${index}`,label:value})),correctOptionId:`option-${optionId}`};
-      window.dispatchEvent(new CustomEvent("nalvi:legacy-answer-scored",{detail:{activity:legacyActivity,result:{value:selected,correct:false},uiLocale:lang,scoredLocally:true,canScoreWithoutAI:true,target:"#lessonBody"}}));
+    if(!ok){
+      clearTimeout(window.__nalviGeneralAdvanceTimer);
+      button.hidden=true;button.onclick=null;
+      if(!fromDynamicActivity)window.dispatchEvent(new CustomEvent("nalvi:legacy-answer-scored",{detail:{activity,result:{value:selected,correct:false},progression,uiLocale:lang,scoredLocally:true,canScoreWithoutAI:true,target:"#lessonBody"}}));
+      save();
+      return;
     }
-    button.disabled=false;button.textContent=UI[lang].next;button.onclick=()=>{generalQueuePos++;if(generalQueuePos<generalQueue.length){renderQuiz();save()}else finish()};
+    button.dataset.processing="false";button.disabled=false;button.hidden=false;button.textContent=UI[lang].next;
+    button.onclick=()=>{
+      if(button.dataset.processing==="true"||progression.canAdvance!==true)return;
+      button.dataset.processing="true";button.disabled=true;generalQueuePos++;
+      if(generalQueuePos<generalQueue.length){renderQuiz();save();return}
+      const boundary=window.NALVI_PROGRESSION?.evaluateObjectiveCompletion({activity,progression})||{decision:"CONTINUE_PRACTICE",canComplete:false};
+      if(boundary.decision==="COMPLETE_OBJECTIVE"&&boundary.canComplete===true){generalCompletionAuthorized=true;finish();return}
+      restartGeneralPractice(sourceIndex);
+    };
   };
+  window.addEventListener("nalvi:resume-objective-practice",event=>{
+    if(event.detail?.courseId&&event.detail.courseId!=="general")return;
+    if(phase!=="quiz")return;
+    const excludedIds=new Set(Array.isArray(event.detail?.excludedActivityIds)?event.detail.excludedActivityIds:[]);
+    const isExcluded=index=>{
+      const question=quizData(unit)[index],activity=question?generalActivityFor(index,question):null;
+      return Boolean(activity?.id&&excludedIds.has(activity.id));
+    };
+    let nextPosition=generalQueuePos+1;
+    while(nextPosition<generalQueue.length&&isExcluded(generalQueue[nextPosition]))nextPosition++;
+    if(nextPosition<generalQueue.length){generalQueuePos=nextPosition;renderQuiz();save();return}
+    const freshIndexes=quizData(unit).map((_,index)=>index).filter(index=>!isExcluded(index));
+    if(freshIndexes.length){generalQueue=freshIndexes;generalQueuePos=0;generalQueueUnit=unit;step=generalQueue[0];checked=false;selected="";renderQuiz();save();return}
+    restartGeneralPractice(step);
+  });
   renderGeneralFinishedScreen=function(){
     const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
     $("#lessonProgress").style.width="100%";$("#lessonLabel").textContent=UI[lang].finish;
     body.innerHTML=`<div class="finished"><div class="cup">🏆</div><h2>${UI[lang].finish}</h2><p>${UI[lang].earned} ⭐</p><button class="btn" id="return">${hasNext?"Continuar →":UI[lang].return}</button></div>`;
-    $("#return").onclick=()=>{if(hasNext){unit++;phase="study";generalQueue=[];renderStudy();window.scrollTo(0,0)}else{renderUnits();show("course",true);window.scrollTo(0,0)}};
+    $("#return").onclick=()=>{if(hasNext){window.NALVI_PROGRESSION?.diagnostic?.("NEXT_OBJECTIVE_UNLOCKED",{activityId:lastGeneralActivity?.id,conceptId:lastGeneralActivity?.conceptId||lastGeneralActivity?.conceptIds?.[0],correct:true,progressionDecision:"COMPLETE_OBJECTIVE"});unit++;phase="study";generalQueue=[];renderStudy();window.scrollTo(0,0)}else{renderUnits();show("course",true);window.scrollTo(0,0)}};
   };
 
   /* POLICÍA: cola de preguntas falladas y continuación sucesiva. */
@@ -7248,9 +7297,10 @@ try{
 </script>
 <script src="assets/js/kuaa-general-activities.js"></script>
 <script src="assets/js/nalvi-guarani-general-route.js"></script>
-<script src="assets/js/kuaa-activity-renderer.js"></script>
+<script src="assets/js/kuaa-activity-renderer.js?v=NALVI-PRE8C-PROGRESSION-3"></script>
+<script type="module" src="assets/js/nalvi-progression-client.mjs?v=NALVI-PRE8C-PROGRESSION-3"></script>
 <script src="assets/js/nalvi-reinforcement-client.js"></script>
-<script type="module" src="assets/js/nalvi-intervention-client.mjs"></script>
+<script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-PRE8C-PROGRESSION-3"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-VISUAL-STABLE-1"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
 </body>

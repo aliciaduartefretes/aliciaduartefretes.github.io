@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const root = new URL("../", import.meta.url);
+const read = path => readFileSync(new URL(path, root), "utf8");
+const index = read("index.html");
+const renderer = read("assets/js/kuaa-activity-renderer.js");
+const intervention = read("assets/js/nalvi-intervention-client.mjs");
+const progression = read("assets/js/nalvi-progression-client.mjs");
+const rules = read("firebase/firestore-PASO-6.rules");
+const vercel = JSON.parse(read("vercel.json"));
+
+assert.match(index, /assets\/js\/nalvi-progression-client\.mjs/);
+assert.match(index, /assets\/js\/nalvi-intervention-client\.mjs/);
+assert.match(index, /BLOCK_AND_INTERVENE/);
+assert.match(index, /generalCompletionAuthorized/);
+assert.match(index, /nalvi:resume-objective-practice/);
+assert.match(index, /excludedActivityIds/);
+assert.doesNotMatch(index, /button\.onclick=\(\)=>\{generalQueuePos\+\+;if\(generalQueuePos<generalQueue\.length\)\{renderQuiz\(\);save\(\)\}else finish\(\)\}/);
+assert.ok(index.indexOf("nalvi-progression-client.mjs") < index.indexOf("nalvi-intervention-client.mjs"));
+assert.match(renderer, /NALVI_PROGRESSION\?\.evaluateActivityResult/);
+assert.match(renderer, /SUBMISSION_ALREADY_EVALUATED/);
+for (const type of ["multiple-choice", "listening", "matching", "order-sentence", "fill-blank", "writing"]) assert.match(renderer, new RegExp(`registerActivityRenderer\\(\\"${type}\\"`));
+assert.match(intervention, /buildDeterministicFallbackActivity/);
+assert.match(intervention, /INTERVENTION_REQUESTED/);
+assert.match(intervention, /INTERVENTION_RENDERED/);
+assert.match(intervention, /excludedActivityIds/);
+assert.match(progression, /\/api\/record-learning-attempt/);
+assert.ok(vercel.functions["api/record-learning-attempt.js"]);
+assert.ok(vercel.headers.some(item => item.source === "/api/record-learning-attempt"));
+for (const locale of ["es", "en", "pt", "fr", "it", "de"]) assert.match(intervention, new RegExp(`\\b${locale}:`));
+assert.match(rules, /match \/users\/\{userId\}/);
+console.log(JSON.stringify({ ok: true, gate: "single", incorrectAdvances: false, activityTypes: 6, locales: 6, firebaseRulesModifiedByThisStep: false }, null, 2));

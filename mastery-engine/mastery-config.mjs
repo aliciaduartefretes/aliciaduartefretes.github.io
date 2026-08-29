@@ -1,0 +1,88 @@
+/*
+ * Browser/server shared view of mastery-config.json.
+ * Keep this object byte-for-byte equivalent at the data level to the JSON file;
+ * the validation suite checks that the two representations do not drift.
+ */
+export const MASTERY_CONFIG = Object.freeze({
+  version: "NALVI-P6-MASTERY-CONFIG-1",
+  skills: ["listening", "reading", "writing", "speaking", "vocabulary", "grammar", "application"],
+  skillAliases: {
+    comprehension: "reading",
+    construction: "writing",
+    interaction: "application",
+    "grammar-awareness": "grammar",
+    "pronunciation-awareness": "speaking"
+  },
+  activityEvidence: {
+    "multiple-choice": 0.45,
+    matching: 0.4,
+    listening: 0.65,
+    "order-sentence": 0.7,
+    "fill-blank": 0.65,
+    writing: 1,
+    speaking: 1.05,
+    application: 1.1,
+    scenario: 1.25,
+    simulation: 1.4
+  },
+  difficultyEvidence: {
+    "foundation-1": 0.85,
+    "foundation-2": 0.95,
+    "foundation-3": 1,
+    "foundation-4": 1.08,
+    challenge: 1.2
+  },
+  scoring: {
+    minimum: 0,
+    maximum: 100,
+    correctDelta: 14,
+    incorrectDelta: 10,
+    diversityBonusPerType: 1.5,
+    maximumDiversityBonus: 7.5,
+    retentionAdjustmentLimit: 6,
+    historyLimit: 60
+  },
+  penalties: {
+    attemptDecayPerExtraAttempt: 0.12,
+    minimumAttemptFactor: 0.55,
+    hintFactor: 0.72,
+    immediateRepeatFactor: 0.7,
+    immediateRepeatWindowHours: 1,
+    slowResponseFactor: 0.85,
+    slowResponseThresholdSeconds: 45
+  },
+  retention: {
+    delayedEvidenceAfterHours: 24,
+    strongDelayedEvidenceAfterHours: 168,
+    correctGain: 0.2,
+    incorrectLoss: 0.24,
+    initialScore: 0,
+    reviewIntervalsHours: { NEW: 0, LEARNING: 12, PRACTICING: 48, MASTERED: 168, REVIEW_DUE: 12, WEAK: 4 }
+  },
+  thresholds: {
+    weakBelow: 30,
+    practicingAt: 50,
+    masteredAt: 80,
+    advanceAt: 58,
+    challengeAt: 90,
+    minimumEventsForWeak: 2,
+    minimumEventsForMastered: 5,
+    minimumActivityTypesForMastered: 3,
+    minimumRequiredSkillForMastered: 65,
+    minimumRetentionForMastered: 0.4,
+    productionGapBelow: 52,
+    recognitionStrongAt: 70,
+    consecutiveIncorrectForSimplify: 2
+  },
+  activitySelection: {
+    listening: ["listening", "scenario"],
+    reading: ["multiple-choice", "matching", "fill-blank"],
+    writing: ["writing", "fill-blank", "order-sentence"],
+    speaking: ["speaking", "scenario"],
+    vocabulary: ["matching", "multiple-choice", "fill-blank"],
+    grammar: ["order-sentence", "fill-blank", "writing"],
+    application: ["scenario", "application", "simulation"]
+  }
+});
+
+export default MASTERY_CONFIG;
