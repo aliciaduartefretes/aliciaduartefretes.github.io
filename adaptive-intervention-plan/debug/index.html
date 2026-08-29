@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NALVI · Validación visual PASO 8B</title>
+  <link rel="icon" href="../../icons/icon-192.png">
+  <link rel="stylesheet" href="../../assets/css/nalvi-design-system.css">
+  <link rel="stylesheet" href="../../assets/css/kuaa-activity-components.css">
+  <style>
+    body{margin:0;background:#f6f7fb;color:#18213d;font-family:Nunito,Inter,system-ui,sans-serif}.debug-shell{width:min(760px,calc(100% - 28px));margin:32px auto 90px}.debug-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.debug-head h1{margin:0;font-size:clamp(1.35rem,4vw,2rem)}.debug-head select{min-height:44px;border:1px solid #cfd5e4;border-radius:12px;padding:0 12px;background:#fff}.debug-note{margin:0 0 18px;color:#5e6680;line-height:1.5}.debug-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.debug-actions button{min-height:44px;border:0;border-radius:12px;padding:0 16px;background:#3459b8;color:#fff;font-weight:800;cursor:pointer}.debug-actions button.secondary{background:#fff;color:#3459b8;border:1px solid #cfd5e4}@media(max-width:560px){.debug-shell{margin-top:18px}.debug-head{align-items:flex-start;flex-direction:column}.debug-head select{width:100%}}
+  </style>
+</head>
+<body>
+  <main class="debug-shell">
+    <div class="debug-head"><h1>NALVI · Plan adaptativo 8B</h1><select id="locale" aria-label="Idioma de interfaz"><option>es</option><option>en</option><option>pt</option><option>fr</option><option>it</option><option>de</option></select></div>
+    <p class="debug-note">Prueba visual aislada: feedback local inmediato → skeleton breve → plan validado de dos actividades diferentes.</p>
+    <section id="lessonBody"></section>
+    <div class="debug-actions"><button id="wrong" type="button">Simular primer error</button><button id="reset" class="secondary" type="button">Reiniciar</button></div>
+  </main>
+  <script>
+    window.KUAA_GENERAL_ACTIVITY_DATA={activities:[
+      {id:"local-writing",conceptId:"pilot-book",learningObjectiveId:"GG-LO-PILOT-LEXICON",type:"writing",skill:"writing",difficulty:"foundation-1",instruction:"Escribe la forma guiada.",prompt:"Escribe la palabra que aprendiste.",acceptedAnswers:["aranduka"],lexemeIds:["LEX-PILOT-ARANDUKA-001"]},
+      {id:"local-matching",conceptId:"pilot-book",learningObjectiveId:"GG-LO-PILOT-LEXICON",type:"matching",skill:"vocabulary",difficulty:"foundation-1",instruction:"Relaciona.",prompt:"Relaciona cada forma con su significado.",pairs:[{id:"1",left:"aranduka",right:"libro"},{id:"2",left:"ao",right:"ropa"}],lexemeIds:["LEX-PILOT-ARANDUKA-001","LEX-PILOT-AO-001"]}
+    ]};
+    window.GCA_FIREBASE_LIVE={auth:{currentUser:{getIdToken:async()=>"visual-test-token"}}};
+    const generatedPlan={
+      planId:"visual-adaptive-book",conceptId:"pilot-book",diagnosis:"SEMANTIC_CONFUSION",diagnosisConfidence:.91,strategy:"CHANGE_MODALITY",
+      studentFeedback:"Primero relaciona la forma con su significado; después recupérala por escrito.",
+      activities:[
+        {id:"adaptive-match",type:"matching",activityType:"matching",skill:"vocabulary",difficulty:"foundation-1",instruction:"Relaciona cada forma con su significado.",prompt:"Cambia de modalidad y forma las parejas.",pairs:[{id:"book",left:"aranduka",right:"libro"},{id:"clothing",left:"ao",right:"ropa"}],conceptId:"pilot-book",conceptIds:["pilot-book"],lexemeIds:["LEX-PILOT-ARANDUKA-001","LEX-PILOT-AO-001"],sourceIds:["S-002"],fingerprint:"visual-match-aranduka-fingerprint"},
+        {id:"adaptive-write",type:"writing",activityType:"writing",skill:"writing",difficulty:"foundation-1",instruction:"Ahora escríbela sin opciones.",prompt:"Escribe la palabra guaraní para libro.",acceptedAnswers:["aranduka"],conceptId:"pilot-book",conceptIds:["pilot-book"],lexemeIds:["LEX-PILOT-ARANDUKA-001"],sourceIds:["S-002"],fingerprint:"visual-write-aranduka-fingerprint"}
+      ],retestPolicy:"after-plan",masteryRecommendation:"AWAIT_RETEST",validationMetadata:{riskLevel:"GREEN"}
+    };
+    const nativeFetch=window.fetch.bind(window);
+    window.fetch=async(input,options)=>{
+      if(String(input).includes("generate-adaptive-intervention-plan")){
+        await new Promise(resolve=>setTimeout(resolve,700));
+        const requestedLocale=JSON.parse(options?.body||"{}").uiLocale||"es";
+        const localeText={
+          es:{feedback:"Primero relaciona la forma con su significado; después recupérala por escrito.",match:"Relaciona cada forma con su significado.",matchPrompt:"Cambia de modalidad y forma las parejas.",write:"Ahora escríbela sin opciones.",writePrompt:"Escribe la palabra guaraní para libro."},
+          en:{feedback:"First match the form to its meaning; then recall it in writing.",match:"Match each form to its meaning.",matchPrompt:"Change modality and make the pairs.",write:"Now write it without options.",writePrompt:"Write the Guarani word for book."},
+          pt:{feedback:"Primeiro relacione a forma ao significado; depois recupere-a por escrito.",match:"Relacione cada forma ao seu significado.",matchPrompt:"Mude de modalidade e forme os pares.",write:"Agora escreva sem opções.",writePrompt:"Escreva a palavra em guarani para livro."},
+          fr:{feedback:"Associez d’abord la forme à son sens, puis retrouvez-la à l’écrit.",match:"Associez chaque forme à son sens.",matchPrompt:"Changez de modalité et formez les paires.",write:"Écrivez-la maintenant sans choix.",writePrompt:"Écrivez le mot guarani pour livre."},
+          it:{feedback:"Abbina prima la forma al significato, poi recuperala per iscritto.",match:"Abbina ogni forma al suo significato.",matchPrompt:"Cambia modalità e forma le coppie.",write:"Ora scrivila senza opzioni.",writePrompt:"Scrivi la parola guaraní per libro."},
+          de:{feedback:"Ordne zuerst die Form ihrer Bedeutung zu und rufe sie danach schriftlich ab.",match:"Ordne jede Form ihrer Bedeutung zu.",matchPrompt:"Wechsle die Modalität und bilde die Paare.",write:"Schreibe sie jetzt ohne Auswahlmöglichkeiten.",writePrompt:"Schreibe das Guaraní-Wort für Buch."}
+        }[requestedLocale];
+        const localizedPlan=structuredClone(generatedPlan);
+        localizedPlan.studentFeedback=localeText.feedback;
+        localizedPlan.activities[0].instruction=localeText.match;
+        localizedPlan.activities[0].prompt=localeText.matchPrompt;
+        localizedPlan.activities[1].instruction=localeText.write;
+        localizedPlan.activities[1].prompt=localeText.writePrompt;
+        return new Response(JSON.stringify({ok:true,mode:"generated",usedAI:true,reason:"VISUAL_FIXTURE",adaptiveInterventionPlan:localizedPlan,telemetry:{callCount:1,inputTokens:100,outputTokens:180,latencyMs:700},persistence:{status:"persisted"}}),{status:200,headers:{"Content-Type":"application/json"}});
+      }
+      return nativeFetch(input,options);
+    };
+  </script>
+  <script src="../../assets/js/kuaa-activity-renderer.js"></script>
+  <script type="module" src="../../assets/js/nalvi-intervention-client.mjs"></script>
+  <script>
+    const failed={id:"visual-failed",conceptId:"pilot-book",learningObjectiveId:"GG-LO-PILOT-LEXICON",type:"multiple-choice",skill:"vocabulary",difficulty:"foundation-1",instruction:"Selecciona la respuesta.",prompt:"¿Cómo se dice libro?",options:[{id:"aranduka",label:"aranduka"},{id:"ao",label:"ao"}],correctOptionId:"aranduka",lexemeIds:["LEX-PILOT-ARANDUKA-001","LEX-PILOT-AO-001"]};
+    const target=document.querySelector("#lessonBody"), localeSelect=document.querySelector("#locale");
+    const render=()=>{document.documentElement.lang=localeSelect.value;window.renderActivity(failed,{target,language:localeSelect.value})};
+    addEventListener("load",render);localeSelect.addEventListener("change",render);
+    document.querySelector("#reset").addEventListener("click",render);
+    document.querySelector("#wrong").addEventListener("click",()=>target.dispatchEvent(new CustomEvent("nalvi:activity-scored",{bubbles:true,detail:{activity:failed,result:{correct:false,value:"ao"},uiLocale:localeSelect.value,scoredLocally:true,canScoreWithoutAI:true}})));
+  </script>
+</body>
+</html>

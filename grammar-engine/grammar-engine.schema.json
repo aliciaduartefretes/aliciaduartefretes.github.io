@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nalvi:grammar-engine:schema:1.0.0",
+  "title": "NALVI Grammar Engine — modelo computable",
+  "description": "Extensión computable y conservadora del corpus del PASO 3. No habilita datos sin normativeVerified o expertVerified, allowedForGeneration y ausencia de conflictos.",
+  "type": "object",
+  "required": [
+    "engineSchemaVersion",
+    "languageVariant",
+    "validationPolicy",
+    "conjugationPatterns",
+    "lexemes",
+    "linguisticRules",
+    "conflicts",
+    "authorizationSummary",
+    "inventories",
+    "openAIConnected"
+  ],
+  "properties": {
+    "engineSchemaVersion": {"const": "1.0.0"},
+    "languageVariant": {"const": "gug-PY"},
+    "openAIConnected": {"const": false},
+    "validationPolicy": {
+      "type": "object",
+      "required": ["allowedValidationStatuses", "requiresAllowedForGeneration", "requiresNoOpenConflict", "unknownDataPolicy"],
+      "properties": {
+        "allowedValidationStatuses": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"enum": ["normativeVerified", "expertVerified"]},
+          "allOf": [
+            {"contains": {"const": "normativeVerified"}},
+            {"contains": {"const": "expertVerified"}}
+          ]
+        },
+        "requiresAllowedForGeneration": {"const": true},
+        "requiresNoOpenConflict": {"const": true},
+        "unknownDataPolicy": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "conjugationPatterns": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/conjugationPattern"}
+    },
+    "lexemes": {"type": "array", "items": {"type": "object"}},
+    "linguisticRules": {"type": "array", "items": {"type": "object"}},
+    "conflicts": {"type": "array", "items": {"type": "object"}},
+    "authorizationSummary": {
+      "type": "object",
+      "required": ["normativeVerified", "expertVerified", "allowedForGeneration"],
+      "properties": {
+        "normativeVerified": {"type": "integer", "minimum": 0},
+        "expertVerified": {"type": "integer", "minimum": 0},
+        "allowedForGeneration": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "inventories": {
+      "type": "object",
+      "required": ["affirmation", "negation", "interrogation", "mandate", "possession", "oralNasalMorphophonology", "nominalClasses"],
+      "additionalProperties": {"$ref": "#/$defs/inventory"}
+    },
+    "supportedFutureVerbClasses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "areal",
+          "aireal",
+          "hareal",
+          "verbalizedOrChendal",
+          "regular",
+          "specialBehavior",
+          "defective",
+          "unipersonal",
+          "intransitive",
+          "transitive",
+          "bitransitive"
+        ]
+      }
+    },
+    "blockedConflicts": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "validationStatus": {
+      "enum": ["unreviewed", "sourceVerified", "normativeVerified", "expertVerified", "conflict", "rejected", "deprecated"]
+    },
+    "sourceReference": {
+      "type": "object",
+      "required": ["sourceId", "sourceTitle", "sourceAuthor", "sourceInstitution", "sourceYear", "sourceURL", "sourcePage", "validationStatus"]
+    },
+    "person": {
+      "type": "object",
+      "required": ["person", "number", "clusivity"],
+      "properties": {
+        "person": {"enum": ["1", "2", "3"]},
+        "number": {"enum": ["singular", "plural"]},
+        "clusivity": {"type": ["string", "null"], "enum": [null, "inclusive", "exclusive"]}
+      },
+      "additionalProperties": false
+    },
+    "prefix": {
+      "allOf": [
+        {"$ref": "#/$defs/person"},
+        {
+          "type": "object",
+          "required": ["underlyingMarker", "oralVariant", "nasalVariant", "function"],
+          "properties": {
+            "underlyingMarker": {"type": "string"},
+            "oralVariant": {"type": ["string", "null"]},
+            "nasalVariant": {"type": ["string", "null"]},
+            "function": {"const": "personIndex"}
+          }
+        }
+      ]
+    },
+    "conjugationPattern": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "description",
+        "persons",
+        "prefixes",
+        "inclusiveExclusive",
+        "oralVariant",
+        "nasalVariant",
+        "restrictions",
+        "exceptions",
+        "references",
+        "validationStatus",
+        "allowedForGeneration",
+        "conflictIds",
+        "morphemeSlots",
+        "realizationRules"
+      ],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "persons": {"type": "array", "items": {"$ref": "#/$defs/person"}},
+        "prefixes": {"type": "array", "items": {"$ref": "#/$defs/prefix"}},
+        "inclusiveExclusive": {
+          "type": "object",
+          "required": ["inclusive", "exclusive"],
+          "properties": {"inclusive": {"type": "boolean"}, "exclusive": {"type": "boolean"}},
+          "additionalProperties": false
+        },
+        "oralVariant": {"type": "boolean"},
+        "nasalVariant": {"type": "boolean"},
+        "restrictions": {"type": "array", "items": {"type": "string"}},
+        "exceptions": {"type": "array"},
+        "references": {"type": "array", "items": {"$ref": "#/$defs/sourceReference"}},
+        "validationStatus": {"$ref": "#/$defs/validationStatus"},
+        "allowedForGeneration": {"type": "boolean"},
+        "conflictIds": {"type": "array", "items": {"type": "string"}},
+        "morphemeSlots": {"type": "array", "items": {"type": "object"}},
+        "realizationRules": {"type": "array", "items": {"$ref": "#/$defs/realizationRule"}}
+      },
+      "additionalProperties": false
+    },
+    "realizationRule": {
+      "type": "object",
+      "required": ["id", "validationStatus", "allowedForGeneration", "sourceReferences", "operation"],
+      "properties": {
+        "id": {"type": "string"},
+        "validationStatus": {"$ref": "#/$defs/validationStatus"},
+        "allowedForGeneration": {"type": "boolean"},
+        "sourceReferences": {"type": "array", "items": {"$ref": "#/$defs/sourceReference"}},
+        "conditions": {"type": "object"},
+        "operation": {
+          "type": "object",
+          "required": ["type", "order"],
+          "properties": {
+            "type": {"const": "orderedMorphemes"},
+            "order": {"type": "array", "items": {"type": "string"}},
+            "separator": {"type": "string"}
+          }
+        },
+        "transformations": {"type": "array", "items": {"$ref": "#/$defs/transformation"}}
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "required": ["type", "from", "to", "validationStatus", "allowedForGeneration", "sourceReferences"],
+      "properties": {
+        "type": {"enum": ["replaceExact", "replacePrefix", "replaceSuffix"]},
+        "from": {"type": "string"},
+        "to": {"type": "string"},
+        "validationStatus": {"$ref": "#/$defs/validationStatus"},
+        "allowedForGeneration": {"type": "boolean"},
+        "sourceReferences": {"type": "array", "items": {"$ref": "#/$defs/sourceReference"}}
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "required": ["status", "ruleIds"],
+      "properties": {
+        "status": {"enum": ["available", "unavailable", "reviewRequired", "conflict"]},
+        "ruleIds": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

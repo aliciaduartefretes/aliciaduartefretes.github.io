@@ -1,0 +1,1220 @@
+{
+  "step": "8B.5",
+  "phase": "normative-pilot-activation-complete",
+  "languageVariant": "gug-PY",
+  "generatedAt": "2026-08-28",
+  "policy": {
+    "statusesChanged": true,
+    "firebaseChanged": false,
+    "applicationChanged": true,
+    "expertVerifiedGranted": false,
+    "allowedForGenerationGranted": true,
+    "note": "Se habilitó únicamente el subconjunto de riesgo bajo con acepción exacta. normativeVerified no equivale a revisión experta humana.",
+    "normativeVerifiedGranted": true
+  },
+  "sources": [
+    {
+      "id": "S-002",
+      "sourceTitle": "Diccionario Guaraní Paraguayo",
+      "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+      "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+      "sourceYear": 2021,
+      "sourceURL": "https://spl.gov.py/es/diccionario-guarani-paraguayo/",
+      "sourceEdition": "Segunda edición, diciembre de 2021",
+      "validationStatus": "sourceVerified"
+    },
+    {
+      "id": "S-001",
+      "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+      "sourceAuthor": "Academia de la Lengua Guaraní",
+      "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+      "sourceYear": 2020,
+      "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+      "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+      "validationStatus": "sourceVerified"
+    }
+  ],
+  "readyForHumanReview": [
+    {
+      "id": "LEX-PILOT-AKA-001",
+      "tipo": "lexeme",
+      "forma": "akã",
+      "significado": "cabeza",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e46",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e46",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Lema corporal cotidiano con entrada y categoría explícitas; no depende de conjugación ni de C-001/C-002.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "cabeza"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e46",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-AO-001",
+      "tipo": "lexeme",
+      "forma": "ao",
+      "significado": "ropa; prenda que cubre el cuerpo",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e91",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e91",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo cotidiano con forma breve, definición directa y sin morfología productiva requerida.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "ropa"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e91",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-APYKA-001",
+      "tipo": "lexeme",
+      "forma": "apyka",
+      "significado": "asiento; silla",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e110",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e110",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Objeto cotidiano con entrada oficial concreta; no exige reglas sintácticas complejas.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "asiento"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e110",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-ARANDUKA-001",
+      "tipo": "lexeme",
+      "forma": "aranduka",
+      "significado": "libro",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e130",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e130",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Léxico escolar elemental con definición y categoría oficiales.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "libro"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e130",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-ARA-001",
+      "tipo": "lexeme",
+      "forma": "ára",
+      "significado": "día; período iluminado por el sol",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e160",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e160",
+      "validationStatusActual": "notImported",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo-medio",
+      "motivoCandidatoSeguro": "La acepción seleccionada está localizada, pero la revisión debe conservar el número de sentido por la amplitud semántica del lema.",
+      "allowedForGeneration": false,
+      "normativeDecision": "DEFERRED_SCOPE_AMBIGUITY",
+      "normativeDecisionNote": "Permanece sin importar y sin autorización por riesgo bajo-medio o amplitud semántica."
+    },
+    {
+      "id": "LEX-PILOT-AVATI-001",
+      "tipo": "lexeme",
+      "forma": "avati",
+      "significado": "maíz",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/01.htm#e186",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e186",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo cotidiano y culturalmente relevante, definido de forma concreta en la fuente oficial.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "maíz"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e186",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-GUYRA-001",
+      "tipo": "lexeme",
+      "forma": "guyra",
+      "significado": "ave; pájaro",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/05.htm#e318",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/05.htm#e318",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo elemental de fauna con definición y ejemplo oficiales.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "ave"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/05.htm#e318",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-IRUNDY-001",
+      "tipo": "lexeme",
+      "forma": "irundy",
+      "significado": "cuatro",
+      "categoria": "numeral",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/08.htm#e377",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/08.htm#e377",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Numeral básico con posición explícita en la serie y sin dependencia morfológica controvertida.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "cuatro"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/08.htm#e377",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-JAGUA-001",
+      "tipo": "lexeme",
+      "forma": "jagua",
+      "significado": "perro",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/10.htm#e396",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e396",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo cotidiano de fauna doméstica con entrada oficial directa.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "perro"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e396",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-JARYI-001",
+      "tipo": "lexeme",
+      "forma": "jarýi",
+      "significado": "abuela",
+      "categoria": "sustantivo de parentesco",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/10.htm#e413",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e413",
+      "validationStatusActual": "notImported",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo-medio",
+      "motivoCandidatoSeguro": "Parentesco básico con entrada oficial; el revisor debe confirmar alcance familiar exacto antes de generar contrastes.",
+      "allowedForGeneration": false,
+      "normativeDecision": "DEFERRED_SCOPE_AMBIGUITY",
+      "normativeDecisionNote": "Permanece sin importar y sin autorización por riesgo bajo-medio o amplitud semántica."
+    },
+    {
+      "id": "LEX-PILOT-JASY-001",
+      "tipo": "lexeme",
+      "forma": "jasy",
+      "significado": "luna",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/10.htm#e426",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e426",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo elemental con definición inequívoca en la fuente oficial.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "luna"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e426",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-JURU-001",
+      "tipo": "lexeme",
+      "forma": "juru",
+      "significado": "boca",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/10.htm#e472",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e472",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Parte del cuerpo con lema y definición oficiales; no se propone todavía posesión ni derivación.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "boca"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e472",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-KUARAHY-001",
+      "tipo": "lexeme",
+      "forma": "kuarahy",
+      "significado": "sol",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/11.htm#e683",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/11.htm#e683",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Lema elemental con entrada oficial concreta.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "sol"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/11.htm#e683",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-KUMANDA-001",
+      "tipo": "lexeme",
+      "forma": "kumanda",
+      "significado": "poroto; frijol",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/11.htm#e705",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/11.htm#e705",
+      "validationStatusActual": "notImported",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo-medio",
+      "motivoCandidatoSeguro": "Alimento cotidiano documentado; el revisor debe confirmar la glosa regional preferida y cualquier variante nasal.",
+      "allowedForGeneration": false,
+      "normativeDecision": "DEFERRED_SCOPE_AMBIGUITY",
+      "normativeDecisionNote": "Permanece sin importar y sin autorización por riesgo bajo-medio o amplitud semántica."
+    },
+    {
+      "id": "LEX-PILOT-MANDIO-001",
+      "tipo": "lexeme",
+      "forma": "mandi’o",
+      "significado": "mandioca; raíz de mandioca",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/13.htm#e812",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e812",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo alimentario básico con acepciones botánica y alimentaria documentadas.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "mandioca"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e812",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-MITA-001",
+      "tipo": "lexeme",
+      "forma": "mitã",
+      "significado": "niño; criatura",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/13.htm#e859",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e859",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo cotidiano de persona con entrada oficial y sin conflicto conocido.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "niño"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e859",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-MOKOI-001",
+      "tipo": "lexeme",
+      "forma": "mokõi",
+      "significado": "dos",
+      "categoria": "numeral",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/13.htm#e868",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e868",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Numeral básico definido explícitamente como 2.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "dos"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e868",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-MBARAKAJA-001",
+      "tipo": "lexeme",
+      "forma": "mbarakaja",
+      "significado": "gato",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/14.htm#e902",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/14.htm#e902",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Animal doméstico elemental con entrada oficial concreta.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "gato"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/14.htm#e902",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-MBOHAPY-001",
+      "tipo": "lexeme",
+      "forma": "mbohapy",
+      "significado": "tres",
+      "categoria": "numeral",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/14.htm#e965",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/14.htm#e965",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Numeral básico definido explícitamente como 3.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "tres"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/14.htm#e965",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-PANAMBI-001",
+      "tipo": "lexeme",
+      "forma": "panambi",
+      "significado": "mariposa",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/21.htm#e1238",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1238",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo elemental de fauna con entrada oficial.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "mariposa"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1238",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-PETEI-001",
+      "tipo": "lexeme",
+      "forma": "peteĩ",
+      "significado": "uno",
+      "categoria": "numeral",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/21.htm#e1280",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1280",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Numeral básico con posición explícita en la serie.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "uno"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1280",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-PIRA-001",
+      "tipo": "lexeme",
+      "forma": "pira",
+      "significado": "pez; pescado",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/21.htm#e1307",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1307",
+      "validationStatusActual": "notImported",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "no en la entrada principal consultada",
+      "riesgo": "bajo-medio",
+      "motivoCandidatoSeguro": "Lema cotidiano oficial; la revisión debe fijar si la actividad enseña animal o alimento.",
+      "allowedForGeneration": false,
+      "normativeDecision": "DEFERRED_SCOPE_AMBIGUITY",
+      "normativeDecisionNote": "Permanece sin importar y sin autorización por riesgo bajo-medio o amplitud semántica."
+    },
+    {
+      "id": "LEX-PILOT-PY-001",
+      "tipo": "lexeme",
+      "forma": "py",
+      "significado": "pie",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/21.htm#e1439",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1439",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "no en la entrada principal consultada",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Parte del cuerpo con lema y definición oficiales; no se propone todavía posesión ni derivación.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "pie"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1439",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-PYHARE-001",
+      "tipo": "lexeme",
+      "forma": "pyhare",
+      "significado": "noche",
+      "categoria": "sustantivo",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/21.htm#e1452",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1452",
+      "validationStatusActual": "normativeVerified",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí; entrada oficial con ejemplo",
+      "riesgo": "bajo",
+      "motivoCandidatoSeguro": "Sustantivo temporal cotidiano con definición oficial concreta.",
+      "allowedForGeneration": true,
+      "normativeDecision": "AUTHORIZED_EXACT_SENSE_ONLY",
+      "authorizedSense": {
+        "id": "sense-1",
+        "glossEs": "noche"
+      },
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1452",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      }
+    },
+    {
+      "id": "LEX-PILOT-SY-001",
+      "tipo": "lexeme",
+      "forma": "sy",
+      "significado": "madre",
+      "categoria": "sustantivo de parentesco",
+      "sourceId": "S-002",
+      "sourcePage": "lexicon/24.htm#e1600",
+      "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/24.htm#e1600",
+      "validationStatusActual": "notImported",
+      "sourceValidationStatus": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sin ejemplo en esa entrada; uso atestiguado en S-001, p. 251",
+      "riesgo": "bajo-medio",
+      "motivoCandidatoSeguro": "Parentesco básico con entrada oficial y uso en la gramática; revisar alcance humano/animal antes de generar distractores.",
+      "allowedForGeneration": false,
+      "normativeDecision": "DEFERRED_SCOPE_AMBIGUITY",
+      "normativeDecisionNote": "Permanece sin importar y sin autorización por riesgo bajo-medio o amplitud semántica."
+    }
+  ],
+  "needsMoreEvidence": [
+    {
+      "id": "LEX-CANDIDATE-MBAEICHAPA",
+      "tipo": "lexeme",
+      "forma": "mba’éichapa",
+      "significado": "¿Cómo estás? (glosa actual de NALVI)",
+      "categoria": "other",
+      "sourceId": "S-008",
+      "sourcePage": "general-u01-significado-mba-eichapa",
+      "validationStatusActual": "unreviewed",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "solo actividad interna",
+      "riesgo": "medio",
+      "motivo": "No se localizó todavía una ficha oficial que confirme forma, función y glosa exacta; la actividad interna no es autoridad lingüística."
+    },
+    {
+      "id": "LEX-CANDIDATE-AGUYJE",
+      "tipo": "lexeme",
+      "forma": "aguyje",
+      "significado": "gracias (glosa actual de NALVI)",
+      "categoria": "other",
+      "sourceId": "S-008; uso adicional en S-001",
+      "sourcePage": "general-u01-elegir-aguyje; S-001 pp. 249 y 251",
+      "validationStatusActual": "unreviewed",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí en S-001, pero no como ficha léxica equivalente",
+      "riesgo": "medio",
+      "motivo": "La gramática atestigua uso, pero la entrada oficial localizada es mboaguyje; hace falta revisión experta de categoría, sentido y equivalencia pragmática."
+    },
+    {
+      "id": "LEX-CANDIDATE-JAJOTOPATA",
+      "tipo": "lexeme",
+      "forma": "jajotopata",
+      "significado": "nos vemos (glosa actual de NALVI)",
+      "categoria": "other",
+      "sourceId": "S-008",
+      "sourcePage": "general-u01-escuchar-jajotopata",
+      "validationStatusActual": "unreviewed",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "solo actividad interna",
+      "riesgo": "alto",
+      "motivo": "Es una forma verbal compleja y no debe habilitarse antes de validar lema, persona, morfemas, tiempo/aspecto y uso pragmático."
+    },
+    {
+      "id": "CP-AREAL-001",
+      "tipo": "conjugationPattern",
+      "forma": "Areal",
+      "significado": "patrón de conjugación",
+      "categoria": "sistema verbal",
+      "sourceId": "S-001",
+      "sourcePage": "pp. 102–103",
+      "validationStatusActual": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "sí en la gramática",
+      "riesgo": "alto para generación",
+      "motivo": "PASO 8B.5 excluye conjugación automática y el patrón todavía no tiene lemas elegibles asociados ni reglas negativas completas."
+    },
+    {
+      "id": "RULE-POSSESSION-001",
+      "tipo": "linguisticRule",
+      "forma": "poseedor → poseído",
+      "significado": "orden básico de la construcción posesiva",
+      "categoria": "sintaxis",
+      "sourceId": "S-001",
+      "sourcePage": "pp. 74–81",
+      "validationStatusActual": "sourceVerified",
+      "conflictosRelacionados": [],
+      "ejemplosDisponibles": "pendiente de vincular a registros validados",
+      "riesgo": "alto para generación",
+      "motivo": "La propia ficha exige modelar antes alomorfía, clases nominales y condición oral/nasal."
+    }
+  ],
+  "blocked": [
+    {
+      "id": "CP-AIREAL-001",
+      "tipo": "conjugationPattern",
+      "forma": "Aireal",
+      "significado": "patrón de conjugación",
+      "categoria": "sistema verbal",
+      "sourceId": "S-001 y S-005",
+      "sourcePage": "S-001 pp. 95–96 y 103–104; S-005 pp. 47–52",
+      "validationStatusActual": "conflict",
+      "conflictosRelacionados": [
+        "C-002"
+      ],
+      "ejemplosDisponibles": "sí, pero no habilitables para resolver el conflicto",
+      "riesgo": "crítico",
+      "motivo": "La función de i sigue bajo conflicto C-002 y su uso automático está bloqueado."
+    },
+    {
+      "id": "CP-HAREAL-001",
+      "tipo": "conjugationPattern",
+      "forma": "Hareal",
+      "significado": "patrón de conjugación",
+      "categoria": "sistema verbal",
+      "sourceId": "S-001",
+      "sourcePage": "p. 104",
+      "validationStatusActual": "sourceVerified",
+      "conflictosRelacionados": [
+        "C-001"
+      ],
+      "ejemplosDisponibles": "sí, pero el catálogo lema por lema está pendiente",
+      "riesgo": "crítico",
+      "motivo": "Su alcance se cruza con la controversia C-001 y no debe activarse."
+    },
+    {
+      "id": "C-001",
+      "tipo": "conflict",
+      "forma": "Cantidad y alcance de verbos irregulares",
+      "significado": "controversia taxonómica no resuelta",
+      "categoria": "gobernanza lingüística",
+      "sourceId": "S-001 y S-005",
+      "sourcePage": "S-001 pp. 95–106; S-005 pp. 47–52",
+      "validationStatusActual": "conflict",
+      "conflictosRelacionados": [
+        "C-001"
+      ],
+      "ejemplosDisponibles": "no aplicable",
+      "riesgo": "crítico",
+      "motivo": "El usuario ordenó explícitamente no resolver C-001."
+    },
+    {
+      "id": "C-002",
+      "tipo": "conflict",
+      "forma": "Función de i en verbos aireales",
+      "significado": "controversia funcional no resuelta",
+      "categoria": "gobernanza lingüística",
+      "sourceId": "S-001 y S-005",
+      "sourcePage": "S-001 pp. 95–96; S-005 pp. 47–52",
+      "validationStatusActual": "conflict",
+      "conflictosRelacionados": [
+        "C-002"
+      ],
+      "ejemplosDisponibles": "no aplicable",
+      "riesgo": "crítico",
+      "motivo": "El usuario ordenó explícitamente no resolver C-002."
+    }
+  ],
+  "counts": {
+    "readyForHumanReview": 25,
+    "needsMoreEvidence": 5,
+    "blocked": 4,
+    "authorizedForGeneration": 0
+  },
+  "adjustedAt": "2026-08-29T04:36:01Z",
+  "normativeAdjustment": {
+    "readyReviewed": 25,
+    "normativeVerified": 20,
+    "deferred": 5,
+    "expertVerified": 0,
+    "allowedForGeneration": 20,
+    "newCandidatesSearched": 0,
+    "needsMoreEvidenceModified": false,
+    "blockedModified": false,
+    "grammarRulesPromoted": 0,
+    "conjugationGenerationEnabled": false,
+    "authorizedIds": [
+      "LEX-PILOT-AKA-001",
+      "LEX-PILOT-AO-001",
+      "LEX-PILOT-APYKA-001",
+      "LEX-PILOT-ARANDUKA-001",
+      "LEX-PILOT-AVATI-001",
+      "LEX-PILOT-GUYRA-001",
+      "LEX-PILOT-IRUNDY-001",
+      "LEX-PILOT-JAGUA-001",
+      "LEX-PILOT-JASY-001",
+      "LEX-PILOT-JURU-001",
+      "LEX-PILOT-KUARAHY-001",
+      "LEX-PILOT-MANDIO-001",
+      "LEX-PILOT-MITA-001",
+      "LEX-PILOT-MOKOI-001",
+      "LEX-PILOT-MBARAKAJA-001",
+      "LEX-PILOT-MBOHAPY-001",
+      "LEX-PILOT-PANAMBI-001",
+      "LEX-PILOT-PETEI-001",
+      "LEX-PILOT-PY-001",
+      "LEX-PILOT-PYHARE-001"
+    ],
+    "deferredIds": [
+      "LEX-PILOT-ARA-001",
+      "LEX-PILOT-JARYI-001",
+      "LEX-PILOT-KUMANDA-001",
+      "LEX-PILOT-PIRA-001",
+      "LEX-PILOT-SY-001"
+    ]
+  }
+}

@@ -1,10 +1,15 @@
 {
-  "name": "nalvi-paso-7b",
+  "name": "nalvi-paso-8b-adaptive-intervention-plans",
   "private": true,
   "type": "module",
   "scripts": {
     "test:reinforcement": "node --test ai/tests/reinforcement-engine.test.mjs",
-    "validate:paso-7b": "node scripts/validate-paso-7B.mjs"
+    "validate:paso-7b": "node scripts/validate-paso-7B.mjs",
+    "test:intervention": "node --test intervention-engine/tests/*.test.mjs",
+    "validate:paso-8": "node scripts/validate-paso-8.mjs",
+    "test:adaptive-plans": "node --test server/tests/adaptive-intervention-plan.test.mjs",
+    "validate:paso-8b": "node scripts/validate-paso-8B.mjs",
+    "validate:paso-8b-5-normative": "node scripts/validate-paso-8B-5-normative.mjs"
   },
   "engines": {
     "node": ">=20"

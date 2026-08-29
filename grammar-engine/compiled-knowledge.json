@@ -1,0 +1,2722 @@
+{
+  "engineSchemaVersion": "1.0.0",
+  "languageVariant": "gug-PY",
+  "validationPolicy": {
+    "allowedValidationStatuses": [
+      "normativeVerified",
+      "expertVerified"
+    ],
+    "requiresAllowedForGeneration": true,
+    "requiresNoOpenConflict": true,
+    "unknownDataPolicy": "No inventar. Marcar unreviewed o conflict y mantener allowedForGeneration en false."
+  },
+  "conjugationPatterns": [
+    {
+      "id": "CP-AREAL-001",
+      "name": "Areal",
+      "description": "Requiere ficha por lema antes de asociar verbos.",
+      "persons": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null
+        }
+      ],
+      "prefixes": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "a-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "re-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "o-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive",
+          "underlyingMarker": "ja-/ña-",
+          "oralVariant": "ja-",
+          "nasalVariant": "ña-",
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive",
+          "underlyingMarker": "ro-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "pe-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "o-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        }
+      ],
+      "inclusiveExclusive": {
+        "inclusive": true,
+        "exclusive": true
+      },
+      "oralVariant": true,
+      "nasalVariant": true,
+      "restrictions": [
+        "Requiere ficha por lema antes de asociar verbos.",
+        "negativePattern:unreviewed"
+      ],
+      "exceptions": [],
+      "references": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "pp. 102–103",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "validationStatus": "sourceVerified",
+      "allowedForGeneration": false,
+      "conflictIds": [],
+      "morphemeSlots": [],
+      "realizationRules": []
+    },
+    {
+      "id": "CP-AIREAL-001",
+      "name": "Aireal",
+      "description": "La función de i permanece bloqueada por C-002.",
+      "persons": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null
+        }
+      ],
+      "prefixes": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "ai-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "rei-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "oi-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive",
+          "underlyingMarker": "jai-/ñai-",
+          "oralVariant": "jai-",
+          "nasalVariant": "ñai-",
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive",
+          "underlyingMarker": "roi-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "pei-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "oi-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        }
+      ],
+      "inclusiveExclusive": {
+        "inclusive": true,
+        "exclusive": true
+      },
+      "oralVariant": true,
+      "nasalVariant": true,
+      "restrictions": [
+        "La función de i permanece bloqueada por C-002.",
+        "negativePattern:unreviewed"
+      ],
+      "exceptions": [],
+      "references": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "pp. 95–96 y 103–104",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        },
+        {
+          "sourceId": "S-005",
+          "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+          "sourceAuthor": "David Galeano Olivera",
+          "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+          "sourceYear": 2022,
+          "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+          "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+          "sourceEdition": null,
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "validationStatus": "conflict",
+      "allowedForGeneration": false,
+      "conflictIds": [
+        "C-002"
+      ],
+      "morphemeSlots": [],
+      "realizationRules": []
+    },
+    {
+      "id": "CP-HAREAL-001",
+      "name": "Hareal",
+      "description": "El catálogo lema por lema permanece pendiente.",
+      "persons": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null
+        }
+      ],
+      "prefixes": [
+        {
+          "person": "1",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "ha-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "re-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "singular",
+          "clusivity": null,
+          "underlyingMarker": "ho-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "inclusive",
+          "underlyingMarker": "ja-/ña-",
+          "oralVariant": "ja-",
+          "nasalVariant": "ña-",
+          "function": "personIndex"
+        },
+        {
+          "person": "1",
+          "number": "plural",
+          "clusivity": "exclusive",
+          "underlyingMarker": "ro-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "2",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "pe-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        },
+        {
+          "person": "3",
+          "number": "plural",
+          "clusivity": null,
+          "underlyingMarker": "ho-",
+          "oralVariant": null,
+          "nasalVariant": null,
+          "function": "personIndex"
+        }
+      ],
+      "inclusiveExclusive": {
+        "inclusive": true,
+        "exclusive": true
+      },
+      "oralVariant": true,
+      "nasalVariant": true,
+      "restrictions": [
+        "El catálogo lema por lema permanece pendiente.",
+        "negativePattern:unreviewed"
+      ],
+      "exceptions": [],
+      "references": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "p. 104",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "validationStatus": "sourceVerified",
+      "allowedForGeneration": false,
+      "conflictIds": [
+        "C-001"
+      ],
+      "morphemeSlots": [],
+      "realizationRules": []
+    }
+  ],
+  "lexemes": [
+    {
+      "id": "LEX-CANDIDATE-MBAEICHAPA",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "unreviewed",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-008",
+          "sourceTitle": "NALVI PASO 2B — actividades existentes de Guaraní General",
+          "sourceAuthor": "Equipo NALVI",
+          "sourceInstitution": "NALVI",
+          "sourceYear": 2026,
+          "sourceURL": "urn:nalvi:paso-2b:general-activities",
+          "sourcePage": "general-u01-significado-mba-eichapa",
+          "sourceEdition": null,
+          "sourceLocatorType": "section",
+          "sourceForm": "Mba’éichapa",
+          "validationStatus": "unreviewed"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "normalizedForm": "mba’éichapa",
+      "sourceForms": [
+        "Mba’éichapa"
+      ],
+      "partOfSpeech": [
+        "other"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "¿Cómo estás?",
+          "register": [
+            "unknown"
+          ],
+          "contexts": [
+            "greetingCandidate"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "unassigned",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "No se infiere frecuencia desde una actividad existente."
+      },
+      "verbData": null,
+      "termStatus": null
+    },
+    {
+      "id": "LEX-CANDIDATE-AGUYJE",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "unreviewed",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-008",
+          "sourceTitle": "NALVI PASO 2B — actividades existentes de Guaraní General",
+          "sourceAuthor": "Equipo NALVI",
+          "sourceInstitution": "NALVI",
+          "sourceYear": 2026,
+          "sourceURL": "urn:nalvi:paso-2b:general-activities",
+          "sourcePage": "general-u01-elegir-aguyje",
+          "sourceEdition": null,
+          "sourceLocatorType": "section",
+          "sourceForm": "Aguyje",
+          "validationStatus": "unreviewed"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "normalizedForm": "aguyje",
+      "sourceForms": [
+        "Aguyje"
+      ],
+      "partOfSpeech": [
+        "other"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "gracias",
+          "register": [
+            "unknown"
+          ],
+          "contexts": [
+            "courtesyCandidate"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "unassigned",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "No se infiere frecuencia desde una actividad existente."
+      },
+      "verbData": null,
+      "termStatus": null
+    },
+    {
+      "id": "LEX-CANDIDATE-JAJOTOPATA",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "unreviewed",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-008",
+          "sourceTitle": "NALVI PASO 2B — actividades existentes de Guaraní General",
+          "sourceAuthor": "Equipo NALVI",
+          "sourceInstitution": "NALVI",
+          "sourceYear": 2026,
+          "sourceURL": "urn:nalvi:paso-2b:general-activities",
+          "sourcePage": "general-u01-escuchar-jajotopata",
+          "sourceEdition": null,
+          "sourceLocatorType": "section",
+          "sourceForm": "Jajotopata",
+          "validationStatus": "unreviewed"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "normalizedForm": "jajotopata",
+      "sourceForms": [
+        "Jajotopata"
+      ],
+      "partOfSpeech": [
+        "other"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "nos vemos",
+          "register": [
+            "unknown"
+          ],
+          "contexts": [
+            "farewellCandidate"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "unassigned",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "No se infiere frecuencia desde una actividad existente."
+      },
+      "verbData": null,
+      "termStatus": null
+    },
+    {
+      "id": "LEX-PILOT-AKA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e46",
+          "sourcePage": "lexicon/01.htm#e46",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "akã",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e46",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "akã",
+      "sourceForms": [
+        "akã"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "cabeza",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-AO-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e91",
+          "sourcePage": "lexicon/01.htm#e91",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "ao",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e91",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "ao",
+      "sourceForms": [
+        "ao"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "ropa",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-APYKA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e110",
+          "sourcePage": "lexicon/01.htm#e110",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "apyka",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e110",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "apyka",
+      "sourceForms": [
+        "apyka"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "asiento",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-ARANDUKA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e130",
+          "sourcePage": "lexicon/01.htm#e130",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "aranduka",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e130",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "aranduka",
+      "sourceForms": [
+        "aranduka"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "libro",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-AVATI-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/01.htm#e186",
+          "sourcePage": "lexicon/01.htm#e186",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "avati",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/01.htm#e186",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "avati",
+      "sourceForms": [
+        "avati"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "maíz",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-GUYRA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/05.htm#e318",
+          "sourcePage": "lexicon/05.htm#e318",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "guyra",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/05.htm#e318",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "guyra",
+      "sourceForms": [
+        "guyra"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "ave",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-IRUNDY-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/08.htm#e377",
+          "sourcePage": "lexicon/08.htm#e377",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "irundy",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/08.htm#e377",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "irundy",
+      "sourceForms": [
+        "irundy"
+      ],
+      "partOfSpeech": [
+        "numeral"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "cuatro",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-JAGUA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e396",
+          "sourcePage": "lexicon/10.htm#e396",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "jagua",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e396",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "jagua",
+      "sourceForms": [
+        "jagua"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "perro",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-JASY-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e426",
+          "sourcePage": "lexicon/10.htm#e426",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "jasy",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e426",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "jasy",
+      "sourceForms": [
+        "jasy"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "luna",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-JURU-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/10.htm#e472",
+          "sourcePage": "lexicon/10.htm#e472",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "juru",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/10.htm#e472",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "juru",
+      "sourceForms": [
+        "juru"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "boca",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-KUARAHY-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/11.htm#e683",
+          "sourcePage": "lexicon/11.htm#e683",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "kuarahy",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/11.htm#e683",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "kuarahy",
+      "sourceForms": [
+        "kuarahy"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "sol",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-MANDIO-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e812",
+          "sourcePage": "lexicon/13.htm#e812",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "mandi’o",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e812",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "mandi’o",
+      "sourceForms": [
+        "mandi’o"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "mandioca",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-MITA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e859",
+          "sourcePage": "lexicon/13.htm#e859",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "mitã",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e859",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "mitã",
+      "sourceForms": [
+        "mitã"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "niño",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-MOKOI-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/13.htm#e868",
+          "sourcePage": "lexicon/13.htm#e868",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "mokõi",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/13.htm#e868",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "mokõi",
+      "sourceForms": [
+        "mokõi"
+      ],
+      "partOfSpeech": [
+        "numeral"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "dos",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-MBARAKAJA-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/14.htm#e902",
+          "sourcePage": "lexicon/14.htm#e902",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "mbarakaja",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/14.htm#e902",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "mbarakaja",
+      "sourceForms": [
+        "mbarakaja"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "gato",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-MBOHAPY-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/14.htm#e965",
+          "sourcePage": "lexicon/14.htm#e965",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "mbohapy",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/14.htm#e965",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "mbohapy",
+      "sourceForms": [
+        "mbohapy"
+      ],
+      "partOfSpeech": [
+        "numeral"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "tres",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-PANAMBI-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1238",
+          "sourcePage": "lexicon/21.htm#e1238",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "panambi",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1238",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "panambi",
+      "sourceForms": [
+        "panambi"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "mariposa",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-PETEI-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1280",
+          "sourcePage": "lexicon/21.htm#e1280",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "peteĩ",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1280",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "peteĩ",
+      "sourceForms": [
+        "peteĩ"
+      ],
+      "partOfSpeech": [
+        "numeral"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "uno",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-PY-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1439",
+          "sourcePage": "lexicon/21.htm#e1439",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "py",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1439",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "py",
+      "sourceForms": [
+        "py"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "pie",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    },
+    {
+      "id": "LEX-PILOT-PYHARE-001",
+      "recordType": "lexeme",
+      "languageVariant": "gug-PY",
+      "validationStatus": "normativeVerified",
+      "allowedForGeneration": true,
+      "sourceReferences": [
+        {
+          "sourceId": "S-002",
+          "sourceTitle": "Diccionario Guaraní Paraguayo",
+          "sourceAuthor": "Departamento de Lexicografía y Terminología de la Academia de la Lengua Guaraní",
+          "sourceInstitution": "Academia de la Lengua Guaraní; consulta publicada por la Secretaría de Políticas Lingüísticas",
+          "sourceYear": 2021,
+          "sourceURL": "https://spl.gov.py/recurso/Diccionario%20Guarani%20Paraguayo/lexicon/21.htm#e1452",
+          "sourcePage": "lexicon/21.htm#e1452",
+          "sourceEdition": "Segunda edición, diciembre de 2021",
+          "sourceLocatorType": "webPage",
+          "sourceForm": "pyhare",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-002",
+        "sourcePage": "lexicon/21.htm#e1452",
+        "verifiedAt": "2026-08-29T04:36:01Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedSenseIds": [
+          "sense-1"
+        ],
+        "authorizedUses": [
+          "recognition",
+          "exactRecall",
+          "matching",
+          "controlledWriting"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "Autoriza únicamente la forma y la acepción concreta registradas. No autoriza ejemplos, oraciones, conjugaciones ni acepciones adicionales."
+      },
+      "version": "1.0.0-normative",
+      "createdAt": "2026-08-29T04:36:01Z",
+      "updatedAt": "2026-08-29T04:36:01Z",
+      "changeHistory": [
+        {
+          "date": "2026-08-29T04:36:01Z",
+          "summary": "Acepción concreta habilitada como normativeVerified mediante comprobación directa de fuente Nivel A; sin revisión experta humana.",
+          "reviewerId": null
+        }
+      ],
+      "normalizedForm": "pyhare",
+      "sourceForms": [
+        "pyhare"
+      ],
+      "partOfSpeech": [
+        "noun"
+      ],
+      "senses": [
+        {
+          "id": "sense-1",
+          "definitionGuarani": null,
+          "glossEs": "noche",
+          "register": [
+            "neutral"
+          ],
+          "contexts": [
+            "pilotNormativeExactSense"
+          ],
+          "professionalDomains": [],
+          "exampleIds": []
+        }
+      ],
+      "pedagogicalLevel": "starter",
+      "variants": [],
+      "frequency": {
+        "status": "unmeasured",
+        "method": null,
+        "corpusId": null,
+        "queryDate": null,
+        "rawCount": null,
+        "normalizedRate": null,
+        "coverageWarning": "La habilitación normativa no implica una medición de frecuencia."
+      },
+      "verbData": null,
+      "termStatus": "attested"
+    }
+  ],
+  "linguisticRules": [
+    {
+      "id": "RULE-POSSESSION-001",
+      "recordType": "linguisticRule",
+      "languageVariant": "gug-PY",
+      "validationStatus": "sourceVerified",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "pp. 74–81",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "domain": "syntax",
+      "topic": "Orden básico de la construcción posesiva",
+      "statement": "El poseedor precede al elemento poseído.",
+      "constraints": [
+        "La alomorfía y las clases nominales deben modelarse antes de generar ejercicios."
+      ],
+      "appliesTo": [
+        "possession"
+      ],
+      "exceptions": [],
+      "oralNasalCondition": "requiresReview",
+      "morphemeOrder": [
+        "possessor",
+        "possessed"
+      ],
+      "exampleIds": [],
+      "conflictIds": []
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C-001",
+      "recordType": "conflict",
+      "languageVariant": "gug-PY",
+      "validationStatus": "conflict",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "pp. 95–106",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        },
+        {
+          "sourceId": "S-005",
+          "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+          "sourceAuthor": "David Galeano Olivera",
+          "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+          "sourceYear": 2022,
+          "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+          "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+          "sourceEdition": null,
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "topic": "Cantidad y alcance de los verbos irregulares",
+      "variantA": {
+        "label": "Norma oficial",
+        "claim": "La gramática oficial identifica tres verbos irregulares o lexemas variables: ju, ha/ho y ’e.",
+        "sourceReferences": [
+          {
+            "sourceId": "S-001",
+            "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+            "sourceAuthor": "Academia de la Lengua Guaraní",
+            "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+            "sourceYear": 2020,
+            "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+            "sourcePage": "pp. 95–106",
+            "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+            "sourceLocatorType": "printedPage",
+            "validationStatus": "sourceVerified"
+          }
+        ]
+      },
+      "variantB": {
+        "label": "Clasificación académica amplia",
+        "claim": "Galeano Olivera (2022) usa una clasificación de seis que añade ’a, ’u y y’u.",
+        "sourceReferences": [
+          {
+            "sourceId": "S-005",
+            "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+            "sourceAuthor": "David Galeano Olivera",
+            "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+            "sourceYear": 2022,
+            "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+            "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+            "sourceEdition": null,
+            "sourceLocatorType": "printedPage",
+            "validationStatus": "sourceVerified"
+          }
+        ]
+      },
+      "sourceA": {
+        "sourceId": "S-001",
+        "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+        "sourceAuthor": "Academia de la Lengua Guaraní",
+        "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+        "sourceYear": 2020,
+        "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+        "sourcePage": "pp. 95–106",
+        "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+        "sourceLocatorType": "printedPage",
+        "validationStatus": "sourceVerified"
+      },
+      "sourceB": {
+        "sourceId": "S-005",
+        "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+        "sourceAuthor": "David Galeano Olivera",
+        "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+        "sourceYear": 2022,
+        "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+        "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+        "sourceEdition": null,
+        "sourceLocatorType": "printedPage",
+        "validationStatus": "sourceVerified"
+      },
+      "needsHumanReview": true,
+      "automaticUseBlocked": true,
+      "workingHypothesis": "La diferencia parece taxonómica; no se adopta como resolución.",
+      "resolution": null,
+      "resolvedAt": null
+    },
+    {
+      "id": "C-002",
+      "recordType": "conflict",
+      "languageVariant": "gug-PY",
+      "validationStatus": "conflict",
+      "allowedForGeneration": false,
+      "sourceReferences": [
+        {
+          "sourceId": "S-001",
+          "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+          "sourceAuthor": "Academia de la Lengua Guaraní",
+          "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+          "sourceYear": 2020,
+          "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+          "sourcePage": "pp. 95–96",
+          "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        },
+        {
+          "sourceId": "S-005",
+          "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+          "sourceAuthor": "David Galeano Olivera",
+          "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+          "sourceYear": 2022,
+          "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+          "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+          "sourceEdition": null,
+          "sourceLocatorType": "printedPage",
+          "validationStatus": "sourceVerified"
+        }
+      ],
+      "createdAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-08-27T00:00:00Z",
+      "topic": "Función de la i en los verbos aireales",
+      "variantA": {
+        "label": "Norma oficial",
+        "claim": "La gramática oficial rechaza una función meramente fonética y la vincula con claridad, objeto incorporado y posible contraste semántico.",
+        "sourceReferences": [
+          {
+            "sourceId": "S-001",
+            "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+            "sourceAuthor": "Academia de la Lengua Guaraní",
+            "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+            "sourceYear": 2020,
+            "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+            "sourcePage": "pp. 95–96",
+            "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+            "sourceLocatorType": "printedPage",
+            "validationStatus": "sourceVerified"
+          }
+        ]
+      },
+      "variantB": {
+        "label": "Descripción académica complementaria",
+        "claim": "El artículo de 2022 denomina a la i partícula eufónica.",
+        "sourceReferences": [
+          {
+            "sourceId": "S-005",
+            "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+            "sourceAuthor": "David Galeano Olivera",
+            "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+            "sourceYear": 2022,
+            "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+            "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+            "sourceEdition": null,
+            "sourceLocatorType": "printedPage",
+            "validationStatus": "sourceVerified"
+          }
+        ]
+      },
+      "sourceA": {
+        "sourceId": "S-001",
+        "sourceTitle": "Guarani Ñe’ẽtekuaa / Gramática Guaraní",
+        "sourceAuthor": "Academia de la Lengua Guaraní",
+        "sourceInstitution": "Guarani Ñe’ẽ Rerekuapavẽ — Academia de la Lengua Guaraní",
+        "sourceYear": 2020,
+        "sourceURL": "https://guaraniayvu.org/pdf/GramaticaGuarani.pdf",
+        "sourcePage": "pp. 95–96",
+        "sourceEdition": "Versión corregida, tercera edición, agosto de 2020",
+        "sourceLocatorType": "printedPage",
+        "validationStatus": "sourceVerified"
+      },
+      "sourceB": {
+        "sourceId": "S-005",
+        "sourceTitle": "Verbos irregulares y aireales de la lengua Guaraní",
+        "sourceAuthor": "David Galeano Olivera",
+        "sourceInstitution": "Universidad Nacional de Asunción, Instituto Superior de Lenguas",
+        "sourceYear": 2022,
+        "sourceURL": "https://doi.org/10.47133/NEMITYRA2022100A3",
+        "sourcePage": "Ñemitỹrã 4(1), pp. 47–52",
+        "sourceEdition": null,
+        "sourceLocatorType": "printedPage",
+        "validationStatus": "sourceVerified"
+      },
+      "needsHumanReview": true,
+      "automaticUseBlocked": true,
+      "workingHypothesis": null,
+      "resolution": null,
+      "resolvedAt": null
+    }
+  ],
+  "authorizationSummary": {
+    "normativeVerified": 20,
+    "expertVerified": 0,
+    "allowedForGeneration": 20
+  },
+  "inventories": {
+    "affirmation": {
+      "status": "unavailable",
+      "ruleIds": []
+    },
+    "negation": {
+      "status": "unavailable",
+      "ruleIds": []
+    },
+    "interrogation": {
+      "status": "unavailable",
+      "ruleIds": []
+    },
+    "mandate": {
+      "status": "unavailable",
+      "ruleIds": []
+    },
+    "possession": {
+      "status": "reviewRequired",
+      "ruleIds": [
+        "RULE-POSSESSION-001"
+      ]
+    },
+    "oralNasalMorphophonology": {
+      "status": "unavailable",
+      "ruleIds": []
+    },
+    "nominalClasses": {
+      "status": "unavailable",
+      "ruleIds": []
+    }
+  },
+  "supportedFutureVerbClasses": [
+    "areal",
+    "aireal",
+    "hareal",
+    "verbalizedOrChendal",
+    "regular",
+    "specialBehavior",
+    "defective",
+    "unipersonal",
+    "intransitive",
+    "transitive",
+    "bitransitive"
+  ],
+  "blockedConflicts": [
+    "C-001",
+    "C-002"
+  ],
+  "openAIConnected": false
+}

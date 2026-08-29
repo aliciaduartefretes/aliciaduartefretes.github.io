@@ -16,6 +16,19 @@ const ALLOWED_SKILLS = new Set([
   "comprehension", "construction", "interaction", "grammar-awareness", "pronunciation-awareness"
 ]);
 const BLOCKED_STATUSES = new Set(["unreviewed", "sourceVerified", "conflict", "rejected", "deprecated"]);
+const AUTHORIZED_STATUSES = new Set(["normativeVerified", "expertVerified"]);
+
+function hasValidNormativeVerification(record) {
+  if (record?.validationStatus !== "normativeVerified") return true;
+  const verification = record?.normativeVerification;
+  return verification?.method === "direct-normative-source-check"
+    && verification?.sourceAuthorityLevel === "A"
+    && verification?.humanExpertReview === false
+    && Array.isArray(verification?.openConflictIds) && verification.openConflictIds.length === 0
+    && typeof verification?.sourceId === "string" && verification.sourceId.length > 0
+    && typeof verification?.sourcePage === "string" && verification.sourcePage.length > 0
+    && Array.isArray(verification?.authorizedSenseIds) && verification.authorizedSenseIds.length > 0;
+}
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/;
 const FORBIDDEN_GENERATED_TEXT = /<\/?[a-z][^>]*>|```|<!doctype|\b(?:firebase\s+rules|function\s*\(|const\s+|let\s+|var\s+|import\s+|export\s+|<script|<style)\b/i;
 
@@ -126,8 +139,9 @@ export function filterAllowedKnowledge(records = [], requestedKnowledgeIds = [])
   return (Array.isArray(records) ? records : []).filter(record => {
     const id = String(record?.id || "");
     return requested.has(id)
-      && record?.validationStatus === "expertVerified"
+      && AUTHORIZED_STATUSES.has(record?.validationStatus)
       && record?.allowedForGeneration === true
+      && hasValidNormativeVerification(record)
       && !BLOCKED_STATUSES.has(record?.validationStatus)
       && !record?.needsHumanReview
       && !record?.automaticUseBlocked
@@ -137,7 +151,8 @@ export function filterAllowedKnowledge(records = [], requestedKnowledgeIds = [])
 
 function sanitizeKnowledgeRecord(record) {
   const selectedKeys = [
-    "id", "recordType", "languageVariant", "name", "title", "description", "lemma", "lexeme",
+    "id", "recordType", "languageVariant", "validationStatus", "name", "title", "description", "lemma", "lexeme",
+    "normalizedForm", "sourceForms", "senses",
     "underlyingForm", "surfaceForm", "forms", "morphemes", "rule", "rules", "examples",
     "restrictions", "constraints", "patternId", "person", "oralVariant", "nasalVariant"
   ];
@@ -319,7 +334,7 @@ export function createReinforcementService({
     }
 
     const allowedKnowledge = filterAllowedKnowledge(corpusRecords, request.knowledgeIds);
-    if (!allowedKnowledge.length) return fallback("NO_EXPERT_VERIFIED_GENERATION_KNOWLEDGE");
+    if (!allowedKnowledge.length) return fallback("NO_AUTHORIZED_GENERATION_KNOWLEDGE");
     if (!verifiedUserId) return fallback("AUTH_REQUIRED");
     if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) return fallback("OPENAI_NOT_CONFIGURED");
 
@@ -357,7 +372,7 @@ export function createReinforcementService({
         source: "openai-controlled-reinforcement",
         aiGenerated: true,
         generationVersion: REINFORCEMENT_VERSION,
-        validationStatus: "machineValidatedAgainstExpertKnowledge",
+        validationStatus: "machineValidatedAgainstAuthorizedKnowledge",
         allowedForMastery: false
       };
       cache.set(cacheKey, finalActivity);
@@ -375,7 +390,9 @@ export function createReinforcementService({
       version: REINFORCEMENT_VERSION,
       authorizedFunction: "generateReinforcementActivity",
       corpusRecords: corpusRecords.length,
+      normativeGenerationRecords: corpusRecords.filter(record => record?.validationStatus === "normativeVerified" && record?.allowedForGeneration === true).length,
       expertGenerationRecords: corpusRecords.filter(record => record?.validationStatus === "expertVerified" && record?.allowedForGeneration === true).length,
+      authorizedGenerationRecords: corpusRecords.filter(record => AUTHORIZED_STATUSES.has(record?.validationStatus) && record?.allowedForGeneration === true).length,
       existingActivities: existingActivities.length,
       openAICallCount,
       apiKeyExposedToClient: false

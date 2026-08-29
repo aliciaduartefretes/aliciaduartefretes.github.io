@@ -1,0 +1,62 @@
+{
+  "policyVersion": "2.1.0",
+  "effectiveFromStep": 8,
+  "mandatoryForFutureSteps": true,
+  "appliesTo": ["mastery", "adaptiveEngine", "interventionEngine", "openAI"],
+  "openAIEnabled": "serverOnlySelective",
+  "authorizedFunction": "generateReinforcementActivity",
+  "authorizedFunctions": ["generateReinforcementActivity", "improvePedagogicalIntervention", "generateAdaptiveInterventionPlan"],
+  "clientSideApiKeyAllowed": false,
+  "decisionGates": {
+    "scoring": { "field": "canScoreWithoutAI", "whenTrue": "scoreLocally", "aiMayScore": false },
+    "postErrorIntervention": {
+      "field": "wouldAIImproveIntervention",
+      "evaluatedAfterLocalScoring": true,
+      "whenTrue": "evaluateValidatedServerSideAIIntervention",
+      "whenFalse": "useLocalInterventionPlan"
+    }
+  },
+  "linguisticGenerationGate": {
+    "allowedValidationStatuses": ["normativeVerified", "expertVerified"],
+    "requiresAllowedForGeneration": true,
+    "requiresNoOpenConflict": true,
+    "blockedStatuses": ["unreviewed", "sourceVerified", "conflict", "rejected", "deprecated"],
+    "normativeVerified": {
+      "meaning": "Verificado directamente contra una fuente normativa oficial Nivel A, con localizador exacto y alcance autorizado inequívoco.",
+      "humanExpertReview": false,
+      "requiresNormativeVerificationMetadata": true,
+      "doesNotAuthorize": ["unlistedSenses", "examples", "sentences", "conjugation", "inferenceBeyondSource"]
+    }
+  },
+  "alwaysLocal": [
+    "objectiveScoring", "multipleChoiceCorrection", "matchingCorrection", "knownSentenceOrdering",
+    "exactAnswerCorrection", "xpUpdate", "livesUpdate", "progressRegistration", "basicMasteryUpdate",
+    "grammarEngineLookup", "uiRendering", "navigation"
+  ],
+  "authorizedInterventionValue": [
+    "errorDiagnosis", "pedagogicalStrategySelection", "modalityChange", "personalizedExplanation",
+    "differentIntervention", "reinforcementPlanning", "mechanicalRepetitionAvoidance"
+  ],
+  "prohibitedInterventionCalls": ["sayIncorrectOnly", "updatePoints", "queryKnownGrammarAnswer", "replaceDeterministicScoring"],
+  "noExactRepeat": {
+    "principle": "sameConcept !== sameExercise",
+    "requireDifferentFingerprintAfterError": true,
+    "preferModalityChange": true,
+    "fingerprintFields": ["conceptId", "activityType", "prompt", "instruction", "options", "answer", "media", "context"]
+  },
+  "privacy": {
+    "pseudonymizedPedagogicalContextOnly": true,
+    "blockedFields": ["fullName", "email", "institution", "role", "administrativeIdentifiers"]
+  },
+  "telemetry": ["callCount", "inputTokens", "outputTokens", "latencyMs", "errors", "estimatedCostUsd"],
+  "fallbackRequired": true,
+  "adaptivePlan": {
+    "minimumActivities": 1,
+    "maximumActivities": 4,
+    "structuredOutputRequired": true,
+    "validationPipeline": ["jsonSchema", "knowledgeBase", "grammarEngine", "activityTypeRules", "duplicateChecker", "allowedContent"],
+    "riskPolicy": { "GREEN": "show", "YELLOW": "showOnlyWhenExplicitlyEnabled", "RED": "neverShow" }
+  },
+  "studyMustContinueWithoutAI": true,
+  "uiLocales": ["es", "en", "pt", "fr", "it", "de"]
+}
