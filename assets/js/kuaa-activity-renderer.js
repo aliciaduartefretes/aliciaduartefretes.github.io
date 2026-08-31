@@ -12,12 +12,12 @@
   if (window.KUAA_ACTIVITY_ENGINE?.version === VERSION) return;
 
   const COPY = {
-    es: { activity: "Actividad", check: "Comprobar", listen: "Escuchar expresión", correct: "¡Excelente! Respuesta correcta.", wrong: "Todavía no. Inténtalo nuevamente.", write: "Escribe tu respuesta", fill: "Completa la frase", match: "Relaciona cada elemento", order: "Ordena la frase", unavailable: "Este tipo de actividad se habilitará en una etapa posterior.", speaking: "Práctica oral", scenario: "Escenario conversacional" },
-    en: { activity: "Activity", check: "Check", listen: "Listen to the expression", correct: "Excellent! Correct answer.", wrong: "Not yet. Try again.", write: "Write your answer", fill: "Complete the sentence", match: "Match each item", order: "Order the sentence", unavailable: "This activity type will be enabled in a later stage.", speaking: "Speaking practice", scenario: "Conversation scenario" },
-    pt: { activity: "Atividade", check: "Verificar", listen: "Ouvir a expressão", correct: "Excelente! Resposta correta.", wrong: "Ainda não. Tente novamente.", write: "Escreva sua resposta", fill: "Complete a frase", match: "Relacione cada elemento", order: "Ordene a frase", unavailable: "Este tipo de atividade será habilitado em uma etapa posterior.", speaking: "Prática oral", scenario: "Cenário de conversação" },
-    fr: { activity: "Activité", check: "Vérifier", listen: "Écouter l’expression", correct: "Excellent ! Bonne réponse.", wrong: "Pas encore. Réessayez.", write: "Écrivez votre réponse", fill: "Complétez la phrase", match: "Associez chaque élément", order: "Remettez la phrase dans l’ordre", unavailable: "Ce type d’activité sera activé lors d’une étape ultérieure.", speaking: "Pratique orale", scenario: "Scénario de conversation" },
-    it: { activity: "Attività", check: "Controlla", listen: "Ascolta l’espressione", correct: "Eccellente! Risposta corretta.", wrong: "Non ancora. Riprova.", write: "Scrivi la tua risposta", fill: "Completa la frase", match: "Associa ogni elemento", order: "Ordina la frase", unavailable: "Questo tipo di attività sarà abilitato in una fase successiva.", speaking: "Pratica orale", scenario: "Scenario di conversazione" },
-    de: { activity: "Aktivität", check: "Prüfen", listen: "Ausdruck anhören", correct: "Ausgezeichnet! Richtige Antwort.", wrong: "Noch nicht. Versuche es erneut.", write: "Schreibe deine Antwort", fill: "Vervollständige den Satz", match: "Ordne die Elemente zu", order: "Ordne den Satz", unavailable: "Dieser Aktivitätstyp wird in einer späteren Phase aktiviert.", speaking: "Sprechübung", scenario: "Gesprächsszenario" }
+    es: { activity: "Actividad", check: "Comprobar", listen: "Escuchar expresión", correct: "¡Excelente! Respuesta correcta.", wrong: "Todavía no. Inténtalo nuevamente.", write: "Escribe tu respuesta", fill: "Completa la respuesta", match: "Relaciona cada elemento", order: "Ordena la frase", learningContext: "Estamos practicando", hint: "Pista", unavailable: "Este tipo de actividad se habilitará en una etapa posterior.", speaking: "Práctica oral", scenario: "Escenario conversacional" },
+    en: { activity: "Activity", check: "Check", listen: "Listen to the expression", correct: "Excellent! Correct answer.", wrong: "Not yet. Try again.", write: "Write your answer", fill: "Complete the answer", match: "Match each item", order: "Order the sentence", learningContext: "We are practising", hint: "Hint", unavailable: "This activity type will be enabled in a later stage.", speaking: "Speaking practice", scenario: "Conversation scenario" },
+    pt: { activity: "Atividade", check: "Verificar", listen: "Ouvir a expressão", correct: "Excelente! Resposta correta.", wrong: "Ainda não. Tente novamente.", write: "Escreva sua resposta", fill: "Complete a resposta", match: "Relacione cada elemento", order: "Ordene a frase", learningContext: "Estamos praticando", hint: "Pista", unavailable: "Este tipo de atividade será habilitado em uma etapa posterior.", speaking: "Prática oral", scenario: "Cenário de conversação" },
+    fr: { activity: "Activité", check: "Vérifier", listen: "Écouter l’expression", correct: "Excellent ! Bonne réponse.", wrong: "Pas encore. Réessayez.", write: "Écrivez votre réponse", fill: "Complétez la réponse", match: "Associez chaque élément", order: "Remettez la phrase dans l’ordre", learningContext: "Nous travaillons", hint: "Indice", unavailable: "Ce type d’activité sera activé lors d’une étape ultérieure.", speaking: "Pratique orale", scenario: "Scénario de conversation" },
+    it: { activity: "Attività", check: "Controlla", listen: "Ascolta l’espressione", correct: "Eccellente! Risposta corretta.", wrong: "Non ancora. Riprova.", write: "Scrivi la tua risposta", fill: "Completa la risposta", match: "Associa ogni elemento", order: "Ordina la frase", learningContext: "Stiamo esercitando", hint: "Indizio", unavailable: "Questo tipo di attività sarà abilitato in una fase successiva.", speaking: "Pratica orale", scenario: "Scenario di conversazione" },
+    de: { activity: "Aktivität", check: "Prüfen", listen: "Ausdruck anhören", correct: "Ausgezeichnet! Richtige Antwort.", wrong: "Noch nicht. Versuche es erneut.", write: "Schreibe deine Antwort", fill: "Vervollständige die Antwort", match: "Ordne die Elemente zu", order: "Ordne den Satz", learningContext: "Wir üben", hint: "Hinweis", unavailable: "Dieser Aktivitätstyp wird in einer späteren Phase aktiviert.", speaking: "Sprechübung", scenario: "Gesprächsszenario" }
   };
 
   const TYPE_ALIASES = new Map([
@@ -49,11 +49,23 @@
     return list.map(item => localize(item, language)).filter(Boolean);
   };
 
+  function learningSupport(activity, language) {
+    const copy = copyFor(language), prompt = localize(activity.prompt, language);
+    const sourcePrompt = localize(activity.lessonContext?.sourcePrompt, language).trim();
+    const template = localize(activity.template, language);
+    const explanation = localize(activity.explanation, language).trim();
+    const hints = (activity.hints || []).map(item => localize(item, language).trim()).filter(Boolean);
+    const contextAlreadyInTemplate = sourcePrompt && normalizeAnswer(template).includes(normalizeAnswer(sourcePrompt));
+    const showContext = sourcePrompt && !contextAlreadyInTemplate && normalizeAnswer(sourcePrompt) !== normalizeAnswer(prompt);
+    if (!showContext && !explanation && !hints.length) return "";
+    return `<aside class="kuaa-learning-support" aria-label="${escapeHtml(copy.learningContext)}">${showContext ? `<span>${escapeHtml(copy.learningContext)}</span><p>${escapeHtml(sourcePrompt)}</p>` : ""}${explanation ? `<p class="kuaa-learning-support__explanation">${escapeHtml(explanation)}</p>` : ""}${hints.length ? `<p class="kuaa-learning-support__hint"><b>${escapeHtml(copy.hint)}:</b> ${escapeHtml(hints.join(" · "))}</p>` : ""}</aside>`;
+  }
+
   function shell(target, activity, language, body, typeLabel) {
     const copy = copyFor(language);
     delete target.dataset.nalviSubmissionLocked;
     target.dataset.nalviActivityStartedAt = String(Date.now());
-    target.innerHTML = `<div class="quiz kuaa-activity" data-kuaa-activity="${escapeHtml(activity.id || "activity")}" data-activity-type="${escapeHtml(normalizeType(activity.type))}"><small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(typeLabel || copy.activity)}</small><h3>${escapeHtml(localize(activity.prompt, language))}</h3>${activity.instruction ? `<p class="kuaa-activity-instruction">${escapeHtml(localize(activity.instruction, language))}</p>` : ""}${body}<div id="feedback" aria-live="polite"></div></div>`;
+    target.innerHTML = `<div class="quiz kuaa-activity" data-kuaa-activity="${escapeHtml(activity.id || "activity")}" data-activity-type="${escapeHtml(normalizeType(activity.type))}"><small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(typeLabel || copy.activity)}</small><h3>${escapeHtml(localize(activity.prompt, language))}</h3>${activity.instruction ? `<p class="kuaa-activity-instruction">${escapeHtml(localize(activity.instruction, language))}</p>` : ""}${learningSupport(activity, language)}${body}<div id="feedback" aria-live="polite"></div></div>`;
     return target.querySelector(".kuaa-activity");
   }
 
@@ -83,6 +95,10 @@
     const outcome = typeof context.onSubmit === "function"
       ? context.onSubmit({ ...scoredResult, progression }, activity)
       : (defaultResult(target, scoredResult, context.language), scoredResult);
+    const adaptiveSubmitHandled = typeof context.onAdaptiveSubmit === "function";
+    if (adaptiveSubmitHandled) {
+      context.onAdaptiveSubmit({ ...scoredResult, progression }, activity);
+    }
     target.dispatchEvent(new CustomEvent("nalvi:activity-scored", {
       bubbles: true,
       detail: {
@@ -91,7 +107,8 @@
         progression,
         uiLocale: context.language,
         scoredLocally: true,
-        canScoreWithoutAI: true
+        canScoreWithoutAI: true,
+        adaptiveSubmitHandled
       }
     }));
     return { outcome, progression };
@@ -154,7 +171,10 @@
   }
 
   function renderFillBlank(target, activity, context) {
-    const language = context.language, copy = copyFor(language), template = localize(activity.template, language).replace(/\{\{blank\}\}/g, "______");
+    const language = context.language, copy = copyFor(language), rawTemplate = localize(activity.template, language);
+    const sourcePrompt = localize(activity.lessonContext?.sourcePrompt, language).trim();
+    const safeTemplate = rawTemplate.replace(/\{\{blank\}\}|_+/g, "").trim() ? rawTemplate : `${sourcePrompt || copy.fill}: {{blank}}`;
+    const template = safeTemplate.replace(/\{\{blank\}\}/g, "______");
     const body = `<div class="kuaa-fill-line">${escapeHtml(template)}</div><input class="kuaa-fill-answer" data-kuaa-input autocomplete="off" placeholder="${escapeHtml(copy.fill)}"><div class="quiz-actions"><button class="btn" id="check" type="button" disabled>${escapeHtml(copy.check)}</button></div>`;
     shell(target, activity, language, body, copy.fill);
     bindTextAnswer(target, activity, context);

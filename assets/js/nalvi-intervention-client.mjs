@@ -4,27 +4,28 @@ import {
   needsAdaptiveTutor,
   planPedagogicalIntervention,
   wouldAIImproveIntervention
-} from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-1";
-import { buildDeterministicFallbackActivity } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-TUTOR-1";
+} from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
+import { buildDeterministicFallbackActivity } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-TUTOR-4";
 
-const VERSION = "NALVI-TUTOR-CLIENT-2";
+const VERSION = "NALVI-TUTOR-CLIENT-7";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
-const HISTORY_KEY = "nalvi.tutor.history.v1";
-const ATTEMPT_KEY = "nalvi.tutor.attempts.v1";
-const EFFECTIVENESS_KEY = "nalvi.tutor.strategy-effectiveness.v1";
-const EXPOSURE_KEY = "nalvi.tutor.answer-exposure.v1";
+const HISTORY_KEY = "nalvi.tutor.history.v2";
+const ATTEMPT_KEY = "nalvi.tutor.attempts.v2";
+const EFFECTIVENESS_KEY = "nalvi.tutor.strategy-effectiveness.v2";
+const EXPOSURE_KEY = "nalvi.tutor.answer-exposure.v2";
+const ATTEMPT_TTL_MS = 30 * 60 * 1000;
 const LANGUAGES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const activeRequests = new WeakMap();
 const activeSequences = new WeakMap();
 let sessionHistory = [];
 const COPY = Object.freeze({
-  es: { wrong: "No del todo. Probemos de otra forma.", loading: "Preparando otra forma de practicar…", sequence: "Práctica {current} de {total}", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde." },
-  en: { wrong: "Not quite. Let’s try another way.", loading: "Preparing another way to practise…", sequence: "Practice {current} of {total}", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review." },
-  pt: { wrong: "Ainda não. Vamos tentar de outra forma.", loading: "Preparando outra forma de praticar…", sequence: "Prática {current} de {total}", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde." },
-  fr: { wrong: "Pas tout à fait. Essayons autrement.", loading: "Préparation d’une autre façon de pratiquer…", sequence: "Pratique {current} sur {total}", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure." },
-  it: { wrong: "Non proprio. Proviamo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", sequence: "Pratica {current} di {total}", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo." },
-  de: { wrong: "Noch nicht ganz. Versuchen wir es anders.", loading: "Eine andere Übungsform wird vorbereitet…", sequence: "Übung {current} von {total}", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt." }
+  es: { wrong: "No del todo. Probemos de otra forma.", loading: "Preparando otra forma de practicar…", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde." },
+  en: { wrong: "Not quite. Let’s try another way.", loading: "Preparing another way to practise…", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review." },
+  pt: { wrong: "Ainda não. Vamos tentar de outra forma.", loading: "Preparando outra forma de praticar…", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde." },
+  fr: { wrong: "Pas tout à fait. Essayons autrement.", loading: "Préparation d’une autre façon de pratiquer…", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure." },
+  it: { wrong: "Non proprio. Proviamo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo." },
+  de: { wrong: "Noch nicht ganz. Versuchen wir es anders.", loading: "Eine andere Übungsform wird vorbereitet…", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt." }
 });
 
 const locale = value => LANGUAGES.has(value) ? value : "es";
@@ -33,7 +34,6 @@ const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character =>
 const readJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; } };
 const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* safe anonymous fallback */ } };
 const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
-const sequenceLabel = (text, current, total) => text.replace("{current}", String(current)).replace("{total}", String(total));
 const activityCatalog = () => (window.KUAA_GENERAL_ACTIVITY_DATA?.activities || []).map(activity => ({ ...activity, conceptId: activity.conceptId || activity.conceptIds?.[0] || "" }));
 
 function answerFor(activity, language) {
@@ -55,8 +55,75 @@ function history() {
 }
 function nextAttempt(activity) {
   const attempts = readJson(ATTEMPT_KEY, {}), key = activity.conceptId || activity.conceptIds?.[0] || activity.id || "activity";
-  attempts[key] = Math.min(12, Math.max(0, Number(attempts[key]) || 0) + 1);
-  writeJson(ATTEMPT_KEY, attempts); return attempts[key];
+  const now = Date.now(), stored = attempts[key];
+  const previous = stored && typeof stored === "object" && now - Number(stored.updatedAt || 0) <= ATTEMPT_TTL_MS
+    ? Math.max(0, Number(stored.count) || 0)
+    : 0;
+  const count = Math.min(12, previous + 1);
+  attempts[key] = { count, updatedAt: now };
+  writeJson(ATTEMPT_KEY, attempts); return count;
+}
+
+function hasVisibleFillContext(activity, language) {
+  const template = localize(activity?.template, language).replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
+  return Boolean(template);
+}
+
+function normalizeRenderableActivity(activity = {}, context) {
+  const language = context.uiLocale, type = activity.type || activity.activityType || "writing";
+  const correctAnswer = localize(activity.correctAnswer || activity.answer || context.correctAnswer, language);
+  const sourcePrompt = localize(activity.lessonContext?.sourcePrompt || context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, language).trim();
+  const sourceInstruction = localize(activity.lessonContext?.sourceInstruction || context.activity?.lessonContext?.sourceInstruction || context.activity?.instruction, language).trim();
+  const options = (activity.options || []).map((option, index) => {
+    const label = localize(option?.label ?? option?.text ?? option?.value ?? option, language);
+    return { ...option, id: String(option?.id ?? `option-${index}`), label, value: localize(option?.value ?? option?.text ?? option?.label ?? option, language) };
+  }).filter(option => option.label);
+  const correct = options.find(option => String(option.id) === String(activity.correctOptionId) || option.value.normalize("NFC").trim().toLocaleLowerCase() === correctAnswer.normalize("NFC").trim().toLocaleLowerCase());
+  const tokens = (activity.tokens || []).map((token, index) => ({ ...token, id: String(token?.id ?? index), label: localize(token?.label ?? token?.text ?? token, language) }));
+  let template = localize(activity.template, language);
+  if (type === "fill-blank" && !hasVisibleFillContext({ template }, language)) template = `${sourcePrompt || localize(activity.prompt, language)} → {{blank}}`;
+  return {
+    ...activity, type, activityType: type, options, tokens, template,
+    correctOptionId: activity.correctOptionId || correct?.id || "",
+    acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : correctAnswer ? [correctAnswer] : [],
+    answer: activity.answer || correctAnswer,
+    audioText: activity.audioText || (activity.media?.type === "audio" ? activity.media.value : ""),
+    audio: activity.audio || (activity.media?.type === "audio" ? activity.media.value : ""),
+    image: activity.image || (activity.media?.type === "image" ? activity.media.value : ""),
+    imageAlt: activity.imageAlt || activity.media?.alt || "",
+    lessonContext: {
+      ...(context.activity?.lessonContext || {}),
+      ...(activity.lessonContext || {}),
+      sourcePrompt,
+      sourceInstruction,
+      sourceAnswer: localize(activity.lessonContext?.sourceAnswer || context.activity?.lessonContext?.sourceAnswer || context.correctAnswer, language),
+      sourceOptions: activity.lessonContext?.sourceOptions || context.activity?.lessonContext?.sourceOptions || context.activity?.options || [],
+      sourceCorrectOptionId: activity.lessonContext?.sourceCorrectOptionId || context.activity?.lessonContext?.sourceCorrectOptionId || context.activity?.correctOptionId || ""
+    }
+  };
+}
+
+function normalizePlanForRenderer(plan, context) {
+  return { ...plan, activities: (plan?.activities || []).map(activity => normalizeRenderableActivity(activity, context)) };
+}
+
+function isPedagogicallyClear(activity, language) {
+  if (!activity) return false;
+  if ((activity.type || activity.activityType) === "fill-blank" && !hasVisibleFillContext(activity, language)) return false;
+  return Boolean(localize(activity.prompt || activity.instruction || activity.lessonContext?.sourcePrompt, language).trim());
+}
+
+function targetsFailedKnowledge(activity, context) {
+  if (!activity) return false;
+  const expected = localize(context.correctAnswer, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase();
+  const candidateConcepts = [activity.conceptId, ...(activity.conceptIds || [])].filter(Boolean).map(String);
+  if (!expected) return Boolean(context.conceptId && candidateConcepts.includes(String(context.conceptId)));
+  const candidateAnswers = [
+    activity.correctAnswer,
+    activity.answer,
+    ...(activity.acceptedAnswers || [])
+  ].map(value => localize(value, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase()).filter(Boolean);
+  return candidateAnswers.includes(expected);
 }
 function remember(context, plan) {
   const current = history();
@@ -88,11 +155,11 @@ function updateStrategyEffectiveness(strategy, correct) {
 }
 
 function professionalLocalPlan(context, localPlan, reason = "PROFESSIONAL_LOCAL_FALLBACK") {
-  let activity = localPlan?.nextActivity;
+  let activity = normalizeRenderableActivity(buildDeterministicFallbackActivity(context, context.attemptNumber), context);
   let fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
   const recent = new Set(context.recentActivityFingerprints || []); recent.add(context.previousActivityFingerprint);
-  if (!activity || recent.has(fingerprint)) {
-    activity = buildDeterministicFallbackActivity(context, context.attemptNumber);
+  if (!targetsFailedKnowledge(activity, context) || !isPedagogicallyClear(activity, context.uiLocale) || recent.has(fingerprint)) {
+    activity = normalizeRenderableActivity(buildDeterministicFallbackActivity(context, context.attemptNumber + 1), context);
     fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
   }
   const language = context.uiLocale, copy = COPY[language] || COPY.es;
@@ -154,12 +221,16 @@ function renderSequenceActivity(target, state, index) {
   const activity = state.plan.activities[index]; if (!activity) return finishSequence(target, state, null);
   state.index = index; activeSequences.set(target, state);
   if (activity.requiresStudentResponse === false) return renderPassiveExample(target, state, activity, index);
-  window.renderActivity({ ...activity, nalviGuided: Number(activity.helpLevel || 0) > 0, adaptivePlanId: state.plan.planId, adaptivePlanIndex: index, adaptivePlanLength: state.plan.activities.length }, { target, language: state.language });
-  const card = target.querySelector(".kuaa-activity");
-  if (card) {
-    const progress = document.createElement("div"); progress.className = "nalvi-adaptive-sequence";
-    progress.textContent = sequenceLabel((COPY[state.language] || COPY.es).sequence, index + 1, state.plan.activities.length); card.prepend(progress);
-  }
+  const renderedActivity = { ...activity, nalviGuided: Number(activity.helpLevel || 0) > 0, adaptivePlanId: state.plan.planId, adaptivePlanIndex: index, adaptivePlanLength: state.plan.activities.length };
+  window.renderActivity(renderedActivity, {
+    target,
+    language: state.language,
+    onAdaptiveSubmit(result, submittedActivity) {
+      const detail = { activity: submittedActivity, result, progression: result.progression, uiLocale: state.language };
+      if (continueSequence(detail, target)) return;
+      if (result.correct === false) handleIncorrect(detail, target);
+    }
+  });
   scrollToActivity(target);
   window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_RENDERED", { activityId: activity.id, conceptId: activity.conceptId || activity.conceptIds?.[0], correct: false,
     strategy: state.plan.strategy?.primaryStrategy, usedAI: state.usedAI, progressionDecision: "BLOCK_AND_INTERVENE", fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: state.language }) });
@@ -184,9 +255,10 @@ function buildContext(detail) {
   const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang), attemptNumber = nextAttempt(activity);
   const recent = history(), conceptId = activity.conceptId || activity.conceptIds?.[0] || "GG-C-001";
   const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
+  const semanticAnswer = localize(activity.lessonContext?.sourceAnswer, language).trim() || answerFor(activity, language);
   return { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
     activityType: activity.type || activity.activityType || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
-    studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: answerFor(activity, language), attemptNumber,
+    studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: semanticAnswer, attemptNumber,
     recentErrors: recent.filter(item => item.conceptId === conceptId).map(item => ({ conceptId, errorType: item.errorType })), recentActivities: [],
     recentActivityFingerprints: recent.map(item => item.fingerprint), modalitiesAlreadyUsed: recent.map(item => item.activityType),
     recentInterventions: recent.map(item => ({ strategy: item.strategy, errorType: item.errorType })), hintHistory: [], retentionHistory: [],
@@ -198,7 +270,15 @@ function buildContext(detail) {
 }
 
 async function handleIncorrect(detail, target) {
-  const context = buildContext(detail), localPlan = planPedagogicalIntervention(context), localResponse = professionalLocalPlan(context, localPlan);
+  const context = buildContext(detail);
+  let localPlan;
+  try {
+    localPlan = planPedagogicalIntervention(context);
+  } catch (error) {
+    console.warn("NALVI_TUTOR_LOCAL_PLANNER_FALLBACK", String(error?.message || error));
+    localPlan = { errorType: "UNKNOWN_ERROR", strategy: "CHANGE_MODALITY", diagnosis: { confidence: 0 } };
+  }
+  const localResponse = professionalLocalPlan(context, localPlan);
   activeSequences.delete(target);
   const requestState = { id: `${Date.now()}-${Math.random()}` }; activeRequests.set(target, requestState);
   shortFeedback(target, context.uiLocale, (COPY[context.uiLocale] || COPY.es).wrong);
@@ -210,12 +290,17 @@ async function handleIncorrect(detail, target) {
   loadingState(target, context.uiLocale);
   const winner = await Promise.race([requestPromise, sleep(1500).then(() => null)]);
   if (activeRequests.get(target) !== requestState) return;
-  const response = winner?.ok ? winner : localResponse, plan = response.adaptiveInterventionPlan;
+  const response = winner?.ok ? winner : localResponse;
+  response.adaptiveInterventionPlan = normalizePlanForRenderer(response.adaptiveInterventionPlan, context);
+  let plan = response.adaptiveInterventionPlan;
   const fingerprints = (plan.activities || []).map(activity => activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }));
-  if (fingerprints.includes(context.previousActivityFingerprint) || new Set(fingerprints).size !== fingerprints.length) {
-    console.warn("NALVI_TUTOR_DUPLICATE_BLOCKED");
+  const sourceBoundRequired = String(context.activity?.id || "").startsWith("legacy-general-") || !(context.knowledgeIds || []).length;
+  const unrelated = sourceBoundRequired && (plan.activities || []).some(activity => activity.requiresStudentResponse !== false && !targetsFailedKnowledge(activity, context));
+  if (unrelated || fingerprints.includes(context.previousActivityFingerprint) || new Set(fingerprints).size !== fingerprints.length) {
+    console.warn(unrelated ? "NALVI_TUTOR_UNRELATED_ACTIVITY_BLOCKED" : "NALVI_TUTOR_DUPLICATE_BLOCKED");
     const safe = professionalLocalPlan({ ...context, attemptNumber: context.attemptNumber + 1 }, null, "DUPLICATE_BLOCKED");
-    response.adaptiveInterventionPlan = safe.adaptiveInterventionPlan;
+    response.adaptiveInterventionPlan = normalizePlanForRenderer(safe.adaptiveInterventionPlan, context);
+    plan = response.adaptiveInterventionPlan;
   }
   if (context.attemptNumber > 4) {
     remember(context, response.adaptiveInterventionPlan);
@@ -241,6 +326,7 @@ function continueSequence(detail, target) {
 
 document.addEventListener("nalvi:activity-scored", event => {
   const target = event.target instanceof Element ? event.target : document.querySelector("#lessonBody"); if (!target) return;
+  if (event.detail?.adaptiveSubmitHandled) return;
   if (continueSequence(event.detail || {}, target)) return;
   if (event.detail?.result?.correct === false) handleIncorrect(event.detail, target);
 });
