@@ -132,33 +132,14 @@ export function createProfessionalFallbackPlan(context, { reason = "PROFESSIONAL
       hints: cue ? [`${cue}…`] : [], lessonContext,
       fingerprintSeed: `recognition-after-writing-${context.conceptId}-${attempt}`
     }));
-  } else if (attempt === 1 && context.correctAnswer && sourcePrompt) {
-    const completion = guidedCompletion(context.correctAnswer, quotedFocus(sourcePrompt) || sourcePrompt);
+  } else if (attempt <= 2 && context.correctAnswer) {
+    const completion = guidedCompletion(context.correctAnswer, attempt === 1 ? (quotedFocus(sourcePrompt) || sourcePrompt) : "");
     const cue = Array.from(completion.missing)[0] || "";
     activities.push(baseActivity(context, 1, {
       activityType: "fill-blank", skill: "writing", helpLevel: 2, answerExposure: "PARTIAL_HINT",
       instruction: copy.missing, prompt: copy.complete, template: completion.template,
       acceptedAnswers: [completion.missing, context.correctAnswer], hints: cue ? [`${cue}…`] : [], lessonContext,
       fingerprintSeed: `guided-meaning-${context.conceptId}-${attempt}`
-    }));
-  } else if (attempt <= 2 && options.length >= 2) {
-    const cue = Array.from(String(context.correctAnswer || ""))[0] || "";
-    activities.push(baseActivity(context, 1, {
-      activityType: "multiple-choice", skill: "vocabulary", helpLevel: attempt === 1 ? 1 : 2,
-      answerExposure: attempt === 1 ? "HIDDEN" : "PARTIAL_HINT",
-      instruction: attempt === 1 ? copy.choose : `${copy.partial} ${cue}…`, prompt: copy.choose,
-      options, hints: attempt > 1 && cue ? [`${cue}…`] : [], lessonContext,
-      fingerprintSeed: `guided-choice-${context.conceptId}-${attempt}`
-    }));
-  } else if (attempt <= 2) {
-    const cue = Array.from(String(context.correctAnswer || ""))[0] || "";
-    activities.push(baseActivity(context, 1, {
-      activityType: "fill-blank", skill: "writing", helpLevel: 2,
-      answerExposure: "PARTIAL_HINT",
-      instruction: `${copy.partial} ${cue}…`, prompt: copy.choose,
-      template: `${sourcePrompt || copy.context} → {{blank}}`,
-      hints: cue ? [`${cue}…`] : [], lessonContext,
-      fingerprintSeed: `guided-recall-${context.conceptId}-${attempt}`
     }));
   } else {
     const exposure = attempt >= 4 ? "EXPLICIT_SOLUTION" : "WORKED_EXAMPLE";
