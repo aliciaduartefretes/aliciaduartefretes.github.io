@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createActivityFingerprint } from "../../intervention-engine/intervention-engine.mjs";
-import { createAdaptiveTutorOrchestrator } from "../adaptive-tutor-orchestrator.mjs";
+import { createAdaptiveTutorOrchestrator, createProfessionalFallbackPlan } from "../adaptive-tutor-orchestrator.mjs";
 
 function context(overrides = {}) {
   const activity = {
@@ -93,7 +93,42 @@ test("un fallo de red usa fallback profesional y nunca permite avanzar", async (
   assert.equal(result.mode, "fallback");
   assert.equal(result.adaptiveInterventionPlan.progressionPolicy.onIncorrect, "BLOCK_AND_INTERVENE");
   assert.notEqual(result.adaptiveInterventionPlan.activities[0].activityType, "multiple-choice");
+  assert.ok(result.adaptiveInterventionPlan.activities[0].type);
+  assert.equal(result.adaptiveInterventionPlan.activities[0].lessonContext.sourcePrompt, "¿Cómo se dice mamá?");
   assert.equal(result.persistence.reason, "ANONYMOUS_SESSION");
+});
+
+test("el primer refuerzo muestra contexto, el mismo concepto y una instrucción accionable", () => {
+  const plan = createProfessionalFallbackPlan(context({
+    correctAnswer: "¿Cómo estás?",
+    activity: {
+      ...context().activity,
+      id: "legacy-general-0-0",
+      prompt: "¿Qué expresa «Mba’éichapa»?",
+      options: [
+        { id: "thanks", label: "Gracias" },
+        { id: "how", label: "¿Cómo estás?" },
+        { id: "goodbye", label: "Adiós" }
+      ]
+    }
+  }));
+  const activity = plan.activities[0];
+  assert.equal(activity.activityType, "fill-blank");
+  assert.equal(activity.lessonContext.sourcePrompt, "¿Qué expresa «Mba’éichapa»?");
+  assert.match(activity.template, /Mba’éichapa/);
+  assert.match(activity.template, /¿Cómo/);
+  assert.ok(activity.acceptedAnswers.includes("estás"));
+  assert.ok(activity.acceptedAnswers.includes("¿Cómo estás?"));
+  assert.notEqual(activity.template.trim(), "{{blank}}");
+});
+
+test("el segundo intento conserva la pregunta y ofrece opciones comprensibles", () => {
+  const plan = createProfessionalFallbackPlan(context({ attemptNumber: 2 }));
+  const activity = plan.activities[0];
+  assert.equal(activity.activityType, "multiple-choice");
+  assert.equal(activity.lessonContext.sourcePrompt, "¿Cómo se dice mamá?");
+  assert.ok(activity.options.length >= 2);
+  assert.notEqual(activity.prompt, "Recupera la expresión sin opciones.");
 });
 
 test("el crítico puede rechazar y existe como máximo una revisión", async () => {
