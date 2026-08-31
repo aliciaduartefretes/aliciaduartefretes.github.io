@@ -5,7 +5,7 @@ export const TUTOR_REJECTION_REASONS = Object.freeze([
   "EXACT_ACTIVITY_DUPLICATE", "NEAR_DUPLICATE", "SAME_MODALITY_WITHOUT_REASON",
   "UNRELATED_DISTRACTORS", "INVALID_LINGUISTIC_CONTENT", "UNSUPPORTED_ACTIVITY_TYPE",
   "MISSING_INDEPENDENT_RETEST", "TECHNICAL_TEXT_VISIBLE", "OVERLY_LONG_FEEDBACK",
-  "NO_COGNITIVE_DEMAND"
+  "NO_COGNITIVE_DEMAND", "EMPTY_FILL_TEMPLATE", "MISSING_GUIDED_SUPPORT"
 ]);
 
 const SUPPORTED_TYPES = new Set(["multiple-choice", "listening", "order-sentence", "fill-blank", "writing", "matching"]);
@@ -18,7 +18,7 @@ const overlap = (left, right) => {
   const intersection = [...a].filter(value => b.has(value)).length;
   return intersection / Math.max(a.size, b.size);
 };
-const visibleText = activity => [activity.instruction, activity.prompt, activity.explanation, ...(activity.hints || [])].join(" ");
+const visibleText = activity => [activity.instruction, activity.prompt, activity.template, activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ");
 const exposureRank = value => ({ HIDDEN: 0, PARTIAL_HINT: 1, WORKED_EXAMPLE: 2, EXPLICIT_SOLUTION: 3 }[value] ?? 0);
 
 export function validatePedagogicalQuality(plan, context = {}) {
@@ -37,6 +37,15 @@ export function validatePedagogicalQuality(plan, context = {}) {
     if (!SUPPORTED_TYPES.has(type)) reasons.push("UNSUPPORTED_ACTIVITY_TYPE");
     if (type === "matching" && (activity.pairs || []).length < 3) reasons.push("SINGLE_PAIR_MATCHING");
     if (["multiple-choice", "listening"].includes(type) && (activity.options || []).length < 2) reasons.push("ONLY_ONE_POSSIBLE_OPTION");
+    if (type === "fill-blank") {
+      const fillContext = String(activity.template || "").replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
+      if (!fillContext) reasons.push("EMPTY_FILL_TEMPLATE");
+    }
+    if (Number(activity.helpLevel || 0) > 0 && activity.requiresStudentResponse !== false) {
+      const support = [activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
+      const mediaSupport = ["audio", "image"].includes(activity.media?.type) && String(activity.media?.value || "").trim();
+      if (!support && !mediaSupport) reasons.push("MISSING_GUIDED_SUPPORT");
+    }
     const fingerprint = activity.fingerprint || createActivityFingerprint({ ...activity, type }, { uiLocale: context.uiLocale });
     if (recent.has(fingerprint) || fingerprints.has(fingerprint)) reasons.push("EXACT_ACTIVITY_DUPLICATE");
     fingerprints.add(fingerprint);
@@ -63,7 +72,7 @@ export function answerLeakageDetected(plan, context = {}) {
   if (!answer || answer.length < 2) return false;
   const first = plan?.activities?.[0];
   if (!first || Number(context.attemptNumber || 1) > 1) return false;
-  if (first.answerExposure !== "HIDDEN") return true;
+  if (exposureRank(first.answerExposure) >= 2) return true;
   const visible = normalize([plan?.studentFeedback?.shortMessage || plan?.studentFeedback, visibleText(first)].join(" "));
   return visible.includes(answer) && !["multiple-choice", "listening"].includes(first.activityType || first.type);
 }
