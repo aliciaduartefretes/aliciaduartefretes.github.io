@@ -122,13 +122,14 @@ test("el primer refuerzo muestra contexto, el mismo concepto y una instrucción 
   assert.notEqual(activity.template.trim(), "{{blank}}");
 });
 
-test("el segundo intento conserva la pregunta y ofrece opciones comprensibles", () => {
+test("el segundo intento cambia a completar una frase y no repite selección múltiple", () => {
   const plan = createProfessionalFallbackPlan(context({ attemptNumber: 2 }));
   const activity = plan.activities[0];
-  assert.equal(activity.activityType, "multiple-choice");
+  assert.equal(activity.activityType, "fill-blank");
   assert.equal(activity.lessonContext.sourcePrompt, "¿Cómo se dice mamá?");
-  assert.ok(activity.options.length >= 2);
-  assert.notEqual(activity.prompt, "Recupera la expresión sin opciones.");
+  assert.match(activity.template, /_+/);
+  assert.ok(activity.acceptedAnswers.length >= 2);
+  assert.notEqual(activity.prompt, activity.lessonContext.sourcePrompt);
 });
 
 test("el crítico puede rechazar y existe como máximo una revisión", async () => {

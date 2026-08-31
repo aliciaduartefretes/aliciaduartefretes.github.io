@@ -25,6 +25,17 @@
       contentValidationStatus: "unreviewed",
       allowedForMastery: false,
       type: "multiple-choice",
+      semanticPair: {
+        target: "Mba’éichapa",
+        meaning: {
+          es: "¿Cómo estás?",
+          en: "How are you?",
+          pt: "Como você está?",
+          fr: "Comment vas-tu ?",
+          it: "Come stai?",
+          de: "Wie geht es dir?"
+        }
+      },
       legacy: { unit: 0, question: 0 },
       prompt: {
         es: "¿Qué expresa «Mba’éichapa»?",
@@ -86,6 +97,17 @@
       contentValidationStatus: "unreviewed",
       allowedForMastery: false,
       type: "multiple-choice",
+      semanticPair: {
+        target: "Aguyje",
+        meaning: {
+          es: "Gracias",
+          en: "Thank you",
+          pt: "Obrigado/a",
+          fr: "Merci",
+          it: "Grazie",
+          de: "Danke"
+        }
+      },
       legacy: { unit: 0, question: 1 },
       prompt: {
         es: "Elige «gracias».",
@@ -117,6 +139,17 @@
       contentValidationStatus: "unreviewed",
       allowedForMastery: false,
       type: "listening",
+      semanticPair: {
+        target: "Jajotopata",
+        meaning: {
+          es: "Nos vemos",
+          en: "See you",
+          pt: "Até mais",
+          fr: "À bientôt",
+          it: "Ci vediamo",
+          de: "Bis bald"
+        }
+      },
       legacy: { unit: 0, question: 2 },
       prompt: {
         es: "¿Cómo dices «nos vemos»?",
@@ -151,7 +184,7 @@
   };
 
   window.KUAA_GENERAL_ACTIVITY_DATA = deepFreeze({
-    version: "NALVI-P5-DATA-1",
+    version: "NALVI-P5-DATA-2",
     courseId: "general",
     learningModel: "competency-route",
     activities
