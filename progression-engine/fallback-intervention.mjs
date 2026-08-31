@@ -48,26 +48,11 @@ export function buildDeterministicFallbackActivity(context = {}, attempt = 1) {
     answerExposure: attempt > 1 ? "PARTIAL_HINT" : "HIDDEN", helpLevel: Math.min(2, Math.max(1, attempt)),
     acceptedAnswers: [answer], answer, lessonContext
   };
-  if (attempt === 1 && (focus || sourcePrompt)) {
-    const completion = guidedCompletion(answer, focus);
+  if (attempt <= 2 && answer) {
+    const completion = guidedCompletion(answer, attempt === 1 ? focus : "");
     const cue = firstLetter(completion.missing);
     return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing", prompt: copy.complete,
       instruction: copy.missing, template: completion.template, acceptedAnswers: [completion.missing, answer],
-      hints: cue ? [`${cue}…`] : [], helpLevel: 2, answerExposure: "PARTIAL_HINT" };
-  }
-  if (attempt <= 2 && options.length >= 2 && hasAnswerOption) {
-    const cue = firstLetter(answer);
-    const shifted = attempt === 1 ? [...options.slice(2), ...options.slice(0, 2)] : [...options.slice(1), options[0]];
-    const correct = shifted.find(option => normalize(option.label) === normalize(answer));
-    return { ...base, type: "multiple-choice", activityType: "multiple-choice", skill: "vocabulary",
-      instruction: copy.choose, prompt: sourcePrompt || copy.choose,
-      options: shifted, correctOptionId: correct?.id || "", hints: attempt > 1 && cue ? [`${cue}…`] : [],
-      helpLevel: attempt === 1 ? 1 : 2, answerExposure: attempt === 1 ? "HIDDEN" : "PARTIAL_HINT" };
-  }
-  if (attempt <= 2) {
-    const cue = firstLetter(answer), contextualTemplate = `${sourcePrompt || copy.context} → {{blank}}`;
-    return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing",
-      instruction: `${copy.cue} ${cue}…`, prompt: copy.choose, template: contextualTemplate,
       hints: cue ? [`${cue}…`] : [], helpLevel: 2, answerExposure: "PARTIAL_HINT" };
   }
   if (attempt % 2 === 1) {
