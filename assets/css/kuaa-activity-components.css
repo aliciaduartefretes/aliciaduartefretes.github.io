@@ -4,6 +4,10 @@
 .kuaa-activity-kicker{display:flex;align-items:center;gap:var(--nalvi-space-2,8px);margin-bottom:var(--nalvi-space-3,12px);color:var(--kuaa-accent);font-size:var(--nalvi-text-xs,12px);font-weight:var(--nalvi-weight-black,900);letter-spacing:.07em;text-transform:uppercase}
 .kuaa-activity-mark{display:inline-block;width:8px;height:8px;border-radius:3px 3px 3px 1px;background:currentColor;box-shadow:8px 0 0 color-mix(in srgb,currentColor 28%,transparent)}
 .kuaa-activity-instruction{margin:-4px 0 var(--nalvi-space-5,20px);color:var(--nalvi-text-secondary,var(--muted,#726d83));font-size:var(--nalvi-text-sm,15px);line-height:1.55}
+.kuaa-learning-support{margin:0 0 var(--nalvi-space-5,20px);padding:14px 16px;border:1px solid color-mix(in srgb,var(--kuaa-accent) 22%,var(--nalvi-border,#e4deee));border-radius:var(--nalvi-radius-md,14px);background:color-mix(in srgb,var(--kuaa-accent) 7%,var(--nalvi-surface,#fff));color:var(--nalvi-text,var(--ink,#302b4f))}
+.kuaa-learning-support>span{display:block;margin-bottom:5px;color:var(--kuaa-accent);font-size:var(--nalvi-text-xs,12px);font-weight:var(--nalvi-weight-black,900);letter-spacing:.055em;text-transform:uppercase}
+.kuaa-learning-support p{margin:0;font-size:1rem;line-height:1.5}.kuaa-learning-support__explanation+.kuaa-learning-support__hint,.kuaa-learning-support>p+.kuaa-learning-support__hint{margin-top:8px}
+.kuaa-learning-support__hint{color:var(--nalvi-text-secondary,var(--muted,#726d83))}
 .kuaa-listen{display:flex;align-items:center;gap:var(--nalvi-space-3,12px);margin:var(--nalvi-space-4,16px) 0 var(--nalvi-space-5,20px);padding:var(--nalvi-space-4,16px);border:1px solid var(--nalvi-border,var(--line,#e4deee));border-radius:var(--nalvi-radius-lg,18px);background:var(--nalvi-surface-subtle,#f8f6ff)}
 .kuaa-listen button{flex:0 0 54px;width:54px;height:54px;border:0;border-radius:50%;background:var(--kuaa-accent);color:var(--nalvi-text-inverse,#fff);font-size:24px;cursor:pointer;box-shadow:var(--nalvi-shadow-sm,0 4px 12px rgba(41,35,75,.16))}
 .kuaa-listen span{color:var(--nalvi-text-secondary,var(--muted,#726d83));font-weight:var(--nalvi-weight-bold,800)}
@@ -36,8 +40,7 @@
 .nalvi-tutor-loading__mark{width:34px;height:34px;border:3px solid color-mix(in srgb,var(--nalvi-primary,#3459b8) 18%,#fff);border-top-color:var(--nalvi-primary,#3459b8);border-radius:50%;animation:nalvi-tutor-spin .8s linear infinite}
 .nalvi-tutor-loading p{margin:14px 0 0;font-weight:800}.nalvi-tutor-loading i{display:block;width:min(260px,72%);height:7px;margin-top:14px;border-radius:999px;background:linear-gradient(90deg,rgba(52,89,184,.08),rgba(52,89,184,.2),rgba(52,89,184,.08));background-size:220% 100%;animation:nalvi-adaptive-loading 1.25s ease-in-out infinite}
 .nalvi-tutor-example{min-height:190px}.nalvi-tutor-example p{margin:14px 0 0;color:var(--nalvi-text-secondary,#5e6680);font-size:1.05rem;line-height:1.6}
-.nalvi-adaptive-sequence{display:inline-flex;align-items:center;min-height:28px;margin:0 0 12px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--nalvi-primary,#3459b8) 10%,#fff);color:var(--nalvi-primary,#3459b8);font-size:.76rem;font-weight:850;letter-spacing:.03em}
 @keyframes nalvi-adaptive-loading{0%{background-position:100% 0}100%{background-position:-100% 0}}
 @keyframes nalvi-tutor-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.nalvi-tutor-loading__mark,.nalvi-tutor-loading i{animation:none}}
-@media(max-width:620px){.nalvi-tutor-loading{min-height:180px;padding:22px 16px}.nalvi-tutor-feedback{padding:12px 14px}}
+@media(max-width:620px){.nalvi-tutor-loading{min-height:180px;padding:22px 16px}.nalvi-tutor-feedback{padding:12px 14px}.kuaa-learning-support{padding:12px 14px}}
