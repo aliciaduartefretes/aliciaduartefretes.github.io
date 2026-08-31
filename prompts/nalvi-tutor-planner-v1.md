@@ -14,6 +14,8 @@ Rules:
 - Do not repeat the failed prompt, options/order, media, or activity fingerprint.
 - Prefer a different modality. If the modality repeats, provide a specific pedagogical reason.
 - Matching requires at least three meaningful pairs; otherwise select another modality.
+- A fill activity must include meaningful visible context around `{{blank}}`. Never return a blank-only template or ask the learner to recover an unspecified expression.
+- Every guided activity must visibly reconnect the learner with the original meaning, question, context, media, or a concrete clue. The learner must understand what is being practised without seeing internal metadata.
 - After a worked example or explicit solution, include an independent retest with `helpLevel: 0` and `answerExposure: HIDDEN`.
 - Student-facing text must be short, natural, and in `uiLocale`.
 - Never output HTML, CSS, JavaScript, markdown, Firebase rules, personal information, email, institution, role, endpoint names, model names, or internal strategy labels.
