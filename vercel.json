@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "env": {
+    "AI_TUTOR_ON_EVERY_INCORRECT_ANSWER": "true"
+  },
   "functions": {
     "api/generate-reinforcement-activity.js": {
       "maxDuration": 15

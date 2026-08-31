@@ -66,9 +66,15 @@ export function createActivityFingerprint(activity, options = {}) {
     prompt: normalizeText(localize(activity?.prompt, locale)),
     instruction: normalizeText(localize(activity?.instruction, locale)),
     options: sorted(optionsNormalized),
+    pairs: (activity?.pairs || []).map(pair => ({
+      left: normalizeText(localize(pair?.left, locale)),
+      right: normalizeText(localize(pair?.right, locale))
+    })).sort((left, right) => stableSerialize(left).localeCompare(stableSerialize(right))),
     answer: Array.isArray(correct) ? sorted(correct.map(item => localize(item, locale))) : normalizeText(localize(correct, locale)),
     media: activityMedia(activity || {}, locale),
-    context: normalizeText(localize(activity?.context ?? activity?.scenario ?? activity?.template, locale))
+    context: normalizeText(localize(activity?.context ?? activity?.scenario ?? activity?.template, locale)),
+    helpLevel: Number.isFinite(Number(activity?.helpLevel)) ? Number(activity.helpLevel) : 0,
+    answerExposure: String(activity?.answerExposure || "HIDDEN")
   };
   return `nalvi-afp-${fnv1a(stableSerialize(payload))}`;
 }
@@ -164,13 +170,15 @@ function chooseStrategy(errorType, attemptNumber, history = []) {
 
 export function wouldAIImproveIntervention(context = {}, localPlan = null) {
   if (context.correct !== false) return false;
-  const diagnosis = localPlan?.diagnosis || classifyError(context);
   if (context.aiPolicy?.allowInterventionAI === false) return false;
-  return diagnosis.errorType === "UNKNOWN_ERROR"
-    || diagnosis.confidence < 0.65
-    || Number(context.attemptNumber || 1) > 1
-    || (context.recentErrors || []).length > 0
-    || !localPlan?.nextActivity;
+  if (context.aiPolicy?.AI_TUTOR_ON_EVERY_INCORRECT_ANSWER === false) return false;
+  return true;
+}
+
+export function needsAdaptiveTutor(context = {}) {
+  return context.correct === false
+    && context.aiPolicy?.allowInterventionAI !== false
+    && context.aiPolicy?.AI_TUTOR_ON_EVERY_INCORRECT_ANSWER !== false;
 }
 
 export function planPedagogicalIntervention(context = {}) {

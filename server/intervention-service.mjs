@@ -38,6 +38,11 @@ function sanitizeActivity(activity = {}) {
     image: truncate(activity.image || activity.imageUrl, 240),
     template: activity.template,
     context: activity.context
+    ,pairs: (activity.pairs || []).slice(0, 8).map((pair, index) => ({ id: safeId(pair?.id, `pair-${index}`), left: truncate(pair?.left, 160), right: truncate(pair?.right, 160) }))
+    ,tokens: (activity.tokens || []).slice(0, 16).map((token, index) => ({ id: safeId(token?.id, `token-${index}`), label: truncate(token?.label ?? token?.text ?? token, 120) }))
+    ,media: activity.media && typeof activity.media === "object" ? { type: truncate(activity.media.type, 12), value: truncate(activity.media.value, 240), alt: truncate(activity.media.alt, 200), sourceId: safeId(activity.media.sourceId) } : null
+    ,helpLevel: Math.min(4, Math.max(0, Number(activity.helpLevel) || 0))
+    ,answerExposure: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"].includes(activity.answerExposure) ? activity.answerExposure : "HIDDEN"
   };
 }
 
@@ -62,6 +67,10 @@ export function normalizeInterventionRequest(input = {}) {
     modalitiesAlreadyUsed: (input.modalitiesAlreadyUsed || []).slice(-12).map(item => truncate(item, 40)),
     hintHistory: (input.hintHistory || []).slice(-12).map(item => truncate(item, 100)),
     retentionHistory: (input.retentionHistory || []).slice(-12).map(item => ({ result: truncate(item.result, 32), ageDays: Math.max(0, Number(item.ageDays) || 0) })),
+    answerExposureHistory: (input.answerExposureHistory || []).slice(-12).map(item => truncate(item, 32)),
+    strategyEffectiveness: Object.fromEntries(Object.entries(input.strategyEffectiveness || {}).slice(0, 24).map(([key, value]) => [truncate(key, 80), Math.max(0, Math.min(1, Number(value) || 0))])),
+    prerequisiteGaps: arrayOfIds(input.prerequisiteGaps, 12),
+    independentRetestQueue: arrayOfIds(input.independentRetestQueue, 12),
     recentInterventions: (input.recentInterventions || []).slice(-12).map(item => ({ strategy: STRATEGIES.includes(item.strategy) ? item.strategy : "", errorType: ERROR_TYPES.includes(item.errorType) ? item.errorType : "" })),
     uiLocale: UI_LOCALES.has(input.uiLocale) ? input.uiLocale : "es",
     grammarRuleIds: arrayOfIds(input.grammarRuleIds),
@@ -70,7 +79,12 @@ export function normalizeInterventionRequest(input = {}) {
     masteryBefore: Number.isFinite(Number(input.masteryBefore)) ? Number(input.masteryBefore) : null,
     masteryAfter: Number.isFinite(Number(input.masteryAfter)) ? Number(input.masteryAfter) : null,
     activity,
-    availableActivities: (input.availableActivities || []).slice(0, 24).map(sanitizeActivity)
+    availableActivities: (input.availableActivities || []).slice(0, 24).map(sanitizeActivity),
+    previousActivityFingerprint: truncate(input.previousActivityFingerprint || input.previousFingerprint, 80),
+    aiPolicy: {
+      allowInterventionAI: input.aiPolicy?.allowInterventionAI !== false,
+      AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: input.aiPolicy?.AI_TUTOR_ON_EVERY_INCORRECT_ANSWER !== false
+    }
   };
 }
 

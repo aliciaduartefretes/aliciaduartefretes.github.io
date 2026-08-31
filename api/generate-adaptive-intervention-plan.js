@@ -1,20 +1,20 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { createGrammarEngine } from "../grammar-engine/grammar-engine.mjs";
-import { planPedagogicalIntervention, wouldAIImproveIntervention } from "../intervention-engine/intervention-engine.mjs";
-import { createAdaptiveInterventionPlanService } from "../server/adaptive-intervention-plan.mjs";
 import { normalizeInterventionRequest } from "../server/intervention-service.mjs";
+import { createAdaptiveTutorOrchestrator } from "../server/adaptive-tutor-orchestrator.mjs";
 import { persistInterventionEvent } from "../server/firestore-admin-rest.mjs";
 import { verifyFirebaseIdToken } from "../server/firebase-id-token.mjs";
 
 const corpus = JSON.parse(readFileSync(new URL("../knowledge-base/pilot-corpus.json", import.meta.url), "utf8"));
 const governance = JSON.parse(readFileSync(new URL("../knowledge-base/governance.json", import.meta.url), "utf8"));
 const grammarEngine = createGrammarEngine({ corpus, governance });
-const service = createAdaptiveInterventionPlanService({
+const service = createAdaptiveTutorOrchestrator({
   corpusRecords: corpus.records || [],
   grammarEngine,
   persistEvent: persistInterventionEvent
 });
-const rateWindows = new Map(), RATE_WINDOW_MS = 10 * 60 * 1000, RATE_LIMIT = 8;
+const rateWindows = new Map(), RATE_WINDOW_MS = 10 * 60 * 1000, RATE_LIMIT = 12;
 
 function send(response, status, payload) {
   response.statusCode = status;
@@ -56,21 +56,19 @@ function withinRateLimit(uid) {
 
 function prepareRequest(raw) {
   const context = normalizeInterventionRequest(raw);
-  const localPlan = planPedagogicalIntervention({
-    ...context,
-    previousActivityFingerprint: String(raw.previousActivityFingerprint || "").slice(0, 80)
-  });
-  const firstErrorWithValidatedContext = context.attemptNumber === 1
-    && context.knowledgeIds.length > 0
-    && raw?.aiPolicy?.allowAdaptivePlanAfterFirstError !== false;
   return {
     ...context,
-    previousFingerprint: localPlan.previousFingerprint,
-    previousActivityFingerprint: localPlan.previousFingerprint,
+    previousFingerprint: context.previousActivityFingerprint,
     allowedConceptIds: [context.conceptId],
-    localPlan,
-    wouldAIImproveIntervention: wouldAIImproveIntervention(context, localPlan) || firstErrorWithValidatedContext
+    needsAdaptiveTutor: context.aiPolicy.AI_TUTOR_ON_EVERY_INCORRECT_ANSWER !== false
   };
+}
+
+function requesterHash(request, user) {
+  if (user?.uid) return `user:${user.uid}`;
+  const address = String(request.headers["x-forwarded-for"] || request.socket?.remoteAddress || "anonymous").split(",")[0].trim();
+  const agent = String(request.headers["user-agent"] || "").slice(0, 160);
+  return createHash("sha256").update(`${address}|${agent}`).digest("hex").slice(0, 32);
 }
 
 export default async function handler(request, response) {
@@ -79,9 +77,10 @@ export default async function handler(request, response) {
   try {
     const raw = await parseBody(request);
     const user = await verifyFirebaseIdToken(request.headers.authorization?.replace(/^Bearer\s+/i, ""));
-    if (user && !withinRateLimit(user.uid)) return send(response, 429, { ok: false, reason: "RATE_LIMITED_LOCAL_FALLBACK" });
+    const requester = requesterHash(request, user);
+    if (!withinRateLimit(requester)) return send(response, 429, { ok: false, reason: "RATE_LIMITED_LOCAL_FALLBACK" });
     const prepared = prepareRequest(raw);
-    const result = await service.generateAdaptiveInterventionPlan(prepared, { verifiedUserId: user?.uid || "" });
+    const result = await service.orchestrateAdaptiveTutoring(prepared, { verifiedUserId: user?.uid || "", requesterHash: requester });
     return send(response, 200, result);
   } catch (error) {
     const reason = error?.message === "PAYLOAD_TOO_LARGE" ? "PAYLOAD_TOO_LARGE" : "INVALID_REQUEST";

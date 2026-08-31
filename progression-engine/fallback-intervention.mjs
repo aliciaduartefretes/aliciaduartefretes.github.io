@@ -1,67 +1,49 @@
 const COPY = Object.freeze({
-  es: { match: "Relaciona la pregunta con la respuesta correcta.", fill: "Completa con la forma que acabas de revisar.", write: "Recupera la respuesta sin opciones." },
-  en: { match: "Match the question with the correct answer.", fill: "Complete it with the form you just reviewed.", write: "Recall the answer without options." },
-  pt: { match: "Relacione a pergunta com a resposta correta.", fill: "Complete com a forma que você acabou de revisar.", write: "Recupere a resposta sem opções." },
-  fr: { match: "Associez la question à la bonne réponse.", fill: "Complétez avec la forme que vous venez de revoir.", write: "Retrouvez la réponse sans choix." },
-  it: { match: "Associa la domanda alla risposta corretta.", fill: "Completa con la forma appena ripassata.", write: "Recupera la risposta senza opzioni." },
-  de: { match: "Ordne die Frage der richtigen Antwort zu.", fill: "Ergänze die gerade wiederholte Form.", write: "Rufe die Antwort ohne Auswahlmöglichkeiten ab." }
+  es: { listen: "Escucha y reconoce la expresión de la lección.", recall: "Recupera la expresión sin opciones.", cue: "Completa con esta pista:" },
+  en: { listen: "Listen and recognise the lesson expression.", recall: "Recall the expression without options.", cue: "Complete it with this cue:" },
+  pt: { listen: "Ouça e reconheça a expressão da lição.", recall: "Recupere a expressão sem opções.", cue: "Complete com esta pista:" },
+  fr: { listen: "Écoutez et reconnaissez l’expression de la leçon.", recall: "Retrouvez l’expression sans choix.", cue: "Complétez avec cet indice :" },
+  it: { listen: "Ascolta e riconosci l’espressione della lezione.", recall: "Ricorda l’espressione senza opzioni.", cue: "Completa con questo indizio:" },
+  de: { listen: "Höre zu und erkenne den Ausdruck aus der Lektion.", recall: "Rufe den Ausdruck ohne Auswahlmöglichkeiten ab.", cue: "Vervollständige mit diesem Hinweis:" }
 });
 
-const localized = (value, locale) => {
-  if (value == null) return "";
-  if (typeof value !== "object" || Array.isArray(value)) return String(value);
-  return String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "");
-};
+const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value) ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "") : String(value ?? "");
+const normalize = value => String(value ?? "").normalize("NFC").trim().toLocaleLowerCase();
 
 export function buildDeterministicFallbackActivity(context = {}, attempt = 1) {
-  const locale = COPY[context.uiLocale] ? context.uiLocale : "es";
-  const copy = COPY[locale];
-  const source = context.activity || {};
+  const locale = COPY[context.uiLocale] ? context.uiLocale : "es", copy = COPY[locale], source = context.activity || {};
   const answer = String(context.correctAnswer || "").trim();
-  const prompt = localized(source.prompt, locale) || String(context.conceptId || "");
   if (!answer) return null;
+  const options = (source.options || []).map((option, index) => ({ id: String(option?.id ?? `option-${index}`), label: localize(option?.label ?? option?.value ?? option, locale) })).filter(option => option.label);
   const base = {
     id: `fallback-${context.conceptId || "concept"}-${attempt}-${Date.now()}`,
-    conceptId: context.conceptId,
-    conceptIds: [context.conceptId].filter(Boolean),
-    learningObjectiveId: context.learningObjectiveId,
-    skill: context.currentSkill || "vocabulary",
-    difficulty: context.difficulty || "foundation-1",
-    lexemeIds: context.lexemeIds || [],
-    grammarRuleIds: context.grammarRuleIds || [],
-    nalviGuided: true,
-    deterministicFallback: true
+    conceptId: context.conceptId, conceptIds: [context.conceptId].filter(Boolean), learningObjectiveId: context.learningObjectiveId,
+    skill: context.currentSkill || "vocabulary", difficulty: context.difficulty || "foundation-1",
+    lexemeIds: context.lexemeIds || [], grammarRuleIds: context.grammarRuleIds || [],
+    nalviGuided: true, deterministicFallback: true, requiresStudentResponse: true,
+    answerExposure: attempt > 1 ? "PARTIAL_HINT" : "HIDDEN", helpLevel: Math.min(2, Math.max(1, attempt)),
+    acceptedAnswers: [answer], answer
   };
-  const modes = ["matching", "fill-blank", "writing"].filter(type => type !== context.activityType);
-  const type = modes[(Math.max(1, attempt) - 1) % modes.length] || "fill-blank";
-  if (type === "matching") return {
-    ...base,
-    type,
-    activityType: type,
-    prompt: copy.match,
-    instruction: prompt,
-    pairs: [{ id: "known-answer", left: prompt, right: answer }],
-    answer
-  };
-  if (type === "writing") return {
-    ...base,
-    type,
-    activityType: type,
-    prompt: copy.write,
-    instruction: prompt,
-    acceptedAnswers: [answer],
-    answer
-  };
-  return {
-    ...base,
-    type: "fill-blank",
-    activityType: "fill-blank",
-    prompt: copy.fill,
-    instruction: prompt,
-    template: "{{blank}}",
-    acceptedAnswers: [answer],
-    answer
-  };
+  if (attempt === 1 && options.length >= 2 && options.some(option => normalize(option.label) === normalize(answer))) {
+    const rotated = [...options.slice(1), options[0]];
+    const correct = rotated.find(option => normalize(option.label) === normalize(answer));
+    return { ...base, type: "listening", activityType: "listening", skill: "listening", instruction: copy.listen, prompt: copy.listen,
+      options: rotated, correctOptionId: correct?.id || "", audioText: answer, audio: answer, helpLevel: 1, answerExposure: "HIDDEN" };
+  }
+  if (attempt === 2) {
+    const cue = Array.from(answer)[0] || "";
+    return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing", instruction: `${copy.cue} ${cue}…`, prompt: copy.recall, template: "{{blank}}", hints: cue ? [`${cue}…`] : [] };
+  }
+  if (attempt % 2 === 1) {
+    return { ...base, type: "writing", activityType: "writing", skill: "writing", instruction: copy.recall, prompt: copy.recall, helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
+  }
+  if (options.length >= 2 && options.some(option => normalize(option.label) === normalize(answer))) {
+    const shifted = [...options.slice(2), ...options.slice(0, 2)];
+    const correct = shifted.find(option => normalize(option.label) === normalize(answer));
+    return { ...base, type: "listening", activityType: "listening", skill: "listening", instruction: copy.listen, prompt: copy.listen,
+      options: shifted, correctOptionId: correct?.id || "", audioText: answer, audio: answer, helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
+  }
+  return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing", instruction: copy.recall, prompt: copy.recall, template: "{{blank}}", helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
 }
 
 export default buildDeterministicFallbackActivity;

@@ -40,6 +40,25 @@ export const INTERVENTION_CONFIG = Object.freeze({
   recentActivityLimit: 12,
   repeatedErrorThreshold: 2,
   weakConceptThreshold: 2,
+  aiTutorOnEveryIncorrectAnswer: true,
+  maxInterventionsBeforeDefer: 4,
+  tutorTimeoutMs: 9000,
+  maxRevisionAttempts: 1,
+  helpLevels: Object.freeze({
+    INDEPENDENT: 0,
+    RETRIEVAL_CUE: 1,
+    PARTIAL_SUPPORT: 2,
+    WORKED_EXAMPLE: 3,
+    EXPLICIT_SOLUTION: 4
+  }),
+  answerExposure: Object.freeze(["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"]),
+  linguisticModes: Object.freeze(["NORMATIVE_GENERATIVE", "LESSON_BOUNDED", "BLOCKED"]),
+  interventionTemplates: Object.freeze([
+    "semantic_contrast", "image_association", "audio_discrimination", "contextual_choice",
+    "guided_recall", "partial_completion", "multi_pair_matching", "worked_example",
+    "error_detection", "sentence_reconstruction", "morpheme_builder", "prerequisite_review",
+    "independent_retrieval", "delayed_retest"
+  ]),
   evidence: {
     guidedRecoveryMultiplier: 0.35,
     independentRecoveryMultiplier: 0.8,

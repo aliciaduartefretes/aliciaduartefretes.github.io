@@ -1,11 +1,11 @@
 {
-  "policyVersion": "2.1.0",
+  "policyVersion": "2.2.0",
   "effectiveFromStep": 8,
   "mandatoryForFutureSteps": true,
   "appliesTo": ["mastery", "adaptiveEngine", "interventionEngine", "openAI"],
   "openAIEnabled": "serverOnlySelective",
   "authorizedFunction": "generateReinforcementActivity",
-  "authorizedFunctions": ["generateReinforcementActivity", "improvePedagogicalIntervention", "generateAdaptiveInterventionPlan"],
+  "authorizedFunctions": ["generateReinforcementActivity", "improvePedagogicalIntervention", "generateAdaptiveInterventionPlan", "orchestrateAdaptiveTutoring", "critiqueAdaptiveTutorPlan"],
   "clientSideApiKeyAllowed": false,
   "decisionGates": {
     "scoring": { "field": "canScoreWithoutAI", "whenTrue": "scoreLocally", "aiMayScore": false },
@@ -14,6 +14,13 @@
       "evaluatedAfterLocalScoring": true,
       "whenTrue": "evaluateValidatedServerSideAIIntervention",
       "whenFalse": "useLocalInterventionPlan"
+    },
+    "adaptiveTutor": {
+      "field": "needsAdaptiveTutor",
+      "evaluatedAfterLocalScoring": true,
+      "onEveryIncorrectAnswer": true,
+      "whenTrue": "orchestrateAdaptiveTutoring",
+      "whenFalse": "useProfessionalLocalFallback"
     }
   },
   "linguisticGenerationGate": {
@@ -50,6 +57,18 @@
   },
   "telemetry": ["callCount", "inputTokens", "outputTokens", "latencyMs", "errors", "estimatedCostUsd"],
   "fallbackRequired": true,
+  "professionalAdaptiveTutor": {
+    "plannerPrompt": "prompts/nalvi-tutor-planner-v1.md",
+    "criticPrompt": "prompts/nalvi-tutor-critic-v1.md",
+    "strictStructuredOutput": true,
+    "maximumCriticRevisions": 1,
+    "maximumConsecutiveInterventions": 4,
+    "firstErrorMaximumAnswerExposure": "PARTIAL_HINT",
+    "requiresIndependentRetestAfterExplicitSolution": true,
+    "serverSideOnly": true,
+    "modelEnvironmentVariable": "OPENAI_TUTOR_MODEL",
+    "enabledEnvironmentVariable": "AI_TUTOR_ON_EVERY_INCORRECT_ANSWER"
+  },
   "adaptivePlan": {
     "minimumActivities": 1,
     "maximumActivities": 4,

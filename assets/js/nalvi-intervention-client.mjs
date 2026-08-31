@@ -1,37 +1,40 @@
 import {
   canScoreWithoutAI,
   createActivityFingerprint,
+  needsAdaptiveTutor,
   planPedagogicalIntervention,
   wouldAIImproveIntervention
-} from "../../intervention-engine/intervention-engine.mjs?v=NALVI-PRE8C-PROGRESSION-3";
-import { buildDeterministicFallbackActivity } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-PRE8C-PROGRESSION-3";
+} from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-1";
+import { buildDeterministicFallbackActivity } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-TUTOR-1";
 
-const VERSION = "NALVI-PRE8C-ADAPTIVE-PLAN-CLIENT-2";
-const HISTORY_KEY = "nalvi.intervention.history.v2";
-const ATTEMPT_KEY = "nalvi.intervention.attempts.v1";
+const VERSION = "NALVI-TUTOR-CLIENT-2";
+// Stable regression marker: scoring feedback is shown before any network result.
+const IMMEDIATE_LOCAL_FEEDBACK = true;
+const HISTORY_KEY = "nalvi.tutor.history.v1";
+const ATTEMPT_KEY = "nalvi.tutor.attempts.v1";
+const EFFECTIVENESS_KEY = "nalvi.tutor.strategy-effectiveness.v1";
+const EXPOSURE_KEY = "nalvi.tutor.answer-exposure.v1";
 const LANGUAGES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const activeRequests = new WeakMap();
 const activeSequences = new WeakMap();
-const COPY = {
-  es: { title: "Vamos a enseñarlo de otra forma", feedback: "La respuesta no fue correcta. Cambiamos la estrategia para ayudarte a comprender.", action: "Empezar refuerzo", local: "Intervención local segura", ai: "Plan adaptativo validado", noRepeat: "Actividad diferente preparada", loading: "Preparando un plan breve…", sequence: "Actividad {current} de {total}", complete: "Refuerzo completado" },
-  en: { title: "Let's teach it in a different way", feedback: "That answer was not correct. We changed the strategy to help you understand.", action: "Start reinforcement", local: "Safe local intervention", ai: "Validated adaptive plan", noRepeat: "A different activity is ready", loading: "Preparing a short plan…", sequence: "Activity {current} of {total}", complete: "Reinforcement completed" },
-  pt: { title: "Vamos ensinar de outra forma", feedback: "A resposta não estava correta. Mudamos a estratégia para ajudar você a compreender.", action: "Iniciar reforço", local: "Intervenção local segura", ai: "Plano adaptativo validado", noRepeat: "Uma atividade diferente está pronta", loading: "Preparando um plano breve…", sequence: "Atividade {current} de {total}", complete: "Reforço concluído" },
-  fr: { title: "Essayons une autre manière d’apprendre", feedback: "La réponse n’était pas correcte. Nous changeons de stratégie pour vous aider à comprendre.", action: "Commencer le renforcement", local: "Intervention locale sûre", ai: "Plan adaptatif validé", noRepeat: "Une activité différente est prête", loading: "Préparation d’un plan court…", sequence: "Activité {current} sur {total}", complete: "Renforcement terminé" },
-  it: { title: "Proviamo a insegnarlo in un altro modo", feedback: "La risposta non era corretta. Cambiamo strategia per aiutarti a capire.", action: "Inizia il rinforzo", local: "Intervento locale sicuro", ai: "Piano adattivo convalidato", noRepeat: "È pronta un’attività diversa", loading: "Preparazione di un piano breve…", sequence: "Attività {current} di {total}", complete: "Rinforzo completato" },
-  de: { title: "Wir erklären es auf eine andere Weise", feedback: "Die Antwort war nicht richtig. Wir wechseln die Strategie, damit du es besser verstehst.", action: "Verstärkung starten", local: "Sichere lokale Intervention", ai: "Validierter adaptiver Plan", noRepeat: "Eine andere Aktivität ist bereit", loading: "Ein kurzer Plan wird vorbereitet…", sequence: "Aktivität {current} von {total}", complete: "Verstärkung abgeschlossen" }
-};
+let sessionHistory = [];
+const COPY = Object.freeze({
+  es: { wrong: "No del todo. Probemos de otra forma.", loading: "Preparando otra forma de practicar…", sequence: "Práctica {current} de {total}", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde." },
+  en: { wrong: "Not quite. Let’s try another way.", loading: "Preparing another way to practise…", sequence: "Practice {current} of {total}", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review." },
+  pt: { wrong: "Ainda não. Vamos tentar de outra forma.", loading: "Preparando outra forma de praticar…", sequence: "Prática {current} de {total}", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde." },
+  fr: { wrong: "Pas tout à fait. Essayons autrement.", loading: "Préparation d’une autre façon de pratiquer…", sequence: "Pratique {current} sur {total}", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure." },
+  it: { wrong: "Non proprio. Proviamo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", sequence: "Pratica {current} di {total}", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo." },
+  de: { wrong: "Noch nicht ganz. Versuchen wir es anders.", loading: "Eine andere Übungsform wird vorbereitet…", sequence: "Übung {current} von {total}", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt." }
+});
 
 const locale = value => LANGUAGES.has(value) ? value : "es";
-const localize = (value, language) => {
-  if (value == null) return "";
-  if (typeof value !== "object" || Array.isArray(value)) return String(value);
-  return String(value[language] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "");
-};
+const localize = (value, language) => value && typeof value === "object" && !Array.isArray(value) ? String(value[language] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "") : String(value ?? "");
 const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
 const readJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; } };
-const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* anonymous/offline fallback remains in memory */ } };
-const activityCatalog = () => (window.KUAA_GENERAL_ACTIVITY_DATA?.activities || []).map(activity => ({ ...activity, conceptId: activity.conceptId || activity.conceptIds?.[0] || "" }));
+const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* safe anonymous fallback */ } };
+const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 const sequenceLabel = (text, current, total) => text.replace("{current}", String(current)).replace("{total}", String(total));
+const activityCatalog = () => (window.KUAA_GENERAL_ACTIVITY_DATA?.activities || []).map(activity => ({ ...activity, conceptId: activity.conceptId || activity.conceptIds?.[0] || "" }));
 
 function answerFor(activity, language) {
   if (activity.correctOptionId != null) {
@@ -44,279 +47,216 @@ function answerFor(activity, language) {
 }
 
 function history() {
-  return readJson(HISTORY_KEY, []).filter(item => item && item.fingerprint).slice(-16);
+  const persisted = readJson(HISTORY_KEY, []).filter(item => item?.fingerprint);
+  const combined = [...persisted, ...sessionHistory].filter((item, index, items) =>
+    items.findIndex(candidate => candidate.fingerprint === item.fingerprint) === index);
+  sessionHistory = combined.slice(-32);
+  return sessionHistory;
 }
-
 function nextAttempt(activity) {
-  const attempts = readJson(ATTEMPT_KEY, {}), key = activity.id || activity.conceptId || "activity";
+  const attempts = readJson(ATTEMPT_KEY, {}), key = activity.conceptId || activity.conceptIds?.[0] || activity.id || "activity";
   attempts[key] = Math.min(12, Math.max(0, Number(attempts[key]) || 0) + 1);
-  writeJson(ATTEMPT_KEY, attempts);
-  return attempts[key];
+  writeJson(ATTEMPT_KEY, attempts); return attempts[key];
 }
-
 function remember(context, plan) {
   const current = history();
-  for (const activity of plan.activities || []) current.push({
-    conceptId: context.conceptId,
-    fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }),
-    activityType: activity.type || activity.activityType,
-    errorType: plan.diagnosis || context.localPlan?.errorType,
-    strategy: plan.strategy,
-    timestamp: new Date().toISOString()
-  });
-  writeJson(HISTORY_KEY, current.slice(-16));
-}
-
-function rememberFailedActivity(context) {
-  const current = history();
-  if (current.some(item => item.fingerprint === context.previousActivityFingerprint)) return;
-  current.push({
+  if (context.previousActivityFingerprint) current.push({
     conceptId: context.conceptId,
     fingerprint: context.previousActivityFingerprint,
     activityType: context.activityType,
-    errorType: "UNCLASSIFIED_ATTEMPT",
-    strategy: "OBSERVED_ERROR",
+    errorType: plan.diagnosis?.errorType || plan.diagnosis || "UNKNOWN_ERROR",
+    strategy: "SOURCE_ACTIVITY_FAILED",
+    answerExposure: "HIDDEN",
     timestamp: new Date().toISOString()
   });
-  writeJson(HISTORY_KEY, current.slice(-16));
+  for (const activity of plan.activities || []) current.push({ conceptId: context.conceptId,
+    fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }),
+    activityType: activity.type || activity.activityType, errorType: plan.diagnosis?.errorType || plan.diagnosis || "UNKNOWN_ERROR",
+    strategy: plan.strategy?.primaryStrategy || plan.strategy || "CHANGE_MODALITY", answerExposure: activity.answerExposure || "HIDDEN", timestamp: new Date().toISOString() });
+  sessionHistory = current.filter((item, index, items) =>
+    items.findIndex(candidate => candidate.fingerprint === item.fingerprint) === index).slice(-32);
+  writeJson(HISTORY_KEY, sessionHistory);
+  const exposure = readJson(EXPOSURE_KEY, []); exposure.push(...(plan.activities || []).map(activity => ({ conceptId: context.conceptId, answerExposure: activity.answerExposure || "HIDDEN", timestamp: new Date().toISOString() })));
+  writeJson(EXPOSURE_KEY, exposure.slice(-32));
 }
 
-function localAdaptivePlan(context, localPlan, reason = "LOCAL_FALLBACK") {
+function updateStrategyEffectiveness(strategy, correct) {
+  if (!strategy) return;
+  const state = readJson(EFFECTIVENESS_KEY, {}), item = state[strategy] || { successes: 0, attempts: 0, score: 0.5 };
+  item.attempts += 1; if (correct) item.successes += 1; item.score = item.successes / item.attempts; state[strategy] = item;
+  writeJson(EFFECTIVENESS_KEY, state);
+}
+
+function professionalLocalPlan(context, localPlan, reason = "PROFESSIONAL_LOCAL_FALLBACK") {
   let activity = localPlan?.nextActivity;
-  let fingerprint = localPlan?.nextFingerprint || (activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "");
-  if (!activity || fingerprint === context.previousActivityFingerprint || context.recentActivityFingerprints.includes(fingerprint)) {
+  let fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
+  const recent = new Set(context.recentActivityFingerprints || []); recent.add(context.previousActivityFingerprint);
+  if (!activity || recent.has(fingerprint)) {
     activity = buildDeterministicFallbackActivity(context, context.attemptNumber);
     fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
   }
-  return {
-    ok: true,
-    mode: "fallback",
-    usedAI: false,
-    reason,
-    adaptiveInterventionPlan: {
-      planId: `local-${context.conceptId}-${Date.now()}`,
-      conceptId: context.conceptId,
-      diagnosis: localPlan?.errorType || "UNKNOWN_ERROR",
-      diagnosisConfidence: Number(localPlan?.diagnosis?.confidence || 0),
-      strategy: localPlan?.strategy || "CHANGE_MODALITY",
-      studentFeedback: (COPY[context.uiLocale] || COPY.es).feedback,
-      activities: activity ? [{ ...activity, nalviGuided: true, fingerprint }] : [],
-      retestPolicy: activity ? "after-plan" : "delayed",
-      masteryRecommendation: context.attemptNumber > 1 ? "MARK_WEAK" : "AWAIT_RETEST",
-      validationMetadata: { riskLevel: "GREEN", fallback: true }
-    },
-    persistence: { status: "skipped", reason }
-  };
+  const language = context.uiLocale, copy = COPY[language] || COPY.es;
+  return { ok: true, usedAI: false, mode: "fallback", reason, adaptiveInterventionPlan: {
+    planVersion: "NALVI-TUTOR-1", planId: `local-${context.conceptId}-${Date.now()}`, conceptId: context.conceptId, linguisticMode: "LESSON_BOUNDED",
+    diagnosis: { errorType: localPlan?.errorType || "UNKNOWN_ERROR", likelyDifficulty: "local-rule", confidence: Number(localPlan?.diagnosis?.confidence || 0), prerequisiteGap: null, skillAffected: context.currentSkill },
+    pedagogicalGoal: "Continue the same concept through a different exercise.",
+    strategy: { primaryStrategy: localPlan?.strategy || "CHANGE_MODALITY", secondaryStrategy: null, reasonCode: `local-attempt-${context.attemptNumber}` },
+    studentFeedback: { locale: language, shortMessage: copy.wrong }, activities: activity ? [{ ...activity, fingerprint }] : [],
+    progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", onGuidedCorrect: "CONTINUE_PRACTICE", requiresIndependentRetest: true, maxInterventionsBeforeDefer: 4 },
+    fallbackPolicy: { strategy: "PROFESSIONAL_LOCAL_TEMPLATE", reason }, validationMetadata: { sourceIds: [], knowledgeIds: context.knowledgeIds, claimedRiskLevel: "GREEN" }
+  }};
 }
 
-async function serverAdaptivePlan(context, localPlan) {
-  const user = window.GCA_FIREBASE_LIVE?.auth?.currentUser;
-  if (!user) return localAdaptivePlan(context, localPlan, "AUTH_REQUIRED_LOCAL_FALLBACK");
+async function serverPlan(context) {
   try {
-    const idToken = await user.getIdToken();
-    const response = await fetch("/api/generate-adaptive-intervention-plan", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify(context)
-    });
-    if (!response.ok) return localAdaptivePlan(context, localPlan, `SERVER_${response.status}_LOCAL_FALLBACK`);
+    const user = window.GCA_FIREBASE_LIVE?.auth?.currentUser;
+    const headers = { "Content-Type": "application/json" };
+    if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
+    const response = await fetch("/api/generate-adaptive-intervention-plan", { method: "POST", credentials: "same-origin", headers, body: JSON.stringify(context) });
+    if (!response.ok) throw new Error(`SERVER_${response.status}`);
     const payload = await response.json();
-    if (!payload?.ok || !payload.adaptiveInterventionPlan) return localAdaptivePlan(context, localPlan, payload?.reason || "INVALID_SERVER_PLAN");
+    if (!payload?.ok || !payload.adaptiveInterventionPlan?.activities?.length) throw new Error(payload?.reason || "INVALID_SERVER_PLAN");
     return payload;
-  } catch {
-    return localAdaptivePlan(context, localPlan, "SERVER_UNAVAILABLE_LOCAL_FALLBACK");
-  }
+  } catch (error) { return { ok: false, reason: String(error?.message || "SERVER_UNAVAILABLE") }; }
+}
+
+function shortFeedback(target, language, message) {
+  const feedback = target.querySelector("#feedback");
+  if (!feedback) return;
+  feedback.className = "feedback no reaction-pop nalvi-tutor-feedback";
+  feedback.textContent = message || (COPY[language] || COPY.es).wrong;
+  feedback.setAttribute("aria-live", "polite");
+}
+
+function loadingState(target, language) {
+  const copy = COPY[language] || COPY.es;
+  target.innerHTML = `<section class="nalvi-tutor-loading" aria-live="polite"><span class="nalvi-tutor-loading__mark" aria-hidden="true"></span><p>${escapeHtml(copy.loading)}</p><i aria-hidden="true"></i></section>`;
+}
+
+function scrollToActivity(target) {
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  requestAnimationFrame(() => target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }));
+}
+
+function renderPassiveExample(target, state, activity, index) {
+  const copy = COPY[state.language] || COPY.es;
+  target.innerHTML = `<section class="kuaa-activity nalvi-tutor-example" aria-live="polite"><small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(copy.example)}</small><h3>${escapeHtml(activity.instruction || copy.example)}</h3><p>${escapeHtml(activity.explanation || "")}</p></section>`;
+  scrollToActivity(target);
+  setTimeout(() => {
+    const next = index + 1;
+    if (activeSequences.get(target) !== state) return;
+    if (next < state.plan.activities.length) renderSequenceActivity(target, state, next);
+    else finishSequence(target, state, activity);
+  }, window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? 1800 : 1500);
 }
 
 function renderSequenceActivity(target, state, index) {
-  const activity = state.plan.activities[index];
-  if (!activity || typeof window.renderActivity !== "function") return;
-  state.index = index;
-  activeSequences.set(target, state);
-  window.renderActivity({
-    ...activity,
-    nalviGuided: true,
-    adaptivePlanId: state.plan.planId,
-    adaptivePlanIndex: index,
-    adaptivePlanLength: state.plan.activities.length
-  }, { target, language: state.language });
+  const activity = state.plan.activities[index]; if (!activity) return finishSequence(target, state, null);
+  state.index = index; activeSequences.set(target, state);
+  if (activity.requiresStudentResponse === false) return renderPassiveExample(target, state, activity, index);
+  window.renderActivity({ ...activity, nalviGuided: Number(activity.helpLevel || 0) > 0, adaptivePlanId: state.plan.planId, adaptivePlanIndex: index, adaptivePlanLength: state.plan.activities.length }, { target, language: state.language });
   const card = target.querySelector(".kuaa-activity");
   if (card) {
-    const text = COPY[state.language] || COPY.es;
-    const progress = document.createElement("div");
-    progress.className = "nalvi-adaptive-sequence";
-    progress.textContent = sequenceLabel(text.sequence, index + 1, state.plan.activities.length);
-    card.prepend(progress);
+    const progress = document.createElement("div"); progress.className = "nalvi-adaptive-sequence";
+    progress.textContent = sequenceLabel((COPY[state.language] || COPY.es).sequence, index + 1, state.plan.activities.length); card.prepend(progress);
   }
-  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_RENDERED", {
-    activityId: activity.id,
-    conceptId: activity.conceptId || activity.conceptIds?.[0],
-    correct: false,
-    strategy: state.plan.strategy,
-    usedAI: Boolean(state.usedAI),
-    progressionDecision: "BLOCK_AND_INTERVENE",
-    fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: state.language })
-  });
+  scrollToActivity(target);
+  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_RENDERED", { activityId: activity.id, conceptId: activity.conceptId || activity.conceptIds?.[0], correct: false,
+    strategy: state.plan.strategy?.primaryStrategy, usedAI: state.usedAI, progressionDecision: "BLOCK_AND_INTERVENE", fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: state.language }) });
 }
 
-function showPanel(target, context, response, { loading = false, requestState = null } = {}) {
-  const language = context.uiLocale, text = COPY[language] || COPY.es, plan = response.adaptiveInterventionPlan;
-  target.querySelector("[data-nalvi-intervention]")?.remove();
-  const panel = document.createElement("section");
-  panel.className = `nalvi-intervention${loading ? " is-loading" : ""}`;
-  panel.dataset.nalviIntervention = loading ? "loading" : "planned";
-  panel.setAttribute("aria-live", "polite");
-  const activities = plan?.activities || [], feedback = plan?.studentFeedback || text.feedback;
-  panel.innerHTML = `<div class="nalvi-intervention__icon" aria-hidden="true">↗</div><div class="nalvi-intervention__copy"><small>${escapeHtml(response.usedAI ? text.ai : text.local)}</small><h4>${escapeHtml(text.title)}</h4><p>${escapeHtml(feedback)}</p><span>${escapeHtml(loading ? text.loading : `${text.noRepeat} · ${plan?.strategy || "CHANGE_MODALITY"}`)}</span>${loading ? '<i class="nalvi-intervention__skeleton" aria-hidden="true"></i>' : ""}</div>${activities.length ? `<button type="button" class="btn nalvi-intervention__action">${escapeHtml(text.action)}</button>` : ""}`;
-  target.append(panel);
-  panel.querySelector(".nalvi-intervention__action")?.addEventListener("click", () => {
-    if (!activities.length) return;
-    if (requestState) requestState.consumed = true;
-    renderSequenceActivity(target, {
-      plan,
-      language,
-      index: 0,
-      usedAI: Boolean(response.usedAI),
-      sourceActivityId: context.activity?.id || ""
-    }, 0);
-  });
-  return panel;
+function finishSequence(target, state, activity) {
+  activeSequences.delete(target);
+  updateStrategyEffectiveness(state.plan.strategy?.primaryStrategy, true);
+  const copy = COPY[state.language] || COPY.es;
+  const excludedActivityIds = [...new Set([state.sourceActivityId, ...(state.plan.activities || []).map(item => item.id)].filter(Boolean))];
+  target.innerHTML = `<div class="feedback ok nalvi-tutor-feedback" aria-live="polite">${escapeHtml(copy.complete)}</div>`;
+  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-completed", { detail: {
+    planId: state.plan.planId, conceptId: activity?.conceptId || activity?.conceptIds?.[0] || state.plan.conceptId,
+    completionIsMastery: false, independentRetestRequired: true
+  } }));
+  setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", planId: state.plan.planId,
+    conceptId: activity?.conceptId || activity?.conceptIds?.[0] || state.plan.conceptId, completionIsMastery: false, excludedActivityIds,
+    independentRetestRequired: true } })), 600);
 }
 
 function buildContext(detail) {
   const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang), attemptNumber = nextAttempt(activity);
-  const recent = history(), previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
-  return {
-    correct: false,
-    conceptId: activity.conceptId || activity.conceptIds?.[0] || "GG-C-001",
-    learningObjectiveId: activity.learningObjectiveId || "GG-LO-001",
-    currentSkill: activity.skill || "vocabulary",
-    activityType: activity.type || activity.activityType || "multiple-choice",
-    difficulty: activity.difficulty || "foundation-1",
-    studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : "",
-    correctAnswer: answerFor(activity, language),
-    attemptNumber,
-    recentErrors: recent.filter(item => item.conceptId === (activity.conceptId || activity.conceptIds?.[0])).map(item => ({ conceptId: item.conceptId, errorType: item.errorType })),
-    recentActivities: [],
-    recentActivityFingerprints: recent.map(item => item.fingerprint),
-    modalitiesAlreadyUsed: recent.map(item => item.activityType),
-    recentInterventions: recent.map(item => ({ strategy: item.strategy, errorType: item.errorType })),
-    hintHistory: [],
-    retentionHistory: [],
-    uiLocale: language,
-    grammarRuleIds: activity.grammarRuleIds || [],
-    lexemeIds: activity.lexemeIds || [],
-    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])],
-    activity: { ...activity, conceptId: activity.conceptId || activity.conceptIds?.[0] || "" },
-    availableActivities: activityCatalog(),
-    previousActivityFingerprint: previousFingerprint,
-    aiPolicy: { allowAdaptivePlanAfterFirstError: true }
-  };
+  const recent = history(), conceptId = activity.conceptId || activity.conceptIds?.[0] || "GG-C-001";
+  const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
+  return { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
+    activityType: activity.type || activity.activityType || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
+    studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: answerFor(activity, language), attemptNumber,
+    recentErrors: recent.filter(item => item.conceptId === conceptId).map(item => ({ conceptId, errorType: item.errorType })), recentActivities: [],
+    recentActivityFingerprints: recent.map(item => item.fingerprint), modalitiesAlreadyUsed: recent.map(item => item.activityType),
+    recentInterventions: recent.map(item => ({ strategy: item.strategy, errorType: item.errorType })), hintHistory: [], retentionHistory: [],
+    answerExposureHistory: readJson(EXPOSURE_KEY, []).filter(item => item.conceptId === conceptId).map(item => item.answerExposure),
+    strategyEffectiveness: Object.fromEntries(Object.entries(readJson(EFFECTIVENESS_KEY, {})).map(([key, value]) => [key, Number(value.score || 0)])),
+    prerequisiteGaps: [], independentRetestQueue: [], uiLocale: language, grammarRuleIds: activity.grammarRuleIds || [], lexemeIds: activity.lexemeIds || [],
+    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])], activity: { ...activity, conceptId }, availableActivities: activityCatalog(),
+    previousActivityFingerprint: previousFingerprint, aiPolicy: { allowInterventionAI: true, AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: true } };
 }
 
 async function handleIncorrect(detail, target) {
-  const context = buildContext(detail), localPlan = planPedagogicalIntervention(context);
-  context.localPlan = localPlan;
-  rememberFailedActivity(context);
-  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", {
-    activityId: context.activity.id,
-    conceptId: context.conceptId,
-    correct: false,
-    strategy: localPlan?.strategy || "CHANGE_MODALITY",
-    usedAI: false,
-    progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE",
-    fingerprint: context.previousActivityFingerprint
-  });
+  const context = buildContext(detail), localPlan = planPedagogicalIntervention(context), localResponse = professionalLocalPlan(context, localPlan);
   activeSequences.delete(target);
-  const requestState = { id: `${Date.now()}-${Math.random()}`, consumed: false };
-  activeRequests.set(target, requestState);
-  const localResponse = localAdaptivePlan(context, localPlan, "IMMEDIATE_LOCAL_FEEDBACK");
-  const mayUseServer = Boolean(window.GCA_FIREBASE_LIVE?.auth?.currentUser);
-  showPanel(target, context, localResponse, { loading: mayUseServer, requestState });
-  const response = mayUseServer ? await serverAdaptivePlan(context, localPlan) : localResponse;
-  if (activeRequests.get(target) !== requestState || requestState.consumed) return;
-  const plan = response.adaptiveInterventionPlan || localResponse.adaptiveInterventionPlan;
-  const previous = context.previousActivityFingerprint;
-  if ((plan.activities || []).some(activity => (activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale })) === previous)) {
-    console.error("NALVI_ADAPTIVE_PLAN_DUPLICATE_BLOCKED", previous);
+  const requestState = { id: `${Date.now()}-${Math.random()}` }; activeRequests.set(target, requestState);
+  shortFeedback(target, context.uiLocale, (COPY[context.uiLocale] || COPY.es).wrong);
+  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", { activityId: context.activity.id, conceptId: context.conceptId, correct: false,
+    strategy: localPlan?.strategy || "CHANGE_MODALITY", usedAI: false, progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE", fingerprint: context.previousActivityFingerprint });
+  const requestPromise = serverPlan(context);
+  await sleep(750);
+  if (activeRequests.get(target) !== requestState) return;
+  loadingState(target, context.uiLocale);
+  const winner = await Promise.race([requestPromise, sleep(1500).then(() => null)]);
+  if (activeRequests.get(target) !== requestState) return;
+  const response = winner?.ok ? winner : localResponse, plan = response.adaptiveInterventionPlan;
+  const fingerprints = (plan.activities || []).map(activity => activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }));
+  if (fingerprints.includes(context.previousActivityFingerprint) || new Set(fingerprints).size !== fingerprints.length) {
+    console.warn("NALVI_TUTOR_DUPLICATE_BLOCKED");
+    const safe = professionalLocalPlan({ ...context, attemptNumber: context.attemptNumber + 1 }, null, "DUPLICATE_BLOCKED");
+    response.adaptiveInterventionPlan = safe.adaptiveInterventionPlan;
+  }
+  if (context.attemptNumber > 4) {
+    remember(context, response.adaptiveInterventionPlan);
+    target.innerHTML = `<div class="feedback no nalvi-tutor-feedback" aria-live="polite">${escapeHtml((COPY[context.uiLocale] || COPY.es).deferred)}</div>`;
+    setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", planId: response.adaptiveInterventionPlan.planId,
+      conceptId: context.conceptId, completionIsMastery: false, excludedActivityIds: [context.activity.id].filter(Boolean), independentRetestRequired: true,
+      markWeak: true, reviewDue: true } })), 900);
     return;
   }
-  remember(context, plan);
-  showPanel(target, context, { ...response, adaptiveInterventionPlan: plan }, { requestState });
-  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan, persistence: response.persistence, usedAI: Boolean(response.usedAI), telemetry: response.telemetry } }));
+  remember(context, response.adaptiveInterventionPlan);
+  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan: response.adaptiveInterventionPlan, persistence: response.persistence, usedAI: Boolean(response.usedAI), telemetry: response.telemetry } }));
+  renderSequenceActivity(target, { plan: response.adaptiveInterventionPlan, language: context.uiLocale, index: 0, usedAI: Boolean(response.usedAI), sourceActivityId: context.activity.id || "" }, 0);
 }
 
 function continueSequence(detail, target) {
   const activity = detail.activity || {}, state = activeSequences.get(target);
   if (!state || !activity.adaptivePlanId || activity.adaptivePlanId !== state.plan.planId) return false;
-  if (detail.result?.correct !== true) return false;
-  const nextIndex = Number(activity.adaptivePlanIndex ?? state.index) + 1;
-  if (nextIndex < state.plan.activities.length) {
-    setTimeout(() => renderSequenceActivity(target, state, nextIndex), 180);
-  } else {
-    activeSequences.delete(target);
-    const text = COPY[state.language] || COPY.es;
-    window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-completed", { detail: { planId: state.plan.planId, activityCount: state.plan.activities.length } }));
-    const feedback = target.querySelector("#feedback");
-    if (feedback) feedback.textContent = text.complete;
-    const excludedActivityIds = [...new Set([
-      state.sourceActivityId,
-      ...(state.plan.activities || []).map(item => item?.id)
-    ].filter(Boolean))];
-    setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: {
-      courseId: "general",
-      planId: state.plan.planId,
-      conceptId: activity.conceptId || activity.conceptIds?.[0] || state.plan.conceptId,
-      completionIsMastery: false,
-      excludedActivityIds
-    } })), 220);
-  }
+  if (detail.result?.correct !== true) { updateStrategyEffectiveness(state.plan.strategy?.primaryStrategy, false); return false; }
+  const next = Number(activity.adaptivePlanIndex ?? state.index) + 1;
+  setTimeout(() => next < state.plan.activities.length ? renderSequenceActivity(target, state, next) : finishSequence(target, state, activity), 420);
   return true;
 }
 
 document.addEventListener("nalvi:activity-scored", event => {
-  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_EVENT_RECEIVED", {
-    activityId: event.detail?.activity?.id,
-    conceptId: event.detail?.activity?.conceptId || event.detail?.activity?.conceptIds?.[0],
-    correct: event.detail?.result?.correct,
-    progressionDecision: event.detail?.progression?.decision
-  });
-  const target = event.target instanceof Element ? event.target : document.querySelector("#lessonBody");
-  if (!target) return;
+  const target = event.target instanceof Element ? event.target : document.querySelector("#lessonBody"); if (!target) return;
   if (continueSequence(event.detail || {}, target)) return;
   if (event.detail?.result?.correct === false) handleIncorrect(event.detail, target);
 });
-
 window.addEventListener("nalvi:legacy-answer-scored", event => {
   if (event.detail?.result?.correct !== false) return;
-  const target = document.querySelector(event.detail.target || "#lessonBody");
-  if (target) handleIncorrect(event.detail, target);
+  const target = document.querySelector(event.detail.target || "#lessonBody"); if (target) handleIncorrect(event.detail, target);
 });
 
 window.NALVI_INTERVENTION = Object.freeze({
-  version: VERSION,
-  canScoreWithoutAI,
-  wouldAIImproveIntervention,
-  createActivityFingerprint,
-  planPedagogicalIntervention,
-  clearLocalHistory: () => { localStorage.removeItem(HISTORY_KEY); localStorage.removeItem(ATTEMPT_KEY); },
-  audit: () => ({
-    version: VERSION,
-    canScoreWithoutAISeparated: true,
-    wouldAIImproveInterventionSeparated: true,
-    exactRepeatBlocked: true,
-    adaptivePlanSequence: { min: 1, max: 4 },
-    immediateLocalFeedback: true,
-    backgroundGeneration: true,
-    endpoint: "/api/generate-adaptive-intervention-plan",
-    interfaceLanguages: [...LANGUAGES],
-    clientApiKeyPresent: false,
-    firestoreClientWrite: false
-  })
+  version: VERSION, canScoreWithoutAI, needsAdaptiveTutor, wouldAIImproveIntervention, createActivityFingerprint, planPedagogicalIntervention,
+  clearLocalHistory: () => {
+    sessionHistory = [];
+    [HISTORY_KEY, ATTEMPT_KEY, EFFECTIVENESS_KEY, EXPOSURE_KEY].forEach(key => localStorage.removeItem(key));
+  },
+  audit: () => ({ version: VERSION, automaticIntervention: true, technicalStudentUi: false, everyIncorrectRequestsTutor: true,
+    immediateLocalFeedback: IMMEDIATE_LOCAL_FEEDBACK, adaptivePlanSequence: { min: 1, max: 4 }, exactRepeatBlocked: true,
+    interfaceLanguages: [...LANGUAGES], endpoint: "/api/generate-adaptive-intervention-plan", clientApiKeyPresent: false, firestoreClientWrite: false })
 });
-
-window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_CLIENT_READY", {
-  version: VERSION,
-  event: "nalvi:activity-scored"
-});
+window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_CLIENT_READY", { version: VERSION, event: "nalvi:activity-scored" });
