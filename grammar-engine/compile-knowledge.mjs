@@ -24,7 +24,11 @@ console.log(JSON.stringify({
   normativeVerified: [...compiled.lexemes, ...compiled.linguisticRules, ...compiled.conjugationPatterns].filter(record => record.validationStatus === "normativeVerified").length,
   expertVerified: [...compiled.lexemes, ...compiled.linguisticRules, ...compiled.conjugationPatterns].filter(record => record.validationStatus === "expertVerified").length,
   allowedForGeneration: [...compiled.lexemes, ...compiled.linguisticRules, ...compiled.conjugationPatterns].filter(record => record.allowedForGeneration).length,
-  productivePatterns: compiled.conjugationPatterns.filter(pattern => pattern.allowedForGeneration).length,
+  normativeVerifiedPatterns: compiled.grammarReadiness.normativeVerifiedConjugationPatterns,
+  productivePatterns: compiled.grammarReadiness.productiveConjugationPatterns,
+  productiveVerbLemmas: compiled.grammarReadiness.productiveVerbLemmas,
+  realVerbFormsAvailable: compiled.grammarReadiness.realVerbFormsAvailable,
+  paso8CMayStart: compiled.grammarReadiness.paso8CMayStart,
   blockedConflicts: compiled.blockedConflicts,
   openAIConnected: compiled.openAIConnected
 }, null, 2));

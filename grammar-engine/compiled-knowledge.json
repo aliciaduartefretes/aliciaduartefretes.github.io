@@ -14,7 +14,7 @@
     {
       "id": "CP-AREAL-001",
       "name": "Areal",
-      "description": "Requiere ficha por lema antes de asociar verbos.",
+      "description": "Los marcadores personales están verificados; la composición con un lema permanece bloqueada hasta documentar raíz, pertenencia al patrón, comportamiento oral/nasal, excepciones y regla de realización.",
       "persons": [
         {
           "person": "1",
@@ -124,7 +124,7 @@
       "oralVariant": true,
       "nasalVariant": true,
       "restrictions": [
-        "Requiere ficha por lema antes de asociar verbos.",
+        "Los marcadores personales están verificados; la composición con un lema permanece bloqueada hasta documentar raíz, pertenencia al patrón, comportamiento oral/nasal, excepciones y regla de realización.",
         "negativePattern:unreviewed"
       ],
       "exceptions": [],
@@ -142,7 +142,36 @@
           "validationStatus": "sourceVerified"
         }
       ],
-      "validationStatus": "sourceVerified",
+      "validationStatus": "normativeVerified",
+      "normativeVerification": {
+        "method": "direct-normative-source-check",
+        "verificationScope": "conjugationPattern",
+        "sourceAuthorityLevel": "A",
+        "sourceId": "S-001",
+        "sourcePage": "pp. 102–103",
+        "verifiedAt": "2026-08-29T04:45:00Z",
+        "verifiedByProcess": "NALVI normative source audit",
+        "humanExpertReview": false,
+        "authorizedPatternComponents": [
+          "personMarkers",
+          "inclusiveExclusive",
+          "oralNasalInclusiveAlternation"
+        ],
+        "authorizedUses": [
+          "personMarkerReference"
+        ],
+        "openConflictIds": [],
+        "sentenceGeneration": false,
+        "exampleGeneration": false,
+        "conjugationGeneration": false,
+        "notes": "La verificación autoriza únicamente el inventario de marcadores personales documentado. No autoriza concatenación, realización morfológica ni conjugaciones hasta validar al menos un lema, su raíz y la regla productiva aplicable."
+      },
+      "verifiedComponents": [
+        "personMarkers",
+        "inclusiveExclusive",
+        "oralNasalInclusiveAlternation"
+      ],
+      "conjugationGenerationAuthorized": false,
       "allowedForGeneration": false,
       "conflictIds": [],
       "morphemeSlots": [],
@@ -292,6 +321,9 @@
         }
       ],
       "validationStatus": "conflict",
+      "normativeVerification": null,
+      "verifiedComponents": [],
+      "conjugationGenerationAuthorized": false,
       "allowedForGeneration": false,
       "conflictIds": [
         "C-002"
@@ -431,6 +463,9 @@
         }
       ],
       "validationStatus": "sourceVerified",
+      "normativeVerification": null,
+      "verifiedComponents": [],
+      "conjugationGenerationAuthorized": false,
       "allowedForGeneration": false,
       "conflictIds": [
         "C-001"
@@ -2665,9 +2700,18 @@
     }
   ],
   "authorizationSummary": {
-    "normativeVerified": 20,
+    "normativeVerified": 21,
     "expertVerified": 0,
     "allowedForGeneration": 20
+  },
+  "grammarReadiness": {
+    "normativeVerifiedConjugationPatterns": 1,
+    "expertVerifiedConjugationPatterns": 0,
+    "productiveConjugationPatterns": 0,
+    "productiveVerbLemmas": 0,
+    "realVerbFormsAvailable": 0,
+    "paso8CMayStart": false,
+    "blockingReason": "No hay lemas verbales productivos ni reglas de realización normativa autorizadas."
   },
   "inventories": {
     "affirmation": {

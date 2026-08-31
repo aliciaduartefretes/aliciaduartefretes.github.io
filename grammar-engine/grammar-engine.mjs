@@ -14,13 +14,26 @@ const DEFAULT_PRODUCTIVE_STATUSES = [...PRODUCTIVE_STATUSES];
 const hasNormativeVerification = record => {
   if (record?.validationStatus !== "normativeVerified") return true;
   const verification = record?.normativeVerification;
+  const scope = verification?.verificationScope ||
+    (record?.recordType === "lexeme" ? "lexicalSense" : null);
+  const scopeIsAuthorized =
+    (scope === "lexicalSense" &&
+      Array.isArray(verification?.authorizedSenseIds) &&
+      verification.authorizedSenseIds.length > 0) ||
+    (scope === "conjugationPattern" &&
+      Array.isArray(verification?.authorizedPatternComponents) &&
+      verification.authorizedPatternComponents.length > 0) ||
+    (scope === "linguisticRule" &&
+      Array.isArray(verification?.authorizedRuleComponents) &&
+      verification.authorizedRuleComponents.length > 0);
   return verification?.method === "direct-normative-source-check" &&
     verification?.sourceAuthorityLevel === "A" &&
     typeof verification?.sourceId === "string" && verification.sourceId.length > 0 &&
     typeof verification?.sourcePage === "string" && verification.sourcePage.length > 0 &&
     verification?.humanExpertReview === false &&
     Array.isArray(verification?.openConflictIds) && verification.openConflictIds.length === 0 &&
-    Array.isArray(verification?.authorizedSenseIds) && verification.authorizedSenseIds.length > 0;
+    Array.isArray(verification?.authorizedUses) && verification.authorizedUses.length > 0 &&
+    scopeIsAuthorized;
 };
 
 const productiveValidationStatus = record =>
@@ -39,6 +52,9 @@ const uniqueReferences = references => {
 const unavailableResult = (reason, extra = {}) => ({
   status: "unavailable",
   form: null,
+  lemma: null,
+  person: null,
+  pattern: null,
   appliedRule: null,
   source: [],
   validationStatus: null,
@@ -51,6 +67,9 @@ const unavailableResult = (reason, extra = {}) => ({
 const reviewResult = (record, reason, extra = {}) => ({
   status: "reviewRequired",
   form: null,
+  lemma: null,
+  person: null,
+  pattern: null,
   appliedRule: null,
   source: uniqueReferences(record?.sourceReferences),
   validationStatus: record?.validationStatus || "unreviewed",
@@ -63,6 +82,9 @@ const reviewResult = (record, reason, extra = {}) => ({
 const conflictResult = (record, conflictIds, extra = {}) => ({
   status: "conflict",
   form: null,
+  lemma: null,
+  person: null,
+  pattern: null,
   appliedRule: null,
   source: uniqueReferences(record?.sourceReferences),
   validationStatus: "conflict",
@@ -243,6 +265,9 @@ export const normalizeConjugationPattern = record => ({
   exceptions: record.exceptions || [],
   references: uniqueReferences(record.sourceReferences),
   validationStatus: record.validationStatus,
+  normativeVerification: record.normativeVerification || null,
+  verifiedComponents: record.normativeVerification?.authorizedPatternComponents || [],
+  conjugationGenerationAuthorized: record.normativeVerification?.conjugationGeneration === true,
   allowedForGeneration: record.allowedForGeneration === true,
   conflictIds: record.conflictIds || [],
   morphemeSlots: record.morphemeSlots || [],
@@ -251,6 +276,22 @@ export const normalizeConjugationPattern = record => ({
 
 export const compileKnowledgeBase = ({corpus, governance}) => {
   if (!corpus || !Array.isArray(corpus.records)) throw new TypeError("Corpus inválido.");
+  const patternRecords = corpus.records.filter(record => record.recordType === "conjugationPattern");
+  const lexemeRecords = corpus.records.filter(record => record.recordType === "lexeme");
+  const productivePatternIds = new Set(patternRecords.filter(record =>
+    productiveValidationStatus(record) &&
+    record.allowedForGeneration === true &&
+    !(record.conflictIds || []).length &&
+    record.normativeVerification?.conjugationGeneration !== false
+  ).map(record => record.id));
+  const productiveVerbLemmas = lexemeRecords.filter(record =>
+    record.partOfSpeech?.includes("verb") &&
+    record.verbData &&
+    productiveValidationStatus(record) &&
+    record.allowedForGeneration === true &&
+    !(record.conflictIds || []).length &&
+    productivePatternIds.has(record.verbData.patternId)
+  );
   return {
     engineSchemaVersion: "1.0.0",
     languageVariant: corpus.languageVariant,
@@ -260,10 +301,8 @@ export const compileKnowledgeBase = ({corpus, governance}) => {
       requiresNoOpenConflict: governance?.generationGate?.requiresNoOpenConflict !== false,
       unknownDataPolicy: governance?.unknownDataPolicy || "No inventar."
     },
-    conjugationPatterns: corpus.records
-      .filter(record => record.recordType === "conjugationPattern")
-      .map(normalizeConjugationPattern),
-    lexemes: corpus.records.filter(record => record.recordType === "lexeme"),
+    conjugationPatterns: patternRecords.map(normalizeConjugationPattern),
+    lexemes: lexemeRecords,
     linguisticRules: corpus.records.filter(record => record.recordType === "linguisticRule"),
     conflicts: corpus.records.filter(record => record.recordType === "conflict"),
     authorizationSummary: {
@@ -274,6 +313,19 @@ export const compileKnowledgeBase = ({corpus, governance}) => {
         record.allowedForGeneration === true &&
         !(record.conflictIds || []).length
       ).length
+    },
+    grammarReadiness: {
+      normativeVerifiedConjugationPatterns: patternRecords.filter(record =>
+        record.validationStatus === "normativeVerified" && hasNormativeVerification(record)
+      ).length,
+      expertVerifiedConjugationPatterns: patternRecords.filter(record =>
+        record.validationStatus === "expertVerified"
+      ).length,
+      productiveConjugationPatterns: productivePatternIds.size,
+      productiveVerbLemmas: productiveVerbLemmas.length,
+      realVerbFormsAvailable: 0,
+      paso8CMayStart: false,
+      blockingReason: "No hay lemas verbales productivos ni reglas de realización normativa autorizadas."
     },
     inventories: {
       affirmation: {status: "unavailable", ruleIds: []},
@@ -343,12 +395,15 @@ export const createGrammarEngine = ({corpus, governance}) => {
 
     const verb = records.get(verbId);
     if (!verb) return unavailableResult("verbNotFound", {verbId});
+    const lemma = verb.normalizedForm || null;
     if (verb.recordType !== "lexeme" || !verb.partOfSpeech?.includes("verb") || !verb.verbData) {
       const gate = sourceStatusResult(verb, openConflicts(verb));
-      if (gate.status === "conflict") return conflictResult(verb, openConflicts(verb), {verbId});
-      if (gate.status === "reviewRequired") return reviewResult(verb, gate.reason, {verbId});
+      if (gate.status === "conflict") return conflictResult(verb, openConflicts(verb), {verbId, lemma, person});
+      if (gate.status === "reviewRequired") return reviewResult(verb, gate.reason, {verbId, lemma, person});
       return unavailableResult("recordIsNotComputableVerb", {
         verbId,
+        lemma,
+        person,
         validationStatus: verb.validationStatus,
         source: uniqueReferences(verb.sourceReferences)
       });
@@ -356,14 +411,15 @@ export const createGrammarEngine = ({corpus, governance}) => {
 
     const pattern = patterns.get(verb.verbData.patternId);
     if (!pattern) return unavailableResult("patternNotFound", {verbId, patternId: verb.verbData.patternId});
+    const patternDescriptor = {id: pattern.id, name: pattern.officialLabel};
     const conflictIds = [...new Set([...openConflicts(verb), ...openConflicts(pattern)])];
     if (conflictIds.length) {
-      return conflictResult(pattern, conflictIds, {verbId, patternId: pattern.id});
+      return conflictResult(pattern, conflictIds, {verbId, lemma, person, pattern: patternDescriptor, patternId: pattern.id});
     }
 
     const verbGate = sourceStatusResult(verb);
-    if (verbGate.status === "conflict") return conflictResult(verb, openConflicts(verb), {verbId});
-    if (verbGate.status === "reviewRequired") return reviewResult(verb, verbGate.reason, {verbId});
+    if (verbGate.status === "conflict") return conflictResult(verb, openConflicts(verb), {verbId, lemma, person, pattern: patternDescriptor});
+    if (verbGate.status === "reviewRequired") return reviewResult(verb, verbGate.reason, {verbId, lemma, person, pattern: patternDescriptor});
     if (verbGate.status === "unavailable") return unavailableResult(verbGate.reason, {verbId});
 
     const patternGate = sourceStatusResult(pattern);
@@ -390,6 +446,9 @@ export const createGrammarEngine = ({corpus, governance}) => {
       return {
         status: "available",
         form: exact.form,
+        lemma,
+        person,
+        pattern: patternDescriptor,
         underlyingForm: exact.underlyingForm || null,
         morphemes: exact.morphemes || [],
         appliedRule: exact.ruleId || "exactValidatedForm",
@@ -418,6 +477,9 @@ export const createGrammarEngine = ({corpus, governance}) => {
     return {
       status: "available",
       form: realized.form,
+      lemma,
+      person,
+      pattern: patternDescriptor,
       underlyingForm: realized.underlyingForm,
       morphemes: realized.morphemes,
       appliedRule: realizationRule.id,

@@ -13,6 +13,7 @@
     "linguisticRules",
     "conflicts",
     "authorizationSummary",
+    "grammarReadiness",
     "inventories",
     "openAIConnected"
   ],
@@ -53,6 +54,28 @@
         "normativeVerified": {"type": "integer", "minimum": 0},
         "expertVerified": {"type": "integer", "minimum": 0},
         "allowedForGeneration": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "grammarReadiness": {
+      "type": "object",
+      "required": [
+        "normativeVerifiedConjugationPatterns",
+        "expertVerifiedConjugationPatterns",
+        "productiveConjugationPatterns",
+        "productiveVerbLemmas",
+        "realVerbFormsAvailable",
+        "paso8CMayStart",
+        "blockingReason"
+      ],
+      "properties": {
+        "normativeVerifiedConjugationPatterns": {"type": "integer", "minimum": 0},
+        "expertVerifiedConjugationPatterns": {"type": "integer", "minimum": 0},
+        "productiveConjugationPatterns": {"type": "integer", "minimum": 0},
+        "productiveVerbLemmas": {"type": "integer", "minimum": 0},
+        "realVerbFormsAvailable": {"type": "integer", "minimum": 0},
+        "paso8CMayStart": {"type": "boolean"},
+        "blockingReason": {"type": "string", "minLength": 1}
       },
       "additionalProperties": false
     },
@@ -129,6 +152,9 @@
         "exceptions",
         "references",
         "validationStatus",
+        "normativeVerification",
+        "verifiedComponents",
+        "conjugationGenerationAuthorized",
         "allowedForGeneration",
         "conflictIds",
         "morphemeSlots",
@@ -152,6 +178,9 @@
         "exceptions": {"type": "array"},
         "references": {"type": "array", "items": {"$ref": "#/$defs/sourceReference"}},
         "validationStatus": {"$ref": "#/$defs/validationStatus"},
+        "normativeVerification": {"type": ["object", "null"]},
+        "verifiedComponents": {"type": "array", "items": {"type": "string"}},
+        "conjugationGenerationAuthorized": {"type": "boolean"},
         "allowedForGeneration": {"type": "boolean"},
         "conflictIds": {"type": "array", "items": {"type": "string"}},
         "morphemeSlots": {"type": "array", "items": {"type": "object"}},
