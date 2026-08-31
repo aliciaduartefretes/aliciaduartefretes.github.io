@@ -66,6 +66,17 @@ test(`suite profesional: ${evalCases.length} casos en seis idiomas`, async t => 
       assert.equal(metrics.firstErrorExplicitSolutionRate, 0);
       assert.equal(metrics.singlePairMatchingRate, 0);
       assert.equal(quality.valid, true, quality.reasons.join(", "));
+      for (const activity of plan.activities) {
+        if (activity.activityType === "fill-blank") {
+          const contextText = String(activity.template || "").replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
+          assert.ok(contextText, "fill-blank must show visible context");
+        }
+        if (Number(activity.helpLevel || 0) > 0) {
+          const support = [activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
+          const mediaSupport = ["audio", "image"].includes(activity.media?.type) && activity.media?.value;
+          assert.ok(support || mediaSupport, "guided activity must show learning support");
+        }
+      }
       if (scenario.attempt >= 3) assert.equal(metrics.independentRetestCoverage, 1);
     });
   }
@@ -94,4 +105,20 @@ test("el validador rechaza los fallos de calidad críticos", () => {
   for (const reason of ["SINGLE_PAIR_MATCHING", "TECHNICAL_TEXT_VISIBLE", "ANSWER_VISIBLE_TOO_EARLY", "MISSING_INDEPENDENT_RETEST"]) {
     assert.ok(result.reasons.includes(reason), reason);
   }
+});
+
+test("el validador bloquea completar una frase sin contexto visible", () => {
+  const context = contextFor(scenarios[0], "es");
+  const result = validatePedagogicalQuality({
+    studentFeedback: { shortMessage: "Probemos de otra forma." },
+    strategy: { reasonCode: "change-modality" },
+    activities: [{
+      activityType: "fill-blank", requiresStudentResponse: true, helpLevel: 2,
+      answerExposure: "PARTIAL_HINT", instruction: "Completa.", prompt: "Completa.",
+      template: "{{blank}}", hints: [], explanation: ""
+    }]
+  }, context);
+  assert.equal(result.valid, false);
+  assert.ok(result.reasons.includes("EMPTY_FILL_TEMPLATE"));
+  assert.ok(result.reasons.includes("MISSING_GUIDED_SUPPORT"));
 });
