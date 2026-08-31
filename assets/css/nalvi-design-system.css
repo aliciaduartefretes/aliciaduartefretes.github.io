@@ -11,6 +11,213 @@ html[data-nalvi-boot="booting"] {
   background: #f6f7fb;
 }
 
+/* Estabilización visual final: el loader ocupa su propia capa y desaparece sin reservar espacio. */
+html:not([data-nalvi-boot="booting"]) #nalviBoot,
+#nalviBoot[aria-hidden="true"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* La promoción personal heredada no forma parte de las superficies académicas de NALVI. */
+#course .insta-cta,
+#videos .insta-cta,
+.follow-label,
+#dictionary .dictionary-source {
+  display: none !important;
+}
+
+/* Catálogo NALVI: una familia visual compacta para tarjetas estáticas y dinámicas. */
+#catalog {
+  padding: var(--nalvi-space-8) 0 calc(112px + env(safe-area-inset-bottom));
+}
+
+#catalog .catalog-head {
+  max-width: 760px;
+  margin: 0 auto var(--nalvi-space-8);
+}
+
+#catalog .course-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: var(--nalvi-space-4) !important;
+  width: min(1180px, 100%);
+  max-width: none !important;
+  margin: 0 auto !important;
+}
+
+#catalog .course-grid > :not(.course-card) {
+  grid-column: 1 / -1;
+}
+
+#catalog .course-card {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto auto;
+  align-content: start;
+  gap: var(--nalvi-space-3) var(--nalvi-space-4) !important;
+  min-height: 0 !important;
+  padding: var(--nalvi-space-5) !important;
+  overflow: hidden;
+  border: 1px solid var(--nalvi-border) !important;
+  border-radius: var(--nalvi-radius-xl) var(--nalvi-radius-xl) var(--nalvi-radius-xl) var(--nalvi-radius-md) !important;
+  background: var(--nalvi-surface-raised) !important;
+  box-shadow: var(--nalvi-shadow-sm) !important;
+}
+
+#catalog .course-card:hover {
+  border-color: var(--nalvi-primary-500) !important;
+  box-shadow: var(--nalvi-shadow-md) !important;
+  transform: translateY(-2px);
+}
+
+#catalog .course-card-icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: 52px !important;
+  height: 52px !important;
+  display: grid !important;
+  place-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--nalvi-primary-100);
+  border-radius: var(--nalvi-radius-lg) !important;
+  background: linear-gradient(145deg, var(--nalvi-primary-50), var(--nalvi-secondary-50)) !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+  filter: none !important;
+}
+
+#catalog .course-card-icon img,
+#catalog .course-card-icon svg {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+#catalog .course-card h3 {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0 !important;
+  color: var(--nalvi-text) !important;
+  font-family: var(--nalvi-font-display);
+  font-size: 1.08rem !important;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+#catalog .course-card > p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0 !important;
+  color: var(--nalvi-text-secondary) !important;
+  font-size: var(--nalvi-text-sm) !important;
+  line-height: 1.5;
+}
+
+#catalog .course-card-stats {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  align-content: start;
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+#catalog .course-card-stats span {
+  padding: 5px 8px !important;
+  border: 1px solid var(--nalvi-border) !important;
+  border-radius: var(--nalvi-radius-pill) !important;
+  background: var(--nalvi-surface-subtle) !important;
+  color: var(--nalvi-text-secondary) !important;
+  font-size: 0.69rem !important;
+  font-weight: 750 !important;
+  line-height: 1.15;
+}
+
+#catalog .course-card .btn {
+  grid-column: 1 / -1;
+  grid-row: 5;
+  justify-self: start;
+  width: auto !important;
+  min-height: 44px;
+  margin: var(--nalvi-space-1) 0 0 !important;
+  padding: 11px 15px !important;
+  border-radius: var(--nalvi-radius-md) !important;
+  box-shadow: none !important;
+  font-size: var(--nalvi-text-sm);
+}
+
+#catalog .course-ribbon {
+  top: 10px !important;
+  right: 10px !important;
+  padding: 5px 8px !important;
+  border-radius: var(--nalvi-radius-pill) !important;
+  font-size: 0.62rem !important;
+}
+
+/* Diccionario: interfaz pedagógica limpia; la trazabilidad permanece en la KB. */
+#dictionary .dictionary-card {
+  border: 1px solid var(--nalvi-border);
+  border-radius: var(--nalvi-radius-xl);
+  box-shadow: var(--nalvi-shadow-sm);
+}
+
+#dictionary .dictionary-entry {
+  border-color: var(--nalvi-border);
+  border-radius: var(--nalvi-radius-md);
+  background: var(--nalvi-surface);
+}
+
+@media (max-width: 1020px) {
+  #catalog .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  #catalog {
+    padding-top: var(--nalvi-space-5);
+  }
+
+  #catalog .catalog-head {
+    margin-bottom: var(--nalvi-space-5);
+  }
+
+  #catalog .course-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--nalvi-space-3) !important;
+  }
+
+  #catalog .course-card {
+    grid-template-columns: 46px minmax(0, 1fr);
+    padding: var(--nalvi-space-4) !important;
+    gap: 10px 12px !important;
+  }
+
+  #catalog .course-card-icon {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 22px !important;
+  }
+
+  #catalog .course-card h3 {
+    font-size: 1rem !important;
+  }
+
+  #catalog .course-card .btn {
+    width: 100% !important;
+  }
+}
+
 html[data-nalvi-boot="booting"] body {
   min-height: 100dvh;
   overflow: hidden;

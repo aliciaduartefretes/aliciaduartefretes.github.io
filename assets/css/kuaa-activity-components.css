@@ -30,3 +30,13 @@
   .kuaa-listen{align-items:flex-start}
   .kuaa-order-chip{min-height:44px}
 }
+
+.nalvi-intervention{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;margin-top:16px;padding:16px;border:1px solid color-mix(in srgb,var(--nalvi-primary,#3459b8) 24%,#fff);border-radius:var(--nalvi-radius-lg,18px);background:linear-gradient(135deg,#f4f7ff,#fbfaff);box-shadow:0 8px 24px rgba(44,60,115,.1)}
+.nalvi-intervention__icon{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:var(--nalvi-primary,#3459b8);color:#fff;font-size:22px;font-weight:900}
+.nalvi-intervention__copy{min-width:0}.nalvi-intervention__copy small{display:block;color:var(--nalvi-primary,#3459b8);font-weight:850;text-transform:uppercase;letter-spacing:.06em}.nalvi-intervention__copy h4{margin:3px 0 4px;color:var(--nalvi-text,#18213d);font-size:1rem}.nalvi-intervention__copy p{margin:0;color:var(--nalvi-text-secondary,#5e6680);line-height:1.45}.nalvi-intervention__copy span{display:block;margin-top:6px;color:var(--nalvi-text-secondary,#5e6680);font-size:.78rem;font-weight:750}.nalvi-intervention__action{white-space:nowrap;min-height:44px}
+.nalvi-intervention.is-loading{border-color:color-mix(in srgb,var(--nalvi-primary,#3459b8) 38%,#fff)}
+.nalvi-intervention__skeleton{display:block;width:min(260px,75%);height:7px;margin-top:10px;border-radius:999px;background:linear-gradient(90deg,rgba(52,89,184,.08),rgba(52,89,184,.2),rgba(52,89,184,.08));background-size:220% 100%;animation:nalvi-adaptive-loading 1.25s ease-in-out infinite}
+.nalvi-adaptive-sequence{display:inline-flex;align-items:center;min-height:28px;margin:0 0 12px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--nalvi-primary,#3459b8) 10%,#fff);color:var(--nalvi-primary,#3459b8);font-size:.76rem;font-weight:850;letter-spacing:.03em}
+@keyframes nalvi-adaptive-loading{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media(prefers-reduced-motion:reduce){.nalvi-intervention__skeleton{animation:none}}
+@media(max-width:620px){.nalvi-intervention{grid-template-columns:auto minmax(0,1fr);padding:14px}.nalvi-intervention__action{grid-column:1/-1;width:100%}}
