@@ -1,5 +1,5 @@
 {
-  "governanceVersion": "1.0.0-pilot",
+  "governanceVersion": "1.2.0-pre-8c-grammar-audit",
   "languageVariant": "gug-PY",
   "authorityOrder": ["A", "A-", "B+", "B", "C", "D"],
   "normativePrimarySources": ["S-001", "S-002"],
@@ -12,14 +12,25 @@
     "provenance",
     "contrast",
     "conflictDetection",
-    "humanReview",
+    "normativeSourceVerificationOrHumanReview",
+    "normativeVerified",
     "expertVerified",
     "allowedForGeneration"
   ],
   "generationGate": {
-    "requiredValidationStatus": "expertVerified",
+    "allowedValidationStatuses": ["normativeVerified", "expertVerified"],
     "requiresAllowedForGeneration": true,
-    "requiresNoOpenConflict": true
+    "requiresNoOpenConflict": true,
+    "normativeVerifiedDefinition": "Verificado directamente contra una fuente normativa oficial Nivel A, con localizador exacto y alcance inequívoco. No equivale a revisión por experto humano.",
+    "normativeVerificationRequirements": [
+      "normativePrimarySource",
+      "authorityLevelA",
+      "exactSourceLocator",
+      "explicitAuthorizedScope",
+      "noFreeAIInference",
+      "noOpenConflict",
+      "notDependentOnC001OrC002"
+    ]
   },
   "incompleteAreas": [
     "tabla consolidada de diminutivos y aumentativos",
@@ -37,5 +48,29 @@
   "connectedToCourseEngine": false,
   "connectedToFirebase": false,
   "connectedToOpenAI": "serverFilteredReadOnly",
-  "openAIEligibleRecordsAtStep7B": 0
+  "openAIEligibleRecordsAtStep7B": 0,
+  "openAIEligibleRecordsAtStep8B5NormativeAdjustment": 20,
+  "normativeVerifiedIsHumanExpertReview": false,
+  "pre8CGrammarAudit": {
+    "normativeVerifiedConjugationPatterns": 1,
+    "productiveConjugationPatterns": 0,
+    "productiveVerbLemmas": 0,
+    "realVerbFormsAvailable": 0,
+    "authorizedPatternComponents": {
+      "CP-AREAL-001": [
+        "personMarkers",
+        "inclusiveExclusive",
+        "oralNasalInclusiveAlternation"
+      ]
+    },
+    "generationStillBlockedBecause": [
+      "noValidatedVerbLemmaAssignedToAnAuthorizedPattern",
+      "noValidatedUnderlyingStemForARealVerb",
+      "noNormativelyVerifiedComputableRealizationRule",
+      "noValidatedExceptionAndMorphophonologyProfileForAPilotLemma"
+    ],
+    "c001RemainsBlocked": true,
+    "c002RemainsBlocked": true,
+    "paso8CMayStart": false
+  }
 }
