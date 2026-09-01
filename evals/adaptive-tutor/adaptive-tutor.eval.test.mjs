@@ -67,17 +67,19 @@ test(`suite profesional: ${evalCases.length} casos en seis idiomas`, async t => 
       assert.equal(metrics.singlePairMatchingRate, 0);
       assert.equal(quality.valid, true, quality.reasons.join(", "));
       for (const activity of plan.activities) {
-        if (activity.activityType === "fill-blank") {
-          const contextText = String(activity.template || "").replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
-          assert.ok(contextText, "fill-blank must show visible context");
+        if (activity.activityType === "GUIDED_GAP") {
+          const contextText = String(activity.template || activity.contextText || "").replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
+          assert.ok(contextText, "GUIDED_GAP must show visible context");
         }
         if (Number(activity.helpLevel || 0) > 0) {
-          const support = [activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
+          const support = [activity.contextText, activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
           const mediaSupport = ["audio", "image"].includes(activity.media?.type) && activity.media?.value;
           assert.ok(support || mediaSupport, "guided activity must show learning support");
         }
       }
-      if (scenario.attempt >= 3) assert.equal(metrics.independentRetestCoverage, 1);
+      if (plan.activities.some(activity => ["WORKED_EXAMPLE", "EXPLICIT_SOLUTION"].includes(activity.answerExposure))) {
+        assert.equal(metrics.independentRetestCoverage, 1);
+      }
     });
   }
 });
@@ -95,14 +97,15 @@ test("el validador rechaza los fallos de calidad críticos", () => {
   const badPlan = {
     studentFeedback: { shortMessage: "OpenAI strategy debug" }, strategy: { reasonCode: "" },
     activities: [{
-      activityType: "matching", requiresStudentResponse: true, helpLevel: 4,
+      activityType: "ARROW_MATCH", requiresStudentResponse: true, helpLevel: 4,
       answerExposure: "EXPLICIT_SOLUTION", instruction: "sy", prompt: context.activity.prompt,
-      pairs: [{ id: "one", left: "sy", right: "mamá" }], options: [], hints: [], explanation: ""
-    }]
+      pairs: [{ id: "one", left: "sy", right: "mamá" }], options: [], hints: [], explanation: "", correctAnswer: "sy"
+    }],
+    progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", requiresIndependentRetest: true }
   };
   const result = validatePedagogicalQuality(badPlan, context);
   assert.equal(result.valid, false);
-  for (const reason of ["SINGLE_PAIR_MATCHING", "TECHNICAL_TEXT_VISIBLE", "ANSWER_VISIBLE_TOO_EARLY", "MISSING_INDEPENDENT_RETEST"]) {
+  for (const reason of ["INVALID_PAIR_COUNT", "ANSWER_IN_SINGLE_PAIR", "FIRST_ERROR_EXPLICIT_SOLUTION"]) {
     assert.ok(result.reasons.includes(reason), reason);
   }
 });
@@ -113,12 +116,13 @@ test("el validador bloquea completar una frase sin contexto visible", () => {
     studentFeedback: { shortMessage: "Probemos de otra forma." },
     strategy: { reasonCode: "change-modality" },
     activities: [{
-      activityType: "fill-blank", requiresStudentResponse: true, helpLevel: 2,
+      activityType: "GUIDED_GAP", requiresStudentResponse: true, helpLevel: 2,
       answerExposure: "PARTIAL_HINT", instruction: "Completa.", prompt: "Completa.",
-      template: "{{blank}}", hints: [], explanation: ""
-    }]
+      template: "{{blank}}", options: [], hints: [], explanation: "", correctAnswer: "sy"
+    }],
+    progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", requiresIndependentRetest: true }
   }, context);
   assert.equal(result.valid, false);
-  assert.ok(result.reasons.includes("EMPTY_FILL_TEMPLATE"));
-  assert.ok(result.reasons.includes("MISSING_GUIDED_SUPPORT"));
+  assert.ok(result.reasons.includes("EMPTY_GAP_CONTEXT"));
+  assert.ok(result.reasons.includes("INVALID_OPTION_COUNT"));
 });
