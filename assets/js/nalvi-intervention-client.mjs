@@ -5,9 +5,11 @@ import {
   planPedagogicalIntervention,
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
-import { buildDeterministicFallbackActivity } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-TUTOR-4";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-1";
+import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-1";
+import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-1";
 
-const VERSION = "NALVI-TUTOR-CLIENT-8";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-1";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
@@ -70,8 +72,8 @@ function buildSpacedRetestPlan(context) {
   const copy = COPY[context.uiLocale] || COPY.es;
   const activity = normalizeRenderableActivity({
     id: `spaced-match-${context.learningObjectiveId}-${Date.now()}`,
-    type: "matching",
-    activityType: "matching",
+    type: ACTIVITY_TYPES.ARROW_MATCH,
+    activityType: ACTIVITY_TYPES.ARROW_MATCH,
     conceptId: context.conceptId,
     conceptIds: [context.conceptId],
     learningObjectiveId: context.learningObjectiveId,
@@ -87,6 +89,8 @@ function buildSpacedRetestPlan(context) {
     requiresStudentResponse: true,
     helpLevel: 0,
     answerExposure: "HIDDEN",
+    cognitiveDemand: "DISCRIMINATION",
+    reasonCode: "JUSTIFIED_INTERLEAVED_RETRIEVAL",
     independentRetest: true,
     spacedRetest: true,
     lessonContext: {
@@ -206,7 +210,7 @@ function hasVisibleFillContext(activity, language) {
 }
 
 function normalizeRenderableActivity(activity = {}, context) {
-  const language = context.uiLocale, type = activity.type || activity.activityType || "writing";
+  const language = context.uiLocale, type = activity.activityType || activity.type || ACTIVITY_TYPES.INDEPENDENT_RECALL;
   const correctAnswer = localize(activity.correctAnswer || activity.answer || context.correctAnswer, language);
   const sourcePrompt = localize(activity.lessonContext?.sourcePrompt || context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, language).trim();
   const sourceInstruction = localize(activity.lessonContext?.sourceInstruction || context.activity?.lessonContext?.sourceInstruction || context.activity?.instruction, language).trim();
@@ -215,11 +219,12 @@ function normalizeRenderableActivity(activity = {}, context) {
     return { ...option, id: String(option?.id ?? `option-${index}`), label, value: localize(option?.value ?? option?.text ?? option?.label ?? option, language) };
   }).filter(option => option.label);
   const correct = options.find(option => String(option.id) === String(activity.correctOptionId) || option.value.normalize("NFC").trim().toLocaleLowerCase() === correctAnswer.normalize("NFC").trim().toLocaleLowerCase());
-  const tokens = (activity.tokens || []).map((token, index) => ({ ...token, id: String(token?.id ?? index), label: localize(token?.label ?? token?.text ?? token, language) }));
+  const tiles = (activity.tiles || activity.tokens || []).map((token, index) => ({ ...token, id: String(token?.id ?? index), text: localize(token?.text ?? token?.label ?? token?.value ?? token, language), label: localize(token?.label ?? token?.text ?? token?.value ?? token, language) }));
+  const tokens = tiles;
   let template = localize(activity.template, language);
-  if (type === "fill-blank" && !hasVisibleFillContext({ template }, language)) template = `${sourcePrompt || localize(activity.prompt, language)} → {{blank}}`;
+  if (type === ACTIVITY_TYPES.GUIDED_GAP && !hasVisibleFillContext({ template }, language)) template = `${localize(activity.contextText, language) || sourcePrompt || localize(activity.prompt, language)} {{blank}}`;
   return {
-    ...activity, type, activityType: type, options, tokens, template,
+    ...activity, type, activityType: type, options, tokens, tiles, template,
     correctOptionId: activity.correctOptionId || correct?.id || "",
     acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : correctAnswer ? [correctAnswer] : [],
     answer: activity.answer || correctAnswer,
@@ -245,7 +250,7 @@ function normalizePlanForRenderer(plan, context) {
 
 function isPedagogicallyClear(activity, language) {
   if (!activity) return false;
-  if ((activity.type || activity.activityType) === "fill-blank" && !hasVisibleFillContext(activity, language)) return false;
+  if ((activity.type || activity.activityType) === ACTIVITY_TYPES.GUIDED_GAP && !hasVisibleFillContext(activity, language)) return false;
   return Boolean(localize(activity.prompt || activity.instruction || activity.lessonContext?.sourcePrompt, language).trim());
 }
 
@@ -291,22 +296,20 @@ function updateStrategyEffectiveness(strategy, correct) {
 }
 
 function professionalLocalPlan(context, localPlan, reason = "PROFESSIONAL_LOCAL_FALLBACK") {
-  let activity = normalizeRenderableActivity(buildDeterministicFallbackActivity(context, context.attemptNumber), context);
-  let fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
-  const recent = new Set(context.recentActivityFingerprints || []); recent.add(context.previousActivityFingerprint);
-  if (!targetsFailedKnowledge(activity, context) || !isPedagogicallyClear(activity, context.uiLocale) || recent.has(fingerprint)) {
-    activity = normalizeRenderableActivity(buildDeterministicFallbackActivity(context, context.attemptNumber + 1), context);
-    fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
-  }
+  const errorType = localPlan?.errorType || "UNKNOWN_ERROR";
+  const candidates = buildDeterministicFallbackCandidates(context, context.attemptNumber, errorType);
+  const selected = selectFirstValidCandidate(candidates, { ...context, errorType });
+  const activity = selected.accepted ? normalizeRenderableActivity(selected.candidate.activity, context) : null;
+  const fingerprint = activity ? createActivityFingerprint(activity, { uiLocale: context.uiLocale }) : "";
   const language = context.uiLocale, copy = COPY[language] || COPY.es;
   return { ok: true, usedAI: false, mode: "fallback", reason, adaptiveInterventionPlan: {
     planVersion: "NALVI-TUTOR-1", planId: `local-${context.conceptId}-${Date.now()}`, conceptId: context.conceptId, linguisticMode: "LESSON_BOUNDED",
-    diagnosis: { errorType: localPlan?.errorType || "UNKNOWN_ERROR", likelyDifficulty: "local-rule", confidence: Number(localPlan?.diagnosis?.confidence || 0), prerequisiteGap: null, skillAffected: context.currentSkill },
+    diagnosis: { errorType, likelyDifficulty: "local-rule", confidence: Number(localPlan?.diagnosis?.confidence || 0), prerequisiteGap: null, skillAffected: context.currentSkill },
     pedagogicalGoal: "Continue the same concept through a different exercise.",
     strategy: { primaryStrategy: localPlan?.strategy || "CHANGE_MODALITY", secondaryStrategy: null, reasonCode: `local-attempt-${context.attemptNumber}` },
     studentFeedback: { locale: language, shortMessage: copy.wrong }, activities: activity ? [{ ...activity, fingerprint }] : [],
     progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", onGuidedCorrect: "CONTINUE_PRACTICE", requiresIndependentRetest: true, maxInterventionsBeforeDefer: 4 },
-    fallbackPolicy: { strategy: "PROFESSIONAL_LOCAL_TEMPLATE", reason }, validationMetadata: { sourceIds: [], knowledgeIds: context.knowledgeIds, claimedRiskLevel: "GREEN" }
+    fallbackPolicy: { strategy: "OFFICIAL_CATALOG_FALLBACK", reason, rejectedCandidates: selected.rejected || [] }, validationMetadata: { sourceIds: [], knowledgeIds: context.knowledgeIds, claimedRiskLevel: "GREEN", catalogVersion: catalogAudit().version }
   }};
 }
 
@@ -393,7 +396,7 @@ function buildContext(detail) {
   const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
   const semanticAnswer = localize(activity.lessonContext?.sourceAnswer, language).trim() || answerFor(activity, language);
   return { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
-    activityType: activity.type || activity.activityType || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
+    activityType: activity.activityType || activity.type || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
     studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: semanticAnswer, attemptNumber,
     recentErrors: recent.filter(item => item.conceptId === conceptId).map(item => ({ conceptId, errorType: item.errorType })),
     recentActivities: recent.map(item => ({ conceptId: item.conceptId, activityType: item.activityType, fingerprint: item.fingerprint, strategy: item.strategy })),
@@ -517,6 +520,7 @@ window.NALVI_INTERVENTION = Object.freeze({
   audit: () => ({ version: VERSION, automaticIntervention: true, technicalStudentUi: false, everyIncorrectRequestsTutor: true,
     immediateLocalFeedback: IMMEDIATE_LOCAL_FEEDBACK, adaptivePlanSequence: { min: 1, max: 4 }, exactRepeatBlocked: true,
     spacedRetrieval: { enabled: true, minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES, immediateSemanticRepeatBlocked: true },
+    officialActivityCatalog: catalogAudit(),
     interfaceLanguages: [...LANGUAGES], endpoint: "/api/generate-adaptive-intervention-plan", clientApiKeyPresent: false, firestoreClientWrite: false })
 });
 window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_CLIENT_READY", { version: VERSION, event: "nalvi:activity-scored" });
