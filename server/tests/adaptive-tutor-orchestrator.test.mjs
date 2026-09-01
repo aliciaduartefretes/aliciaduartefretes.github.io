@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createActivityFingerprint } from "../../intervention-engine/intervention-engine.mjs";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs";
 import { createAdaptiveTutorOrchestrator, createProfessionalFallbackPlan } from "../adaptive-tutor-orchestrator.mjs";
 
 function context(overrides = {}) {
@@ -25,22 +26,16 @@ function context(overrides = {}) {
 }
 
 function validPlan(overrides = {}) {
+  const sourceContext = context();
+  const catalogCandidate = buildDeterministicFallbackCandidates(sourceContext, 1, "SEMANTIC_CONFUSION")[0];
   return {
-    planVersion: "NALVI-TUTOR-1", planId: "plan-family-mother-1", conceptId: "family-mother",
+    planVersion: "NALVI-TUTOR-CATALOG-1", planId: "plan-family-mother-1", conceptId: "family-mother",
     linguisticMode: "LESSON_BOUNDED",
     diagnosis: { errorType: "SEMANTIC_CONFUSION", likelyDifficulty: "meaning contrast", confidence: 0.84, prerequisiteGap: null, skillAffected: "vocabulary" },
-    pedagogicalGoal: "Recognise the same validated lesson item through listening.",
-    strategy: { primaryStrategy: "CHANGE_MODALITY", secondaryStrategy: "USE_AUDIO", reasonCode: "recognition-to-listening" },
+    pedagogicalGoal: "Discriminate the same validated lesson item in a new context.",
+    strategy: { primaryStrategy: "CHANGE_MODALITY", secondaryStrategy: "USE_CONTEXT", reasonCode: "contextual-discrimination" },
     studentFeedback: { locale: "es", shortMessage: "No del todo. Probemos de otra forma." },
-    activities: [{
-      id: "listen-family-mother", activityType: "listening", skill: "listening", difficulty: "foundation-1",
-      helpLevel: 0, answerExposure: "HIDDEN", requiresStudentResponse: true,
-      instruction: "Escucha y selecciona la expresión trabajada.", prompt: "Reconoce la expresión por su sonido.",
-      options: [{ id: "ru", text: "ru" }, { id: "oga", text: "óga" }, { id: "sy", text: "sy" }],
-      pairs: [], tokens: [], media: { type: "audio", value: "sy", alt: "Audio de la expresión", sourceId: "lesson-bounded" },
-      hints: [], explanation: "", correctAnswer: "sy", conceptIds: ["family-mother"], lexemeIds: [],
-      grammarRuleIds: [], sourceIds: [], fingerprintSeed: "listen-family-mother-v1"
-    }],
+    candidateActivities: [catalogCandidate],
     progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", onGuidedCorrect: "CONTINUE_PRACTICE", requiresIndependentRetest: true, maxInterventionsBeforeDefer: 4 },
     fallbackPolicy: { strategy: "PROFESSIONAL_LOCAL_TEMPLATE", reason: "server-unavailable" },
     validationMetadata: { sourceIds: [], knowledgeIds: [], claimedRiskLevel: "GREEN" },
@@ -74,7 +69,7 @@ test("orquestador: planner + critic aceptan un plan estructurado y sin PII", asy
   assert.equal(result.ok, true);
   assert.equal(result.usedAI, true);
   assert.equal(result.reason, "AI_TUTOR_PLAN_VALIDATED");
-  assert.equal(result.adaptiveInterventionPlan.activities[0].type, "listening");
+  assert.equal(result.adaptiveInterventionPlan.activities[0].type, "CONCEPT_CONTRAST");
   assert.notEqual(result.adaptiveInterventionPlan.activities[0].fingerprint, context().previousActivityFingerprint);
   assert.equal(result.metrics.answerLeakageRate, 0);
   assert.equal(result.metrics.duplicateRate, 0);
@@ -94,11 +89,12 @@ test("un fallo de red usa fallback profesional y nunca permite avanzar", async (
   assert.equal(result.adaptiveInterventionPlan.progressionPolicy.onIncorrect, "BLOCK_AND_INTERVENE");
   assert.notEqual(result.adaptiveInterventionPlan.activities[0].activityType, "multiple-choice");
   assert.ok(result.adaptiveInterventionPlan.activities[0].type);
-  assert.equal(result.adaptiveInterventionPlan.activities[0].lessonContext.sourcePrompt, "¿Cómo se dice mamá?");
+  assert.ok(result.adaptiveInterventionPlan.activities[0].contextText);
+  assert.notEqual(result.adaptiveInterventionPlan.activities[0].prompt, "¿Cómo se dice mamá?");
   assert.equal(result.persistence.reason, "ANONYMOUS_SESSION");
 });
 
-test("el primer refuerzo muestra contexto, el mismo concepto y una instrucción accionable", () => {
+test("el primer refuerzo usa el catálogo oficial, muestra contexto y no repite el prompt", () => {
   const plan = createProfessionalFallbackPlan(context({
     correctAnswer: "¿Cómo estás?",
     activity: {
@@ -113,23 +109,25 @@ test("el primer refuerzo muestra contexto, el mismo concepto y una instrucción 
     }
   }));
   const activity = plan.activities[0];
-  assert.equal(activity.activityType, "fill-blank");
-  assert.equal(activity.lessonContext.sourcePrompt, "¿Qué expresa «Mba’éichapa»?");
-  assert.match(activity.template, /Mba’éichapa/);
-  assert.match(activity.template, /¿Cómo/);
-  assert.ok(activity.acceptedAnswers.includes("estás"));
-  assert.ok(activity.acceptedAnswers.includes("¿Cómo estás?"));
-  assert.notEqual(activity.template.trim(), "{{blank}}");
+  assert.equal(activity.activityType, "CONCEPT_CONTRAST");
+  assert.ok(activity.contextText);
+  assert.equal(activity.conceptId, "family-mother");
+  assert.notEqual(activity.prompt, "¿Qué expresa «Mba’éichapa»?");
+  assert.ok(activity.options.length >= 3);
 });
 
-test("el segundo intento cambia a completar una frase y no repite selección múltiple", () => {
-  const plan = createProfessionalFallbackPlan(context({ attemptNumber: 2 }));
+test("el segundo intento cambia de modalidad cuando la modalidad anterior ya fue utilizada", () => {
+  const first = createProfessionalFallbackPlan(context({ attemptNumber: 1 }));
+  const previous = first.activities[0];
+  const plan = createProfessionalFallbackPlan(context({
+    attemptNumber: 2,
+    recentActivities: [{ activityType: previous.activityType }],
+    recentActivityFingerprints: [previous.fingerprint]
+  }));
   const activity = plan.activities[0];
-  assert.equal(activity.activityType, "fill-blank");
-  assert.equal(activity.lessonContext.sourcePrompt, "¿Cómo se dice mamá?");
-  assert.match(activity.template, /_+/);
-  assert.ok(activity.acceptedAnswers.length >= 2);
-  assert.notEqual(activity.prompt, activity.lessonContext.sourcePrompt);
+  assert.notEqual(activity.activityType, previous.activityType);
+  assert.notEqual(activity.fingerprint, previous.fingerprint);
+  assert.notEqual(activity.prompt, "¿Cómo se dice mamá?");
 });
 
 test("el crítico puede rechazar y existe como máximo una revisión", async () => {

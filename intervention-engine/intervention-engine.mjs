@@ -6,7 +6,21 @@ const TYPE_ALIASES = new Map([
   ["ordering", "order-sentence"],
   ["order", "order-sentence"],
   ["complete", "fill-blank"],
-  ["guided-fill", "fill-blank"]
+  ["guided-fill", "fill-blank"],
+  ["context_choice", "context_choice"],
+  ["image_choice", "image_choice"],
+  ["arrow_match", "arrow_match"],
+  ["category_sort", "category_sort"],
+  ["word_tile_builder", "word_tile_builder"],
+  ["sentence_tile_builder", "sentence_tile_builder"],
+  ["guided_gap", "guided_gap"],
+  ["error_spotting", "error_spotting"],
+  ["concept_contrast", "concept_contrast"],
+  ["dialogue_next_turn", "dialogue_next_turn"],
+  ["dialogue_order", "dialogue_order"],
+  ["dialogue_comprehension", "dialogue_comprehension"],
+  ["two_step_challenge", "two_step_challenge"],
+  ["independent_recall", "independent_recall"]
 ]);
 
 const validLocale = value => INTERVENTION_CONFIG.uiLocales.includes(value) ? value : "es";
@@ -52,17 +66,20 @@ function activityMedia(activity, locale) {
     activity.imageUrl,
     activity.audio,
     activity.audioUrl,
+    activity.media?.value,
+    activity.media?.src,
+    activity.media?.url,
     ...(Array.isArray(activity.media) ? activity.media.map(item => typeof item === "string" ? item : item?.src || item?.url || "") : [])
   ].filter(Boolean));
 }
 
 export function createActivityFingerprint(activity, options = {}) {
   const locale = validLocale(options.uiLocale || options.locale || "es");
-  const optionsNormalized = (activity?.options || []).map(option => localize(option?.label ?? option?.value ?? option, locale));
+  const optionsNormalized = (activity?.options || []).map(option => localize(option?.label ?? option?.text ?? option?.value ?? option, locale));
   const correct = activity?.correctOptionId ?? activity?.correctAnswer ?? activity?.answer ?? activity?.acceptedAnswers ?? activity?.correctOrder ?? "";
   const payload = {
     conceptId: activity?.conceptId || activity?.conceptIds?.[0] || "",
-    activityType: normalizeType(activity?.type),
+    activityType: normalizeType(activity?.type || activity?.activityType),
     prompt: normalizeText(localize(activity?.prompt, locale)),
     instruction: normalizeText(localize(activity?.instruction, locale)),
     options: sorted(optionsNormalized),
@@ -70,9 +87,18 @@ export function createActivityFingerprint(activity, options = {}) {
       left: normalizeText(localize(pair?.left, locale)),
       right: normalizeText(localize(pair?.right, locale))
     })).sort((left, right) => stableSerialize(left).localeCompare(stableSerialize(right))),
+    tiles: (activity?.tiles || activity?.tokens || []).map(tile => ({
+      id: String(tile?.id ?? ""),
+      text: normalizeText(localize(tile?.text ?? tile?.label ?? tile?.value ?? tile, locale))
+    })).sort((left, right) => stableSerialize(left).localeCompare(stableSerialize(right))),
+    categories: (activity?.categories || []).map(category => normalizeText(localize(category?.label ?? category?.text ?? category, locale))).sort(),
+    dialogue: (activity?.dialogue || activity?.turns || []).map(turn => ({
+      speaker: normalizeText(localize(turn?.speaker, locale)),
+      text: normalizeText(localize(turn?.text ?? turn?.content, locale))
+    })),
     answer: Array.isArray(correct) ? sorted(correct.map(item => localize(item, locale))) : normalizeText(localize(correct, locale)),
     media: activityMedia(activity || {}, locale),
-    context: normalizeText(localize(activity?.context ?? activity?.scenario ?? activity?.template, locale)),
+    context: normalizeText(localize(activity?.contextText ?? activity?.context ?? activity?.scenario ?? activity?.template, locale)),
     helpLevel: Number.isFinite(Number(activity?.helpLevel)) ? Number(activity.helpLevel) : 0,
     answerExposure: String(activity?.answerExposure || "HIDDEN")
   };
@@ -83,7 +109,7 @@ export function canScoreWithoutAI(context = {}) {
   if (typeof context.correct === "boolean") return true;
   const activity = context.activity || {};
   const type = normalizeType(context.activityType || activity.type);
-  if (["multiple-choice", "matching", "order-sentence", "fill-blank", "writing"].includes(type)) {
+  if (["multiple-choice", "matching", "order-sentence", "fill-blank", "writing", "context_choice", "image_choice", "arrow_match", "category_sort", "word_tile_builder", "sentence_tile_builder", "guided_gap", "error_spotting", "concept_contrast", "dialogue_next_turn", "dialogue_order", "dialogue_comprehension", "two_step_challenge", "independent_recall"].includes(type)) {
     return activity.correctOptionId != null || activity.correctOrder != null || activity.acceptedAnswers != null || context.correctAnswer != null;
   }
   return false;
@@ -115,8 +141,10 @@ export function classifyError(context = {}) {
   const answer = normalizeText(context.studentAnswer), expected = normalizeText(context.correctAnswer);
   if (attempt >= 3 || recentSameConceptErrors >= INTERVENTION_CONFIG.repeatedErrorThreshold) return { errorType: "PREREQUISITE_GAP", confidence: 0.78, source: "repeatedErrorRule" };
   if (!answer) return { errorType: "RECALL_FAILURE", confidence: 0.9, source: "emptyAnswerRule" };
-  if (type === "listening") return { errorType: "LISTENING_CONFUSION", confidence: 0.86, source: "activityTypeRule" };
-  if (type === "order-sentence") return { errorType: "WORD_ORDER_ERROR", confidence: 0.92, source: "activityTypeRule" };
+  if (["listening", "audio_select", "audio_missing_word", "audio_to_tiles"].includes(type)) return { errorType: "LISTENING_CONFUSION", confidence: 0.86, source: "activityTypeRule" };
+  if (["order-sentence", "sentence_tile_builder", "dialogue_order"].includes(type)) return { errorType: "WORD_ORDER_ERROR", confidence: 0.92, source: "activityTypeRule" };
+  if (["context_choice", "concept_contrast", "dialogue_next_turn", "dialogue_comprehension"].includes(type)) return { errorType: "CONTEXT_APPLICATION_ERROR", confidence: 0.8, source: "activityTypeRule" };
+  if (["word_tile_builder", "error_spotting", "guided_gap", "independent_recall"].includes(type) && expected && answer) return { errorType: "SPELLING_ERROR", confidence: 0.72, source: "activityTypeRule" };
   if (grammarHint(context, "neg")) return { errorType: "NEGATION_ERROR", confidence: 0.86, source: "grammarRule" };
   if (grammarHint(context, "poss") || grammarHint(context, "poses")) return { errorType: "POSSESSIVE_ERROR", confidence: 0.86, source: "grammarRule" };
   if (grammarHint(context, "conjug") || grammarHint(context, "person")) return { errorType: "CONJUGATION_PERSON_ERROR", confidence: 0.82, source: "grammarRule" };

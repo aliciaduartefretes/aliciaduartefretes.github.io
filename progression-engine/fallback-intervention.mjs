@@ -1,73 +1,195 @@
+import { ACTIVITY_TYPES, cognitiveDemandFor } from "../activity-catalog/nalvi-activity-catalog.mjs";
+
 const COPY = Object.freeze({
-  es: { listen: "Escucha y elige la expresión correcta.", choose: "Elige la respuesta que corresponde.", complete: "Completa el significado.", missing: "Escribe solo la palabra que falta.", recall: "Ahora escribe la respuesta completa.", cue: "Pista:", context: "Estamos practicando esta pregunta:" },
-  en: { listen: "Listen and choose the correct expression.", choose: "Choose the matching answer.", complete: "Complete the meaning.", missing: "Write only the missing word.", recall: "Now write the complete answer.", cue: "Hint:", context: "We are practising this question:" },
-  pt: { listen: "Ouça e escolha a expressão correta.", choose: "Escolha a resposta correspondente.", complete: "Complete o significado.", missing: "Escreva apenas a palavra que falta.", recall: "Agora escreva a resposta completa.", cue: "Pista:", context: "Estamos praticando esta pergunta:" },
-  fr: { listen: "Écoutez et choisissez l’expression correcte.", choose: "Choisissez la réponse correspondante.", complete: "Complétez le sens.", missing: "Écrivez uniquement le mot manquant.", recall: "Écrivez maintenant la réponse complète.", cue: "Indice :", context: "Nous travaillons cette question :" },
-  it: { listen: "Ascolta e scegli l’espressione corretta.", choose: "Scegli la risposta corrispondente.", complete: "Completa il significato.", missing: "Scrivi solo la parola mancante.", recall: "Ora scrivi la risposta completa.", cue: "Indizio:", context: "Stiamo esercitando questa domanda:" },
-  de: { listen: "Höre zu und wähle den richtigen Ausdruck.", choose: "Wähle die passende Antwort.", complete: "Vervollständige die Bedeutung.", missing: "Schreibe nur das fehlende Wort.", recall: "Schreibe jetzt die vollständige Antwort.", cue: "Hinweis:", context: "Wir üben diese Frage:" }
+  es: { context: "Dos personas se encuentran al comenzar una conversación.", contextQuestion: "¿Qué intención encaja mejor con la situación?", contrast: "Elige el significado que corresponde a la expresión trabajada.", match: "Relaciona cada expresión con su significado.", build: "Reconstruye la expresión con las piezas.", gap: "Completa la situación con la opción adecuada.", recall: "Recuerda la expresión sin verla.", person: "Una persona habla de alguien de su familia." },
+  en: { context: "Two people meet at the start of a conversation.", contextQuestion: "Which intention best fits the situation?", contrast: "Choose the meaning that matches the expression you studied.", match: "Match each expression with its meaning.", build: "Rebuild the expression with the tiles.", gap: "Complete the situation with the best option.", recall: "Recall the expression without seeing it.", person: "Someone is talking about a family member." },
+  pt: { context: "Duas pessoas se encontram no início de uma conversa.", contextQuestion: "Qual intenção combina melhor com a situação?", contrast: "Escolha o significado correspondente à expressão estudada.", match: "Relacione cada expressão ao seu significado.", build: "Reconstrua a expressão com as peças.", gap: "Complete a situação com a opção adequada.", recall: "Lembre a expressão sem vê-la.", person: "Uma pessoa fala de alguém da família." },
+  fr: { context: "Deux personnes se rencontrent au début d’une conversation.", contextQuestion: "Quelle intention convient le mieux à la situation ?", contrast: "Choisissez le sens correspondant à l’expression étudiée.", match: "Associez chaque expression à sa signification.", build: "Reconstituez l’expression avec les tuiles.", gap: "Complétez la situation avec l’option appropriée.", recall: "Retrouvez l’expression sans la voir.", person: "Une personne parle d’un membre de sa famille." },
+  it: { context: "Due persone si incontrano all’inizio di una conversazione.", contextQuestion: "Quale intenzione si adatta meglio alla situazione?", contrast: "Scegli il significato dell’espressione studiata.", match: "Abbina ogni espressione al suo significato.", build: "Ricostruisci l’espressione con le tessere.", gap: "Completa la situazione con l’opzione adatta.", recall: "Ricorda l’espressione senza vederla.", person: "Una persona parla di un familiare." },
+  de: { context: "Zwei Personen treffen sich zu Beginn eines Gesprächs.", contextQuestion: "Welche Absicht passt am besten zur Situation?", contrast: "Wähle die Bedeutung des gelernten Ausdrucks.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", build: "Setze den Ausdruck aus den Bausteinen zusammen.", gap: "Vervollständige die Situation mit der passenden Option.", recall: "Erinnere dich an den Ausdruck, ohne ihn zu sehen.", person: "Eine Person spricht über ein Familienmitglied." }
 });
 
-const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value) ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "") : String(value ?? "");
+const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value)
+  ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "")
+  : String(value ?? "");
 const normalize = value => String(value ?? "").normalize("NFC").trim().toLocaleLowerCase();
-const firstLetter = value => String(value || "").match(/[\p{L}\p{N}]/u)?.[0] || "";
-const quotedFocus = value => {
-  const match = String(value || "").match(/[«“„\"]([^»”“\"]+)[»”"“]/);
-  return match?.[1]?.trim() || "";
-};
-const guidedCompletion = (answer, focus) => {
-  const parts = String(answer || "").trim().split(/\s+/), raw = parts.pop() || "";
-  const match = raw.match(/^([^\p{L}\p{N}]*)([\p{L}\p{N}'’\-]+)([^\p{L}\p{N}]*)$/u);
-  const word = match?.[2] || raw, masked = `${match?.[1] || ""}${"_".repeat(Math.max(4, Array.from(word).length))}${match?.[3] || ""}`;
-  const visible = [...parts, masked].join(" ");
-  return { missing: word, template: `${focus ? `“${focus}” = ` : ""}${visible}`.trim() };
-};
+const uniqueBy = (values, key) => values.filter((value, index, array) => array.findIndex(candidate => key(candidate) === key(value)) === index);
+const optionText = (option, locale) => localize(option?.text ?? option?.label ?? option?.value ?? option, locale);
 
-export function buildDeterministicFallbackActivity(context = {}, attempt = 1) {
-  const locale = COPY[context.uiLocale] ? context.uiLocale : "es", copy = COPY[locale], source = context.activity || {};
+function lessonOptions(context, locale) {
+  const source = context.activity || {};
+  return uniqueBy((source.lessonContext?.sourceOptions || source.options || [])
+    .map((option, index) => ({ id: String(option?.id ?? `option-${index + 1}`), text: optionText(option, locale), authorized: true }))
+    .filter(option => option.text), option => normalize(option.text));
+}
+
+function semanticPairs(context, locale) {
+  return uniqueBy((context.availableActivities || [])
+    .filter(activity => activity.semanticPair?.target && activity.semanticPair?.meaning)
+    .map((activity, index) => ({
+      id: String(activity.id || `pair-${index + 1}`),
+      left: String(activity.semanticPair.target),
+      right: localize(activity.semanticPair.meaning, locale),
+      authorized: true
+    }))
+    .filter(pair => pair.left && pair.right), pair => `${normalize(pair.left)}:${normalize(pair.right)}`);
+}
+
+function shuffled(values, seed = 1) {
+  return [...values].sort((left, right) => `${String(right.id)}-${seed}`.localeCompare(`${String(left.id)}-${seed}`));
+}
+
+function tileSegments(answer) {
+  const graphemes = Array.from(String(answer || "").trim());
+  if (graphemes.length < 4) return null;
+  const size = graphemes.length >= 8 ? 2 : 1;
+  const parts = [];
+  for (let index = 0; index < graphemes.length; index += size) parts.push(graphemes.slice(index, index + size).join(""));
+  if (parts.length < 2) return null;
+  const entries = parts.map((text, index) => ({ id: `answer-${index + 1}`, text, authorized: true }));
+  const distractors = ["a", "e", "i", "o", "u", "y", "m", "n"].filter(value => !parts.includes(value));
+  while (entries.length < 6 && distractors.length) entries.push({ id: `distractor-${entries.length + 1}`, text: distractors.shift(), authorized: true });
+  return { tiles: shuffled(entries, parts.length), correctOrder: parts.map((_, index) => `answer-${index + 1}`) };
+}
+
+function base(context, type, attempt, overrides = {}) {
+  const correctAnswer = String(context.correctAnswer || "").trim();
+  return {
+    id: `catalog-${String(context.conceptId || "concept")}-${attempt}-${type.toLocaleLowerCase()}`,
+    type,
+    activityType: type,
+    conceptId: context.conceptId,
+    conceptIds: [context.conceptId].filter(Boolean),
+    learningObjectiveId: context.learningObjectiveId,
+    skill: context.currentSkill || "vocabulary",
+    difficulty: context.difficulty || "foundation-1",
+    helpLevel: Math.min(2, Math.max(0, attempt - 1)),
+    answerExposure: "HIDDEN",
+    requiresStudentResponse: true,
+    instruction: "",
+    prompt: "",
+    contextText: "",
+    options: [],
+    pairs: [],
+    tiles: [],
+    categories: [],
+    items: [],
+    segments: [],
+    corrections: [],
+    dialogue: [],
+    questions: [],
+    steps: [],
+    correctOrder: [],
+    hints: [],
+    explanation: "",
+    correctAnswer,
+    acceptedAnswers: correctAnswer ? [correctAnswer] : [],
+    correctOptionId: "",
+    correctCorrectionId: "",
+    lexemeIds: context.lexemeIds || [],
+    grammarRuleIds: context.grammarRuleIds || [],
+    sourceIds: [],
+    conflictIds: [],
+    hasOpenConflict: false,
+    distractorQuality: "PLAUSIBLE",
+    cognitiveDemand: cognitiveDemandFor(type),
+    lessonContext: {
+      ...(context.activity?.lessonContext || {}),
+      sourceActivityId: context.activity?.id || "",
+      sourceAnswer: correctAnswer
+    },
+    deterministicFallback: true,
+    ...overrides
+  };
+}
+
+function candidate(activity, errorType, reasonCode, goal) {
+  return {
+    activityType: activity.activityType,
+    pedagogicalGoal: goal,
+    errorType,
+    helpLevel: activity.helpLevel,
+    reasonCode,
+    estimatedCognitiveDemand: activity.cognitiveDemand,
+    requiresIndependentRetest: activity.activityType !== ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    activity
+  };
+}
+
+export function buildDeterministicFallbackCandidates(context = {}, attempt = 1, errorType = "UNKNOWN_ERROR") {
+  const uiLocale = COPY[context.uiLocale] ? context.uiLocale : "es";
+  const copy = COPY[uiLocale];
   const answer = String(context.correctAnswer || "").trim();
-  if (!answer) return null;
-  const sourcePrompt = localize(source.lessonContext?.sourcePrompt || source.prompt || source.instruction, locale).trim();
-  const focus = quotedFocus(sourcePrompt) || sourcePrompt;
-  const sourceOptions = source.lessonContext?.sourceOptions || source.options || [];
-  const options = sourceOptions.map((option, index) => ({ id: String(option?.id ?? `option-${index}`), label: localize(option?.label ?? option?.value ?? option, locale) })).filter(option => option.label);
-  const hasAnswerOption = options.some(option => normalize(option.label) === normalize(answer));
-  const lessonContext = {
-    ...(source.lessonContext || {}),
-    sourcePrompt,
-    sourceInstruction: localize(source.lessonContext?.sourceInstruction || source.instruction, locale),
-    sourceAnswer: localize(source.lessonContext?.sourceAnswer || answer, locale),
-    sourceOptions,
-    sourceCorrectOptionId: source.lessonContext?.sourceCorrectOptionId || source.correctOptionId || ""
-  };
-  const base = {
-    id: `fallback-${context.conceptId || "concept"}-${attempt}-${Date.now()}`,
-    conceptId: context.conceptId, conceptIds: [context.conceptId].filter(Boolean), learningObjectiveId: context.learningObjectiveId,
-    skill: context.currentSkill || "vocabulary", difficulty: context.difficulty || "foundation-1",
-    lexemeIds: context.lexemeIds || [], grammarRuleIds: context.grammarRuleIds || [],
-    nalviGuided: true, deterministicFallback: true, requiresStudentResponse: true,
-    answerExposure: attempt > 1 ? "PARTIAL_HINT" : "HIDDEN", helpLevel: Math.min(2, Math.max(1, attempt)),
-    acceptedAnswers: [answer], answer, lessonContext
-  };
-  if (attempt <= 2 && answer) {
-    const completion = guidedCompletion(answer, attempt === 1 ? focus : "");
-    const cue = firstLetter(completion.missing);
-    return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing", prompt: copy.complete,
-      instruction: copy.missing, template: completion.template, acceptedAnswers: [completion.missing, answer],
-      hints: cue ? [`${cue}…`] : [], helpLevel: 2, answerExposure: "PARTIAL_HINT" };
+  if (!answer) return [];
+  const options = lessonOptions(context, uiLocale);
+  const correct = options.find(option => normalize(option.text) === normalize(answer));
+  const pairs = semanticPairs(context, uiLocale);
+  const candidates = [];
+
+  if (pairs.length >= 3) {
+    candidates.push(candidate(base(context, ACTIVITY_TYPES.ARROW_MATCH, attempt, {
+      skill: "vocabulary",
+      instruction: copy.match,
+      prompt: copy.match,
+      pairs: pairs.slice(0, 5),
+      correctAnswer: answer,
+      acceptedAnswers: [answer],
+      reasonCode: "JUSTIFIED_INTERLEAVED_RETRIEVAL"
+    }), errorType, "JUSTIFIED_INTERLEAVED_RETRIEVAL", "Connect several documented expressions instead of repeating the failed question."));
   }
-  if (attempt % 2 === 1) {
-    return { ...base, type: "writing", activityType: "writing", skill: "writing", instruction: copy.recall,
-      prompt: sourcePrompt || copy.recall, helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
+
+  if (options.length >= 3 && correct) {
+    const visiblePrompt = localize(context.activity?.prompt, uiLocale);
+    const visualContext = /mam[aá]|mother|m[aã]e|m[eè]re|mutter/i.test(visiblePrompt) ? copy.person : copy.context;
+    const choiceType = errorType === "SEMANTIC_CONFUSION" ? ACTIVITY_TYPES.CONCEPT_CONTRAST : ACTIVITY_TYPES.CONTEXT_CHOICE;
+    candidates.push(candidate(base(context, choiceType, attempt, {
+      instruction: errorType === "SEMANTIC_CONFUSION" ? copy.contrast : copy.contextQuestion,
+      prompt: errorType === "SEMANTIC_CONFUSION" ? copy.contrast : copy.contextQuestion,
+      contextText: visualContext,
+      options: shuffled(options, attempt),
+      correctOptionId: correct.id,
+      correctAnswer: answer
+    }), errorType, "CONTEXTUAL_DISCRIMINATION", "Use a new situation and plausible lesson distractors."));
+
+    candidates.push(candidate(base(context, ACTIVITY_TYPES.GUIDED_GAP, attempt, {
+      instruction: copy.gap,
+      prompt: copy.gap,
+      contextText: visualContext,
+      template: `${visualContext} {{blank}}`,
+      options: shuffled(options, attempt + 1),
+      correctOptionId: correct.id,
+      correctAnswer: answer,
+      reasonCode: "JUSTIFIED_CONTEXTUAL_RECONSTRUCTION"
+    }), errorType, "JUSTIFIED_CONTEXTUAL_RECONSTRUCTION", "Reconstruct the meaning within a clear context."));
   }
-  if (options.length >= 2 && hasAnswerOption) {
-    const shifted = [...options.slice(2), ...options.slice(0, 2)];
-    const correct = shifted.find(option => normalize(option.label) === normalize(answer));
-    return { ...base, type: "listening", activityType: "listening", skill: "listening", instruction: copy.listen, prompt: copy.listen,
-      options: shifted, correctOptionId: correct?.id || "", audioText: answer, audio: answer, helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
+
+  const segmented = tileSegments(answer);
+  if (segmented && ["RECALL_FAILURE", "SPELLING_ERROR", "UNKNOWN_ERROR"].includes(errorType)) {
+    candidates.push(candidate(base(context, ACTIVITY_TYPES.WORD_TILE_BUILDER, attempt, {
+      skill: "writing",
+      instruction: copy.build,
+      prompt: copy.build,
+      ...segmented,
+      reasonCode: "ORTHOGRAPHIC_RECONSTRUCTION"
+    }), errorType, "ORTHOGRAPHIC_RECONSTRUCTION", "Reconstruct the target with several pieces and distractors."));
   }
-  return { ...base, type: "fill-blank", activityType: "fill-blank", skill: "writing", instruction: copy.recall,
-    prompt: sourcePrompt || copy.recall, template: `${sourcePrompt || copy.context} → {{blank}}`,
-    helpLevel: 0, answerExposure: "HIDDEN", independentRetest: true };
+
+  candidates.push(candidate(base(context, ACTIVITY_TYPES.INDEPENDENT_RECALL, attempt, {
+    skill: "writing",
+    helpLevel: 0,
+    instruction: copy.recall,
+    prompt: copy.recall,
+    contextText: copy.person,
+    answerExposure: "HIDDEN",
+    hints: [],
+    reasonCode: "JUSTIFIED_INDEPENDENT_RETEST"
+  }), errorType, "JUSTIFIED_INDEPENDENT_RETEST", "Check independent retrieval without showing the answer."));
+
+  return uniqueBy(candidates, value => value.activityType).slice(0, 3);
+}
+
+export function buildDeterministicFallbackActivity(context = {}, attempt = 1, errorType = "UNKNOWN_ERROR") {
+  return buildDeterministicFallbackCandidates(context, attempt, errorType)[0]?.activity || null;
 }
 
 export default buildDeterministicFallbackActivity;

@@ -289,5 +289,12 @@
   });
 
   window.renderActivity = renderActivity;
-  window.KUAA_ACTIVITY_ENGINE = Object.freeze({ version: VERSION, renderActivity, registerActivityRenderer, getRendererTypes: () => [...renderers.keys()], audit });
+  window.KUAA_ACTIVITY_ENGINE = Object.freeze({
+    version: VERSION,
+    renderActivity,
+    registerActivityRenderer,
+    submitActivityResult: submit,
+    getRendererTypes: () => [...renderers.keys()],
+    audit
+  });
 })();

@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs";
 import { createActivityFingerprint } from "../../intervention-engine/intervention-engine.mjs";
-import { buildDeterministicFallbackActivity } from "../fallback-intervention.mjs";
+import { buildDeterministicFallbackCandidates } from "../fallback-intervention.mjs";
 import { evaluateProgressionGate } from "../progression-gate.mjs";
 
 const mother = {
@@ -14,7 +15,7 @@ const mother = {
   skill: "vocabulary",
   difficulty: "foundation-1",
   prompt: { es: "¿Cómo se dice mamá?", en: "How do you say mom?" },
-  options: [{ id: "a", label: "sy" }, { id: "b", label: "túva" }],
+  options: [{ id: "a", label: "sy" }, { id: "b", label: "túva" }, { id: "c", label: "óga" }],
   correctOptionId: "a"
 };
 
@@ -41,9 +42,26 @@ test("mamá: dos errores producen modalidades y huellas diferentes", () => {
     grammarRuleIds: []
   };
   const original = createActivityFingerprint(mother, { uiLocale: "es" });
-  const first = buildDeterministicFallbackActivity(context, 1);
-  const second = buildDeterministicFallbackActivity({ ...context, activityType: first.type }, 2);
+  const firstSelection = selectFirstValidCandidate(
+    buildDeterministicFallbackCandidates(context, 1, "SEMANTIC_CONFUSION"),
+    { ...context, errorType: "SEMANTIC_CONFUSION" }
+  );
+  assert.equal(firstSelection.accepted, true);
+  const first = firstSelection.candidate.activity;
   const firstFingerprint = createActivityFingerprint(first, { uiLocale: "es" });
+  const secondContext = {
+    ...context,
+    activityType: first.type,
+    recentActivities: [{ activityType: first.activityType, fingerprint: firstFingerprint }],
+    recentActivityFingerprints: [firstFingerprint],
+    previousActivityFingerprint: firstFingerprint
+  };
+  const secondSelection = selectFirstValidCandidate(
+    buildDeterministicFallbackCandidates(secondContext, 2, "SEMANTIC_CONFUSION"),
+    { ...secondContext, errorType: "SEMANTIC_CONFUSION" }
+  );
+  assert.equal(secondSelection.accepted, true);
+  const second = secondSelection.candidate.activity;
   const secondFingerprint = createActivityFingerprint(second, { uiLocale: "es" });
   assert.notEqual(first.prompt, mother.prompt.es);
   assert.notEqual(first.type, mother.type);
