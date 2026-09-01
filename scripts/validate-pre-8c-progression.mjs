@@ -21,7 +21,8 @@ assert.ok(index.indexOf("nalvi-progression-client.mjs") < index.indexOf("nalvi-i
 assert.match(renderer, /NALVI_PROGRESSION\?\.evaluateActivityResult/);
 assert.match(renderer, /SUBMISSION_ALREADY_EVALUATED/);
 for (const type of ["multiple-choice", "listening", "matching", "order-sentence", "fill-blank", "writing"]) assert.match(renderer, new RegExp(`registerActivityRenderer\\(\\"${type}\\"`));
-assert.match(intervention, /buildDeterministicFallbackActivity/);
+assert.match(intervention, /buildDeterministicFallbackCandidates/);
+assert.match(intervention, /selectFirstValidCandidate/);
 assert.match(intervention, /INTERVENTION_REQUESTED/);
 assert.match(intervention, /INTERVENTION_RENDERED/);
 assert.match(intervention, /excludedActivityIds/);
