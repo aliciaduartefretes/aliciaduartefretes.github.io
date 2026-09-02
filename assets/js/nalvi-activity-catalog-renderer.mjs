@@ -4,16 +4,17 @@ import {
   catalogAudit,
   isEnabledActivityType
 } from "../../activity-catalog/nalvi-activity-catalog.mjs";
+import { ANSWER_STATUSES, evaluateAnswer, normalizeAnswerSurface } from "../../assessment/nalvi-answer-evaluator.mjs";
 
-const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-1";
+const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-2";
 const LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const COPY = Object.freeze({
-  es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma." },
-  en: { check: "Check", reset: "Reset", select: "Choose an answer", match: "Match each item", sort: "Sort the cards", buildWord: "Build the word", buildSentence: "Build the expression", findError: "Find the part that needs correction", chooseCorrection: "Choose the correction", dialogue: "Read the conversation", nextTurn: "What response makes sense now?", orderDialogue: "Put the conversation in order", recall: "Write your answer", step: "Step", correct: "Well done!", wrong: "Not quite. Let’s try another way." },
-  pt: { check: "Verificar", reset: "Reiniciar", select: "Selecione uma resposta", match: "Relacione cada elemento", sort: "Classifique os cartões", buildWord: "Construa a palavra", buildSentence: "Construa a expressão", findError: "Encontre a parte que precisa de correção", chooseCorrection: "Escolha a correção", dialogue: "Observe a conversa", nextTurn: "Qual resposta faz sentido agora?", orderDialogue: "Ordene a conversa", recall: "Escreva sua resposta", step: "Passo", correct: "Muito bem!", wrong: "Ainda não. Vamos tentar de outra forma." },
-  fr: { check: "Vérifier", reset: "Recommencer", select: "Choisissez une réponse", match: "Associez chaque élément", sort: "Classez les cartes", buildWord: "Construisez le mot", buildSentence: "Construisez l’expression", findError: "Trouvez la partie à corriger", chooseCorrection: "Choisissez la correction", dialogue: "Lisez la conversation", nextTurn: "Quelle réponse convient maintenant ?", orderDialogue: "Remettez la conversation dans l’ordre", recall: "Écrivez votre réponse", step: "Étape", correct: "Très bien !", wrong: "Pas tout à fait. Essayons autrement." },
-  it: { check: "Controlla", reset: "Ricomincia", select: "Scegli una risposta", match: "Associa ogni elemento", sort: "Classifica le schede", buildWord: "Costruisci la parola", buildSentence: "Costruisci l’espressione", findError: "Trova la parte da correggere", chooseCorrection: "Scegli la correzione", dialogue: "Leggi la conversazione", nextTurn: "Quale risposta ha senso adesso?", orderDialogue: "Metti in ordine la conversazione", recall: "Scrivi la tua risposta", step: "Passaggio", correct: "Molto bene!", wrong: "Non proprio. Proviamo in un altro modo." },
-  de: { check: "Prüfen", reset: "Neu starten", select: "Wähle eine Antwort", match: "Ordne die Elemente zu", sort: "Sortiere die Karten", buildWord: "Bilde das Wort", buildSentence: "Bilde den Ausdruck", findError: "Finde den Teil, der korrigiert werden muss", chooseCorrection: "Wähle die Korrektur", dialogue: "Lies den Dialog", nextTurn: "Welche Antwort passt jetzt?", orderDialogue: "Bringe den Dialog in die richtige Reihenfolge", recall: "Schreibe deine Antwort", step: "Schritt", correct: "Sehr gut!", wrong: "Noch nicht ganz. Versuchen wir es anders." }
+  es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma.", hint: "Ver pista", explanation: "Ver explicación", near: "Casi correcto. Revisa la forma.", equivalent: "¡Correcto! Esta forma también es válida.", review: "Vamos a practicar con una forma ya validada." },
+  en: { check: "Check", reset: "Reset", select: "Choose an answer", match: "Match each item", sort: "Sort the cards", buildWord: "Build the word", buildSentence: "Build the expression", findError: "Find the part that needs correction", chooseCorrection: "Choose the correction", dialogue: "Read the conversation", nextTurn: "What response makes sense now?", orderDialogue: "Put the conversation in order", recall: "Write your answer", step: "Step", correct: "Well done!", wrong: "Not quite. Let’s try another way.", hint: "View hint", explanation: "View explanation", near: "Almost right. Check the form.", equivalent: "Correct! This form is also valid.", review: "Let’s practise with an already validated form." },
+  pt: { check: "Verificar", reset: "Reiniciar", select: "Selecione uma resposta", match: "Relacione cada elemento", sort: "Classifique os cartões", buildWord: "Construa a palavra", buildSentence: "Construa a expressão", findError: "Encontre a parte que precisa de correção", chooseCorrection: "Escolha a correção", dialogue: "Observe a conversa", nextTurn: "Qual resposta faz sentido agora?", orderDialogue: "Ordene a conversa", recall: "Escreva sua resposta", step: "Passo", correct: "Muito bem!", wrong: "Ainda não. Vamos tentar de outra forma.", hint: "Ver pista", explanation: "Ver explicação", near: "Quase certo. Revise a forma.", equivalent: "Correto! Esta forma também é válida.", review: "Vamos praticar com uma forma já validada." },
+  fr: { check: "Vérifier", reset: "Recommencer", select: "Choisissez une réponse", match: "Associez chaque élément", sort: "Classez les cartes", buildWord: "Construisez le mot", buildSentence: "Construisez l’expression", findError: "Trouvez la partie à corriger", chooseCorrection: "Choisissez la correction", dialogue: "Lisez la conversation", nextTurn: "Quelle réponse convient maintenant ?", orderDialogue: "Remettez la conversation dans l’ordre", recall: "Écrivez votre réponse", step: "Étape", correct: "Très bien !", wrong: "Pas tout à fait. Essayons autrement.", hint: "Voir l’indice", explanation: "Voir l’explication", near: "Presque correct. Vérifiez la forme.", equivalent: "Correct ! Cette forme est également valable.", review: "Pratiquons avec une forme déjà validée." },
+  it: { check: "Controlla", reset: "Ricomincia", select: "Scegli una risposta", match: "Associa ogni elemento", sort: "Classifica le schede", buildWord: "Costruisci la parola", buildSentence: "Costruisci l’espressione", findError: "Trova la parte da correggere", chooseCorrection: "Scegli la correzione", dialogue: "Leggi la conversazione", nextTurn: "Quale risposta ha senso adesso?", orderDialogue: "Metti in ordine la conversazione", recall: "Scrivi la tua risposta", step: "Passaggio", correct: "Molto bene!", wrong: "Non proprio. Proviamo in un altro modo.", hint: "Vedi indizio", explanation: "Vedi spiegazione", near: "Quasi corretto. Controlla la forma.", equivalent: "Corretto! Anche questa forma è valida.", review: "Esercitiamoci con una forma già convalidata." },
+  de: { check: "Prüfen", reset: "Neu starten", select: "Wähle eine Antwort", match: "Ordne die Elemente zu", sort: "Sortiere die Karten", buildWord: "Bilde das Wort", buildSentence: "Bilde den Ausdruck", findError: "Finde den Teil, der korrigiert werden muss", chooseCorrection: "Wähle die Korrektur", dialogue: "Lies den Dialog", nextTurn: "Welche Antwort passt jetzt?", orderDialogue: "Bringe den Dialog in die richtige Reihenfolge", recall: "Schreibe deine Antwort", step: "Schritt", correct: "Sehr gut!", wrong: "Noch nicht ganz. Versuchen wir es anders.", hint: "Hinweis anzeigen", explanation: "Erklärung anzeigen", near: "Fast richtig. Prüfe die Form.", equivalent: "Richtig! Diese Form ist ebenfalls gültig.", review: "Üben wir mit einer bereits geprüften Form." }
 });
 
 const engine = window.KUAA_ACTIVITY_ENGINE;
@@ -21,21 +22,50 @@ if (!engine?.registerActivityRenderer || !engine?.submitActivityResult) throw ne
 const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
 const localeFor = value => LOCALES.has(value) ? value : "es";
 const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value) ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "") : String(value ?? "");
-const normalize = value => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase().replace(/\s+/g, " ");
+const normalize = normalizeAnswerSurface;
 const optionValue = (option, locale) => localize(option?.text ?? option?.label ?? option?.value ?? option, locale);
 const optionId = (option, index) => String(option?.id ?? `option-${index}`);
 const shuffled = values => [...values].map((value, index) => ({ value, sort: `${String(value?.id ?? value?.text ?? value)}-${(index * 7 + 3) % 11}` })).sort((a, b) => a.sort.localeCompare(b.sort)).map(item => item.value);
 
 function submit(target, activity, context, result) {
-  return engine.submitActivityResult(target, activity, context, result);
+  let assessed = result;
+  if (typeof result.value === "string") {
+    const options = activity.options || [];
+    const correctOption = options.find((option, index) => optionId(option, index) === String(activity.correctOptionId));
+    const canonicalAnswers = [
+      ...(activity.acceptedAnswers || []),
+      activity.correctAnswer,
+      activity.answer,
+      correctOption ? optionValue(correctOption, localeFor(context.language)) : ""
+    ].filter(Boolean);
+    const evaluation = evaluateAnswer({
+      studentAnswer: result.value,
+      canonicalAnswers,
+      approvedEquivalents: activity.approvedEquivalents || [],
+      approvedVariants: activity.approvedVariants || [],
+      activity,
+      context: { learningObjectiveId: activity.learningObjectiveId, conceptId: activity.conceptId || activity.conceptIds?.[0] },
+      allowPendingReview: activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL || activity.allowPendingReview === true
+    });
+    if (evaluation.reviewRecord) window.NALVI_ANSWER_EVALUATOR?.queueReview?.(evaluation.reviewRecord);
+    assessed = { ...result, ...evaluation, correct: result.correct === true || evaluation.correct === true };
+  }
+  return engine.submitActivityResult(target, activity, context, assessed);
 }
 
 function shell(target, activity, context, body, instructionFallback) {
   const locale = localeFor(context.language), copy = COPY[locale], instruction = localize(activity.instruction, locale) || instructionFallback || copy.select;
   target.dataset.nalviActivityStartedAt = String(Date.now());
   target.dataset.nalviSubmissionLocked = "false";
+  const prompt = localize(activity.prompt, locale).trim();
+  const visibleInstruction = normalize(instruction) === normalize(prompt) ? "" : instruction;
   const visibleHint = Number(activity.helpLevel || 0) > 0 ? localize(activity.hints?.[0], locale) : "";
-  target.innerHTML = `<section class="kuaa-activity nalvi-catalog-activity" data-catalog-type="${escapeHtml(activity.activityType || activity.type)}"><small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(instruction)}</small>${localize(activity.prompt, locale) ? `<h3>${escapeHtml(localize(activity.prompt, locale))}</h3>` : ""}${localize(activity.contextText ?? activity.scenario, locale) ? `<div class="nalvi-context-card">${escapeHtml(localize(activity.contextText ?? activity.scenario, locale))}</div>` : ""}${visibleHint ? `<aside class="nalvi-catalog-hint">${escapeHtml(visibleHint)}</aside>` : ""}<div class="nalvi-catalog-stage">${body}</div><div id="feedback" aria-live="polite"></div></section>`;
+  const explanation = localize(activity.explanation, locale).trim();
+  const disclosure = [
+    visibleHint ? `<details class="nalvi-progressive-disclosure"><summary>${escapeHtml(copy.hint)}</summary><p>${escapeHtml(visibleHint)}</p></details>` : "",
+    explanation ? `<details class="nalvi-progressive-disclosure"><summary>${escapeHtml(copy.explanation)}</summary><p>${escapeHtml(explanation)}</p></details>` : ""
+  ].join("");
+  target.innerHTML = `<section class="kuaa-activity nalvi-catalog-activity" data-catalog-type="${escapeHtml(activity.activityType || activity.type)}">${visibleInstruction ? `<small class="kuaa-activity-kicker"><span class="kuaa-activity-mark" aria-hidden="true"></span>${escapeHtml(visibleInstruction)}</small>` : ""}${prompt ? `<h3>${escapeHtml(prompt)}</h3>` : ""}${localize(activity.contextText ?? activity.scenario, locale) ? `<div class="nalvi-context-card">${escapeHtml(localize(activity.contextText ?? activity.scenario, locale))}</div>` : ""}${disclosure}<div class="nalvi-catalog-stage">${body}</div><div id="feedback" aria-live="polite"></div></section>`;
   return { locale, copy };
 }
 

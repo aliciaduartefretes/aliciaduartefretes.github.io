@@ -3,7 +3,7 @@ import { MASTERY_CONFIG } from "../../mastery-engine/mastery-config.mjs";
 import { evaluateProgressionGate } from "../../progression-engine/progression-gate.mjs";
 import { PROGRESSION_CONFIG } from "../../progression-engine/progression-config.mjs";
 
-const VERSION = "NALVI-PRE8C-PROGRESSION-CLIENT-1";
+const VERSION = "NALVI-PRE8C-PROGRESSION-CLIENT-2";
 const PROFILE_KEY = "nalvi.mastery.localProfiles.v1";
 const EVENT_KEY = "nalvi.mastery.localEvents.v1";
 const MAX_LOCAL_EVENTS = 80;
@@ -74,7 +74,12 @@ async function persistAuthenticated(event) {
 
 function evaluateActivityResult({ activity = {}, result = {}, uiLocale = "es", atObjectiveBoundary = false } = {}) {
   const resolved = readProfile(activity), activityType = normalizeActivityType(activity.type || activity.activityType);
-  const guided = Boolean(activity.adaptivePlanId || activity.nalviGuided || result.hintUsed);
+  const independentRetest = activity.independentRetest === true || activity.evidenceMode === "independent";
+  const guided = !independentRetest && Boolean(
+    activity.nalviGuided
+    || result.hintUsed
+    || (activity.adaptivePlanId && Number(activity.helpLevel || 0) > 0)
+  );
   const input = {
     userId: resolved.userId,
     conceptId: resolved.conceptId,
@@ -124,12 +129,52 @@ function evaluateActivityResult({ activity = {}, result = {}, uiLocale = "es", a
   return progression;
 }
 
-function evaluateObjectiveCompletion({ activity = {}, progression = null } = {}) {
+function objectiveEvidenceFor(activity) {
+  const resolved = readProfile(activity);
+  const relevant = readJson(EVENT_KEY, []).filter(event => (
+    event.userId === resolved.userId
+    && event.conceptId === resolved.conceptId
+    && event.learningObjectiveId === resolved.learningObjectiveId
+  ));
+  const independentCorrect = relevant.filter(event => event.correct === true && event.hintUsed !== true);
+  const last = relevant[relevant.length - 1];
+  return {
+    independentCorrectEvents: independentCorrect.length,
+    distinctActivityTypes: new Set(independentCorrect.map(event => event.activityType)).size,
+    lastEvidenceIndependentCorrect: Boolean(last?.correct === true && last?.hintUsed !== true),
+    hasPendingRetest: Boolean(window.NALVI_INTERVENTION?.hasPendingRetest?.())
+  };
+}
+
+function evaluateObjectiveCompletion({ activity = {}, progression = null, objectiveEvidenceOverride = null } = {}) {
   const profile = progression?.profile || readProfile(activity).profile;
+  const storedEvidence = objectiveEvidenceFor(activity);
+  const override = objectiveEvidenceOverride && typeof objectiveEvidenceOverride === "object"
+    ? objectiveEvidenceOverride
+    : {};
+  const objectiveEvidence = {
+    ...storedEvidence,
+    ...override,
+    independentCorrectEvents: Math.max(
+      Number(storedEvidence.independentCorrectEvents || 0),
+      Number(override.independentCorrectEvents || 0)
+    ),
+    distinctActivityTypes: Math.max(
+      Number(storedEvidence.distinctActivityTypes || 0),
+      Number(override.distinctActivityTypes || 0)
+    ),
+    lastEvidenceIndependentCorrect: override.lastEvidenceIndependentCorrect === undefined
+      ? storedEvidence.lastEvidenceIndependentCorrect
+      : override.lastEvidenceIndependentCorrect === true,
+    hasPendingRetest: override.hasPendingRetest === undefined
+      ? storedEvidence.hasPendingRetest
+      : override.hasPendingRetest === true
+  };
   const gate = evaluateProgressionGate({ correct: true, hintUsed: Boolean(progression?.guided) }, {
     profile,
     guided: Boolean(progression?.guided),
-    atObjectiveBoundary: true
+    atObjectiveBoundary: true,
+    objectiveEvidence
   });
   if (gate.decision === "COMPLETE_OBJECTIVE") diagnostic("OBJECTIVE_COMPLETED", {
     activityId: activity.id,
@@ -137,7 +182,7 @@ function evaluateObjectiveCompletion({ activity = {}, progression = null } = {})
     correct: true,
     progressionDecision: gate.decision
   });
-  return { ...gate, profile };
+  return { ...gate, profile, objectiveEvidence };
 }
 
 window.NALVI_PROGRESSION = Object.freeze({
@@ -154,7 +199,8 @@ window.NALVI_PROGRESSION = Object.freeze({
     singleProgressionGate: true,
     incorrectAlwaysBlocks: true,
     guidedEvidenceCannotComplete: true,
-    completionRequiresMastered: true,
+    completionRequiresMasteredOrIndependentPracticeCheckpoint: true,
+    longTermMasteryStatusPreserved: true,
     serverPersistenceEndpoint: "/api/record-learning-attempt",
     firebaseClientWrites: false,
     interfaceLanguages: ["es", "en", "pt", "fr", "it", "de"]

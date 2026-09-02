@@ -8,16 +8,16 @@
 (() => {
   "use strict";
 
-  const VERSION = "KUAA-P1-RENDERER-1";
+  const VERSION = "KUAA-P1-RENDERER-3";
   if (window.KUAA_ACTIVITY_ENGINE?.version === VERSION) return;
 
   const COPY = {
-    es: { activity: "Actividad", check: "Comprobar", listen: "Escuchar expresión", correct: "¡Excelente! Respuesta correcta.", wrong: "Todavía no. Inténtalo nuevamente.", write: "Escribe tu respuesta", fill: "Completa la respuesta", match: "Relaciona cada elemento", order: "Ordena la frase", learningContext: "Estamos practicando", hint: "Pista", unavailable: "Este tipo de actividad se habilitará en una etapa posterior.", speaking: "Práctica oral", scenario: "Escenario conversacional" },
-    en: { activity: "Activity", check: "Check", listen: "Listen to the expression", correct: "Excellent! Correct answer.", wrong: "Not yet. Try again.", write: "Write your answer", fill: "Complete the answer", match: "Match each item", order: "Order the sentence", learningContext: "We are practising", hint: "Hint", unavailable: "This activity type will be enabled in a later stage.", speaking: "Speaking practice", scenario: "Conversation scenario" },
-    pt: { activity: "Atividade", check: "Verificar", listen: "Ouvir a expressão", correct: "Excelente! Resposta correta.", wrong: "Ainda não. Tente novamente.", write: "Escreva sua resposta", fill: "Complete a resposta", match: "Relacione cada elemento", order: "Ordene a frase", learningContext: "Estamos praticando", hint: "Pista", unavailable: "Este tipo de atividade será habilitado em uma etapa posterior.", speaking: "Prática oral", scenario: "Cenário de conversação" },
-    fr: { activity: "Activité", check: "Vérifier", listen: "Écouter l’expression", correct: "Excellent ! Bonne réponse.", wrong: "Pas encore. Réessayez.", write: "Écrivez votre réponse", fill: "Complétez la réponse", match: "Associez chaque élément", order: "Remettez la phrase dans l’ordre", learningContext: "Nous travaillons", hint: "Indice", unavailable: "Ce type d’activité sera activé lors d’une étape ultérieure.", speaking: "Pratique orale", scenario: "Scénario de conversation" },
-    it: { activity: "Attività", check: "Controlla", listen: "Ascolta l’espressione", correct: "Eccellente! Risposta corretta.", wrong: "Non ancora. Riprova.", write: "Scrivi la tua risposta", fill: "Completa la risposta", match: "Associa ogni elemento", order: "Ordina la frase", learningContext: "Stiamo esercitando", hint: "Indizio", unavailable: "Questo tipo di attività sarà abilitato in una fase successiva.", speaking: "Pratica orale", scenario: "Scenario di conversazione" },
-    de: { activity: "Aktivität", check: "Prüfen", listen: "Ausdruck anhören", correct: "Ausgezeichnet! Richtige Antwort.", wrong: "Noch nicht. Versuche es erneut.", write: "Schreibe deine Antwort", fill: "Vervollständige die Antwort", match: "Ordne die Elemente zu", order: "Ordne den Satz", learningContext: "Wir üben", hint: "Hinweis", unavailable: "Dieser Aktivitätstyp wird in einer späteren Phase aktiviert.", speaking: "Sprechübung", scenario: "Gesprächsszenario" }
+    es: { activity: "Actividad", check: "Comprobar", listen: "Escuchar expresión", correct: "¡Excelente! Respuesta correcta.", equivalent: "¡Correcto! Esta forma también es válida.", near: "Casi correcto. Revisa la forma.", review: "Vamos a practicar con una forma ya validada.", wrong: "Todavía no. Probemos de otra forma.", write: "Escribe tu respuesta", fill: "Completa la respuesta", match: "Relaciona cada elemento", order: "Ordena la frase", learningContext: "Estamos practicando", hint: "Ver pista", explanation: "Ver explicación", unavailable: "Este tipo de actividad se habilitará en una etapa posterior.", speaking: "Práctica oral", scenario: "Escenario conversacional" },
+    en: { activity: "Activity", check: "Check", listen: "Listen to the expression", correct: "Excellent! Correct answer.", equivalent: "Correct! This form is valid here too.", near: "Almost right. Check the form.", review: "Let’s practise with an already validated form.", wrong: "Not quite. Let’s try another way.", write: "Write your answer", fill: "Complete the answer", match: "Match each item", order: "Order the sentence", learningContext: "We are practising", hint: "View hint", explanation: "View explanation", unavailable: "This activity type will be enabled in a later stage.", speaking: "Speaking practice", scenario: "Conversation scenario" },
+    pt: { activity: "Atividade", check: "Verificar", listen: "Ouvir a expressão", correct: "Excelente! Resposta correta.", equivalent: "Correto! Esta forma também é válida aqui.", near: "Quase correto. Revise a forma.", review: "Vamos praticar com uma forma já validada.", wrong: "Ainda não. Vamos tentar de outra forma.", write: "Escreva sua resposta", fill: "Complete a resposta", match: "Relacione cada elemento", order: "Ordene a frase", learningContext: "Estamos praticando", hint: "Ver pista", explanation: "Ver explicação", unavailable: "Este tipo de atividade será habilitado em uma etapa posterior.", speaking: "Prática oral", scenario: "Cenário de conversação" },
+    fr: { activity: "Activité", check: "Vérifier", listen: "Écouter l’expression", correct: "Excellent ! Bonne réponse.", equivalent: "Correct ! Cette forme est également valable ici.", near: "Presque correct. Vérifiez la forme.", review: "Pratiquons avec une forme déjà validée.", wrong: "Pas tout à fait. Essayons autrement.", write: "Écrivez votre réponse", fill: "Complétez la réponse", match: "Associez chaque élément", order: "Remettez la phrase dans l’ordre", learningContext: "Nous travaillons", hint: "Voir l’indice", explanation: "Voir l’explication", unavailable: "Ce type d’activité sera activé lors d’une étape ultérieure.", speaking: "Pratique orale", scenario: "Scénario de conversation" },
+    it: { activity: "Attività", check: "Controlla", listen: "Ascolta l’espressione", correct: "Eccellente! Risposta corretta.", equivalent: "Corretto! Anche questa forma è valida qui.", near: "Quasi corretto. Controlla la forma.", review: "Esercitiamoci con una forma già convalidata.", wrong: "Non proprio. Proviamo in un altro modo.", write: "Scrivi la tua risposta", fill: "Completa la risposta", match: "Associa ogni elemento", order: "Ordina la frase", learningContext: "Stiamo esercitando", hint: "Vedi indizio", explanation: "Vedi spiegazione", unavailable: "Questo tipo di attività sarà abilitato in una fase successiva.", speaking: "Pratica orale", scenario: "Scenario di conversazione" },
+    de: { activity: "Aktivität", check: "Prüfen", listen: "Ausdruck anhören", correct: "Ausgezeichnet! Richtige Antwort.", equivalent: "Richtig! Diese Form ist hier ebenfalls gültig.", near: "Fast richtig. Prüfe die Form.", review: "Üben wir mit einer bereits bestätigten Form.", wrong: "Noch nicht ganz. Versuchen wir es anders.", write: "Schreibe deine Antwort", fill: "Vervollständige die Antwort", match: "Ordne die Elemente zu", order: "Ordne den Satz", learningContext: "Wir üben", hint: "Hinweis anzeigen", explanation: "Erklärung anzeigen", unavailable: "Dieser Aktivitätstyp wird in einer späteren Phase aktiviert.", speaking: "Sprechübung", scenario: "Gesprächsszenario" }
   };
 
   const TYPE_ALIASES = new Map([
@@ -32,6 +32,13 @@
   const renderers = new Map();
 
   const normalizeType = type => TYPE_ALIASES.get(String(type || "").trim().toLowerCase()) || String(type || "").trim().toLowerCase();
+  const rendererKeysFor = activity => {
+    const values = [activity?.activityType, activity?.type].filter(Boolean);
+    return [...new Set(values.flatMap(value => {
+      const raw = String(value).trim();
+      return [normalizeType(raw), raw, raw.toUpperCase(), raw.toLowerCase()];
+    }))];
+  };
   const currentLanguage = requested => ["es", "en", "pt", "fr", "it", "de"].includes(requested) ? requested : "es";
   const localize = (value, language) => {
     if (value == null) return "";
@@ -39,7 +46,8 @@
     return String(value[language] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "");
   };
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
-  const normalizeAnswer = value => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/\s+/g, " ");
+  const normalizeAnswer = value => window.NALVI_ANSWER_EVALUATOR?.normalizeAnswerSurface?.(value)
+    || String(value ?? "").normalize("NFC").replace(/[\u2018\u2019\u02BC\u02BB\uFF07`\u00B4]/g, "'").trim().toLowerCase().replace(/[.!?…]+$/u, "").replace(/\s+/gu, " ");
   const resolveTarget = target => typeof target === "string" ? document.querySelector(target) : target;
   const copyFor = language => COPY[language] || COPY.es;
   const activityOptions = (activity, language) => (activity.options || []).map((option, index) => typeof option === "object" ? { id: String(option.id ?? index), label: localize(option.label, language), value: localize(option.value ?? option.label, language) } : { id: String(index), label: String(option), value: String(option) });
@@ -58,7 +66,7 @@
     const contextAlreadyInTemplate = sourcePrompt && normalizeAnswer(template).includes(normalizeAnswer(sourcePrompt));
     const showContext = sourcePrompt && !contextAlreadyInTemplate && normalizeAnswer(sourcePrompt) !== normalizeAnswer(prompt);
     if (!showContext && !explanation && !hints.length) return "";
-    return `<aside class="kuaa-learning-support" aria-label="${escapeHtml(copy.learningContext)}">${showContext ? `<span>${escapeHtml(copy.learningContext)}</span><p>${escapeHtml(sourcePrompt)}</p>` : ""}${explanation ? `<p class="kuaa-learning-support__explanation">${escapeHtml(explanation)}</p>` : ""}${hints.length ? `<p class="kuaa-learning-support__hint"><b>${escapeHtml(copy.hint)}:</b> ${escapeHtml(hints.join(" · "))}</p>` : ""}</aside>`;
+    return `<aside class="kuaa-learning-support" aria-label="${escapeHtml(copy.learningContext)}">${showContext ? `<span>${escapeHtml(copy.learningContext)}</span><p>${escapeHtml(sourcePrompt)}</p>` : ""}${explanation ? `<details class="nalvi-progressive-disclosure"><summary>${escapeHtml(copy.explanation || "Ver explicación")}</summary><p class="kuaa-learning-support__explanation">${escapeHtml(explanation)}</p></details>` : ""}${hints.length ? `<details class="nalvi-progressive-disclosure"><summary>${escapeHtml(copy.hint)}</summary><p class="kuaa-learning-support__hint">${escapeHtml(hints.join(" · "))}</p></details>` : ""}</aside>`;
   }
 
   function shell(target, activity, language, body, typeLabel) {
@@ -73,14 +81,36 @@
     const feedback = target.querySelector("#feedback"), copy = copyFor(language);
     if (!feedback) return;
     feedback.className = `feedback ${result.correct ? "ok" : "no"}`;
-    feedback.textContent = result.correct ? copy.correct : copy.wrong;
+    feedback.textContent = result.answerStatus === "correct_equivalent" ? (copy.equivalent || copy.correct)
+      : result.answerStatus === "near_miss" ? (copy.near || copy.wrong)
+        : result.answerStatus === "pending_review" ? (copy.review || copy.wrong)
+          : result.correct ? copy.correct : copy.wrong;
   }
 
   function submit(target, activity, context, result) {
     if (target.dataset.nalviSubmissionLocked === "true") return { ignored: true, reason: "SUBMISSION_ALREADY_EVALUATED" };
     target.dataset.nalviSubmissionLocked = "true";
     const responseTime = Math.max(0, Date.now() - Number(target.dataset.nalviActivityStartedAt || Date.now()));
-    const scoredResult = { ...result, responseTime };
+    let assessment = null;
+    if (!result.answerStatus && typeof result.value === "string" && window.NALVI_ANSWER_EVALUATOR?.evaluateAnswer) {
+      const options = activityOptions(activity, context.language);
+      const correctOption = options.find(option => option.id === String(activity.correctOptionId));
+      assessment = window.NALVI_ANSWER_EVALUATOR.evaluateAnswer({
+        studentAnswer: result.value,
+        canonicalAnswers: [...acceptedAnswers(activity, context.language), correctOption?.value].filter(Boolean),
+        approvedEquivalents: activity.approvedEquivalents || [],
+        approvedVariants: activity.approvedVariants || [],
+        activity,
+        context: { learningObjectiveId: activity.learningObjectiveId, conceptId: activity.conceptId || activity.conceptIds?.[0] },
+        allowPendingReview: normalizeType(activity.type) === "writing" || activity.allowPendingReview === true
+      });
+    }
+    const scoredResult = {
+      ...result,
+      ...(assessment || {}),
+      correct: result.correct === true || assessment?.correct === true,
+      responseTime
+    };
     const progression = window.NALVI_PROGRESSION?.evaluateActivityResult({
       activity,
       result: scoredResult,
@@ -218,14 +248,17 @@
   function registerActivityRenderer(type, renderer) {
     const normalized = normalizeType(type);
     if (!normalized || typeof renderer !== "function") throw new TypeError("El componente de actividad no es válido.");
-    renderers.set(normalized, renderer);
+    const raw = String(type).trim();
+    [normalized, raw, raw.toUpperCase(), raw.toLowerCase()].forEach(key => renderers.set(key, renderer));
   }
 
   function renderActivity(activity, options = {}) {
     if (!activity || typeof activity !== "object") throw new TypeError("renderActivity(activity) necesita un objeto de actividad.");
     const target = resolveTarget(options.target || "#lessonBody"), language = currentLanguage(options.language || document.documentElement.lang);
     if (!target) throw new Error("No se encontró el contenedor de la actividad.");
-    const type = normalizeType(activity.type), renderer = renderers.get(type);
+    const rendererKeys = rendererKeysFor(activity);
+    const type = rendererKeys[0] || "";
+    const renderer = rendererKeys.map(key => renderers.get(key)).find(Boolean);
     if (!renderer) {
       target.innerHTML = `<div class="kuaa-activity-error"><b>Actividad no disponible:</b> ${escapeHtml(type || "sin tipo")}</div>`;
       return { activity, type, target, rendered: false };

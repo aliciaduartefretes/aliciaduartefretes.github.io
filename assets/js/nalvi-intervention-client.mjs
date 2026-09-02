@@ -5,11 +5,12 @@ import {
   planPedagogicalIntervention,
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
-import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-1";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-3";
 import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-1";
 import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-1";
+import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-2";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-1";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-8";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
@@ -22,14 +23,15 @@ const ATTEMPT_TTL_MS = 30 * 60 * 1000;
 const LANGUAGES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const activeRequests = new WeakMap();
 const activeSequences = new WeakMap();
+const renderedActivityIds = new Set();
 let sessionHistory = [];
 const COPY = Object.freeze({
-  es: { wrong: "No del todo. Seguimos y lo practicaremos de otra forma.", loading: "Preparando otra forma de practicar…", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde.", match: "Relaciona cada expresión con su significado.", matchInstruction: "Une las expresiones que corresponden." },
-  en: { wrong: "Not quite. Keep going; we’ll practise it another way.", loading: "Preparing another way to practise…", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review.", match: "Match each expression with its meaning.", matchInstruction: "Connect the expressions that belong together." },
-  pt: { wrong: "Ainda não. Continue; vamos praticar de outra forma.", loading: "Preparando outra forma de praticar…", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde.", match: "Relacione cada expressão ao seu significado.", matchInstruction: "Una as expressões correspondentes." },
-  fr: { wrong: "Pas tout à fait. Continuez : nous le reverrons autrement.", loading: "Préparation d’une autre façon de pratiquer…", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure.", match: "Associez chaque expression à sa signification.", matchInstruction: "Reliez les expressions correspondantes." },
-  it: { wrong: "Non proprio. Continua: lo riprenderemo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo.", match: "Abbina ogni espressione al suo significato.", matchInstruction: "Collega le espressioni corrispondenti." },
-  de: { wrong: "Noch nicht ganz. Mach weiter; wir üben es später anders.", loading: "Eine andere Übungsform wird vorbereitet…", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", matchInstruction: "Verbinde die zusammengehörigen Ausdrücke." }
+  es: { wrong: "No del todo. Seguimos y lo practicaremos de otra forma.", loading: "Preparando otra forma de practicar…", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde.", match: "Relaciona cada expresión con su significado.", matchInstruction: "Une las expresiones que corresponden.", recall: "Responde sin opciones.", recallContext: "Recuerda el concepto que practicamos." },
+  en: { wrong: "Not quite. Keep going; we’ll practise it another way.", loading: "Preparing another way to practise…", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review.", match: "Match each expression with its meaning.", matchInstruction: "Connect the expressions that belong together.", recall: "Answer without options.", recallContext: "Recall the concept you practised." },
+  pt: { wrong: "Ainda não. Continue; vamos praticar de outra forma.", loading: "Preparando outra forma de praticar…", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde.", match: "Relacione cada expressão ao seu significado.", matchInstruction: "Una as expressões correspondentes.", recall: "Responda sem opções.", recallContext: "Lembre o conceito que você praticou." },
+  fr: { wrong: "Pas tout à fait. Continuez : nous le reverrons autrement.", loading: "Préparation d’une autre façon de pratiquer…", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure.", match: "Associez chaque expression à sa signification.", matchInstruction: "Reliez les expressions correspondantes.", recall: "Répondez sans choix.", recallContext: "Rappelez-vous le concept travaillé." },
+  it: { wrong: "Non proprio. Continua: lo riprenderemo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo.", match: "Abbina ogni espressione al suo significato.", matchInstruction: "Collega le espressioni corrispondenti.", recall: "Rispondi senza opzioni.", recallContext: "Ricorda il concetto che hai esercitato." },
+  de: { wrong: "Noch nicht ganz. Mach weiter; wir üben es später anders.", loading: "Eine andere Übungsform wird vorbereitet…", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", matchInstruction: "Verbinde die zusammengehörigen Ausdrücke.", recall: "Antworte ohne Auswahlmöglichkeiten.", recallContext: "Erinnere dich an das geübte Konzept." }
 });
 
 const locale = value => LANGUAGES.has(value) ? value : "es";
@@ -55,7 +57,8 @@ function writePendingRetest(value) {
 }
 
 function semanticPairsForObjective(context) {
-  return activityCatalog()
+  const expected = localize(context.correctAnswer, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase();
+  const pairs = activityCatalog()
     .filter(activity => activity.learningObjectiveId === context.learningObjectiveId && activity.semanticPair?.target && activity.semanticPair?.meaning)
     .map((activity, index) => ({
       id: `lesson-pair-${index + 1}`,
@@ -64,13 +67,15 @@ function semanticPairsForObjective(context) {
       sourceActivityId: activity.id
     }))
     .filter(pair => pair.left && pair.right);
+  if (expected && !pairs.some(pair => [pair.left, pair.right].some(value => String(value).normalize("NFC").trim().toLocaleLowerCase() === expected))) return [];
+  return pairs;
 }
 
 function buildSpacedRetestPlan(context) {
   const pairs = semanticPairsForObjective(context);
-  if (pairs.length < 3) return null;
   const copy = COPY[context.uiLocale] || COPY.es;
-  const activity = normalizeRenderableActivity({
+  const sourcePrompt = localize(context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, context.uiLocale).trim();
+  const activityDefinition = pairs.length >= 3 ? {
     id: `spaced-match-${context.learningObjectiveId}-${Date.now()}`,
     type: ACTIVITY_TYPES.ARROW_MATCH,
     activityType: ACTIVITY_TYPES.ARROW_MATCH,
@@ -101,7 +106,38 @@ function buildSpacedRetestPlan(context) {
       sourceAnswer: context.correctAnswer,
       sourceActivityId: context.activity?.id || ""
     }
-  }, context);
+  } : {
+    id: `spaced-recall-${context.learningObjectiveId}-${Date.now()}`,
+    type: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    conceptId: context.conceptId,
+    conceptIds: [context.conceptId],
+    learningObjectiveId: context.learningObjectiveId,
+    skill: context.currentSkill || "vocabulary",
+    difficulty: context.difficulty,
+    instruction: copy.recall,
+    prompt: sourcePrompt || copy.recallContext,
+    contextText: copy.recallContext,
+    answer: context.correctAnswer,
+    correctAnswer: context.correctAnswer,
+    acceptedAnswers: [context.correctAnswer].filter(Boolean),
+    lexemeIds: context.lexemeIds,
+    grammarRuleIds: context.grammarRuleIds,
+    requiresStudentResponse: true,
+    helpLevel: 0,
+    answerExposure: "HIDDEN",
+    cognitiveDemand: "RECALL",
+    reasonCode: "JUSTIFIED_INDEPENDENT_RETEST",
+    independentRetest: true,
+    spacedRetest: true,
+    lessonContext: {
+      sourcePrompt,
+      sourceInstruction: copy.recall,
+      sourceAnswer: context.correctAnswer,
+      sourceActivityId: context.activity?.id || ""
+    }
+  };
+  const activity = normalizeRenderableActivity(activityDefinition, context);
   activity.fingerprint = createActivityFingerprint(activity, { uiLocale: context.uiLocale });
   return {
     planVersion: "NALVI-TUTOR-1",
@@ -109,12 +145,14 @@ function buildSpacedRetestPlan(context) {
     conceptId: context.conceptId,
     linguisticMode: "LESSON_BOUNDED",
     diagnosis: { errorType: "RECALL_FAILURE", likelyDifficulty: "delayed-retrieval", confidence: 1, prerequisiteGap: null, skillAffected: context.currentSkill },
-    pedagogicalGoal: "Revisit the failed concept after intervening practice, embedded among other documented expressions.",
+    pedagogicalGoal: pairs.length >= 3
+      ? "Revisit the failed concept after intervening practice, embedded among other documented expressions."
+      : "Revisit the failed concept independently after intervening practice.",
     strategy: { primaryStrategy: "DELAYED_RETEST", secondaryStrategy: "CHANGE_MODALITY", reasonCode: `spaced-after-${MINIMUM_BRIDGE_ACTIVITIES}-activities` },
     studentFeedback: { locale: context.uiLocale, shortMessage: copy.wrong },
     activities: [activity],
     progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", onGuidedCorrect: "CONTINUE_PRACTICE", requiresIndependentRetest: true, maxInterventionsBeforeDefer: 4 },
-    fallbackPolicy: { strategy: "LESSON_MATCHING", reason: "SPACED_INTERLEAVING" },
+    fallbackPolicy: { strategy: pairs.length >= 3 ? "LESSON_MATCHING" : "INDEPENDENT_RECALL", reason: "SPACED_INTERLEAVING" },
     validationMetadata: { sourceIds: [], knowledgeIds: context.knowledgeIds, claimedRiskLevel: "GREEN", lessonBounded: true }
   };
 }
@@ -149,23 +187,30 @@ function noteBridgeActivity(activity, language = document.documentElement.lang) 
   return true;
 }
 
-function consumeDueRetest(targetSelector = "#lessonBody") {
+function consumeDueRetest(targetSelector = "#lessonBody", options = {}) {
   const pending = pendingRetest();
-  if (!pending || pending.bridgeFingerprints.length < Number(pending.minimumBridgeActivities || MINIMUM_BRIDGE_ACTIVITIES)) return false;
+  const force = options.force === true;
+  if (!pending || (!force && pending.bridgeFingerprints.length < Number(pending.minimumBridgeActivities || MINIMUM_BRIDGE_ACTIVITIES))) return false;
   const target = typeof targetSelector === "string" ? document.querySelector(targetSelector) : targetSelector;
   if (!target) return false;
-  writePendingRetest(null);
   const language = locale(document.documentElement.lang || pending.uiLocale);
   const context = { uiLocale: language, correctAnswer: pending.plan.activities[0]?.answer || "", activity: pending.plan.activities[0] };
   const plan = normalizePlanForRenderer(pending.plan, context);
-  remember({
-    conceptId: pending.conceptId,
-    previousActivityFingerprint: pending.sourceFingerprint,
-    activityType: "spaced-retrieval",
-    uiLocale: language
-  }, plan);
-  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan, usedAI: false, spacedRetest: true } }));
-  renderSequenceActivity(target, {
+  const candidateId = String(plan.activities[0]?.id || "");
+  const candidateFingerprint = plan.activities[0]?.fingerprint || createActivityFingerprint(plan.activities[0], { uiLocale: language });
+  const recentFingerprints = history().slice(-5).map(item => item.fingerprint).filter(Boolean);
+  if (!plan.activities.length || (candidateId && renderedActivityIds.has(candidateId)) || (candidateFingerprint && recentFingerprints.includes(candidateFingerprint))) {
+    // Una recuperación ya practicada no puede volver a secuestrar el botón
+    // Siguiente. La evidencia existente seguirá siendo evaluada por la compuerta
+    // central de progreso; si todavía no basta, la práctica normal se reinicia.
+    writePendingRetest(null);
+    console.info("[NALVI] STALE_RETEST_DISCARDED", {
+      sourceActivityId: pending.sourceActivityId,
+      reason: !plan.activities.length ? "EMPTY_PLAN" : renderedActivityIds.has(candidateId) ? "ALREADY_RENDERED_ACTIVITY" : "RECENT_FINGERPRINT"
+    });
+    return false;
+  }
+  const rendered = renderSequenceActivity(target, {
     plan,
     language,
     index: 0,
@@ -173,6 +218,19 @@ function consumeDueRetest(targetSelector = "#lessonBody") {
     sourceActivityId: pending.sourceActivityId,
     spacedRetest: true
   }, 0);
+  if (!rendered) {
+    writePendingRetest(null);
+    console.warn("NALVI_SPACED_RETEST_RENDER_FAILED", pending.sourceActivityId);
+    return false;
+  }
+  writePendingRetest(null);
+  remember({
+    conceptId: pending.conceptId,
+    previousActivityFingerprint: pending.sourceFingerprint,
+    activityType: "spaced-retrieval",
+    uiLocale: language
+  }, plan);
+  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan, usedAI: false, spacedRetest: true } }));
   return true;
 }
 
@@ -264,6 +322,9 @@ function targetsFailedKnowledge(activity, context) {
     activity.answer,
     ...(activity.acceptedAnswers || [])
   ].map(value => localize(value, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase()).filter(Boolean);
+  if ((activity.activityType || activity.type) === ACTIVITY_TYPES.ARROW_MATCH) {
+    return (activity.pairs || []).some(pair => [pair.left, pair.right].some(value => localize(value, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase() === expected));
+  }
   return candidateAnswers.includes(expected);
 }
 function remember(context, plan) {
@@ -357,36 +418,74 @@ function renderPassiveExample(target, state, activity, index) {
 }
 
 function renderSequenceActivity(target, state, index) {
-  const activity = state.plan.activities[index]; if (!activity) return finishSequence(target, state, null);
+  const activity = state.plan.activities[index];
+  if (!activity) {
+    finishSequence(target, state, null);
+    return false;
+  }
   state.index = index; activeSequences.set(target, state);
-  if (activity.requiresStudentResponse === false) return renderPassiveExample(target, state, activity, index);
-  const renderedActivity = { ...activity, nalviGuided: Number(activity.helpLevel || 0) > 0, adaptivePlanId: state.plan.planId, adaptivePlanIndex: index, adaptivePlanLength: state.plan.activities.length };
-  window.renderActivity(renderedActivity, {
-    target,
-    language: state.language,
-    onAdaptiveSubmit(result, submittedActivity) {
-      const detail = { activity: submittedActivity, result, progression: result.progression, uiLocale: state.language };
-      if (continueSequence(detail, target)) return;
-      if (result.correct === false) handleIncorrect(detail, target);
-    }
-  });
+  if (activity.requiresStudentResponse === false) {
+    renderPassiveExample(target, state, activity, index);
+    return true;
+  }
+  const independentRetest = activity.independentRetest === true || activity.evidenceMode === "independent" || state.spacedRetest === true;
+  const renderedActivity = {
+    ...activity,
+    independentRetest,
+    evidenceMode: independentRetest ? "independent" : (activity.evidenceMode || "guided"),
+    nalviGuided: independentRetest ? false : Number(activity.helpLevel || 0) > 0,
+    adaptivePlanId: state.plan.planId,
+    adaptivePlanIndex: index,
+    adaptivePlanLength: state.plan.activities.length
+  };
+  let renderResult;
+  try {
+    renderResult = window.renderActivity(renderedActivity, {
+      target,
+      language: state.language,
+      onAdaptiveSubmit(result, submittedActivity) {
+        const detail = { activity: submittedActivity, result, progression: result.progression, uiLocale: state.language };
+        if (continueSequence(detail, target)) return;
+        if (result.correct === false) handleIncorrect(detail, target);
+      }
+    });
+  } catch (error) {
+    activeSequences.delete(target);
+    console.warn("NALVI_TUTOR_ACTIVITY_RENDER_FAILED", String(error?.message || error));
+    return false;
+  }
+  if (renderResult?.rendered !== true) {
+    activeSequences.delete(target);
+    return false;
+  }
+  target.dataset.nalviActiveActivityId = String(activity.id || "");
+  target.dataset.nalviActiveActivityFingerprint = String(activity.fingerprint || createActivityFingerprint(activity, { uiLocale: state.language }));
+  if (activity.id) {
+    renderedActivityIds.add(String(activity.id));
+    if (renderedActivityIds.size > 64) renderedActivityIds.delete(renderedActivityIds.values().next().value);
+  }
   scrollToActivity(target);
   window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_RENDERED", { activityId: activity.id, conceptId: activity.conceptId || activity.conceptIds?.[0], correct: false,
     strategy: state.plan.strategy?.primaryStrategy, usedAI: state.usedAI, progressionDecision: "BLOCK_AND_INTERVENE", fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: state.language }) });
+  return true;
 }
 
 function finishSequence(target, state, activity) {
   activeSequences.delete(target);
+  delete target.dataset.nalviActiveActivityId;
+  delete target.dataset.nalviActiveActivityFingerprint;
   updateStrategyEffectiveness(state.plan.strategy?.primaryStrategy, true);
   const copy = COPY[state.language] || COPY.es;
   const excludedActivityIds = [...new Set([state.sourceActivityId, ...(state.plan.activities || []).map(item => item.id)].filter(Boolean))];
   target.innerHTML = `<div class="feedback ok nalvi-tutor-feedback" aria-live="polite">${escapeHtml(copy.complete)}</div>`;
   window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-completed", { detail: {
     planId: state.plan.planId, conceptId: activity?.conceptId || activity?.conceptIds?.[0] || state.plan.conceptId,
-    completionIsMastery: false, independentRetestRequired: !state.spacedRetest, spacedRetestCompleted: Boolean(state.spacedRetest)
+    sourceActivityId: state.sourceActivityId || "", completionIsMastery: false,
+    independentRetestRequired: !state.spacedRetest, spacedRetestCompleted: Boolean(state.spacedRetest)
   } }));
   setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", planId: state.plan.planId,
-    conceptId: activity?.conceptId || activity?.conceptIds?.[0] || state.plan.conceptId, completionIsMastery: false, excludedActivityIds,
+    conceptId: activity?.conceptId || activity?.conceptIds?.[0] || state.plan.conceptId, sourceActivityId: state.sourceActivityId || "",
+    completionIsMastery: false, excludedActivityIds,
     independentRetestRequired: !state.spacedRetest, spacedRetestCompleted: Boolean(state.spacedRetest) } })), 600);
 }
 
@@ -414,8 +513,6 @@ async function handleIncorrect(detail, target) {
   const shouldSpaceRetest = !context.activity?.adaptivePlanId && !context.activity?.spacedRetest && !pendingRetest();
   const spacedPlan = shouldSpaceRetest ? buildSpacedRetestPlan(context) : null;
   if (spacedPlan && scheduleSpacedRetest(context, spacedPlan)) {
-    activeSequences.delete(target);
-    shortFeedback(target, context.uiLocale, (COPY[context.uiLocale] || COPY.es).wrong);
     window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", {
       activityId: context.activity.id,
       conceptId: context.conceptId,
@@ -426,18 +523,6 @@ async function handleIncorrect(detail, target) {
       fingerprint: context.previousActivityFingerprint,
       minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES
     });
-    await sleep(850);
-    window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: {
-      courseId: "general",
-      planId: spacedPlan.planId,
-      conceptId: context.conceptId,
-      completionIsMastery: false,
-      excludedActivityIds: [context.activity.id].filter(Boolean),
-      independentRetestRequired: true,
-      pendingSpacedRetest: true,
-      minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES
-    } }));
-    return;
   }
   let localPlan;
   try {
@@ -513,6 +598,7 @@ window.NALVI_INTERVENTION = Object.freeze({
     return value ? { sourceActivityId: value.sourceActivityId, bridgeCount: value.bridgeFingerprints.length, minimumBridgeActivities: value.minimumBridgeActivities } : null;
   },
   consumeDueRetest,
+  consumePendingRetestAtBoundary: targetSelector => consumeDueRetest(targetSelector, { force: true }),
   clearLocalHistory: () => {
     sessionHistory = [];
     [HISTORY_KEY, ATTEMPT_KEY, EFFECTIVENESS_KEY, EXPOSURE_KEY, PENDING_RETEST_KEY].forEach(key => localStorage.removeItem(key));
