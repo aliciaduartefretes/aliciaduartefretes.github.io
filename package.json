@@ -16,6 +16,7 @@
     ,"validate:pre-8c-progression": "node scripts/validate-pre-8c-progression.mjs"
     ,"test:adaptive-tutor": "node --test server/tests/adaptive-tutor-orchestrator.test.mjs evals/adaptive-tutor/*.test.mjs"
     ,"test:activity-catalog": "node --test activity-catalog/tests/*.test.mjs"
+    ,"test:answer-evaluator": "node --test assessment/tests/*.test.mjs"
   },
   "engines": {
     "node": ">=20"
