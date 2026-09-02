@@ -23,6 +23,21 @@ export function evaluateProgressionGate(result = {}, masteryContext = {}) {
   if (status === PROGRESSION_CONFIG.completion.requiredMasteryStatus) {
     return { decision: "COMPLETE_OBJECTIVE", reason: "masteryPolicySatisfied", canAdvance: true, canComplete: true };
   }
+  const evidence = masteryContext.objectiveEvidence || {};
+  const checkpointSatisfied = PROGRESSION_CONFIG.completion.allowImmediatePracticeCheckpoint
+    && Number(evidence.independentCorrectEvents || 0) >= PROGRESSION_CONFIG.completion.minimumIndependentCorrectEvents
+    && Number(evidence.distinctActivityTypes || 0) >= PROGRESSION_CONFIG.completion.minimumDistinctActivityTypes
+    && evidence.lastEvidenceIndependentCorrect === true
+    && (!PROGRESSION_CONFIG.completion.pendingRetestMustBeResolved || evidence.hasPendingRetest !== true);
+  if (checkpointSatisfied) {
+    return {
+      decision: "COMPLETE_OBJECTIVE",
+      reason: "objectivePracticeCheckpointSatisfied",
+      canAdvance: true,
+      canComplete: true,
+      preservesLongTermMasteryStatus: true
+    };
+  }
   if (status === "REVIEW_DUE") {
     return { decision: "REVIEW_LATER", reason: "retentionReviewDue", canAdvance: false, canComplete: false };
   }
@@ -33,6 +48,7 @@ export function canCompleteObjective(profile, options = {}) {
   return evaluateProgressionGate({ correct: true, hintUsed: Boolean(options.hintUsed) }, {
     profile,
     guided: Boolean(options.guided),
-    atObjectiveBoundary: true
+    atObjectiveBoundary: true,
+    objectiveEvidence: options.objectiveEvidence
   }).decision === "COMPLETE_OBJECTIVE";
 }

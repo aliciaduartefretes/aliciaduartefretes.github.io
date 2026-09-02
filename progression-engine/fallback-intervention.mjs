@@ -1,12 +1,12 @@
 import { ACTIVITY_TYPES, cognitiveDemandFor } from "../activity-catalog/nalvi-activity-catalog.mjs";
 
 const COPY = Object.freeze({
-  es: { context: "Dos personas se encuentran al comenzar una conversación.", contextQuestion: "¿Qué intención encaja mejor con la situación?", contrast: "Elige el significado que corresponde a la expresión trabajada.", match: "Relaciona cada expresión con su significado.", build: "Reconstruye la expresión con las piezas.", gap: "Completa la situación con la opción adecuada.", recall: "Recuerda la expresión sin verla.", person: "Una persona habla de alguien de su familia." },
-  en: { context: "Two people meet at the start of a conversation.", contextQuestion: "Which intention best fits the situation?", contrast: "Choose the meaning that matches the expression you studied.", match: "Match each expression with its meaning.", build: "Rebuild the expression with the tiles.", gap: "Complete the situation with the best option.", recall: "Recall the expression without seeing it.", person: "Someone is talking about a family member." },
-  pt: { context: "Duas pessoas se encontram no início de uma conversa.", contextQuestion: "Qual intenção combina melhor com a situação?", contrast: "Escolha o significado correspondente à expressão estudada.", match: "Relacione cada expressão ao seu significado.", build: "Reconstrua a expressão com as peças.", gap: "Complete a situação com a opção adequada.", recall: "Lembre a expressão sem vê-la.", person: "Uma pessoa fala de alguém da família." },
-  fr: { context: "Deux personnes se rencontrent au début d’une conversation.", contextQuestion: "Quelle intention convient le mieux à la situation ?", contrast: "Choisissez le sens correspondant à l’expression étudiée.", match: "Associez chaque expression à sa signification.", build: "Reconstituez l’expression avec les tuiles.", gap: "Complétez la situation avec l’option appropriée.", recall: "Retrouvez l’expression sans la voir.", person: "Une personne parle d’un membre de sa famille." },
-  it: { context: "Due persone si incontrano all’inizio di una conversazione.", contextQuestion: "Quale intenzione si adatta meglio alla situazione?", contrast: "Scegli il significato dell’espressione studiata.", match: "Abbina ogni espressione al suo significato.", build: "Ricostruisci l’espressione con le tessere.", gap: "Completa la situazione con l’opzione adatta.", recall: "Ricorda l’espressione senza vederla.", person: "Una persona parla di un familiare." },
-  de: { context: "Zwei Personen treffen sich zu Beginn eines Gesprächs.", contextQuestion: "Welche Absicht passt am besten zur Situation?", contrast: "Wähle die Bedeutung des gelernten Ausdrucks.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", build: "Setze den Ausdruck aus den Bausteinen zusammen.", gap: "Vervollständige die Situation mit der passenden Option.", recall: "Erinnere dich an den Ausdruck, ohne ihn zu sehen.", person: "Eine Person spricht über ein Familienmitglied." }
+  es: { context: "Dos personas se encuentran al comenzar una conversación.", contextQuestion: "¿Qué intención encaja mejor con la situación?", contrast: "Elige el significado que corresponde a la expresión trabajada.", match: "Relaciona cada expresión con su significado.", build: "Reconstruye la expresión con las piezas.", gap: "Completa la situación con la opción adecuada.", answer: "Respuesta", recall: "Recuerda la expresión sin verla.", person: "Una persona habla de alguien de su familia.", pronoun: "Una persona elige cómo referirse a sí misma o a otra persona." },
+  en: { context: "Two people meet at the start of a conversation.", contextQuestion: "Which intention best fits the situation?", contrast: "Choose the meaning that matches the expression you studied.", match: "Match each expression with its meaning.", build: "Rebuild the expression with the tiles.", gap: "Complete the situation with the best option.", answer: "Answer", recall: "Recall the expression without seeing it.", person: "Someone is talking about a family member.", pronoun: "Someone chooses how to refer to themself or another person." },
+  pt: { context: "Duas pessoas se encontram no início de uma conversa.", contextQuestion: "Qual intenção combina melhor com a situação?", contrast: "Escolha o significado correspondente à expressão estudada.", match: "Relacione cada expressão ao seu significado.", build: "Reconstrua a expressão com as peças.", gap: "Complete a situação com a opção adequada.", answer: "Resposta", recall: "Lembre a expressão sem vê-la.", person: "Uma pessoa fala de alguém da família.", pronoun: "Uma pessoa escolhe como se referir a si mesma ou a outra pessoa." },
+  fr: { context: "Deux personnes se rencontrent au début d’une conversation.", contextQuestion: "Quelle intention convient le mieux à la situation ?", contrast: "Choisissez le sens correspondant à l’expression étudiée.", match: "Associez chaque expression à sa signification.", build: "Reconstituez l’expression avec les tuiles.", gap: "Complétez la situation avec l’option appropriée.", answer: "Réponse", recall: "Retrouvez l’expression sans la voir.", person: "Une personne parle d’un membre de sa famille.", pronoun: "Une personne choisit comment parler d’elle-même ou d’une autre personne." },
+  it: { context: "Due persone si incontrano all’inizio di una conversazione.", contextQuestion: "Quale intenzione si adatta meglio alla situazione?", contrast: "Scegli il significato dell’espressione studiata.", match: "Abbina ogni espressione al suo significato.", build: "Ricostruisci l’espressione con le tessere.", gap: "Completa la situazione con l’opzione adatta.", answer: "Risposta", recall: "Ricorda l’espressione senza vederla.", person: "Una persona parla di un familiare.", pronoun: "Una persona sceglie come riferirsi a sé o a un’altra persona." },
+  de: { context: "Zwei Personen treffen sich zu Beginn eines Gesprächs.", contextQuestion: "Welche Absicht passt am besten zur Situation?", contrast: "Wähle die Bedeutung des gelernten Ausdrucks.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", build: "Setze den Ausdruck aus den Bausteinen zusammen.", gap: "Vervollständige die Situation mit der passenden Option.", answer: "Antwort", recall: "Erinnere dich an den Ausdruck, ohne ihn zu sehen.", person: "Eine Person spricht über ein Familienmitglied.", pronoun: "Eine Person wählt, wie sie auf sich selbst oder eine andere Person verweist." }
 });
 
 const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value)
@@ -24,8 +24,14 @@ function lessonOptions(context, locale) {
 }
 
 function semanticPairs(context, locale) {
-  return uniqueBy((context.availableActivities || [])
-    .filter(activity => activity.semanticPair?.target && activity.semanticPair?.meaning)
+  const answer = normalize(context.correctAnswer);
+  const pairs = uniqueBy((context.availableActivities || [])
+    .filter(activity => {
+      if (!activity.semanticPair?.target || !activity.semanticPair?.meaning) return false;
+      const sameObjective = context.learningObjectiveId && activity.learningObjectiveId === context.learningObjectiveId;
+      const sameConcept = context.conceptId && [activity.conceptId, ...(activity.conceptIds || [])].filter(Boolean).includes(context.conceptId);
+      return Boolean(sameObjective || sameConcept);
+    })
     .map((activity, index) => ({
       id: String(activity.id || `pair-${index + 1}`),
       left: String(activity.semanticPair.target),
@@ -33,6 +39,8 @@ function semanticPairs(context, locale) {
       authorized: true
     }))
     .filter(pair => pair.left && pair.right), pair => `${normalize(pair.left)}:${normalize(pair.right)}`);
+  if (answer && !pairs.some(pair => normalize(pair.left) === answer || normalize(pair.right) === answer)) return [];
+  return pairs;
 }
 
 function shuffled(values, seed = 1) {
@@ -140,7 +148,11 @@ export function buildDeterministicFallbackCandidates(context = {}, attempt = 1, 
 
   if (options.length >= 3 && correct) {
     const visiblePrompt = localize(context.activity?.prompt, uiLocale);
-    const visualContext = /mam[aá]|mother|m[aã]e|m[eè]re|mutter/i.test(visiblePrompt) ? copy.person : copy.context;
+    const visualContext = /mam[aá]|mother|m[aã]e|m[eè]re|mutter/i.test(visiblePrompt)
+      ? copy.person
+      : /pronombre|pronoun|pronome|pronom|pronomen|«(?:yo|eu|je|io|ich)»/i.test(visiblePrompt)
+        ? copy.pronoun
+        : copy.context;
     const choiceType = errorType === "SEMANTIC_CONFUSION" ? ACTIVITY_TYPES.CONCEPT_CONTRAST : ACTIVITY_TYPES.CONTEXT_CHOICE;
     candidates.push(candidate(base(context, choiceType, attempt, {
       instruction: errorType === "SEMANTIC_CONFUSION" ? copy.contrast : copy.contextQuestion,
@@ -155,7 +167,7 @@ export function buildDeterministicFallbackCandidates(context = {}, attempt = 1, 
       instruction: copy.gap,
       prompt: copy.gap,
       contextText: visualContext,
-      template: `${visualContext} {{blank}}`,
+      template: `${copy.answer}: {{blank}}`,
       options: shuffled(options, attempt + 1),
       correctOptionId: correct.id,
       correctAnswer: answer,

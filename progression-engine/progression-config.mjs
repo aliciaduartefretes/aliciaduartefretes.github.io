@@ -1,5 +1,5 @@
 export const PROGRESSION_CONFIG = Object.freeze({
-  version: "NALVI-PRE8C-PROGRESSION-CONFIG-1",
+  version: "NALVI-PRE8C-PROGRESSION-CONFIG-2",
   decisions: [
     "BLOCK_AND_INTERVENE",
     "CONTINUE_PRACTICE",
@@ -9,6 +9,10 @@ export const PROGRESSION_CONFIG = Object.freeze({
   ],
   completion: {
     requiredMasteryStatus: "MASTERED",
+    allowImmediatePracticeCheckpoint: true,
+    minimumIndependentCorrectEvents: 1,
+    minimumDistinctActivityTypes: 1,
+    pendingRetestMustBeResolved: true,
     guidedRecoveryCanCompleteObjective: false,
     leavingCanCompleteObjective: false,
     incorrectCanCompleteObjective: false
