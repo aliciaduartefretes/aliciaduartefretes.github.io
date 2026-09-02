@@ -75,12 +75,35 @@ test("acierto guiado es evidencia parcial y no completa", () => {
   assert.equal(gate.canComplete, false);
 });
 
-test("solo evidencia independiente y perfil MASTERED completa el objetivo", () => {
+test("MASTERED completa y un checkpoint independiente puede cerrar práctica sin falsificar retención", () => {
   const incomplete = evaluateProgressionGate({ correct: true }, { atObjectiveBoundary: true, profile: { status: "PRACTICING" } });
   const mastered = evaluateProgressionGate({ correct: true }, { atObjectiveBoundary: true, profile: { status: "MASTERED" } });
+  const checkpoint = evaluateProgressionGate({ correct: true }, {
+    atObjectiveBoundary: true,
+    profile: { status: "PRACTICING" },
+    objectiveEvidence: {
+      independentCorrectEvents: 1,
+      distinctActivityTypes: 1,
+      lastEvidenceIndependentCorrect: true,
+      hasPendingRetest: false
+    }
+  });
   assert.equal(incomplete.decision, "CONTINUE_PRACTICE");
   assert.equal(mastered.decision, "COMPLETE_OBJECTIVE");
   assert.equal(mastered.canComplete, true);
+  assert.equal(checkpoint.decision, "COMPLETE_OBJECTIVE");
+  assert.equal(checkpoint.reason, "objectivePracticeCheckpointSatisfied");
+  assert.equal(checkpoint.preservesLongTermMasteryStatus, true);
+});
+
+test("checkpoint no completa si la recuperación sigue pendiente o la última evidencia fue guiada", () => {
+  const base = {
+    atObjectiveBoundary: true,
+    profile: { status: "PRACTICING" },
+    objectiveEvidence: { independentCorrectEvents: 1, distinctActivityTypes: 1, lastEvidenceIndependentCorrect: true, hasPendingRetest: false }
+  };
+  assert.equal(evaluateProgressionGate({ correct: true }, { ...base, objectiveEvidence: { ...base.objectiveEvidence, hasPendingRetest: true } }).canComplete, false);
+  assert.equal(evaluateProgressionGate({ correct: true }, { ...base, objectiveEvidence: { ...base.objectiveEvidence, lastEvidenceIndependentCorrect: false } }).canComplete, false);
 });
 
 test("salir nunca equivale a completar", () => {
