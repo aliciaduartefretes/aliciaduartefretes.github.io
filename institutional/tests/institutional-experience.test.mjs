@@ -13,11 +13,20 @@ const style=await readFile(styleUrl,"utf8");
 const index=await readFile(indexUrl,"utf8");
 
 test("institutional sprint exposes the five requested areas",()=>{
-  assert.match(script,/const VERSION="NALVI-INSTITUTIONAL-SPRINT-2"/);
+  assert.match(script,/const VERSION="NALVI-INSTITUTIONAL-SPRINT-3"/);
   assert.match(script,/const root=\$\("#institutionalExperience"\)/);
   assert.doesNotMatch(script,/#nalviInstitutionalExperience/);
   for(const label of ["Comunidad","Aula","En vivo","Miembros","Gestión"])assert.match(script,new RegExp(label));
   for(const tab of ["community","classroom","live","members","management"])assert.match(script,new RegExp(`data-institutional-tab=\\"\\$\\{id\\}`));
+});
+
+test("community has a consistent three-person icon in both navigation surfaces",()=>{
+  assert.match(script,/const COMMUNITY_ICON='<svg/);
+  assert.match(script,/nalvi-community-tab-icon/);
+  assert.match(script,/nalvi-community-nav-icon/);
+  assert.match(script,/<circle cx="12" cy="7" r="3"><\/circle>/);
+  assert.match(style,/\.nalvi-community-tab-icon svg/);
+  assert.match(style,/\.nalvi-community-nav-icon svg/);
 });
 
 test("community remains demo-only and makes no remote writes",()=>{
@@ -66,6 +75,6 @@ test("index loads the protected service and experience with explicit flags",()=>
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:false/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-1/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-2/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-2/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-3/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-3/);
 });

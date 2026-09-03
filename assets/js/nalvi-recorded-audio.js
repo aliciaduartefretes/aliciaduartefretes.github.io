@@ -1,7 +1,7 @@
 (function installNalviRecordedAudio() {
   "use strict";
 
-  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V3";
+  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V4";
   const MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V1";
   const MANIFEST_PATH = "assets/audio/guarani/ali-2026/manifest.json";
   const SCRIPT_URL = document.currentScript?.src ? new URL(document.currentScript.src, document.baseURI) : null;
@@ -410,9 +410,6 @@
     if (!recording) {
       setButtonState(button, "error");
       return false;
-    }
-    if (legacyPlayPronunciation) {
-      try { if (legacyPlayPronunciation(recording.label, button)) return true; } catch {}
     }
     return playRecording(recording, button);
   }

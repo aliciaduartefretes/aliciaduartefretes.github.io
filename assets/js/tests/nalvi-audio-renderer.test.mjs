@@ -126,7 +126,7 @@ test("la galería carga el registry antes del renderer", () => {
   assert.ok(registryPosition > 0);
   assert.ok(rendererPosition > registryPosition);
   assert.ok(galleryPosition > rendererPosition);
-  assert.match(galleryHtml, /nalvi-recorded-audio\.js\?v=NALVI-AUDIO-3/);
+  assert.match(galleryHtml, /nalvi-recorded-audio\.js\?v=NALVI-AUDIO-4/);
   assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);
   assert.match(galleryHtml, /id="recordedAudioLibrary"/);
   assert.match(rendererSource, /NALVI-ACTIVITY-CATALOG-RENDERER-6/);

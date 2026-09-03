@@ -21,8 +21,12 @@
 .nalvi-institutional-demo strong,.nalvi-institutional-demo small{display:block}
 .nalvi-institutional-demo small{margin-top:5px;color:#f1ebff;line-height:1.4}
 .nalvi-institutional-tabs{position:sticky;z-index:12;top:78px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px 0;padding:8px;border:1px solid var(--institutional-line);border-radius:20px;background:rgba(255,255,255,.92);box-shadow:0 9px 26px rgba(53,39,92,.1);backdrop-filter:blur(14px)}
-.nalvi-institutional-tab{min-height:49px;border:0;border-radius:14px;background:transparent;color:var(--institutional-muted);font:inherit;font-size:13px;font-weight:900;cursor:pointer}
+.nalvi-institutional-tab{min-height:49px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:14px;background:transparent;color:var(--institutional-muted);font:inherit;font-size:13px;font-weight:900;cursor:pointer}
 .nalvi-institutional-tab[aria-selected="true"]{background:var(--institutional-purple);color:#fff;box-shadow:0 7px 16px rgba(101,71,199,.24)}
+.nalvi-community-tab-icon,.nalvi-community-nav-icon{display:inline-grid;place-items:center;color:currentColor}
+.nalvi-community-tab-icon svg{width:20px;height:20px}
+.nalvi-community-nav-icon svg{width:23px;height:23px}
+.nalvi-community-tab-icon svg,.nalvi-community-nav-icon svg{display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nalvi-institutional-panel[hidden]{display:none!important}
 .nalvi-institutional-panel{animation:nalviInstitutionalIn .2s ease-out}
 @keyframes nalviInstitutionalIn{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:none}}

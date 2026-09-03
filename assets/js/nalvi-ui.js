@@ -2,7 +2,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "NALVI-DS-1.1-VISUAL-STABLE";
+  const VERSION = "NALVI-DS-1.2-PUBLIC-COPY";
   if (window.NALVI_DESIGN_SYSTEM?.version === VERSION) return;
 
   const BOOT_COPY = Object.freeze({
@@ -156,7 +156,8 @@
     }
 
     dictionary.querySelectorAll(".dictionary-entry small").forEach(node => {
-      if (DICTIONARY_FALLBACKS.has(node.textContent.trim())) setText(node, copy.fallback);
+      const detail = node.textContent.trim();
+      if (DICTIONARY_FALLBACKS.has(detail) || /^Fuente\s+Ñe['’]ẽryru\b/i.test(detail)) setText(node, copy.fallback);
     });
     dictionary.querySelectorAll(".sound-empty").forEach(node => {
       if (DICTIONARY_EMPTY_STATES.has(node.textContent.trim())) setText(node, copy.empty);

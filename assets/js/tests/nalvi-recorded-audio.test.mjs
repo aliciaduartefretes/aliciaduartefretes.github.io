@@ -224,7 +224,7 @@ test("la resolución conserva el contrato ID/ruta/autorización/origen humano", 
   assert.equal(recording.audioAuthorized, true);
   assert.equal(recording.humanRecorded, true);
   assert.equal(recording.audioSource, "manifest-human-recording");
-  assert.equal(client.registry.audit().version, "NALVI_RECORDED_AUDIO_CLIENT_V3");
+  assert.equal(client.registry.audit().version, "NALVI_RECORDED_AUDIO_CLIENT_V4");
   assert.equal(client.registry.audit().importedRecordings, 99);
 });
 
