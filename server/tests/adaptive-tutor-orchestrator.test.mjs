@@ -22,6 +22,20 @@ const CANONICAL_AUDIO = Object.freeze({
   humanRecorded: true,
   audioSource: "manifest-human-recording"
 });
+const APPROVED_AUDIO = Object.freeze({
+  id: CANONICAL_AUDIO.audioId,
+  audioId: CANONICAL_AUDIO.audioId,
+  recordingId: CANONICAL_AUDIO.audioId,
+  path: CANONICAL_AUDIO.audioPath,
+  audioPath: CANONICAL_AUDIO.audioPath,
+  text: CANONICAL_AUDIO.audioText,
+  audioText: CANONICAL_AUDIO.audioText,
+  source: CANONICAL_AUDIO.audioSource,
+  audioSource: CANONICAL_AUDIO.audioSource,
+  authorized: true,
+  audioAuthorized: true,
+  humanRecorded: true
+});
 
 const optionText = option => String(option?.text ?? option?.label ?? option?.value ?? "");
 
@@ -61,7 +75,7 @@ function approvedMaterialFor(activity, correctAnswer) {
     dialogueCorrectOptionId: String(activity.correctOptionId || ""),
     dialogueCorrectAnswer: correctAnswer,
     dialogueSourceContentId: "fixture-dialogue-source",
-    audio: { ...CANONICAL_AUDIO }
+    audio: { ...APPROVED_AUDIO }
   };
 }
 
@@ -251,14 +265,7 @@ test("el límite del servidor conserva solo material autorizado, localizado y tr
         { text: "No autorizado", authorized: false },
         { arbitrary: "Nunca convertir este objeto", authorized: true }
       ],
-      audio: {
-        id: CANONICAL_AUDIO.audioId,
-        path: CANONICAL_AUDIO.audioPath,
-        text: CANONICAL_AUDIO.audioText,
-        authorized: true,
-        humanRecorded: true,
-        source: CANONICAL_AUDIO.audioSource
-      }
+      audio: { ...APPROVED_AUDIO }
     }
   });
   const normalized = normalizeInterventionRequest(raw);
@@ -276,12 +283,9 @@ test("el límite del servidor conserva solo material autorizado, localizado y tr
     approvedActivityMaterial: {
       ...approvedMaterialFor(context().activity, "sy"),
       audio: {
-        id: CANONICAL_AUDIO.audioId,
+        ...APPROVED_AUDIO,
         path: "assets/audio/guarani/ali-2026/095-itati.m4a",
-        text: CANONICAL_AUDIO.audioText,
-        authorized: true,
-        humanRecorded: true,
-        source: CANONICAL_AUDIO.audioSource
+        audioPath: "assets/audio/guarani/ali-2026/095-itati.m4a"
       }
     }
   }));

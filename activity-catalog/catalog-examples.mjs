@@ -60,12 +60,13 @@ const animalOptions = [option("jagua", "jagua"), option("guyra", "guyra"), optio
 export function createCatalogExamples() {
   return [
     base(ACTIVITY_TYPES.CONTEXT_CHOICE, "context-choice", {
-      instruction: "Elige la palabra que encaja en la situación.", prompt: "Un animal doméstico ladra al escuchar un ruido.",
+      instruction: "Elige la palabra que encaja en la situación.", prompt: "¿Qué palabra corresponde?",
+      contextText: "Un animal doméstico ladra al escuchar un ruido.",
       contextAuthorized: true,
       options: animalOptions, correctOptionId: "jagua", correctAnswer: "jagua", acceptedAnswers: ["jagua"]
     }),
     base(ACTIVITY_TYPES.ARROW_MATCH, "arrow-match", {
-      instruction: "Relaciona cada palabra con su significado.", prompt: "Forma tres relaciones.", pairs: animalPairs, correctAnswer: "jagua"
+      instruction: "Relaciona cada palabra con su significado.", prompt: "Forma tres relaciones.", pairs: animalPairs, correctAnswer: "jagua", acceptedAnswers: ["jagua"]
     }),
     base(ACTIVITY_TYPES.CATEGORY_SORT, "category-sort", {
       instruction: "Clasifica cada tarjeta.", prompt: "Separa animales y números.",
@@ -74,7 +75,7 @@ export function createCatalogExamples() {
         { id: "jagua", text: "jagua", categoryId: "animals", authorized: true }, { id: "guyra", text: "guyra", categoryId: "animals", authorized: true },
         { id: "mbarakaja", text: "mbarakaja", categoryId: "animals", authorized: true }, { id: "petei", text: "peteĩ", categoryId: "numbers", authorized: true },
         { id: "mokoi", text: "mokõi", categoryId: "numbers", authorized: true }, { id: "mbohapy", text: "mbohapy", categoryId: "numbers", authorized: true }
-      ], correctAnswer: "animals-numbers"
+      ], correctAnswer: "animals-numbers", acceptedAnswers: ["animals-numbers"]
     }),
     base(ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, "dialogue-next-turn", {
       instruction: "Elige la respuesta que mantiene el sentido.", prompt: "¿Qué palabra tendría sentido ahora?",

@@ -41,15 +41,16 @@
         authorized: true,
         sourceContentId: "general-u01-dialogue-greetings",
         turns: [
-          { id: "greeting-turn-1", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true }
+          { id: "greeting-turn-1", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true },
+          { id: "greeting-turn-2", speaker: "B", text: "Iporã, aguyje. Ha nde?", authorized: true }
         ],
         options: [
           { id: "greeting-reply", text: "Iporã, aguyje. Ha nde?", authorized: true },
           { id: "greeting-close", text: "Iporã avei. Jajotopata!", authorized: true },
           { id: "greeting-thanks", text: "Aguyje", authorized: true }
         ],
-        correctOptionId: "greeting-reply",
-        correctAnswer: "Iporã, aguyje. Ha nde?"
+        correctOptionId: "greeting-close",
+        correctAnswer: "Iporã avei. Jajotopata!"
       },
       legacy: { unit: 0, question: 0 },
       prompt: {

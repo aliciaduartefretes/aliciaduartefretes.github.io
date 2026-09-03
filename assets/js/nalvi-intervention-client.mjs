@@ -6,11 +6,11 @@ import {
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
 import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-4";
-import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-2";
-import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-2";
-import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-3";
+import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-3";
+import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
+import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-4";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-9";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-10";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
@@ -60,56 +60,123 @@ const registryAudioPathFrom = value => {
     : "";
 };
 const audioTextFrom = value => localize(value?.audioText ?? value?.text ?? value?.label, document.documentElement.lang).trim();
+const normalizeAudioLookup = value => String(value || "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[‘’`´ʼʹʻ]/g, "'")
+  .replace(/[¿?¡!.,;:()\[\]{}]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .toLocaleLowerCase("es");
+const registryAudioAliases = recording => {
+  const label = audioTextFrom(recording);
+  const baseLabel = label.split("(")[0].trim();
+  return new Set([label, baseLabel].map(normalizeAudioLookup).filter(Boolean));
+};
+const CLOSED_AUDIO = Object.freeze({
+  audioId: "",
+  audioPath: "",
+  audioText: "",
+  audioAuthorized: false,
+  humanRecorded: false,
+  audioSource: ""
+});
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 function canonicalRenderableAudio(activity = {}, language = document.documentElement.lang) {
   const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
-  const audioId = String(activity.audioId || audioIdFrom(nested)).trim();
-  const audioPath = String(activity.audioPath || audioPathFrom(nested)).trim();
-  const audioText = localize(activity.audioText ?? nested.audioText ?? nested.text, language).trim();
-  const audioSource = String(activity.audioSource || nested.audioSource || nested.source || "").trim();
-  const audioAuthorized = activity.audioAuthorized === true || nested.audioAuthorized === true || nested.authorized === true;
-  const humanRecorded = activity.humanRecorded === true || nested.humanRecorded === true;
+  const declaredIds = [activity.audioId, activity.recordingId, nested.audioId, nested.id, nested.recordingId].map(value => String(value || "").trim()).filter(Boolean);
+  const declaredPaths = [activity.audioPath, activity.path, nested.path, nested.audioPath].map(value => String(value || "").trim()).filter(Boolean);
+  const declaredTexts = [activity.audioText, activity.text, nested.audioText, nested.text].map(value => localize(value, language).trim()).filter(Boolean);
+  const sourceClaims = [[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => String(owner[key] || "").trim());
+  const authorizationClaims = [[activity, "audioAuthorized"], [activity, "authorized"], [nested, "audioAuthorized"], [nested, "authorized"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => owner[key]);
+  const humanRecordingClaims = [[activity, "humanRecorded"], [nested, "humanRecorded"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => owner[key]);
+  const audioId = declaredIds[0] || "";
+  const audioPath = declaredPaths[0] || "";
+  const audioText = declaredTexts[0] || "";
+  const audioSource = sourceClaims[0] || "";
+  const declarationsCoherent = new Set(declaredIds).size <= 1
+    && declaredPaths.every(path => canonicalAudioPath(path) === canonicalAudioPath(audioPath))
+    && sourceClaims.length > 0
+    && sourceClaims.every(value => value === "manifest-human-recording")
+    && authorizationClaims.length > 0
+    && authorizationClaims.every(value => value === true)
+    && humanRecordingClaims.length > 0
+    && humanRecordingClaims.every(value => value === true);
   const registry = window.NALVI_RECORDED_AUDIO;
-  const registered = audioId && typeof registry?.resolve === "function" ? registry.resolve(audioId) : null;
+  const registered = declarationsCoherent && audioId && typeof registry?.resolve === "function" ? registry.resolve(audioId) : null;
   const registeredId = audioIdFrom(registered);
   const registeredPath = registryAudioPathFrom(registered);
   const registeredText = audioTextFrom(registered);
+  const allowedAliases = registryAudioAliases(registered);
+  const answerTargets = [activity.correctAnswer, activity.answer, ...(Array.isArray(activity.acceptedAnswers) ? activity.acceptedAnswers : [])]
+    .map(value => localize(value, language).trim())
+    .filter(Boolean);
   const coherent = Boolean(
     audioId
+    && declarationsCoherent
     && audioPath
     && audioText
-    && audioAuthorized
-    && humanRecorded
     && audioSource === "manifest-human-recording"
     && registered?.authorizedForPlayback === true
     && registered?.humanRecorded === true
     && registeredId === audioId
     && registeredText
-    && registeredText.normalize("NFC").trim() === audioText.normalize("NFC").trim()
+    && declaredTexts.length > 0
+    && declaredTexts.every(text => allowedAliases.has(normalizeAudioLookup(text)))
+    && answerTargets.length > 0
+    && answerTargets.every(target => allowedAliases.has(normalizeAudioLookup(target)))
     && canonicalAudioPath(registeredPath) === canonicalAudioPath(audioPath)
   );
   return coherent
     ? { audioId, audioPath: registeredPath, audioText: registeredText, audioAuthorized: true, humanRecorded: true, audioSource }
-    : { audioId: "", audioPath: "", audioText: "", audioAuthorized: false, humanRecorded: false, audioSource: "" };
+    : { ...CLOSED_AUDIO };
 }
 
-async function resolveApprovedAudio(activity, audioTerm) {
+async function resolveApprovedAudio(activity, audioTerm, semanticAnswer) {
   const registry = window.NALVI_RECORDED_AUDIO;
   if (!registry || typeof registry.resolve !== "function") return null;
-  try { await registry.ready; } catch { return null; }
+  await registry.ready;
   const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
-  const requestedId = String(activity.audioId || audioIdFrom(nested)).trim();
+  const sourceClaims = [[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => String(owner[key] || "").trim());
+  const authorizationClaims = [[activity, "audioAuthorized"], [activity, "authorized"], [nested, "audioAuthorized"], [nested, "authorized"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => owner[key]);
+  const humanRecordingClaims = [[activity, "humanRecorded"], [nested, "humanRecorded"]]
+    .filter(([owner, key]) => hasOwn(owner, key))
+    .map(([owner, key]) => owner[key]);
+  if (sourceClaims.some(value => value !== "manifest-human-recording")
+    || authorizationClaims.some(value => value !== true)
+    || humanRecordingClaims.some(value => value !== true)) return null;
+  const suppliedIds = [activity.audioId, activity.recordingId, nested.audioId, nested.id, nested.recordingId].map(value => String(value || "").trim()).filter(Boolean);
+  if (new Set(suppliedIds).size > 1) return null;
+  const requestedId = suppliedIds[0] || "";
   const lookup = requestedId || String(audioTerm || "").trim();
   if (!lookup) return null;
   const recording = registry.resolve(lookup);
   const audioId = audioIdFrom(recording);
   const audioPath = registryAudioPathFrom(recording);
-  const suppliedPath = String(activity.audioPath || audioPathFrom(nested)).trim();
   if (!recording || recording.authorizedForPlayback !== true || recording.humanRecorded !== true || !audioId || !audioPath) return null;
   if (requestedId && requestedId !== audioId) return null;
-  if (suppliedPath && canonicalAudioPath(suppliedPath) !== canonicalAudioPath(audioPath)) return null;
+  const suppliedPaths = [activity.audioPath, activity.path, nested.path, nested.audioPath].map(value => String(value || "").trim()).filter(Boolean);
+  if (suppliedPaths.some(path => canonicalAudioPath(path) !== canonicalAudioPath(audioPath))) return null;
   const text = audioTextFrom(recording);
   if (!text || !canonicalAudioPath(audioPath)) return null;
+  const suppliedTexts = [activity.audioText, activity.text, nested.audioText, nested.text]
+    .map(value => localize(value, document.documentElement.lang).trim())
+    .filter(Boolean);
+  const allowedAliases = registryAudioAliases(recording);
+  if (suppliedTexts.some(value => !allowedAliases.has(normalizeAudioLookup(value)))) return null;
+  const semanticTerms = [audioTerm, semanticAnswer].map(value => localize(value, document.documentElement.lang).trim()).filter(Boolean);
+  if (!semanticTerms.length || semanticTerms.some(value => !allowedAliases.has(normalizeAudioLookup(value)))) return null;
   return {
     id: audioId,
     audioId,
@@ -119,6 +186,7 @@ async function resolveApprovedAudio(activity, audioTerm) {
     text,
     audioText: text,
     source: "manifest-human-recording",
+    audioSource: "manifest-human-recording",
     authorized: true,
     audioAuthorized: true,
     humanRecorded: true
@@ -365,7 +433,9 @@ function nextAttempt(activity) {
 
 function normalizeRenderableActivity(activity = {}, context) {
   const language = context.uiLocale, type = activity.activityType || activity.type || ACTIVITY_TYPES.INDEPENDENT_RECALL;
-  const canonicalAudio = canonicalRenderableAudio(activity, language);
+  const canonicalAudio = type === ACTIVITY_TYPES.AUDIO_SELECT
+    ? canonicalRenderableAudio(activity, language)
+    : { ...CLOSED_AUDIO };
   const correctAnswer = localize(activity.correctAnswer || activity.answer || context.correctAnswer, language);
   const sourcePrompt = localize(activity.lessonContext?.sourcePrompt || context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, language).trim();
   const sourceInstruction = localize(activity.lessonContext?.sourceInstruction || context.activity?.lessonContext?.sourceInstruction || context.activity?.instruction, language).trim();
@@ -377,8 +447,19 @@ function normalizeRenderableActivity(activity = {}, context) {
   const tiles = (activity.tiles || activity.tokens || []).map((token, index) => ({ ...token, id: String(token?.id ?? index), text: localize(token?.text ?? token?.label ?? token?.value ?? token, language), label: localize(token?.label ?? token?.text ?? token?.value ?? token, language) }));
   const tokens = tiles;
   const template = localize(activity.template, language);
+  const {
+    authorizedAudio: _discardedAuthorizedAudio,
+    audio: _discardedAudio,
+    recordingId: _discardedRecordingId,
+    path: _discardedPath,
+    text: _discardedText,
+    source: _discardedSource,
+    authorized: _discardedAuthorized,
+    ...activityWithoutAudioAliases
+  } = activity;
+  const media = activity.media?.type === "audio" ? null : activity.media;
   return {
-    ...activity, type, activityType: type, options, tokens, tiles, template,
+    ...activityWithoutAudioAliases, type, activityType: type, options, tokens, tiles, template,
     correctOptionId: activity.correctOptionId ?? correct?.id ?? "",
     acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : correctAnswer ? [correctAnswer] : [],
     answer: activity.answer || correctAnswer,
@@ -388,7 +469,7 @@ function normalizeRenderableActivity(activity = {}, context) {
     audioAuthorized: canonicalAudio.audioAuthorized,
     humanRecorded: canonicalAudio.humanRecorded,
     audioSource: canonicalAudio.audioSource,
-    audio: canonicalAudio.audioPath,
+    media,
     image: activity.image || (activity.media?.type === "image" ? activity.media.value : ""),
     imageAlt: activity.imageAlt || activity.media?.alt || "",
     lessonContext: {
@@ -404,7 +485,18 @@ function normalizeRenderableActivity(activity = {}, context) {
 }
 
 function normalizePlanForRenderer(plan, context) {
-  return { ...plan, activities: (plan?.activities || []).map(activity => normalizeRenderableActivity(activity, context)) };
+  const activities = (plan?.activities || [])
+    .map(activity => normalizeRenderableActivity(activity, context))
+    .filter(activity => activity.requiresStudentResponse === true)
+    .filter(activity => activity.activityType !== ACTIVITY_TYPES.AUDIO_SELECT || (
+      activity.audioId
+      && activity.audioPath
+      && activity.audioText
+      && activity.audioAuthorized === true
+      && activity.humanRecorded === true
+      && activity.audioSource === "manifest-human-recording"
+    ));
+  return { ...plan, activities };
 }
 
 function isPedagogicallyClear(activity, language) {
@@ -433,6 +525,7 @@ function targetsFailedKnowledge(activity, context) {
 function remember(context, plan) {
   const current = history();
   if (context.previousActivityFingerprint) current.push({
+    id: context.activity?.id || "",
     conceptId: context.conceptId,
     fingerprint: context.previousActivityFingerprint,
     activityType: context.activityType,
@@ -441,7 +534,7 @@ function remember(context, plan) {
     answerExposure: "HIDDEN",
     timestamp: new Date().toISOString()
   });
-  for (const activity of plan.activities || []) current.push({ conceptId: context.conceptId,
+  for (const activity of plan.activities || []) current.push({ id: activity.id || "", conceptId: context.conceptId,
     fingerprint: activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }),
     activityType: activity.type || activity.activityType, errorType: plan.diagnosis?.errorType || plan.diagnosis || "UNKNOWN_ERROR",
     strategy: plan.strategy?.primaryStrategy || plan.strategy || "CHANGE_MODALITY", answerExposure: activity.answerExposure || "HIDDEN", timestamp: new Date().toISOString() });
@@ -531,12 +624,14 @@ function renderSequenceActivity(target, state, index) {
     renderPassiveExample(target, state, activity, index);
     return true;
   }
-  const independentRetest = activity.independentRetest === true || activity.evidenceMode === "independent" || state.spacedRetest === true;
+  const independentRetest = state.spacedRetest === true;
   const renderedActivity = {
     ...activity,
     independentRetest,
-    evidenceMode: independentRetest ? "independent" : (activity.evidenceMode || "guided"),
-    nalviGuided: independentRetest ? false : Number(activity.helpLevel || 0) > 0,
+    spacedRetest: independentRetest,
+    evidenceMode: independentRetest ? "independent" : "guided",
+    nalviGuided: !independentRetest,
+    ...(independentRetest ? { helpLevel: 0, hints: [], explanation: "", answerExposure: "HIDDEN" } : {}),
     adaptivePlanId: state.plan.planId,
     adaptivePlanIndex: index,
     adaptivePlanLength: state.plan.activities.length
@@ -684,6 +779,7 @@ function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
       text: audioText,
       audioText,
       source: "manifest-human-recording",
+      audioSource: "manifest-human-recording",
       authorized: true,
       audioAuthorized: true,
       humanRecorded: true
@@ -706,18 +802,19 @@ function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
   };
 }
 
-async function buildContext(detail) {
-  const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang), attemptNumber = nextAttempt(activity);
+async function buildContext(detail, { skipAudio = false } = {}) {
+  const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang);
   const recent = history(), conceptId = activity.conceptId || activity.conceptIds?.[0] || "GG-C-001";
   const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
   const semanticAnswer = localize(activity.lessonContext?.sourceAnswer, language).trim() || answerFor(activity, language);
   const audioTerm = localize(activity.semanticPair?.target ?? activity.audioText ?? semanticAnswer, language).trim();
-  const authorizedAudio = await resolveApprovedAudio(activity, audioTerm);
+  const authorizedAudio = skipAudio ? null : await resolveApprovedAudio(activity, audioTerm, semanticAnswer);
+  const attemptNumber = nextAttempt(activity);
   const context = { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
     activityType: activity.activityType || activity.type || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
     studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: semanticAnswer, attemptNumber,
     recentErrors: recent.filter(item => item.conceptId === conceptId).map(item => ({ conceptId, errorType: item.errorType })),
-    recentActivities: recent.map(item => ({ conceptId: item.conceptId, activityType: item.activityType, fingerprint: item.fingerprint, strategy: item.strategy })),
+    recentActivities: recent.map(item => ({ id: item.id || "", conceptId: item.conceptId, activityType: item.activityType, fingerprint: item.fingerprint, strategy: item.strategy })),
     recentActivityFingerprints: recent.map(item => item.fingerprint), modalitiesAlreadyUsed: recent.map(item => item.activityType),
     recentInterventions: recent.map(item => ({ strategy: item.strategy, errorType: item.errorType })), hintHistory: [], retentionHistory: [],
     answerExposureHistory: readJson(EXPOSURE_KEY, []).filter(item => item.conceptId === conceptId).map(item => item.answerExposure),
@@ -745,63 +842,102 @@ async function handleIncorrect(detail, target) {
   const requestState = { id: `${Date.now()}-${Math.random()}` };
   activeSequences.delete(target);
   activeRequests.set(target, requestState);
-  shortFeedback(target, language, (COPY[language] || COPY.es).wrong);
-  const contextPromise = buildContext(detail);
-  await sleep(750);
-  if (activeRequests.get(target) !== requestState) return;
-  loadingState(target, language);
-  const context = await contextPromise;
-  if (activeRequests.get(target) !== requestState) return;
-  const shouldSpaceRetest = !context.activity?.adaptivePlanId && !context.activity?.spacedRetest && !pendingRetest();
-  const spacedPlan = shouldSpaceRetest ? buildSpacedRetestPlan(context) : null;
-  if (spacedPlan && scheduleSpacedRetest(context, spacedPlan)) {
-    window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", {
-      activityId: context.activity.id,
-      conceptId: context.conceptId,
-      correct: false,
-      strategy: "DELAYED_RETEST",
-      usedAI: false,
-      progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE",
-      fingerprint: context.previousActivityFingerprint,
-      minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES
-    });
-  }
-  let localPlan;
   try {
-    localPlan = planPedagogicalIntervention(context);
-  } catch (error) {
-    console.warn("NALVI_TUTOR_LOCAL_PLANNER_FALLBACK", String(error?.message || error));
-    localPlan = { errorType: "UNKNOWN_ERROR", strategy: "CHANGE_MODALITY", diagnosis: { confidence: 0 } };
-  }
-  const localResponse = professionalLocalPlan(context, localPlan);
-  window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", { activityId: context.activity.id, conceptId: context.conceptId, correct: false,
-    strategy: localPlan?.strategy || "CHANGE_MODALITY", usedAI: false, progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE", fingerprint: context.previousActivityFingerprint });
-  const requestPromise = context.activity?.spacedRetest ? Promise.resolve(null) : serverPlan(context);
-  const winner = await Promise.race([requestPromise, sleep(1500).then(() => null)]);
-  if (activeRequests.get(target) !== requestState) return;
-  const response = winner?.ok ? winner : localResponse;
-  response.adaptiveInterventionPlan = normalizePlanForRenderer(response.adaptiveInterventionPlan, context);
-  let plan = response.adaptiveInterventionPlan;
-  const fingerprints = (plan.activities || []).map(activity => activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }));
-  const sourceBoundRequired = String(context.activity?.id || "").startsWith("legacy-general-") || !(context.knowledgeIds || []).length;
-  const unrelated = sourceBoundRequired && (plan.activities || []).some(activity => activity.requiresStudentResponse !== false && !targetsFailedKnowledge(activity, context));
-  if (unrelated || fingerprints.includes(context.previousActivityFingerprint) || new Set(fingerprints).size !== fingerprints.length) {
-    console.warn(unrelated ? "NALVI_TUTOR_UNRELATED_ACTIVITY_BLOCKED" : "NALVI_TUTOR_DUPLICATE_BLOCKED");
-    const safe = professionalLocalPlan({ ...context, attemptNumber: context.attemptNumber + 1 }, null, "DUPLICATE_BLOCKED");
-    response.adaptiveInterventionPlan = normalizePlanForRenderer(safe.adaptiveInterventionPlan, context);
-    plan = response.adaptiveInterventionPlan;
-  }
-  if (context.attemptNumber > 4) {
+    shortFeedback(target, language, (COPY[language] || COPY.es).wrong);
+    const contextPromise = buildContext(detail).then(
+      context => ({ context, error: null }),
+      error => ({ context: null, error })
+    );
+    await sleep(750);
+    if (activeRequests.get(target) !== requestState) return;
+    loadingState(target, language);
+    const contextResult = await contextPromise;
+    if (activeRequests.get(target) !== requestState) return;
+    const forceLocalFallback = !contextResult.context;
+    if (contextResult.error) console.warn("NALVI_TUTOR_CONTEXT_BUILD_FALLBACK", String(contextResult.error?.message || contextResult.error));
+    const context = contextResult.context || await buildContext(detail, { skipAudio: true });
+    if (activeRequests.get(target) !== requestState) return;
+    const shouldSpaceRetest = !forceLocalFallback && !context.activity?.adaptivePlanId && !context.activity?.spacedRetest && !pendingRetest();
+    const spacedPlan = shouldSpaceRetest ? buildSpacedRetestPlan(context) : null;
+    if (spacedPlan && scheduleSpacedRetest(context, spacedPlan)) {
+      window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", {
+        activityId: context.activity.id,
+        conceptId: context.conceptId,
+        correct: false,
+        strategy: "DELAYED_RETEST",
+        usedAI: false,
+        progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE",
+        fingerprint: context.previousActivityFingerprint,
+        minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES
+      });
+    }
+    let localPlan;
+    try {
+      localPlan = planPedagogicalIntervention(context);
+    } catch (error) {
+      console.warn("NALVI_TUTOR_LOCAL_PLANNER_FALLBACK", String(error?.message || error));
+      localPlan = { errorType: "UNKNOWN_ERROR", strategy: "CHANGE_MODALITY", diagnosis: { confidence: 0 } };
+    }
+    const localResponse = professionalLocalPlan(context, localPlan, forceLocalFallback ? "CONTEXT_BUILD_FAILED_LOCAL_FALLBACK" : "PROFESSIONAL_LOCAL_FALLBACK");
+    window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", { activityId: context.activity.id, conceptId: context.conceptId, correct: false,
+      strategy: localPlan?.strategy || "CHANGE_MODALITY", usedAI: false, progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE", fingerprint: context.previousActivityFingerprint });
+    const requestPromise = forceLocalFallback || context.activity?.spacedRetest ? Promise.resolve(null) : serverPlan(context);
+    const winner = await Promise.race([requestPromise, sleep(1500).then(() => null)]);
+    if (activeRequests.get(target) !== requestState) return;
+    let response = winner?.ok ? winner : localResponse;
+    response.adaptiveInterventionPlan = normalizePlanForRenderer(response.adaptiveInterventionPlan, context);
+    let plan = response.adaptiveInterventionPlan;
+    if (!plan.activities?.length) {
+      const noAudioContext = {
+        ...context,
+        authorizedAudio: null,
+        approvedActivityMaterial: { ...context.approvedActivityMaterial, audio: null },
+        activity: {
+          ...context.activity,
+          audioId: "",
+          audioPath: "",
+          audioText: "",
+          audioAuthorized: false,
+          humanRecorded: false,
+          audioSource: "",
+          authorizedAudio: null
+        }
+      };
+      response = professionalLocalPlan(noAudioContext, localPlan, "INVALID_AUDIO_OR_PASSIVE_PLAN_BLOCKED");
+      response.adaptiveInterventionPlan = normalizePlanForRenderer(response.adaptiveInterventionPlan, noAudioContext);
+      plan = response.adaptiveInterventionPlan;
+    }
+    if (!plan.activities?.length) throw new Error("NALVI_TUTOR_EMPTY_SAFE_FALLBACK");
+    const fingerprints = plan.activities.map(activity => activity.fingerprint || createActivityFingerprint(activity, { uiLocale: context.uiLocale }));
+    const sourceBoundRequired = String(context.activity?.id || "").startsWith("legacy-general-") || !(context.knowledgeIds || []).length;
+    const unrelated = sourceBoundRequired && plan.activities.some(activity => activity.requiresStudentResponse !== false && !targetsFailedKnowledge(activity, context));
+    if (unrelated || fingerprints.includes(context.previousActivityFingerprint) || new Set(fingerprints).size !== fingerprints.length) {
+      console.warn(unrelated ? "NALVI_TUTOR_UNRELATED_ACTIVITY_BLOCKED" : "NALVI_TUTOR_DUPLICATE_BLOCKED");
+      const safe = professionalLocalPlan({ ...context, attemptNumber: context.attemptNumber + 1 }, null, "DUPLICATE_BLOCKED");
+      response.adaptiveInterventionPlan = normalizePlanForRenderer(safe.adaptiveInterventionPlan, context);
+      plan = response.adaptiveInterventionPlan;
+      if (!plan.activities?.length) throw new Error("NALVI_TUTOR_EMPTY_SAFE_FALLBACK");
+    }
+    if (context.attemptNumber > 4) {
+      remember(context, response.adaptiveInterventionPlan);
+      target.innerHTML = `<div class="feedback no nalvi-tutor-feedback" aria-live="polite">${escapeHtml((COPY[context.uiLocale] || COPY.es).deferred)}</div>`;
+      setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", planId: response.adaptiveInterventionPlan.planId,
+        conceptId: context.conceptId, completionIsMastery: false, excludedActivityIds: [context.activity.id].filter(Boolean), independentRetestRequired: true,
+        markWeak: true, reviewDue: true } })), 900);
+      return;
+    }
     remember(context, response.adaptiveInterventionPlan);
-    target.innerHTML = `<div class="feedback no nalvi-tutor-feedback" aria-live="polite">${escapeHtml((COPY[context.uiLocale] || COPY.es).deferred)}</div>`;
-    setTimeout(() => window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", planId: response.adaptiveInterventionPlan.planId,
-      conceptId: context.conceptId, completionIsMastery: false, excludedActivityIds: [context.activity.id].filter(Boolean), independentRetestRequired: true,
-      markWeak: true, reviewDue: true } })), 900);
-    return;
+    window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan: response.adaptiveInterventionPlan, persistence: response.persistence, usedAI: Boolean(response.usedAI), telemetry: response.telemetry } }));
+    if (!renderSequenceActivity(target, { plan: response.adaptiveInterventionPlan, language: context.uiLocale, index: 0, usedAI: Boolean(response.usedAI), sourceActivityId: context.activity.id || "" }, 0)) {
+      throw new Error("NALVI_TUTOR_SAFE_FALLBACK_RENDER_FAILED");
+    }
+  } catch (error) {
+    if (activeRequests.get(target) !== requestState) return;
+    activeRequests.delete(target);
+    activeSequences.delete(target);
+    console.warn("NALVI_TUTOR_INTERVENTION_FALLBACK_FAILED", String(error?.message || error));
+    target.innerHTML = `<div class="feedback no nalvi-tutor-feedback" aria-live="polite">${escapeHtml((COPY[language] || COPY.es).deferred)}</div>`;
   }
-  remember(context, response.adaptiveInterventionPlan);
-  window.dispatchEvent(new CustomEvent("nalvi:adaptive-plan-ready", { detail: { plan: response.adaptiveInterventionPlan, persistence: response.persistence, usedAI: Boolean(response.usedAI), telemetry: response.telemetry } }));
-  renderSequenceActivity(target, { plan: response.adaptiveInterventionPlan, language: context.uiLocale, index: 0, usedAI: Boolean(response.usedAI), sourceActivityId: context.activity.id || "" }, 0);
 }
 
 function continueSequence(detail, target) {

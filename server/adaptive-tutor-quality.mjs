@@ -1,4 +1,9 @@
-import { catalogQualityMetrics, detectAnswerLeakage, validateCatalogActivity } from "../activity-catalog/nalvi-activity-quality.mjs";
+import {
+  approvedAudioAvailableForTarget,
+  catalogQualityMetrics,
+  detectAnswerLeakage,
+  validateCatalogActivity
+} from "../activity-catalog/nalvi-activity-quality.mjs";
 
 export const TUTOR_REJECTION_REASONS = Object.freeze([
   "UNSUPPORTED_ACTIVITY_TYPE", "ACTIVITY_TYPE_DISABLED", "ANSWER_IN_PROMPT", "ANSWER_IN_CONTEXT",
@@ -9,15 +14,39 @@ export const TUTOR_REJECTION_REASONS = Object.freeze([
 
 const unique = values => [...new Set(values.filter(Boolean))];
 
+function isTrustedIndependentRetest(activity = {}, context = {}) {
+  if (context.trustedSpacedRetest !== true) return false;
+  const hints = Array.isArray(activity.hints) ? activity.hints : [];
+  return activity.spacedRetest === true
+    && activity.independentRetest === true
+    && activity.evidenceMode === "independent"
+    && activity.nalviGuided === false
+    && Number(activity.helpLevel || 0) === 0
+    && hints.length === 0
+    && !String(activity.explanation || "").trim()
+    && activity.answerExposure === "HIDDEN";
+}
+
+function qualityContext(plan = {}, context = {}) {
+  return {
+    ...context,
+    errorType: context.errorType || plan.diagnosis?.errorType,
+    audioEnabled: approvedAudioAvailableForTarget(context),
+    requireApprovedAudio: true,
+    requireApprovedMaterial: true
+  };
+}
+
 export function answerLeakageDetected(plan = {}, context = {}) {
   return (plan.activities || []).some(activity => detectAnswerLeakage(activity, context).leaked);
 }
 
 export function validatePedagogicalQuality(plan = {}, context = {}) {
   const reasons = [];
+  const validationContext = qualityContext(plan, context);
   if (!Array.isArray(plan.activities) || !plan.activities.length || plan.activities.length > 4) reasons.push("INVALID_PLAN_LENGTH");
   for (const activity of plan.activities || []) {
-    const validation = validateCatalogActivity(activity, { ...context, errorType: plan.diagnosis?.errorType || context.errorType });
+    const validation = validateCatalogActivity(activity, validationContext);
     reasons.push(...validation.reasons);
   }
   const fingerprints = (plan.activities || []).map(activity => activity.fingerprint).filter(Boolean);
@@ -29,7 +58,8 @@ export function validatePedagogicalQuality(plan = {}, context = {}) {
 
 export function planMetrics(plan = {}, context = {}) {
   const activities = plan.activities || [];
-  const hard = catalogQualityMetrics(activities, { ...context, errorType: plan.diagnosis?.errorType || context.errorType });
+  const validationContext = qualityContext(plan, context);
+  const hard = catalogQualityMetrics(activities, validationContext);
   const types = activities.map(activity => activity.activityType || activity.type);
   const demands = activities.map(activity => activity.cognitiveDemand).filter(Boolean);
   return {
@@ -38,6 +68,6 @@ export function planMetrics(plan = {}, context = {}) {
     duplicateRate: hard.exactDuplicateAfterErrorRate,
     strategyDiversity: new Set(types).size,
     cognitiveDemandDiversity: new Set(demands).size,
-    independentRetestCoverage: activities.some(activity => (activity.activityType || activity.type) === "INDEPENDENT_RECALL" || activity.independentRetest) ? 1 : 0
+    independentRetestCoverage: activities.some(activity => isTrustedIndependentRetest(activity, context)) ? 1 : 0
   };
 }

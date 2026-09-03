@@ -15,6 +15,20 @@ const canonicalAudio = Object.freeze({
   humanRecorded: true,
   audioSource: "manifest-human-recording"
 });
+const approvedAudio = Object.freeze({
+  id: canonicalAudio.audioId,
+  audioId: canonicalAudio.audioId,
+  recordingId: canonicalAudio.audioId,
+  path: canonicalAudio.audioPath,
+  audioPath: canonicalAudio.audioPath,
+  text: canonicalAudio.audioText,
+  audioText: canonicalAudio.audioText,
+  source: canonicalAudio.audioSource,
+  audioSource: canonicalAudio.audioSource,
+  authorized: true,
+  audioAuthorized: true,
+  humanRecorded: true
+});
 const approvedContexts = Object.freeze({
   es: "Una situación documentada de la lección.", en: "A documented lesson situation.",
   pt: "Uma situação documentada da lição.", fr: "Une situation documentée de la leçon.",
@@ -70,7 +84,7 @@ function approvedMaterialFor(activity, scenario, uiLocale) {
     dialogueCorrectOptionId: activity.correctOptionId,
     dialogueCorrectAnswer: scenario.answer,
     dialogueSourceContentId: `dialogue-${scenario.id}`,
-    audio: scenario.answer === canonicalAudio.audioText ? { ...canonicalAudio } : null
+    audio: scenario.answer === canonicalAudio.audioText ? { ...approvedAudio } : null
   };
 }
 

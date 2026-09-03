@@ -106,7 +106,9 @@ export function allowedTypesForError(errorType, { audioEnabled = ENABLE_AUDIO_IN
   if (type === "LISTENING_CONFUSION" && audioEnabled) {
     return [ACTIVITY_TYPES.AUDIO_SELECT].filter(isEnabledActivityType);
   }
-  return [...(ERROR_ACTIVITY_MATRIX[type] || ERROR_ACTIVITY_MATRIX.UNKNOWN_ERROR)].filter(isEnabledActivityType);
+  return [...(ERROR_ACTIVITY_MATRIX[type] || ERROR_ACTIVITY_MATRIX.UNKNOWN_ERROR)]
+    .filter(activityType => audioEnabled || activityType !== ACTIVITY_TYPES.AUDIO_SELECT)
+    .filter(isEnabledActivityType);
 }
 
 export function cognitiveDemandFor(activityType) {
