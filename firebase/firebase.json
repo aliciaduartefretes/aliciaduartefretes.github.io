@@ -1,0 +1,14 @@
+{
+  "firestore": {
+    "rules": "firestore-PASO-6.rules"
+  },
+  "database": {
+    "rules": "database-GESA.rules.json"
+  },
+  "emulators": {
+    "firestore": { "port": 8080 },
+    "database": { "port": 9000 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

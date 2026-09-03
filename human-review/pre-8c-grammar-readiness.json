@@ -1,0 +1,79 @@
+{
+  "step": "PRE-8C",
+  "auditScope": "existing-research-only",
+  "newGeneralResearchPerformed": false,
+  "openAIUsed": false,
+  "lexicalPilotModified": false,
+  "normativeVerifiedConjugationPatterns": 1,
+  "expertVerifiedConjugationPatterns": 0,
+  "productiveConjugationPatterns": 0,
+  "productiveVerbLemmas": 0,
+  "personsDocumented": [
+    "1sg",
+    "2sg",
+    "3sg",
+    "1pl-inclusive",
+    "1pl-exclusive",
+    "2pl",
+    "3pl"
+  ],
+  "oralNasalAvailability": {
+    "scope": "person-marker-inventory-only",
+    "patternId": "CP-AREAL-001",
+    "person": "1pl-inclusive",
+    "oralMarker": "ja-",
+    "nasalMarker": "ña-",
+    "realVerbFormsEnabled": false
+  },
+  "realVerbFormsAvailable": 0,
+  "enabledCombinations": [],
+  "getValidatedVerbFormExecutionsForEnabledCombinations": [],
+  "normativelyVerifiedComponents": [
+    {
+      "patternId": "CP-AREAL-001",
+      "sourceId": "S-001",
+      "sourcePage": "pp. 102–103",
+      "components": [
+        "personMarkers",
+        "inclusiveExclusive",
+        "oralNasalInclusiveAlternation"
+      ],
+      "allowedForGeneration": false,
+      "conjugationGeneration": false
+    }
+  ],
+  "blockedRules": [
+    {
+      "id": "CP-AIREAL-001",
+      "reason": "La interpretación funcional de i depende de C-002.",
+      "conflictId": "C-002"
+    },
+    {
+      "id": "CP-HAREAL-001",
+      "reason": "El alcance clasificatorio y el catálogo de lemas dependen de C-001.",
+      "conflictId": "C-001"
+    },
+    {
+      "id": "CP-AREAL-001:realization",
+      "reason": "No existe todavía una regla normativa computable de realización autorizada ni un lema verbal productivo."
+    },
+    {
+      "id": "verbalized-or-chendal",
+      "reason": "El material existente no contiene un subconjunto computable completo y autorizado para este piloto."
+    }
+  ],
+  "dependencies": {
+    "C001": "BLOCKED",
+    "C002": "BLOCKED"
+  },
+  "missingNormativeData": [
+    "Al menos un lema verbal explícitamente documentado y asignado inequívocamente al patrón areal.",
+    "Raíz o forma subyacente exacta del lema piloto.",
+    "Clasificación oral/nasal aplicable al lema y a la selección ja-/ña- cuando corresponda.",
+    "Regla normativa de orden y realización morfológica, o paradigma completo de formas exactas.",
+    "Excepciones y transformaciones morfofonológicas necesarias para ese lema, o constancia normativa de que no se requieren en el alcance piloto.",
+    "Localizador Nivel A exacto para cada uno de los datos anteriores."
+  ],
+  "paso8CMayStart": false,
+  "decision": "GATE_CLOSED_DO_NOT_INVENT"
+}

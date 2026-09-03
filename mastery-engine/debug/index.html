@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NALVI · Mastery Debug</title>
+  <style>
+    :root{--ink:#20213f;--muted:#6c6f86;--bg:#f5f5fb;--card:#fff;--brand:#6956d9;--good:#138a5b;--warn:#b26a00;--bad:#bd3c4c;--line:#dedff0;--radius:18px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}.shell{max-width:1180px;margin:auto;padding:24px}.top{display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap}.eyebrow{color:var(--brand);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px}h1{margin:5px 0;font-size:clamp(26px,4vw,42px)}.notice{margin:18px 0;padding:14px 16px;border:1px solid #e5c98b;background:#fff9e8;border-radius:14px;color:#704d00}.controls{display:flex;gap:10px;flex-wrap:wrap}select,button{font:inherit;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 13px;color:var(--ink)}button[aria-pressed=true]{background:var(--brand);color:white;border-color:var(--brand)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{grid-column:span 4;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 8px 26px rgba(39,37,88,.06)}.wide{grid-column:span 8}.full{grid-column:1/-1}.metric{font-size:34px;font-weight:850}.label{color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;background:#eeeafc;color:#4b39ad}.bar{height:10px;background:#ececf5;border-radius:999px;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:var(--brand);border-radius:inherit}.skill{margin:12px 0}.row{display:flex;justify-content:space-between;gap:12px}.event{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.correct{color:var(--good)}.wrong{color:var(--bad)}ul{padding-left:18px}.decision{font-size:22px;font-weight:850;color:var(--brand)}@media(max-width:800px){.card,.wide{grid-column:1/-1}.event{grid-template-columns:1fr auto}.event time{grid-column:1/-1}.shell{padding:16px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="top">
+      <div><div class="eyebrow">NALVI · PASO 6</div><h1 data-t="title">Panel temporal de dominio</h1><div class="label" data-t="subtitle">Vista administrativa de validación, no dashboard institucional.</div></div>
+      <div class="controls" aria-label="Controles">
+        <select id="language" aria-label="Idioma de interfaz"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select>
+        <button id="studentA" aria-pressed="true">Estudiante A</button><button id="studentB" aria-pressed="false">Estudiante B</button>
+      </div>
+    </div>
+    <p class="notice" data-t="notice">Simulación local con datos de prueba. Firestore permanece desconectado hasta publicar las reglas de seguridad.</p>
+    <section class="grid" id="dashboard"></section>
+  </main>
+  <script>
+    const translations={
+      es:{title:"Panel temporal de dominio",subtitle:"Vista administrativa de validación, no dashboard institucional.",notice:"Simulación local con datos de prueba. Firestore permanece desconectado hasta publicar las reglas de seguridad.",mastery:"Dominio del concepto",status:"Estado",decision:"Siguiente decisión",weak:"Habilidades débiles",errors:"Errores recurrentes",baseline:"Cambio desde baseline",events:"Evidencia reciente",skills:"Habilidades",next:"Actividad sugerida",concept:"Concepto",correct:"Correcto",incorrect:"Incorrecto"},
+      en:{title:"Temporary mastery panel",subtitle:"Administrative validation view, not an institutional dashboard.",notice:"Local simulation with test data. Firestore remains disconnected until security rules are published.",mastery:"Concept mastery",status:"Status",decision:"Next decision",weak:"Weak skills",errors:"Recurring errors",baseline:"Change since baseline",events:"Recent evidence",skills:"Skills",next:"Suggested activity",concept:"Concept",correct:"Correct",incorrect:"Incorrect"},
+      pt:{title:"Painel temporário de domínio",subtitle:"Vista administrativa de validação, não um painel institucional.",notice:"Simulação local com dados de teste. O Firestore permanece desconectado até a publicação das regras de segurança.",mastery:"Domínio do conceito",status:"Estado",decision:"Próxima decisão",weak:"Habilidades fracas",errors:"Erros recorrentes",baseline:"Mudança desde a linha de base",events:"Evidência recente",skills:"Habilidades",next:"Atividade sugerida",concept:"Conceito",correct:"Correto",incorrect:"Incorreto"},
+      fr:{title:"Panneau temporaire de maîtrise",subtitle:"Vue administrative de validation, pas un tableau institutionnel.",notice:"Simulation locale avec des données de test. Firestore reste déconnecté jusqu’à la publication des règles de sécurité.",mastery:"Maîtrise du concept",status:"État",decision:"Décision suivante",weak:"Compétences faibles",errors:"Erreurs récurrentes",baseline:"Évolution depuis le niveau initial",events:"Preuves récentes",skills:"Compétences",next:"Activité suggérée",concept:"Concept",correct:"Correct",incorrect:"Incorrect"},
+      it:{title:"Pannello temporaneo di padronanza",subtitle:"Vista amministrativa di convalida, non dashboard istituzionale.",notice:"Simulazione locale con dati di prova. Firestore resta disconnesso finché non vengono pubblicate le regole di sicurezza.",mastery:"Padronanza del concetto",status:"Stato",decision:"Decisione successiva",weak:"Abilità deboli",errors:"Errori ricorrenti",baseline:"Variazione dal livello iniziale",events:"Evidenze recenti",skills:"Abilità",next:"Attività suggerita",concept:"Concetto",correct:"Corretto",incorrect:"Errato"},
+      de:{title:"Temporäre Kompetenzansicht",subtitle:"Administrative Validierungsansicht, kein institutionelles Dashboard.",notice:"Lokale Simulation mit Testdaten. Firestore bleibt getrennt, bis die Sicherheitsregeln veröffentlicht sind.",mastery:"Konzeptbeherrschung",status:"Status",decision:"Nächste Entscheidung",weak:"Schwache Fähigkeiten",errors:"Wiederkehrende Fehler",baseline:"Änderung seit Ausgangswert",events:"Aktuelle Evidenz",skills:"Fähigkeiten",next:"Empfohlene Aktivität",concept:"Konzept",correct:"Richtig",incorrect:"Falsch"}
+    };
+    const students={
+      A:{score:74,status:"PRACTICING",decision:"ADVANCE",activity:"scenario",baseline:31,skills:{listening:81,reading:76,writing:69,speaking:72,vocabulary:86,grammar:64,application:67},errors:{incorrect:2,hints:1,immediateRepeats:0},events:[{id:"writing-7",type:"writing",ok:true,time:"10:21"},{id:"listen-6",type:"listening",ok:true,time:"10:18"},{id:"scenario-4",type:"scenario",ok:true,time:"10:13"}]},
+      B:{score:36,status:"WEAK",decision:"SIMPLIFY",activity:"writing",baseline:29,skills:{listening:72,reading:68,writing:22,speaking:31,vocabulary:75,grammar:39,application:18},errors:{incorrect:8,hints:5,immediateRepeats:3},events:[{id:"writing-7",type:"writing",ok:false,time:"10:21"},{id:"listen-6",type:"listening",ok:true,time:"10:18"},{id:"scenario-4",type:"scenario",ok:false,time:"10:13"}]}
+    };
+    let active="A",lang="es";const skillNames={listening:"listening",reading:"reading",writing:"writing",speaking:"speaking",vocabulary:"vocabulary",grammar:"grammar",application:"application"};
+    const t=key=>translations[lang][key];
+    function render(){const s=students[active],weak=Object.entries(s.skills).sort((a,b)=>a[1]-b[1]).slice(0,3);document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(n=>n.textContent=t(n.dataset.t));document.getElementById("dashboard").innerHTML=`
+      <article class="card"><div class="label">${t("concept")}</div><strong>GG-C-001</strong><p>Saludos, cortesía y despedidas</p><span class="pill">${s.status}</span></article>
+      <article class="card"><div class="label">${t("mastery")}</div><div class="metric">${s.score}</div><div class="bar"><i style="width:${s.score}%"></i></div></article>
+      <article class="card"><div class="label">${t("baseline")}</div><div class="metric">+${s.score-s.baseline}</div><small>${s.baseline} → ${s.score}</small></article>
+      <article class="card wide"><div class="row"><strong>${t("skills")}</strong><span>${t("status")}: ${s.status}</span></div>${Object.entries(s.skills).map(([k,v])=>`<div class="skill"><div class="row"><span>${skillNames[k]}</span><b>${v}</b></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join("")}</article>
+      <article class="card"><strong>${t("decision")}</strong><p class="decision">${s.decision}</p><div class="label">${t("next")}</div><p>${s.activity}</p><strong>${t("weak")}</strong><ul>${weak.map(([k,v])=>`<li>${k}: ${v}</li>`).join("")}</ul></article>
+      <article class="card"><strong>${t("errors")}</strong><ul>${Object.entries(s.errors).map(([k,v])=>`<li>${k}: ${v}</li>`).join("")}</ul></article>
+      <article class="card wide"><strong>${t("events")}</strong>${s.events.map(e=>`<div class="event"><span>${e.id} · ${e.type}</span><b class="${e.ok?"correct":"wrong"}">${e.ok?t("correct"):t("incorrect")}</b><time>${e.time}</time></div>`).join("")}</article>`}
+    document.getElementById("language").addEventListener("change",e=>{lang=e.target.value;render()});["A","B"].forEach(id=>document.getElementById(`student${id}`).addEventListener("click",()=>{active=id;document.getElementById("studentA").setAttribute("aria-pressed",String(id==="A"));document.getElementById("studentB").setAttribute("aria-pressed",String(id==="B"));render()}));render();
+  </script>
+</body>
+</html>

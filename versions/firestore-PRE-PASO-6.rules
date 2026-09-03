@@ -1,0 +1,513 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // GCA-GESA-01: reglas de prueba. Probar primero en Emulator Suite.
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function email() {
+      return signedIn()
+        ? request.auth.token.get('email', '').lower()
+        : '';
+    }
+
+    function sameEmail(value) {
+      return signedIn() && value is string && value.lower() == email();
+    }
+
+    function staffPath() {
+      return /databases/$(database)/documents/staff/$(email());
+    }
+
+    function hasActiveStaff() {
+      return signedIn()
+        && email() != ''
+        && exists(staffPath())
+        && get(staffPath()).data.get('active', false) == true;
+    }
+
+    function isPlatformAdmin() {
+      return hasActiveStaff()
+        && get(staffPath()).data.get('role', '') == 'admin';
+    }
+
+    function uidMembershipPath(institutionId) {
+      return /databases/$(database)/documents/institutionMembers/$(institutionId + '__' + request.auth.uid);
+    }
+
+    function inviteMembershipPath(institutionId) {
+      return /databases/$(database)/documents/institutionMembers/$(institutionId + '__invite__' + email());
+    }
+
+    function hasUidMembership(institutionId) {
+      return signedIn()
+        && institutionId is string
+        && institutionId != ''
+        && exists(uidMembershipPath(institutionId))
+        && get(uidMembershipPath(institutionId)).data.get('active', false) == true;
+    }
+
+    function hasInviteMembership(institutionId) {
+      return signedIn()
+        && email() != ''
+        && institutionId is string
+        && institutionId != ''
+        && exists(inviteMembershipPath(institutionId))
+        && get(inviteMembershipPath(institutionId)).data.get('active', false) == true;
+    }
+
+    function isInstitutionMember(institutionId) {
+      return isPlatformAdmin()
+        || hasUidMembership(institutionId)
+        || hasInviteMembership(institutionId)
+        || (
+          hasActiveStaff()
+          && get(staffPath()).data.get('institutionId', '') == institutionId
+        );
+    }
+
+    function uidMembershipHasRole(institutionId, role) {
+      return hasUidMembership(institutionId)
+        && get(uidMembershipPath(institutionId)).data.get('role', '') == role;
+    }
+
+    function inviteMembershipHasRole(institutionId, role) {
+      return hasInviteMembership(institutionId)
+        && get(inviteMembershipPath(institutionId)).data.get('role', '') == role;
+    }
+
+    function isInstitutionManager(institutionId) {
+      return isPlatformAdmin()
+        || (
+          hasUidMembership(institutionId)
+          && get(uidMembershipPath(institutionId)).data.get('role', '') == 'institution_manager'
+        )
+        || (
+          hasInviteMembership(institutionId)
+          && get(inviteMembershipPath(institutionId)).data.get('role', '') == 'institution_manager'
+        );
+    }
+
+    function isInstitutionTeacher(institutionId) {
+      return isPlatformAdmin()
+        || (
+          hasUidMembership(institutionId)
+          && get(uidMembershipPath(institutionId)).data.get('role', '') == 'teacher'
+        )
+        || (
+          hasInviteMembership(institutionId)
+          && get(inviteMembershipPath(institutionId)).data.get('role', '') == 'teacher'
+        )
+        || (
+          hasActiveStaff()
+          && get(staffPath()).data.get('role', '') == 'teacher'
+          && get(staffPath()).data.get('institutionId', '') == institutionId
+        );
+    }
+
+    function canTeach(institutionId) {
+      return isPlatformAdmin()
+        || (
+          hasUidMembership(institutionId)
+          && get(uidMembershipPath(institutionId)).data.get('role', '')
+            in ['institution_manager', 'teacher']
+        )
+        || (
+          hasInviteMembership(institutionId)
+          && get(inviteMembershipPath(institutionId)).data.get('role', '')
+            in ['institution_manager', 'teacher']
+        )
+        || (
+          hasActiveStaff()
+          && get(staffPath()).data.get('role', '') == 'teacher'
+          && get(staffPath()).data.get('institutionId', '') == institutionId
+        );
+    }
+
+    function isLegacyTeacherRecord(data) {
+      return hasActiveStaff()
+        && data.get('institutionId', '') == ''
+        && (
+          isPlatformAdmin()
+          || data.get('teacherId', '') == request.auth.uid
+          || data.get('teacherUid', '') == request.auth.uid
+          || sameEmail(data.get('teacherEmail', ''))
+          || sameEmail(data.get('ownerTeacherEmail', ''))
+          || (
+            data.get('coTeacherEmails', []) is list
+            && email() in data.get('coTeacherEmails', [])
+          )
+        );
+    }
+
+    function isOwnStudentData(data) {
+      return signedIn()
+        && (
+          data.get('studentId', '') == request.auth.uid
+          || data.get('studentUid', '') == request.auth.uid
+          || sameEmail(data.get('studentEmail', ''))
+        );
+    }
+
+    function enrollmentPath(groupId, studentEmail) {
+      return /databases/$(database)/documents/enrollments/$(groupId + '__' + studentEmail);
+    }
+
+    function groupInvitePath(code) {
+      return /databases/$(database)/documents/courseAccess/$('code__' + code);
+    }
+
+    function isEnrolledIn(groupId) {
+      return signedIn()
+        && email() != ''
+        && groupId is string
+        && groupId != ''
+        && exists(enrollmentPath(groupId, email()))
+        && get(enrollmentPath(groupId, email())).data.get('active', false) != false
+        && sameEmail(get(enrollmentPath(groupId, email())).data.get('studentEmail', ''));
+    }
+
+    function readsOwnUser(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow get, list: if readsOwnUser(userId)
+        || isPlatformAdmin()
+        || (
+          resource.data.get('primaryInstitutionId', '') != ''
+          && isInstitutionMember(resource.data.get('primaryInstitutionId', ''))
+        )
+        || (
+          hasActiveStaff()
+          && resource.data.get('teacherEmails', []) is list
+          && email() in resource.data.get('teacherEmails', [])
+        );
+
+      allow create, update: if readsOwnUser(userId)
+        && request.resource.data.get('uid', userId) == userId
+        && (
+          request.resource.data.get('email', '') == ''
+          || sameEmail(request.resource.data.get('email', ''))
+        );
+
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    match /staff/{staffEmail} {
+      allow get: if isPlatformAdmin()
+        || (signedIn() && staffEmail.lower() == email());
+      allow list: if isPlatformAdmin();
+
+      allow create, update: if isPlatformAdmin()
+        || (
+          request.resource.data.get('role', '') == 'teacher'
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('email', '') is string
+          && staffEmail.lower() == request.resource.data.get('email', '').lower()
+          && isInstitutionManager(request.resource.data.get('institutionId', ''))
+        );
+
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /institutions/{institutionId} {
+      allow get, list: if isPlatformAdmin()
+        || isInstitutionMember(institutionId);
+      allow create: if isPlatformAdmin()
+        && request.resource.data.get('active', false) == true
+        && request.resource.data.get('status', '') == 'active';
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    match /institutionMembers/{memberId} {
+      allow get, list: if isPlatformAdmin()
+        || sameEmail(resource.data.get('email', ''))
+        || isInstitutionMember(resource.data.get('institutionId', ''));
+
+      allow create: if isPlatformAdmin()
+        || (
+          isInstitutionManager(request.resource.data.get('institutionId', ''))
+          && request.resource.data.get('role', '') in ['teacher', 'institution_manager', 'student']
+          && request.resource.data.get('active', false) == true
+        )
+        || (
+          sameEmail(request.resource.data.get('email', ''))
+          && request.resource.data.get('uid', '') == request.auth.uid
+          && request.resource.data.get('claimedUid', '') == request.auth.uid
+          && request.resource.data.get('active', false) == true
+          && hasInviteMembership(request.resource.data.get('institutionId', ''))
+          && get(inviteMembershipPath(request.resource.data.get('institutionId', ''))).data.get('role', '')
+            == request.resource.data.get('role', '')
+        );
+
+      allow update: if isPlatformAdmin()
+        || isInstitutionManager(resource.data.get('institutionId', ''))
+        || (
+          sameEmail(resource.data.get('email', ''))
+          && request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+          && request.resource.data.get('role', '') == resource.data.get('role', '')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'uid', 'claimedUid', 'email', 'active', 'updatedAt'
+          ])
+        );
+
+      allow delete: if isPlatformAdmin()
+        || isInstitutionManager(resource.data.get('institutionId', ''));
+    }
+
+    match /institutionalLeads/{leadId} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'name', 'email', 'organization', 'role', 'studentCount',
+          'country', 'message', 'status', 'source', 'createdAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string
+        && request.resource.data.email.size() >= 5
+        && request.resource.data.email.size() <= 160
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.organization is string
+        && request.resource.data.organization.size() >= 2
+        && request.resource.data.organization.size() <= 160
+        && request.resource.data.role is string
+        && request.resource.data.role.size() <= 80
+        && request.resource.data.studentCount is number
+        && request.resource.data.studentCount >= 0
+        && request.resource.data.studentCount <= 100000
+        && request.resource.data.country is string
+        && request.resource.data.country.size() <= 80
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 1200
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'GCA-GESA-01'
+        && request.resource.data.createdAt == request.time;
+
+      allow get, list, update, delete: if isPlatformAdmin();
+    }
+
+    match /groups/{groupId} {
+      allow get, list: if isPlatformAdmin()
+        || isInstitutionMember(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data)
+        || (
+          signedIn()
+          && resource.data.get('studentEmails', []) is list
+          && email() in resource.data.get('studentEmails', [])
+        )
+        || isEnrolledIn(groupId);
+
+      allow create: if (
+          request.resource.data.get('institutionId', '') != ''
+          && canTeach(request.resource.data.get('institutionId', ''))
+        )
+        || (
+          request.resource.data.get('institutionId', '') == ''
+          && hasActiveStaff()
+        );
+
+      allow update: if isPlatformAdmin()
+        || (
+          request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+          && canTeach(resource.data.get('institutionId', ''))
+        )
+        || isLegacyTeacherRecord(resource.data);
+
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /enrollments/{enrollmentId} {
+      allow get, list: if isPlatformAdmin()
+        || isOwnStudentData(resource.data)
+        || canTeach(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data);
+
+      allow create, update: if isPlatformAdmin()
+        || canTeach(request.resource.data.get('institutionId', ''))
+        || (
+          isOwnStudentData(request.resource.data)
+          && request.resource.data.get('studentId', '') == request.auth.uid
+          && request.resource.data.get('inviteCode', '') is string
+          && request.resource.data.get('inviteCode', '') != ''
+          && exists(groupInvitePath(request.resource.data.get('inviteCode', '')))
+          && get(groupInvitePath(request.resource.data.get('inviteCode', ''))).data.get('active', false) == true
+          && get(groupInvitePath(request.resource.data.get('inviteCode', ''))).data.get('groupId', '')
+            == request.resource.data.get('groupId', '')
+          && get(groupInvitePath(request.resource.data.get('inviteCode', ''))).data.get('institutionId', '')
+            == request.resource.data.get('institutionId', '')
+        )
+        || (
+          request.resource.data.get('institutionId', '') == ''
+          && hasActiveStaff()
+        );
+
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /courseAccess/{accessId} {
+      allow get: if signedIn()
+        && (
+          resource.data.get('type', '') == 'group_invite'
+          || isOwnStudentData(resource.data)
+          || canTeach(resource.data.get('institutionId', ''))
+          || isLegacyTeacherRecord(resource.data)
+        );
+      allow list: if isPlatformAdmin();
+      allow create, update: if isPlatformAdmin()
+        || canTeach(request.resource.data.get('institutionId', ''))
+        || (
+          request.resource.data.get('institutionId', '') == ''
+          && hasActiveStaff()
+        );
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /assignments/{assignmentId} {
+      allow get, list: if isPlatformAdmin()
+        || canTeach(resource.data.get('institutionId', ''))
+        || isOwnStudentData(resource.data)
+        || (
+          signedIn()
+          && resource.data.get('studentEmails', []) is list
+          && email() in resource.data.get('studentEmails', [])
+        )
+        || isEnrolledIn(resource.data.get('groupId', ''))
+        || isLegacyTeacherRecord(resource.data);
+
+      allow create, update: if isPlatformAdmin()
+        || canTeach(request.resource.data.get('institutionId', ''))
+        || (
+          request.resource.data.get('institutionId', '') == ''
+          && hasActiveStaff()
+        );
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /progress/{progressId} {
+      allow get, list: if isPlatformAdmin()
+        || isOwnStudentData(resource.data)
+        || canTeach(resource.data.get('institutionId', ''));
+      allow create, update: if isPlatformAdmin()
+        || isOwnStudentData(request.resource.data)
+        || canTeach(request.resource.data.get('institutionId', ''));
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /assessments/{assessmentId} {
+      allow get, list: if isPlatformAdmin()
+        || isOwnStudentData(resource.data)
+        || canTeach(resource.data.get('institutionId', ''));
+      allow create: if isPlatformAdmin()
+        || (
+          request.resource.data.get('studentId', '') == request.auth.uid
+          && sameEmail(request.resource.data.get('studentEmail', ''))
+        )
+        || canTeach(request.resource.data.get('institutionId', ''));
+      allow update, delete: if isPlatformAdmin()
+        || canTeach(resource.data.get('institutionId', ''));
+    }
+
+    match /certificateRequests/{requestId} {
+      allow get, list: if isPlatformAdmin()
+        || isOwnStudentData(resource.data)
+        || canTeach(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data);
+
+      allow create: if signedIn()
+        && isOwnStudentData(request.resource.data)
+        && request.resource.data.get('status', '') == 'pending';
+
+      allow update: if isPlatformAdmin()
+        || canTeach(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data);
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /certificates/{certificateId} {
+      allow get, list: if isPlatformAdmin()
+        || isOwnStudentData(resource.data)
+        || canTeach(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data);
+      allow create, update: if isPlatformAdmin()
+        || canTeach(request.resource.data.get('institutionId', ''))
+        || (
+          request.resource.data.get('institutionId', '') == ''
+          && hasActiveStaff()
+        );
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /certificatePublic/{certificateId} {
+      allow get: if resource.data.get('code', '') == certificateId
+        && resource.data.get('status', '') in ['approved', 'issued', 'active'];
+      allow list: if false;
+      allow create, update: if isPlatformAdmin()
+        || (
+          canTeach(request.resource.data.get('institutionId', ''))
+          && request.resource.data.keys().hasOnly([
+            'studentName', 'course', 'hours', 'code', 'status',
+            'approvedByName', 'institutionId', 'approvedAt', 'createdAt'
+          ])
+          && request.resource.data.get('code', '') == certificateId
+          && request.resource.data.get('status', '') == 'approved'
+        );
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /liveClassrooms/{pin} {
+      allow get: if signedIn();
+      allow list: if isPlatformAdmin()
+        || canTeach(resource.data.get('institutionId', ''))
+        || isLegacyTeacherRecord(resource.data);
+
+      allow create: if signedIn()
+        && request.resource.data.get('hostUid', '') == request.auth.uid
+        && (
+          canTeach(request.resource.data.get('institutionId', ''))
+          || (
+            request.resource.data.get('institutionId', '') == ''
+            && hasActiveStaff()
+          )
+        );
+
+      allow update: if isPlatformAdmin()
+        || (
+          signedIn()
+          && resource.data.get('hostUid', '') == request.auth.uid
+          && request.resource.data.get('hostUid', '') == resource.data.get('hostUid', '')
+        );
+      allow delete: if isPlatformAdmin()
+        || (signedIn() && resource.data.get('hostUid', '') == request.auth.uid);
+
+      match /players/{playerId} {
+        allow get, list: if signedIn();
+        allow create, update: if signedIn()
+          && request.auth.uid == playerId
+          && request.resource.data.get('uid', playerId) == playerId
+          && request.resource.data.get('name', '') is string
+          && request.resource.data.get('name', '').size() >= 1
+          && request.resource.data.get('name', '').size() <= 28
+          && request.resource.data.get('score', 0) is number
+          && request.resource.data.get('score', 0) >= 0
+          && request.resource.data.get('correct', 0) is number
+          && request.resource.data.get('correct', 0) >= 0;
+        allow delete: if isPlatformAdmin()
+          || (signedIn() && request.auth.uid == playerId)
+          || (
+            signedIn()
+            && get(/databases/$(database)/documents/liveClassrooms/$(pin)).data.get('hostUid', '')
+              == request.auth.uid
+          );
+      }
+    }
+
+    // Cualquier colección no declarada queda denegada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

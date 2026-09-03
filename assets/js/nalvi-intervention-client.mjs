@@ -5,12 +5,12 @@ import {
   planPedagogicalIntervention,
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
-import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-3";
-import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-1";
-import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-1";
-import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-2";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-4";
+import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-2";
+import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-2";
+import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-3";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-8";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-9";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
@@ -59,12 +59,16 @@ function writePendingRetest(value) {
 function semanticPairsForObjective(context) {
   const expected = localize(context.correctAnswer, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase();
   const pairs = activityCatalog()
-    .filter(activity => activity.learningObjectiveId === context.learningObjectiveId && activity.semanticPair?.target && activity.semanticPair?.meaning)
+    .filter(activity => activity.learningObjectiveId === context.learningObjectiveId
+      && activity.semanticPair?.adaptiveReuseAuthorized === true
+      && activity.semanticPair?.target
+      && activity.semanticPair?.meaning)
     .map((activity, index) => ({
       id: `lesson-pair-${index + 1}`,
       left: String(activity.semanticPair.target),
       right: localize(activity.semanticPair.meaning, context.uiLocale),
-      sourceActivityId: activity.id
+      sourceActivityId: activity.id,
+      authorized: true
     }))
     .filter(pair => pair.left && pair.right);
   if (expected && !pairs.some(pair => [pair.left, pair.right].some(value => String(value).normalize("NFC").trim().toLocaleLowerCase() === expected))) return [];
@@ -86,7 +90,7 @@ function buildSpacedRetestPlan(context) {
     difficulty: context.difficulty,
     instruction: copy.matchInstruction,
     prompt: copy.match,
-    pairs: pairs.map(({ id, left, right }) => ({ id, left, right })),
+    pairs: pairs.map(({ id, left, right }) => ({ id, left, right, authorized: true })),
     answer: context.correctAnswer,
     acceptedAnswers: [context.correctAnswer],
     lexemeIds: context.lexemeIds,
@@ -262,11 +266,6 @@ function nextAttempt(activity) {
   writeJson(ATTEMPT_KEY, attempts); return count;
 }
 
-function hasVisibleFillContext(activity, language) {
-  const template = localize(activity?.template, language).replace(/\{\{blank\}\}|_+/g, "").replace(/[→:;,.!?¿¡\s-]+/g, "").trim();
-  return Boolean(template);
-}
-
 function normalizeRenderableActivity(activity = {}, context) {
   const language = context.uiLocale, type = activity.activityType || activity.type || ACTIVITY_TYPES.INDEPENDENT_RECALL;
   const correctAnswer = localize(activity.correctAnswer || activity.answer || context.correctAnswer, language);
@@ -279,14 +278,15 @@ function normalizeRenderableActivity(activity = {}, context) {
   const correct = options.find(option => String(option.id) === String(activity.correctOptionId) || option.value.normalize("NFC").trim().toLocaleLowerCase() === correctAnswer.normalize("NFC").trim().toLocaleLowerCase());
   const tiles = (activity.tiles || activity.tokens || []).map((token, index) => ({ ...token, id: String(token?.id ?? index), text: localize(token?.text ?? token?.label ?? token?.value ?? token, language), label: localize(token?.label ?? token?.text ?? token?.value ?? token, language) }));
   const tokens = tiles;
-  let template = localize(activity.template, language);
-  if (type === ACTIVITY_TYPES.GUIDED_GAP && !hasVisibleFillContext({ template }, language)) template = `${localize(activity.contextText, language) || sourcePrompt || localize(activity.prompt, language)} {{blank}}`;
+  const template = localize(activity.template, language);
   return {
     ...activity, type, activityType: type, options, tokens, tiles, template,
     correctOptionId: activity.correctOptionId || correct?.id || "",
     acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : correctAnswer ? [correctAnswer] : [],
     answer: activity.answer || correctAnswer,
-    audioText: activity.audioText || (activity.media?.type === "audio" ? activity.media.value : ""),
+    audioPath: activity.audioPath || activity.authorizedAudio?.path || activity.authorizedAudio?.url || "",
+    audioText: activity.audioText || activity.authorizedAudio?.text || (activity.media?.type === "audio" ? activity.media.value : ""),
+    audioAuthorized: activity.audioAuthorized === true || activity.authorizedAudio?.authorized === true,
     audio: activity.audio || (activity.media?.type === "audio" ? activity.media.value : ""),
     image: activity.image || (activity.media?.type === "image" ? activity.media.value : ""),
     imageAlt: activity.imageAlt || activity.media?.alt || "",
@@ -308,7 +308,6 @@ function normalizePlanForRenderer(plan, context) {
 
 function isPedagogicallyClear(activity, language) {
   if (!activity) return false;
-  if ((activity.type || activity.activityType) === ACTIVITY_TYPES.GUIDED_GAP && !hasVisibleFillContext(activity, language)) return false;
   return Boolean(localize(activity.prompt || activity.instruction || activity.lessonContext?.sourcePrompt, language).trim());
 }
 
@@ -316,6 +315,9 @@ function targetsFailedKnowledge(activity, context) {
   if (!activity) return false;
   const expected = localize(context.correctAnswer, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase();
   const candidateConcepts = [activity.conceptId, ...(activity.conceptIds || [])].filter(Boolean).map(String);
+  if ((activity.sourceBoundAuthorized === true || activity.validatedAgainstApprovedMaterial === true)
+    && context.conceptId
+    && candidateConcepts.includes(String(context.conceptId))) return true;
   if (!expected) return Boolean(context.conceptId && candidateConcepts.includes(String(context.conceptId)));
   const candidateAnswers = [
     activity.correctAnswer,
@@ -489,12 +491,95 @@ function finishSequence(target, state, activity) {
     independentRetestRequired: !state.spacedRetest, spacedRetestCompleted: Boolean(state.spacedRetest) } })), 600);
 }
 
+function approvedOptions(activity, language) {
+  return (activity.options || []).slice(0, 4).map((option, index) => ({
+    id: String(option?.id || `approved-option-${index + 1}`),
+    text: localize(option?.label ?? option?.text ?? option?.value ?? option, language),
+    authorized: true
+  })).filter(option => option.text);
+}
+
+function approvedDialogueForObjective(activity, language) {
+  const source = [activity, ...activityCatalog().filter(candidate => candidate.learningObjectiveId === activity.learningObjectiveId)]
+    .map(candidate => candidate?.adaptiveDialogue)
+    .find(dialogue => dialogue?.authorized === true);
+  if (!source) return { turns: [], options: [], correctOptionId: "", correctAnswer: "" };
+  const turns = (source.turns || []).slice(0, 4).filter(turn => turn?.authorized === true).map((turn, index) => ({
+    id: String(turn.id || `approved-turn-${index + 1}`),
+    speaker: localize(turn.speaker || (index % 2 ? "B" : "A"), language),
+    text: localize(turn.text, language),
+    authorized: true
+  })).filter(turn => turn.text);
+  const options = (source.options || []).slice(0, 4).filter(option => option?.authorized === true).map((option, index) => ({
+    id: String(option.id || `approved-dialogue-option-${index + 1}`),
+    text: localize(option.text ?? option.label ?? option.value, language),
+    authorized: true
+  })).filter(option => option.text);
+  return {
+    turns,
+    options,
+    correctOptionId: String(source.correctOptionId || ""),
+    correctAnswer: localize(source.correctAnswer, language),
+    sourceContentId: String(source.sourceContentId || "")
+  };
+}
+
+function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
+  const language = context.uiLocale;
+  const dialogue = approvedDialogueForObjective(activity, language);
+  const contexts = (activity.approvedContexts || [])
+    .filter(item => item?.authorized === true)
+    .slice(0, 4)
+    .map(item => ({ text: localize(item.text ?? item.value, language), authorized: true }))
+    .filter(item => item.text);
+  const categories = (activity.adaptiveCategories || []).filter(item => item?.authorized === true).slice(0, 3).map((item, index) => ({
+    id: String(item.id || `approved-category-${index + 1}`),
+    label: localize(item.label ?? item.text, language),
+    authorized: true
+  })).filter(item => item.label);
+  const items = (activity.adaptiveCategoryItems || []).filter(item => item?.authorized === true).slice(0, 10).map((item, index) => ({
+    id: String(item.id || `approved-item-${index + 1}`),
+    text: localize(item.text ?? item.label, language),
+    categoryId: String(item.categoryId || ""),
+    authorized: true
+  })).filter(item => item.text && item.categoryId);
+  return {
+    options: approvedOptions(activity, language),
+    pairs: semanticPairsForObjective(context),
+    contexts,
+    categories,
+    items,
+    dialogue: dialogue.turns,
+    dialogueOptions: dialogue.options,
+    dialogueCorrectOptionId: dialogue.correctOptionId,
+    dialogueCorrectAnswer: dialogue.correctAnswer,
+    dialogueSourceContentId: dialogue.sourceContentId,
+    audio: authorizedAudio
+  };
+}
+
 function buildContext(detail) {
   const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang), attemptNumber = nextAttempt(activity);
   const recent = history(), conceptId = activity.conceptId || activity.conceptIds?.[0] || "GG-C-001";
   const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
   const semanticAnswer = localize(activity.lessonContext?.sourceAnswer, language).trim() || answerFor(activity, language);
-  return { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
+  const audioTerm = String(activity.semanticPair?.target || activity.audioText || semanticAnswer).trim();
+  const embeddedRecording = typeof window.findPronunciation === "function" ? window.findPronunciation(audioTerm) : null;
+  const importedRecording = window.NALVI_RECORDED_AUDIO?.resolve?.(audioTerm) || null;
+  const authorizedAudio = embeddedRecording ? {
+    authorized: true,
+    path: String(embeddedRecording.file || embeddedRecording.url || ""),
+    text: audioTerm,
+    source: "existing-human-recording",
+    recordingId: String(embeddedRecording.id || "")
+  } : importedRecording ? {
+    authorized: true,
+    path: importedRecording.url,
+    text: audioTerm,
+    source: "imported-human-recording",
+    recordingId: importedRecording.id
+  } : activity.authorizedAudio?.authorized === true ? activity.authorizedAudio : null;
+  const context = { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
     activityType: activity.activityType || activity.type || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
     studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: semanticAnswer, attemptNumber,
     recentErrors: recent.filter(item => item.conceptId === conceptId).map(item => ({ conceptId, errorType: item.errorType })),
@@ -504,8 +589,10 @@ function buildContext(detail) {
     answerExposureHistory: readJson(EXPOSURE_KEY, []).filter(item => item.conceptId === conceptId).map(item => item.answerExposure),
     strategyEffectiveness: Object.fromEntries(Object.entries(readJson(EFFECTIVENESS_KEY, {})).map(([key, value]) => [key, Number(value.score || 0)])),
     prerequisiteGaps: [], independentRetestQueue: [], uiLocale: language, grammarRuleIds: activity.grammarRuleIds || [], lexemeIds: activity.lexemeIds || [],
-    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])], activity: { ...activity, conceptId }, availableActivities: activityCatalog(),
+    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])], authorizedAudio, activity: { ...activity, conceptId }, availableActivities: activityCatalog(),
     previousActivityFingerprint: previousFingerprint, aiPolicy: { allowInterventionAI: true, AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: true } };
+  context.approvedActivityMaterial = buildApprovedActivityMaterial(activity, context, authorizedAudio);
+  return context;
 }
 
 async function handleIncorrect(detail, target) {

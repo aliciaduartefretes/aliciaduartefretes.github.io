@@ -34,6 +34,7 @@
       "enum": [
         "unreviewed",
         "sourceVerified",
+        "normativeVerified",
         "expertVerified",
         "conflict",
         "rejected",
@@ -83,6 +84,13 @@
         },
         "review": {
           "$ref": "#/$defs/review"
+        },
+        "normativeVerification": {
+          "$ref": "#/$defs/normativeVerification"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
         },
         "createdAt": {
           "type": "string",
@@ -165,6 +173,116 @@
         "notes": { "type": "string" }
       },
       "additionalProperties": false
+    },
+    "normativeVerification": {
+      "type": "object",
+      "required": [
+        "method",
+        "sourceAuthorityLevel",
+        "sourceId",
+        "sourcePage",
+        "verifiedAt",
+        "verifiedByProcess",
+        "humanExpertReview",
+        "authorizedUses",
+        "openConflictIds"
+      ],
+      "properties": {
+        "method": { "const": "direct-normative-source-check" },
+        "verificationScope": {
+          "enum": ["lexicalSense", "conjugationPattern", "linguisticRule"]
+        },
+        "sourceAuthorityLevel": { "const": "A" },
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sourcePage": { "type": "string", "minLength": 1 },
+        "verifiedAt": { "type": "string", "format": "date-time" },
+        "verifiedByProcess": { "const": "NALVI normative source audit" },
+        "humanExpertReview": { "const": false },
+        "authorizedSenseIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "authorizedPatternComponents": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "personMarkers",
+              "inclusiveExclusive",
+              "oralNasalInclusiveAlternation",
+              "morphemeSlots",
+              "realizationRules",
+              "exceptions"
+            ]
+          }
+        },
+        "authorizedRuleComponents": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "authorizedUses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "recognition",
+              "exactRecall",
+              "matching",
+              "controlledWriting",
+              "personMarkerReference",
+              "deterministicConjugation",
+              "sentenceStructureValidation"
+            ]
+          }
+        },
+        "openConflictIds": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "sentenceGeneration": { "const": false },
+        "exampleGeneration": { "const": false },
+        "conjugationGeneration": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["verificationScope"] },
+        {
+          "required": ["authorizedSenseIds"],
+          "properties": { "authorizedSenseIds": { "minItems": 1 } }
+        }
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "verificationScope": { "const": "lexicalSense" } },
+            "required": ["verificationScope"]
+          },
+          "then": {
+            "required": ["authorizedSenseIds"],
+            "properties": { "authorizedSenseIds": { "minItems": 1 } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "verificationScope": { "const": "conjugationPattern" } },
+            "required": ["verificationScope"]
+          },
+          "then": {
+            "required": ["authorizedPatternComponents"],
+            "properties": { "authorizedPatternComponents": { "minItems": 1 } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "verificationScope": { "const": "linguisticRule" } },
+            "required": ["verificationScope"]
+          },
+          "then": {
+            "required": ["authorizedRuleComponents"],
+            "properties": { "authorizedRuleComponents": { "minItems": 1 } }
+          }
+        }
+      ]
     },
     "source": {
       "allOf": [
@@ -300,6 +418,7 @@
                   "conjunction",
                   "interjection",
                   "particle",
+                  "numeral",
                   "other"
                 ]
               },
@@ -414,23 +533,87 @@
           "type": "string",
           "enum": ["oral", "nasal", "mixed", "requiresReview"]
         },
+        "underlyingForm": { "type": "string", "minLength": 1 },
+        "morphemes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/morpheme" }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/computableVerbForm" }
+        },
+        "validatedForms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/computableVerbForm" }
+        },
         "irregularForms": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["person", "form"],
-            "properties": {
-              "person": { "type": "string" },
-              "form": { "type": "string" },
-              "notes": { "type": "string" }
-            },
-            "additionalProperties": false
-          }
+          "items": { "$ref": "#/$defs/computableVerbForm" }
         },
         "allowedVoices": {
           "type": "array",
           "items": { "type": "string" }
         }
+      },
+      "additionalProperties": false
+    },
+    "morpheme": {
+      "type": "object",
+      "required": ["id", "form", "function", "position"],
+      "properties": {
+        "id": { "type": "string" },
+        "form": { "type": "string" },
+        "function": { "type": "string" },
+        "position": { "enum": ["prefix", "root", "suffix", "discontinuous"] }
+      },
+      "additionalProperties": false
+    },
+    "computableVerbForm": {
+      "type": "object",
+      "required": [
+        "person",
+        "number",
+        "form",
+        "validationStatus",
+        "allowedForGeneration",
+        "sourceReferences"
+      ],
+      "properties": {
+        "person": { "enum": ["1", "2", "3"] },
+        "number": { "enum": ["singular", "plural"] },
+        "clusivity": { "type": ["string", "null"], "enum": [null, "inclusive", "exclusive"] },
+        "oralNasal": { "type": ["string", "null"], "enum": [null, "oral", "nasal"] },
+        "form": { "type": "string", "minLength": 1 },
+        "underlyingForm": { "type": ["string", "null"] },
+        "morphemes": { "type": "array", "items": { "$ref": "#/$defs/morpheme" } },
+        "ruleId": { "type": "string" },
+        "validationStatus": { "$ref": "#/$defs/validationStatus" },
+        "allowedForGeneration": { "type": "boolean" },
+        "sourceReferences": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sourceReference" } },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "realizationRule": {
+      "type": "object",
+      "required": ["id", "validationStatus", "allowedForGeneration", "sourceReferences", "operation"],
+      "properties": {
+        "id": { "type": "string" },
+        "validationStatus": { "$ref": "#/$defs/validationStatus" },
+        "allowedForGeneration": { "type": "boolean" },
+        "sourceReferences": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/sourceReference" } },
+        "conditions": { "type": "object" },
+        "operation": {
+          "type": "object",
+          "required": ["type", "order"],
+          "properties": {
+            "type": { "const": "orderedMorphemes" },
+            "order": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "separator": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "transformations": { "type": "array", "items": { "type": "object" } }
       },
       "additionalProperties": false
     },
@@ -499,6 +682,27 @@
             "conflictIds": {
               "type": "array",
               "items": { "type": "string" }
+            },
+            "morphemeSlots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "function", "position"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "function": { "type": "string" },
+                  "position": { "enum": ["prefix", "root", "suffix", "discontinuous"] }
+                },
+                "additionalProperties": false
+              }
+            },
+            "realizationRules": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/realizationRule" }
+            },
+            "exceptions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/computableVerbForm" }
             }
           }
         }

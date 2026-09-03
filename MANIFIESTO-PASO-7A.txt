@@ -1,0 +1,10 @@
+NALVI — PASO 7A
+Estado: COMPLETADO
+Alcance: retiro exclusivo del chatbot genérico Ali IA
+Nueva IA: NO IMPLEMENTADA
+OpenAI: NO CONECTADO
+Firebase: SIN CAMBIOS
+Idiomas de interfaz: es, en, pt, fr, it, de
+Pruebas de regresión: 39 PASS / 0 FAIL
+Copia recuperable: versions/index-NALVI-P6-stable.html
+Archivo principal para publicar: index.html

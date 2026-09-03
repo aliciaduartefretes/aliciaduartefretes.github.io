@@ -19,7 +19,7 @@ const tile = {
 };
 const category = {
   type: "object", additionalProperties: false,
-  required: ["id", "label"], properties: { id: { type: "string" }, label: { type: "string" } }
+  required: ["id", "label", "authorized"], properties: { id: { type: "string" }, label: { type: "string" }, authorized: { type: "boolean" } }
 };
 const sortItem = {
   type: "object", additionalProperties: false,
@@ -36,7 +36,7 @@ const correction = {
 };
 const turn = {
   type: "object", additionalProperties: false,
-  required: ["id", "speaker", "text"], properties: { id: { type: "string" }, speaker: { type: "string" }, text: { type: "string" } }
+  required: ["id", "speaker", "text", "authorized"], properties: { id: { type: "string" }, speaker: { type: "string" }, text: { type: "string" }, authorized: { type: "boolean" } }
 };
 const question = {
   type: "object", additionalProperties: false,
@@ -56,11 +56,11 @@ const media = {
 
 const activity = {
   type: "object", additionalProperties: false,
-  required: ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"],
+  required: ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "contextAuthorized", "audioPath", "audioText", "audioAuthorized", "dialogueAuthorized", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"],
   properties: {
     id: { type: "string" }, activityType: { type: "string", enum: enabledTypes }, skill: { type: "string" }, difficulty: { type: "string" },
     helpLevel: { type: "integer", minimum: 0, maximum: 4 }, answerExposure: { type: "string", enum: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"] }, requiresStudentResponse: { type: "boolean" },
-    instruction: { type: "string" }, prompt: { type: "string" }, contextText: { type: "string" }, options: { type: "array", items: option }, pairs: { type: "array", items: pair }, tiles: { type: "array", items: tile }, categories: { type: "array", items: category }, items: { type: "array", items: sortItem }, segments: { type: "array", items: segment }, corrections: { type: "array", items: correction }, correctedSentence: { type: "string" }, dialogue: { type: "array", items: turn }, questions: { type: "array", items: question }, steps: { type: "array", items: step }, template: { type: "string" }, correctOrder: strings,
+    instruction: { type: "string" }, prompt: { type: "string" }, contextText: { type: "string" }, contextAuthorized: { type: "boolean" }, audioPath: { type: "string" }, audioText: { type: "string" }, audioAuthorized: { type: "boolean" }, dialogueAuthorized: { type: "boolean" }, options: { type: "array", items: option }, pairs: { type: "array", items: pair }, tiles: { type: "array", items: tile }, categories: { type: "array", items: category }, items: { type: "array", items: sortItem }, segments: { type: "array", items: segment }, corrections: { type: "array", items: correction }, correctedSentence: { type: "string" }, dialogue: { type: "array", items: turn }, questions: { type: "array", items: question }, steps: { type: "array", items: step }, template: { type: "string" }, correctOrder: strings,
     media, hints: strings, explanation: { type: "string" }, correctAnswer: { type: "string" }, correctOptionId: { type: "string" }, correctCorrectionId: { type: "string" }, acceptedAnswers: strings, conceptIds: strings, lexemeIds: strings, grammarRuleIds: strings, sourceIds: strings, conflictIds: strings, hasOpenConflict: { type: "boolean" }, distractorQuality: { type: "string", enum: ["PLAUSIBLE"] }, fingerprintSeed: { type: "string" }
   }
 };

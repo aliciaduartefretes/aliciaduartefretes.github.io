@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nalvi.example/schemas/mastery-data.schema.json",
+  "title": "NALVI PASO 6 · Mastery data",
+  "oneOf": [
+    { "$ref": "#/$defs/learningEvent" },
+    { "$ref": "#/$defs/masteryProfile" },
+    { "$ref": "#/$defs/baseline" },
+    { "$ref": "#/$defs/reviewSchedule" }
+  ],
+  "$defs": {
+    "skill": {
+      "enum": ["listening", "reading", "writing", "speaking", "vocabulary", "grammar", "application"]
+    },
+    "status": {
+      "enum": ["NEW", "LEARNING", "PRACTICING", "MASTERED", "REVIEW_DUE", "WEAK"]
+    },
+    "skillEvidence": {
+      "type": "object",
+      "required": ["score", "evidenceCount", "lastPracticed"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "evidenceCount": { "type": "integer", "minimum": 0 },
+        "lastPracticed": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "learningEvent": {
+      "type": "object",
+      "required": [
+        "eventId", "userId", "conceptId", "learningObjectiveId", "activityId",
+        "activityType", "skill", "difficulty", "correct", "attemptNumber",
+        "responseTime", "hintUsed", "timestamp", "evidenceWeight",
+        "masteryBefore", "masteryAfter"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "NALVI-P6-LEARNING-EVENT-1" },
+        "eventId": { "type": "string", "minLength": 1 },
+        "userId": { "type": "string", "minLength": 1 },
+        "conceptId": { "type": "string", "minLength": 1 },
+        "learningObjectiveId": { "type": "string", "minLength": 1 },
+        "activityId": { "type": "string", "minLength": 1 },
+        "activityType": { "type": "string", "minLength": 1 },
+        "skill": { "$ref": "#/$defs/skill" },
+        "difficulty": { "type": "string", "minLength": 1 },
+        "correct": { "type": "boolean" },
+        "attemptNumber": { "type": "integer", "minimum": 1 },
+        "responseTime": { "type": "number", "minimum": 0 },
+        "hintUsed": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "evidenceWeight": { "type": "number", "minimum": 0 },
+        "masteryBefore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "masteryAfter": { "type": "number", "minimum": 0, "maximum": 100 },
+        "performanceFactors": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "masteryProfile": {
+      "type": "object",
+      "required": [
+        "userId", "conceptId", "learningObjectiveId", "masteryScore", "status",
+        "requiredSkills", "skills", "attempts", "evidenceByActivityType",
+        "retentionEvidence", "lastPracticed", "nextReviewAt"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "NALVI-P6-MASTERY-PROFILE-1" },
+        "userId": { "type": "string" },
+        "conceptId": { "type": "string" },
+        "learningObjectiveId": { "type": "string" },
+        "masteryScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "status": { "$ref": "#/$defs/status" },
+        "requiredSkills": { "type": "array", "items": { "$ref": "#/$defs/skill" }, "uniqueItems": true },
+        "skills": {
+          "type": "object",
+          "required": ["listening", "reading", "writing", "speaking", "vocabulary", "grammar", "application"],
+          "additionalProperties": { "$ref": "#/$defs/skillEvidence" }
+        },
+        "attempts": { "type": "integer", "minimum": 0 },
+        "correctAttempts": { "type": "integer", "minimum": 0 },
+        "consecutiveIncorrect": { "type": "integer", "minimum": 0 },
+        "evidenceByActivityType": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+        "recurringErrors": { "type": "object" },
+        "retentionEvidence": { "type": "object" },
+        "lastPracticed": { "type": ["string", "null"], "format": "date-time" },
+        "nextReviewAt": { "type": ["string", "null"], "format": "date-time" },
+        "history": { "type": "array" },
+        "updatedAt": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["userId", "routeId", "capturedAt", "concepts"],
+      "properties": {
+        "schemaVersion": { "const": "NALVI-P6-BASELINE-1" },
+        "userId": { "type": "string" },
+        "routeId": { "type": "string" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "concepts": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "reviewSchedule": {
+      "type": "object",
+      "required": ["userId", "conceptId", "lastPracticed", "nextReviewAt", "retentionEvidence"],
+      "properties": {
+        "userId": { "type": "string" },
+        "conceptId": { "type": "string" },
+        "lastPracticed": { "type": ["string", "null"], "format": "date-time" },
+        "nextReviewAt": { "type": ["string", "null"], "format": "date-time" },
+        "retentionEvidence": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

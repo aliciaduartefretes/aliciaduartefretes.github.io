@@ -11,7 +11,10 @@ import {
 
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/;
 const UI_LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
-const ALLOWED_ACTIVITY_TYPES = new Set(["multiple-choice", "listening", "order-sentence", "fill-blank", "writing", "matching", "speaking", "scenario"]);
+const ALLOWED_ACTIVITY_TYPES = new Set([
+  "multiple-choice", "listening", "order-sentence", "fill-blank", "writing", "matching", "speaking", "scenario",
+  "CONTEXT_CHOICE", "ARROW_MATCH", "CATEGORY_SORT", "DIALOGUE_NEXT_TURN", "INDEPENDENT_RECALL", "AUDIO_SELECT"
+]);
 
 const safeId = (value, fallback = "") => {
   const normalized = String(value || "").trim();
@@ -35,14 +38,48 @@ function sanitizeActivity(activity = {}) {
     acceptedAnswers: (activity.acceptedAnswers || []).slice(0, 10).map(item => truncate(item, 160)),
     correctOrder: (activity.correctOrder || []).slice(0, 16).map(item => safeId(item)),
     audioText: truncate(activity.audioText, 200),
+    audioPath: truncate(activity.audioPath || activity.authorizedAudio?.path || activity.authorizedAudio?.url, 300),
+    audioAuthorized: activity.audioAuthorized === true || activity.authorizedAudio?.authorized === true,
+    contextText: truncate(activity.contextText || activity.scenario || activity.lessonContext?.visibleContext, 500),
+    contextAuthorized: activity.contextAuthorized === true,
+    dialogueAuthorized: activity.dialogueAuthorized === true,
     image: truncate(activity.image || activity.imageUrl, 240),
     template: activity.template,
     context: activity.context
-    ,pairs: (activity.pairs || []).slice(0, 8).map((pair, index) => ({ id: safeId(pair?.id, `pair-${index}`), left: truncate(pair?.left, 160), right: truncate(pair?.right, 160) }))
+    ,pairs: (activity.pairs || []).slice(0, 5).map((pair, index) => ({ id: safeId(pair?.id, `pair-${index}`), left: truncate(pair?.left, 160), right: truncate(pair?.right, 160), authorized: pair?.authorized === true }))
+    ,semanticPair: activity.semanticPair?.target && activity.semanticPair?.meaning ? { target: truncate(activity.semanticPair.target, 160), meaning: truncate(activity.semanticPair.meaning, 160), authorized: activity.semanticPair.authorized === true } : null
+    ,categories: (activity.categories || []).slice(0, 3).map((category, index) => ({ id: safeId(category?.id, `category-${index}`), label: truncate(category?.label ?? category?.text ?? category, 120), authorized: category?.authorized === true }))
+    ,items: (activity.items || []).slice(0, 10).map((item, index) => ({ id: safeId(item?.id, `item-${index}`), text: truncate(item?.text ?? item?.label ?? item, 120), categoryId: safeId(item?.categoryId), authorized: item?.authorized === true }))
+    ,dialogue: (activity.dialogue || activity.turns || []).slice(0, 4).map((turn, index) => ({ id: safeId(turn?.id, `turn-${index}`), speaker: truncate(turn?.speaker || (index % 2 ? "B" : "A"), 40), text: truncate(turn?.text ?? turn, 240), authorized: turn?.authorized === true }))
     ,tokens: (activity.tokens || []).slice(0, 16).map((token, index) => ({ id: safeId(token?.id, `token-${index}`), label: truncate(token?.label ?? token?.text ?? token, 120) }))
     ,media: activity.media && typeof activity.media === "object" ? { type: truncate(activity.media.type, 12), value: truncate(activity.media.value, 240), alt: truncate(activity.media.alt, 200), sourceId: safeId(activity.media.sourceId) } : null
     ,helpLevel: Math.min(4, Math.max(0, Number(activity.helpLevel) || 0))
     ,answerExposure: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"].includes(activity.answerExposure) ? activity.answerExposure : "HIDDEN"
+  };
+}
+
+function sanitizeApprovedActivityMaterial(material = {}) {
+  const authorized = item => item?.authorized === true;
+  return {
+    options: (material.options || []).filter(authorized).slice(0, 4).map((option, index) => ({
+      id: safeId(option?.id, `approved-option-${index}`), text: truncate(option?.text ?? option?.label ?? option?.value, 160), authorized: true
+    })).filter(option => option.text),
+    pairs: (material.pairs || []).filter(authorized).slice(0, 5).map((pair, index) => ({
+      id: safeId(pair?.id, `approved-pair-${index}`), left: truncate(pair?.left, 160), right: truncate(pair?.right, 160), authorized: true
+    })).filter(pair => pair.left && pair.right),
+    contexts: (material.contexts || []).slice(0, 4).map(value => truncate(value, 500)).filter(Boolean),
+    categories: (material.categories || []).filter(authorized).slice(0, 3).map((category, index) => ({
+      id: safeId(category?.id, `approved-category-${index}`), label: truncate(category?.label ?? category?.text, 120), authorized: true
+    })).filter(category => category.label),
+    items: (material.items || []).filter(authorized).slice(0, 10).map((item, index) => ({
+      id: safeId(item?.id, `approved-item-${index}`), text: truncate(item?.text ?? item?.label, 120), categoryId: safeId(item?.categoryId), authorized: true
+    })).filter(item => item.text && item.categoryId),
+    dialogue: (material.dialogue || []).filter(authorized).slice(0, 4).map((turn, index) => ({
+      id: safeId(turn?.id, `approved-turn-${index}`), speaker: truncate(turn?.speaker || (index % 2 ? "B" : "A"), 40), text: truncate(turn?.text, 240), authorized: true
+    })).filter(turn => turn.text),
+    audio: material.audio?.authorized === true ? {
+      path: truncate(material.audio.path || material.audio.url, 300), text: truncate(material.audio.text, 200), source: truncate(material.audio.source, 80), authorized: true
+    } : null
   };
 }
 
@@ -80,6 +117,7 @@ export function normalizeInterventionRequest(input = {}) {
     masteryAfter: Number.isFinite(Number(input.masteryAfter)) ? Number(input.masteryAfter) : null,
     activity,
     availableActivities: (input.availableActivities || []).slice(0, 24).map(sanitizeActivity),
+    approvedActivityMaterial: sanitizeApprovedActivityMaterial(input.approvedActivityMaterial),
     previousActivityFingerprint: truncate(input.previousActivityFingerprint || input.previousFingerprint, 80),
     aiPolicy: {
       allowInterventionAI: input.aiPolicy?.allowInterventionAI !== false,

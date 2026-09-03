@@ -1,0 +1,43 @@
+{
+  "version": "NALVI-P8B-FIRESTORE-LAYOUT-1",
+  "status": "existingPaso6RulesReused",
+  "reviewedExistingCollections": [
+    "users",
+    "progress",
+    "assessments",
+    "enrollments",
+    "groups"
+  ],
+  "decisions": {
+    "reuse": {
+      "users": "Se conserva como documento padre de identidad y alcance institucional.",
+      "progress": "Se conserva para agregados heredados de curso; no es autoridad de mastery.",
+      "assessments": "Se conserva para evaluaciones existentes; no se duplica por cada interacción."
+    },
+    "newPaths": {
+      "learningEvents": "users/{userId}/learningEvents/{eventId}",
+      "userMastery": "users/{userId}/mastery/{conceptId}",
+      "baseline": "users/{userId}/baselines/{routeId}",
+      "reviewSchedule": "users/{userId}/reviewSchedule/{conceptId}"
+    },
+    "logicalEventTypes": {
+      "interventionEvents": "Se persiste server-side dentro de users/{userId}/learningEvents/{eventId}. PASO 8A usa eventKind=pedagogicalIntervention y PASO 8B usa eventKind=adaptiveInterventionPlan con diagnóstico, estrategia, tipos, fingerprints, riesgo de validación, telemetría y resultado de persistencia. Reutiliza la ruta segura existente y no requiere reglas ni índices nuevos."
+    }
+  },
+  "authority": {
+    "clientReads": "Propietario, administradora de plataforma o docente/responsable autorizado.",
+    "clientWrites": "denied",
+    "serverWrites": "Firebase Admin después de autenticar y revalidar la evidencia.",
+    "masteryScore": "serverDerived",
+    "baseline": "serverDerived",
+    "nextReviewAt": "serverDerived"
+  },
+  "notDuplicated": [
+    "progreso agregado del curso",
+    "resultados de evaluaciones formales",
+    "roles",
+    "inscripciones",
+    "certificados"
+  ],
+  "indexesRequiredNow": []
+}

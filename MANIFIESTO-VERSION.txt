@@ -1,0 +1,60 @@
+NALVI · PASO 5 · RUTA PEDAGÓGICA DE GUARANÍ GENERAL
+Fecha: 2026-08-27
+Estado: ESTABLE PARA REVISIÓN
+
+Paquete comprimido:
+../NALVI-PASO-5-estable.zip
+
+Interfaz principal:
+index.html
+SHA-256: 889782f5605d6a17759ba593add3bad3af2602384023ccb663a97b82d3f38523
+
+Ruta pedagógica:
+assets/js/nalvi-guarani-general-route.js
+SHA-256: 99473f05673ed896cbadbe69626990f9f1d8aaaa7322547d9678bb40400ec233
+
+Adaptador visual:
+assets/js/nalvi-general-route-ui.js
+SHA-256: 59508b8129edb4f9d4f625b3c0e365253de5edf7a57857d093c78ffea98b8833
+
+Actividades dinámicas con metadatos:
+assets/js/kuaa-general-activities.js
+SHA-256: f4aa2098eaece6b79c0f5ceebfc07754749de905b8b1d32568a8166e7a668975
+
+Esquema:
+curriculum/guarani-general-route.schema.json
+SHA-256: d2084fcc3489da6536dae0408437d558175da4f14095a63a203cff5e2376d1e4
+
+Snapshots estables:
+versions/index-NALVI-P4-stable.html
+versions/index-NALVI-P5-stable.html
+versions/nalvi-guarani-general-route-NALVI-P5-stable.js
+versions/nalvi-general-route-ui-NALVI-P5-stable.js
+versions/kuaa-general-activities-NALVI-P5-stable.js
+
+Resultado:
+- Pruebas curriculares: 12/12 PASS
+- Regresión Grammar Engine: 15/15 PASS
+- Módulos: 7
+- Objetivos de aprendizaje: 28
+- Conceptos: 28
+- Actividades dinámicas vinculadas: 3
+- Práctica: variable
+- Dominio calculado: NO
+- OpenAI conectado: NO
+- Firebase modificado: NO
+- Idiomas conservados: es, en, pt, fr, it, de
+
+Validación:
+node scripts/validate-paso-5.mjs
+Documento: VALIDACION-PASO-5.md
+Reporte: REPORTE-PASO-5.md
+
+Funciones conservadas:
+- selector y traducción instantánea de los seis idiomas;
+- login, navegación, roles e instituciones;
+- cursos, XP, vidas y progreso;
+- responsive y activos;
+- Firebase sin cambios.
+
+PASO 6: NO INICIADO

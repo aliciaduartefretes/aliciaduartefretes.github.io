@@ -27,6 +27,7 @@
       type: "multiple-choice",
       semanticPair: {
         target: "Mba’éichapa",
+        adaptiveReuseAuthorized: true,
         meaning: {
           es: "¿Cómo estás?",
           en: "How are you?",
@@ -35,6 +36,20 @@
           it: "Come stai?",
           de: "Wie geht es dir?"
         }
+      },
+      adaptiveDialogue: {
+        authorized: true,
+        sourceContentId: "general-u01-dialogue-greetings",
+        turns: [
+          { id: "greeting-turn-1", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true }
+        ],
+        options: [
+          { id: "greeting-reply", text: "Iporã, aguyje. Ha nde?", authorized: true },
+          { id: "greeting-close", text: "Iporã avei. Jajotopata!", authorized: true },
+          { id: "greeting-thanks", text: "Aguyje", authorized: true }
+        ],
+        correctOptionId: "greeting-reply",
+        correctAnswer: "Iporã, aguyje. Ha nde?"
       },
       legacy: { unit: 0, question: 0 },
       prompt: {
@@ -99,6 +114,7 @@
       type: "multiple-choice",
       semanticPair: {
         target: "Aguyje",
+        adaptiveReuseAuthorized: true,
         meaning: {
           es: "Gracias",
           en: "Thank you",
@@ -141,6 +157,7 @@
       type: "listening",
       semanticPair: {
         target: "Jajotopata",
+        adaptiveReuseAuthorized: true,
         meaning: {
           es: "Nos vemos",
           en: "See you",

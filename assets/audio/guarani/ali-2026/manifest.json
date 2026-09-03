@@ -1,0 +1,899 @@
+{
+  "version": "NALVI_RECORDED_AUDIO_V1",
+  "importedAt": "2026-09-02",
+  "source": "APP GUARANÍ AUDIOS ALI",
+  "count": 99,
+  "recordings": [
+    {
+      "id": "NALVI-AUDIO-001",
+      "label": "ADIÓ",
+      "sourceFile": "ADIÓ.m4a",
+      "file": "001-adio.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-002",
+      "label": "Ág̃aite",
+      "sourceFile": "Ág̃aite.m4a",
+      "file": "002-agaite.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-003",
+      "label": "Ag̃ave",
+      "sourceFile": "Ag̃ave.m4a",
+      "file": "003-agave.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-004",
+      "label": "Age",
+      "sourceFile": "Age.m4a",
+      "file": "004-age.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-005",
+      "label": "Aguará’i",
+      "sourceFile": "Aguará’i.m4a",
+      "file": "005-aguara-i.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-006",
+      "label": "Aguigua",
+      "sourceFile": "Aguigua.m4a",
+      "file": "006-aguigua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-007",
+      "label": "Aguyje",
+      "sourceFile": "Aguyje.m4a",
+      "file": "007-aguyje.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-008",
+      "label": "Aguyjeve",
+      "sourceFile": "Aguyjeve.m4a",
+      "file": "008-aguyjeve.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-009",
+      "label": "Ahe",
+      "sourceFile": "Ahe.m4a",
+      "file": "009-ahe.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-010",
+      "label": "Ahoja",
+      "sourceFile": "Ahoja.m4a",
+      "file": "010-ahoja.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-011",
+      "label": "Ahy’o",
+      "sourceFile": "Ahy’o.m4a",
+      "file": "011-ahy-o.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-012",
+      "label": "Ahy’o’api",
+      "sourceFile": "Ahy’o’api.m4a",
+      "file": "012-ahy-o-api.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-013",
+      "label": "Ahy’opa’ã",
+      "sourceFile": "Ahy’opa’ã.m4a",
+      "file": "013-ahy-opa-a.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-014",
+      "label": "Ai",
+      "sourceFile": "Ai.m4a",
+      "file": "014-ai.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-015",
+      "label": "Ãicha",
+      "sourceFile": "Ãicha.m4a",
+      "file": "015-aicha.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-016",
+      "label": "Aichejáranga",
+      "sourceFile": "Aichejáranga.m4a",
+      "file": "016-aichejaranga.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-017",
+      "label": "Aína",
+      "sourceFile": "Aína.m4a",
+      "file": "017-aina.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-018",
+      "label": "Aipo",
+      "sourceFile": "Aipo.m4a",
+      "file": "018-aipo.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-019",
+      "label": "Aje",
+      "sourceFile": "Aje.m4a",
+      "file": "019-aje.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-020",
+      "label": "Aju’y",
+      "sourceFile": "Aju’y.m4a",
+      "file": "020-aju-y.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-021",
+      "label": "Ajukue",
+      "sourceFile": "Ajukue.m4a",
+      "file": "021-ajukue.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-022",
+      "label": "Ajúri",
+      "sourceFile": "Ajúri.m4a",
+      "file": "022-ajuri.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-023",
+      "label": "Ajuvyso",
+      "sourceFile": "Ajuvyso.m4a",
+      "file": "023-ajuvyso.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-024",
+      "label": "Akã guasu",
+      "sourceFile": "Akã guasu.m4a",
+      "file": "024-aka-guasu.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-025",
+      "label": "Akã",
+      "sourceFile": "Akã.m4a",
+      "file": "025-aka.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-026",
+      "label": "Akã’o",
+      "sourceFile": "Akã’o.m4a",
+      "file": "026-aka-o.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-027",
+      "label": "Akãchara",
+      "sourceFile": "Akãchara.m4a",
+      "file": "027-akachara.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-028",
+      "label": "Akãguapy (en lugar de akãpyta)",
+      "sourceFile": "Akãguapy (en lugar de akãpyta).m4a",
+      "file": "028-akaguapy-en-lugar-de-akapyta.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-029",
+      "label": "Akãhatã",
+      "sourceFile": "Akãhatã.m4a",
+      "file": "029-akahata.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-030",
+      "label": "Akãhoja",
+      "sourceFile": "Akãhoja.m4a",
+      "file": "030-akahoja.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-031",
+      "label": "Akãmambu",
+      "sourceFile": "Akãmambu.m4a",
+      "file": "031-akamambu.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-032",
+      "label": "Akãmbota",
+      "sourceFile": "Akãmbota.m4a",
+      "file": "032-akambota.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-033",
+      "label": "Akãnga’u",
+      "sourceFile": "Akãnga’u.m4a",
+      "file": "033-akanga-u.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-034",
+      "label": "Akãngatu",
+      "sourceFile": "Akãngatu.m4a",
+      "file": "034-akangatu.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-035",
+      "label": "Akãnunduro’y",
+      "sourceFile": "Akãnunduro’y.m4a",
+      "file": "035-akanunduro-y.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-036",
+      "label": "Akãpete",
+      "sourceFile": "Akãpete.m4a",
+      "file": "036-akapete.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-037",
+      "label": "Akãpicha",
+      "sourceFile": "Akãpicha.m4a",
+      "file": "037-akapicha.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-038",
+      "label": "Akãratī",
+      "sourceFile": "Akãratī.m4a",
+      "file": "038-akarati.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-039",
+      "label": "Akãsã",
+      "sourceFile": "Akãsã.m4a",
+      "file": "039-akasa.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-040",
+      "label": "Akatúa",
+      "sourceFile": "Akatúa.m4a",
+      "file": "040-akatua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-041",
+      "label": "Ake (duermo)",
+      "sourceFile": "Ake (duermo).m4a",
+      "file": "041-ake-duermo.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-042",
+      "label": "Akekē",
+      "sourceFile": "Akekē.m4a",
+      "file": "042-akeke.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-043",
+      "label": "Akói",
+      "sourceFile": "Akói.m4a",
+      "file": "043-akoi.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-044",
+      "label": "Aku",
+      "sourceFile": "Aku.m4a",
+      "file": "044-aku.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-045",
+      "label": "Akuã (Veloz)",
+      "sourceFile": "Akuã (Veloz).m4a",
+      "file": "045-akua-veloz.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-046",
+      "label": "Akue",
+      "sourceFile": "Akue.m4a",
+      "file": "046-akue.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-047",
+      "label": "Akymba",
+      "sourceFile": "Akymba.m4a",
+      "file": "047-akymba.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-048",
+      "label": "Akytã",
+      "sourceFile": "Akytã.m4a",
+      "file": "048-akyta.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-049",
+      "label": "Ama",
+      "sourceFile": "Ama.m4a",
+      "file": "049-ama.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-050",
+      "label": "Amamo’ãha",
+      "sourceFile": "Amamo’ãha.m4a",
+      "file": "050-amamo-aha.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-051",
+      "label": "Ambue",
+      "sourceFile": "Ambue.m4a",
+      "file": "051-ambue.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-052",
+      "label": "Angirū",
+      "sourceFile": "Angirū.m4a",
+      "file": "052-angiru.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-053",
+      "label": "Añuã",
+      "sourceFile": "Añuã.m4a",
+      "file": "053-anua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-054",
+      "label": "Apopy",
+      "sourceFile": "Apopy.m4a",
+      "file": "054-apopy.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-055",
+      "label": "Apyka",
+      "sourceFile": "Apyka.m4a",
+      "file": "055-apyka.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-056",
+      "label": "Arapapaha",
+      "sourceFile": "Arapapaha.m4a",
+      "file": "056-arapapaha.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-057",
+      "label": "Ava",
+      "sourceFile": "Ava.m4a",
+      "file": "057-ava.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-058",
+      "label": "Chae",
+      "sourceFile": "Chae.m4a",
+      "file": "058-chae.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-059",
+      "label": "Chavi",
+      "sourceFile": "Chavi.m4a",
+      "file": "059-chavi.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-060",
+      "label": "Che réra",
+      "sourceFile": "Che réra.m4a",
+      "file": "060-che-rera.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-061",
+      "label": "Chejupe",
+      "sourceFile": "Chejupe.m4a",
+      "file": "061-chejupe.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-062",
+      "label": "Cherejápe",
+      "sourceFile": "Cherejápe.m4a",
+      "file": "062-cherejape.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-063",
+      "label": "Chi’õ (mezquino)",
+      "sourceFile": "Chi’õ (mezquino).m4a",
+      "file": "063-chi-o-mezquino.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-064",
+      "label": "Chokokue",
+      "sourceFile": "Chokokue.m4a",
+      "file": "064-chokokue.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-065",
+      "label": "Chororī",
+      "sourceFile": "Chororī.m4a",
+      "file": "065-chorori.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-066",
+      "label": "Churi",
+      "sourceFile": "Churi.m4a",
+      "file": "066-churi.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-067",
+      "label": "Denuka",
+      "sourceFile": "Denuka.m4a",
+      "file": "067-denuka.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-068",
+      "label": "Deprovécho",
+      "sourceFile": "Deprovécho.m4a",
+      "file": "068-deprovecho.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-069",
+      "label": "Eja",
+      "sourceFile": "Eja.m4a",
+      "file": "069-eja.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-070",
+      "label": "Eja’e’ỹva",
+      "sourceFile": "Eja’e’ỹva.m4a",
+      "file": "070-eja-e-yva.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-071",
+      "label": "Ekoporã",
+      "sourceFile": "Ekoporã.m4a",
+      "file": "071-ekopora.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-072",
+      "label": "Guarara",
+      "sourceFile": "Guarara.m4a",
+      "file": "072-guarara.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-073",
+      "label": "Guata",
+      "sourceFile": "Guata.m4a",
+      "file": "073-guata.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-074",
+      "label": "Guavira",
+      "sourceFile": "Guavira.m4a",
+      "file": "074-guavira.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-075",
+      "label": "Gueteri",
+      "sourceFile": "Gueteri.m4a",
+      "file": "075-gueteri.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-076",
+      "label": "Guyguy",
+      "sourceFile": "Guyguy.m4a",
+      "file": "076-guyguy.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-077",
+      "label": "Ha",
+      "sourceFile": "Ha.m4a",
+      "file": "077-ha.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-078",
+      "label": "Ha’etegua",
+      "sourceFile": "Ha’etegua.m4a",
+      "file": "078-ha-etegua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-079",
+      "label": "Haihára",
+      "sourceFile": "Haihára.m4a",
+      "file": "079-haihara.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-080",
+      "label": "Hakua",
+      "sourceFile": "Hakua.m4a",
+      "file": "080-hakua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-081",
+      "label": "Hasakuaa’ỹva",
+      "sourceFile": "Hasakuaa’ỹva.m4a",
+      "file": "081-hasakuaa-yva.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-082",
+      "label": "Hekombo’e",
+      "sourceFile": "Hekombo’e.m4a",
+      "file": "082-hekombo-e.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-083",
+      "label": "Hembevo",
+      "sourceFile": "Hembevo.m4a",
+      "file": "083-hembevo.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-084",
+      "label": "Hendu",
+      "sourceFile": "Hendu.m4a",
+      "file": "084-hendu.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-085",
+      "label": "Hepyme’ēva",
+      "sourceFile": "Hepyme’ēva.m4a",
+      "file": "085-hepyme-eva.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-086",
+      "label": "Hesakã",
+      "sourceFile": "Hesakã.m4a",
+      "file": "086-hesaka.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-087",
+      "label": "Ichupe",
+      "sourceFile": "Ichupe.m4a",
+      "file": "087-ichupe.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-088",
+      "label": "Ikatu",
+      "sourceFile": "Ikatu.m4a",
+      "file": "088-ikatu.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-089",
+      "label": "Ikatúpa",
+      "sourceFile": "Ikatúpa.m4a",
+      "file": "089-ikatupa.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-090",
+      "label": "Ikatupáva",
+      "sourceFile": "Ikatupáva.m4a",
+      "file": "090-ikatupava.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-091",
+      "label": "Imo’ãporãva",
+      "sourceFile": "Imo’ãporãva.m4a",
+      "file": "091-imo-aporava.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-092",
+      "label": "Inimbe’i",
+      "sourceFile": "Inimbe’i.m4a",
+      "file": "092-inimbe-i.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-093",
+      "label": "Iporã",
+      "sourceFile": "Iporã.m4a",
+      "file": "093-ipora.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-094",
+      "label": "Iporupy",
+      "sourceFile": "Iporupy.m4a",
+      "file": "094-iporupy.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-095",
+      "label": "Itati",
+      "sourceFile": "Itati.m4a",
+      "file": "095-itati.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-096",
+      "label": "Jagua",
+      "sourceFile": "Jagua.m4a",
+      "file": "096-jagua.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-097",
+      "label": "Jaho’i’o",
+      "sourceFile": "Jaho’i’o.m4a",
+      "file": "097-jaho-i-o.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-098",
+      "label": "Japyhy",
+      "sourceFile": "Japyhy.m4a",
+      "file": "098-japyhy.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    },
+    {
+      "id": "NALVI-AUDIO-099",
+      "label": "Nahániri",
+      "sourceFile": "Nahániri.m4a",
+      "file": "099-nahaniri.m4a",
+      "format": "audio/mp4",
+      "humanRecorded": true,
+      "authorizedForPlayback": true
+    }
+  ]
+}

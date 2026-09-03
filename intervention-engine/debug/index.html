@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NALVI · Prueba visual del Intervention Engine</title>
+  <link rel="icon" href="../../icons/icon-192.png">
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#172342;background:#f4f7ff}*{box-sizing:border-box}body{margin:0}.shell{width:min(1050px,calc(100% - 32px));margin:32px auto}.head,.card{background:#fff;border:1px solid #dfe6f5;border-radius:24px;box-shadow:0 14px 42px rgba(48,69,120,.1)}.head{display:flex;justify-content:space-between;align-items:center;padding:18px 22px}.brand{font-weight:950;color:#3158b8}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:18px}.card{padding:24px}.tag{display:inline-flex;padding:6px 10px;border-radius:999px;background:#edf2ff;color:#3158b8;font-weight:850;font-size:12px}.prompt{font-size:clamp(26px,4vw,40px);margin:18px 0}.options{display:grid;gap:10px}.options button,.primary{min-height:48px;border:1px solid #ccd7ee;border-radius:14px;background:#fff;font:inherit;font-weight:800;text-align:left;padding:12px 15px;cursor:pointer}.options button:hover{border-color:#3158b8}.primary{background:#3158b8;color:#fff;text-align:center}.result{margin-top:16px;padding:16px;border-radius:16px;background:#f1f5ff}.strategy{font-size:22px;font-weight:950}.flow{display:grid;gap:10px;margin-top:15px}.flow div{padding:12px;border-left:4px solid #3158b8;background:#f7f9ff}.fingerprint{font:12px ui-monospace,SFMono-Regular,monospace;word-break:break-all;color:#596580}.media{display:grid;place-items:center;min-height:150px;border-radius:18px;background:linear-gradient(135deg,#e8f1ff,#f6eeff);font-size:72px}.hide{display:none}@media(max-width:760px){.grid{grid-template-columns:1fr}.shell{margin:16px auto}.head,.card{border-radius:18px}.head{align-items:flex-start;gap:10px}.prompt{font-size:28px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="head"><div><div class="brand">NALVI · INTERVENTION ENGINE</div><small>Prueba automática y visual: sameConcept ≠ sameExercise</small></div><select id="locale"><option>es</option><option>en</option><option>pt</option><option>fr</option><option>it</option><option>de</option></select></header>
+    <div class="grid">
+      <section class="card"><span class="tag">CONCEPTO · FAMILIA</span><h1 class="prompt" id="prompt">¿Cómo se dice mamá?</h1><div class="media hide" id="media">👩</div><div class="options" id="options"><button data-wrong>Ru</button><button data-wrong>Mitã</button><button data-right>Sy</button></div><button class="primary hide" id="again">Simular otro error</button></section>
+      <aside class="card"><span class="tag">DIAGNÓSTICO</span><div class="result" id="result">Elige una respuesta incorrecta para iniciar.</div><div class="flow" id="flow"></div></aside>
+    </div>
+  </main>
+  <script type="module" src="demo.mjs"></script>
+</body>
+</html>

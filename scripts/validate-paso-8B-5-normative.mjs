@@ -18,9 +18,12 @@ const [corpus, governance, policy, dossier, compiled, html, debugHtml] = await P
 ]);
 
 const normative = corpus.records.filter(record => record.validationStatus === "normativeVerified");
+const normativeLexical = normative.filter(record => record.recordType === "lexeme");
+const normativeGrammar = normative.filter(record => record.recordType === "conjugationPattern" || record.recordType === "linguisticRule");
 const expert = corpus.records.filter(record => record.validationStatus === "expertVerified");
 const authorized = filterAllowedKnowledge(corpus.records, corpus.records.map(record => record.id));
-assert.equal(normative.length, 20);
+assert.equal(normativeLexical.length, 20);
+assert.equal(normativeGrammar.length, 1);
 assert.equal(expert.length, 0);
 assert.equal(authorized.length, 20);
 assert.ok(authorized.every(record => record.allowedForGeneration === true));
@@ -28,7 +31,7 @@ assert.deepEqual(policy.linguisticGenerationGate.allowedValidationStatuses, ["no
 assert.deepEqual(governance.generationGate.allowedValidationStatuses, ["normativeVerified", "expertVerified"]);
 assert.equal(governance.normativeVerifiedIsHumanExpertReview, false);
 
-for (const record of normative) {
+for (const record of normativeLexical) {
   const verification = record.normativeVerification;
   assert.equal(verification.method, "direct-normative-source-check");
   assert.equal(verification.sourceAuthorityLevel, "A");
@@ -66,7 +69,7 @@ for (const id of ["CP-AREAL-001", "RULE-POSSESSION-001", "LEX-CANDIDATE-AGUYJE",
 
 const rebuilt = compileKnowledgeBase({ corpus, governance });
 assert.deepEqual(compiled, rebuilt);
-assert.deepEqual(compiled.authorizationSummary, { normativeVerified: 20, expertVerified: 0, allowedForGeneration: 20 });
+assert.deepEqual(compiled.authorizationSummary, { normativeVerified: 21, expertVerified: 0, allowedForGeneration: 20 });
 assert.equal(compiled.conjugationPatterns.filter(pattern => pattern.allowedForGeneration).length, 0);
 const engine = createGrammarEngine({ corpus, governance });
 assert.deepEqual(engine.policy.productiveValidationStatuses, ["normativeVerified", "expertVerified"]);
@@ -106,7 +109,8 @@ for (const suite of [
 console.log(JSON.stringify({
   step: "8B.5-normative-adjustment",
   status: "PASS",
-  normativeVerified: normative.length,
+  normativeVerifiedLexical: normativeLexical.length,
+  normativeVerifiedGrammar: normativeGrammar.length,
   expertVerified: expert.length,
   allowedForGeneration: authorized.length,
   deferred: dossier.normativeAdjustment.deferred,

@@ -1,0 +1,90 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "kidsLiveRooms": {
+      "$room": {
+        "players": {
+          ".read": "auth != null && $room === 'level-1'",
+          "$uid": {
+            ".write": "auth != null && $room === 'level-1' && auth.uid === $uid",
+            ".validate": "!newData.exists() || newData.hasChildren(['name', 'pet', 'color', 'level', 'x', 'y', 'z', 'h', 'health', 'progress', 'lastSeen', 'floor'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+            },
+            "pet": {
+              ".validate": "newData.isString() && (newData.val() === 'capybara' || newData.val() === 'armadillo' || newData.val() === 'bird' || newData.val() === 'mykure')"
+            },
+            "color": {
+              ".validate": "newData.isString() && newData.val().matches(/^#[0-9a-fA-F]{6}$/)"
+            },
+            "level": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 24"
+            },
+            "x": {
+              ".validate": "newData.isNumber() && newData.val() >= -2000 && newData.val() <= 2000"
+            },
+            "y": {
+              ".validate": "newData.isNumber() && newData.val() >= -200 && newData.val() <= 500"
+            },
+            "z": {
+              ".validate": "newData.isNumber() && newData.val() >= -2000 && newData.val() <= 2000"
+            },
+            "h": {
+              ".validate": "newData.isNumber() && newData.val() >= -7 && newData.val() <= 7"
+            },
+            "health": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
+            },
+            "progress": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000"
+            },
+            "lastSeen": {
+              ".validate": "newData.isNumber() && newData.val() >= now - 120000 && newData.val() <= now + 60000"
+            },
+            "floor": {
+              ".validate": "newData.isNumber() && newData.val() >= -20 && newData.val() <= 20"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "messages": {
+          ".read": "auth != null && $room === 'level-1'",
+          ".indexOn": ["ts"],
+          "$messageId": {
+            ".write": "auth != null && $room === 'level-1' && ((!data.exists() && newData.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || data.child('ts').val() < now - 600000)))",
+            ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'name', 'text', 'ts', 'level']) && newData.child('uid').val() === auth.uid)",
+            "uid": {
+              ".validate": "newData.isString() && newData.val() === auth.uid"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 180"
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() >= now - 30000 && newData.val() <= now + 30000"
+            },
+            "level": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 24"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".read": false,
+          ".write": false
+        }
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

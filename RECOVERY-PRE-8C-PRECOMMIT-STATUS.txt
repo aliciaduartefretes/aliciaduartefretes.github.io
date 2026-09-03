@@ -1,0 +1,200 @@
+NALVI — Estado Git recuperado antes del checkpoint
+Fecha local: 2026-09-02
+Base de comparación: origin/main @ de9315b0f621b4e5fc59936f46a9ce1ce5b9fbca
+Momento: después de copiar la carpeta recuperada y antes de añadir documentos de recuperación.
+
+## codex/recovery-pre-8c-20260902...origin/main
+ M activity-catalog/catalog-examples.mjs
+ M activity-catalog/nalvi-activity-catalog.mjs
+ M activity-catalog/nalvi-activity-quality.mjs
+ M assets/css/nalvi-activity-catalog.css
+ M assets/js/kuaa-general-activities.js
+ M assets/js/nalvi-activity-catalog-renderer.mjs
+ M assets/js/nalvi-intervention-client.mjs
+ M index.html
+ M knowledge-base/references/MODELO-DATOS-CORPUS.schema.json
+ M progression-engine/fallback-intervention.mjs
+ M prompts/nalvi-tutor-critic-v1.md
+ M prompts/nalvi-tutor-planner-v1.md
+ M scripts/validate-paso-8B-5-normative.mjs
+ M server/adaptive-tutor-schema.mjs
+ M server/intervention-service.mjs
+?? MANIFIESTO-PASO-7A-5.txt
+?? MANIFIESTO-PASO-7A.txt
+?? MANIFIESTO-VERSION.txt
+?? assets/audio/guarani/ali-2026/001-adio.m4a
+?? assets/audio/guarani/ali-2026/002-agaite.m4a
+?? assets/audio/guarani/ali-2026/003-agave.m4a
+?? assets/audio/guarani/ali-2026/004-age.m4a
+?? assets/audio/guarani/ali-2026/005-aguara-i.m4a
+?? assets/audio/guarani/ali-2026/006-aguigua.m4a
+?? assets/audio/guarani/ali-2026/007-aguyje.m4a
+?? assets/audio/guarani/ali-2026/008-aguyjeve.m4a
+?? assets/audio/guarani/ali-2026/009-ahe.m4a
+?? assets/audio/guarani/ali-2026/010-ahoja.m4a
+?? assets/audio/guarani/ali-2026/011-ahy-o.m4a
+?? assets/audio/guarani/ali-2026/012-ahy-o-api.m4a
+?? assets/audio/guarani/ali-2026/013-ahy-opa-a.m4a
+?? assets/audio/guarani/ali-2026/014-ai.m4a
+?? assets/audio/guarani/ali-2026/015-aicha.m4a
+?? assets/audio/guarani/ali-2026/016-aichejaranga.m4a
+?? assets/audio/guarani/ali-2026/017-aina.m4a
+?? assets/audio/guarani/ali-2026/018-aipo.m4a
+?? assets/audio/guarani/ali-2026/019-aje.m4a
+?? assets/audio/guarani/ali-2026/020-aju-y.m4a
+?? assets/audio/guarani/ali-2026/021-ajukue.m4a
+?? assets/audio/guarani/ali-2026/022-ajuri.m4a
+?? assets/audio/guarani/ali-2026/023-ajuvyso.m4a
+?? assets/audio/guarani/ali-2026/024-aka-guasu.m4a
+?? assets/audio/guarani/ali-2026/025-aka.m4a
+?? assets/audio/guarani/ali-2026/026-aka-o.m4a
+?? assets/audio/guarani/ali-2026/027-akachara.m4a
+?? assets/audio/guarani/ali-2026/028-akaguapy-en-lugar-de-akapyta.m4a
+?? assets/audio/guarani/ali-2026/029-akahata.m4a
+?? assets/audio/guarani/ali-2026/030-akahoja.m4a
+?? assets/audio/guarani/ali-2026/031-akamambu.m4a
+?? assets/audio/guarani/ali-2026/032-akambota.m4a
+?? assets/audio/guarani/ali-2026/033-akanga-u.m4a
+?? assets/audio/guarani/ali-2026/034-akangatu.m4a
+?? assets/audio/guarani/ali-2026/035-akanunduro-y.m4a
+?? assets/audio/guarani/ali-2026/036-akapete.m4a
+?? assets/audio/guarani/ali-2026/037-akapicha.m4a
+?? assets/audio/guarani/ali-2026/038-akarati.m4a
+?? assets/audio/guarani/ali-2026/039-akasa.m4a
+?? assets/audio/guarani/ali-2026/040-akatua.m4a
+?? assets/audio/guarani/ali-2026/041-ake-duermo.m4a
+?? assets/audio/guarani/ali-2026/042-akeke.m4a
+?? assets/audio/guarani/ali-2026/043-akoi.m4a
+?? assets/audio/guarani/ali-2026/044-aku.m4a
+?? assets/audio/guarani/ali-2026/045-akua-veloz.m4a
+?? assets/audio/guarani/ali-2026/046-akue.m4a
+?? assets/audio/guarani/ali-2026/047-akymba.m4a
+?? assets/audio/guarani/ali-2026/048-akyta.m4a
+?? assets/audio/guarani/ali-2026/049-ama.m4a
+?? assets/audio/guarani/ali-2026/050-amamo-aha.m4a
+?? assets/audio/guarani/ali-2026/051-ambue.m4a
+?? assets/audio/guarani/ali-2026/052-angiru.m4a
+?? assets/audio/guarani/ali-2026/053-anua.m4a
+?? assets/audio/guarani/ali-2026/054-apopy.m4a
+?? assets/audio/guarani/ali-2026/055-apyka.m4a
+?? assets/audio/guarani/ali-2026/056-arapapaha.m4a
+?? assets/audio/guarani/ali-2026/057-ava.m4a
+?? assets/audio/guarani/ali-2026/058-chae.m4a
+?? assets/audio/guarani/ali-2026/059-chavi.m4a
+?? assets/audio/guarani/ali-2026/060-che-rera.m4a
+?? assets/audio/guarani/ali-2026/061-chejupe.m4a
+?? assets/audio/guarani/ali-2026/062-cherejape.m4a
+?? assets/audio/guarani/ali-2026/063-chi-o-mezquino.m4a
+?? assets/audio/guarani/ali-2026/064-chokokue.m4a
+?? assets/audio/guarani/ali-2026/065-chorori.m4a
+?? assets/audio/guarani/ali-2026/066-churi.m4a
+?? assets/audio/guarani/ali-2026/067-denuka.m4a
+?? assets/audio/guarani/ali-2026/068-deprovecho.m4a
+?? assets/audio/guarani/ali-2026/069-eja.m4a
+?? assets/audio/guarani/ali-2026/070-eja-e-yva.m4a
+?? assets/audio/guarani/ali-2026/071-ekopora.m4a
+?? assets/audio/guarani/ali-2026/072-guarara.m4a
+?? assets/audio/guarani/ali-2026/073-guata.m4a
+?? assets/audio/guarani/ali-2026/074-guavira.m4a
+?? assets/audio/guarani/ali-2026/075-gueteri.m4a
+?? assets/audio/guarani/ali-2026/076-guyguy.m4a
+?? assets/audio/guarani/ali-2026/077-ha.m4a
+?? assets/audio/guarani/ali-2026/078-ha-etegua.m4a
+?? assets/audio/guarani/ali-2026/079-haihara.m4a
+?? assets/audio/guarani/ali-2026/080-hakua.m4a
+?? assets/audio/guarani/ali-2026/081-hasakuaa-yva.m4a
+?? assets/audio/guarani/ali-2026/082-hekombo-e.m4a
+?? assets/audio/guarani/ali-2026/083-hembevo.m4a
+?? assets/audio/guarani/ali-2026/084-hendu.m4a
+?? assets/audio/guarani/ali-2026/085-hepyme-eva.m4a
+?? assets/audio/guarani/ali-2026/086-hesaka.m4a
+?? assets/audio/guarani/ali-2026/087-ichupe.m4a
+?? assets/audio/guarani/ali-2026/088-ikatu.m4a
+?? assets/audio/guarani/ali-2026/089-ikatupa.m4a
+?? assets/audio/guarani/ali-2026/090-ikatupava.m4a
+?? assets/audio/guarani/ali-2026/091-imo-aporava.m4a
+?? assets/audio/guarani/ali-2026/092-inimbe-i.m4a
+?? assets/audio/guarani/ali-2026/093-ipora.m4a
+?? assets/audio/guarani/ali-2026/094-iporupy.m4a
+?? assets/audio/guarani/ali-2026/095-itati.m4a
+?? assets/audio/guarani/ali-2026/096-jagua.m4a
+?? assets/audio/guarani/ali-2026/097-jaho-i-o.m4a
+?? assets/audio/guarani/ali-2026/098-japyhy.m4a
+?? assets/audio/guarani/ali-2026/099-nahaniri.m4a
+?? assets/audio/guarani/ali-2026/manifest.json
+?? assets/js/nalvi-recorded-audio.js
+?? curriculum/README-GUARANI-GENERAL-ROUTE.md
+?? curriculum/guarani-general-route.schema.json
+?? curriculum/tests/guarani-general-route.test.mjs
+?? deliverables/NALVI-PRE8C-FINAL-STABILIZATION-INCREMENTAL.zip
+?? deliverables/NALVI-activity-catalog-v1-INCREMENTAL.zip
+?? firebase/database-GESA.rules.json
+?? firebase/firebase.json
+?? firebase/firestore-PASO-6.rules
+?? firebase/firestore-paso-6.test.mjs
+?? grammar-engine/README-GRAMMAR-ENGINE.md
+?? grammar-engine/tests/grammar-engine.test.mjs
+?? human-review/PRE-8C-HABILITACION-GRAMATICAL-NORMATIVA.md
+?? human-review/pre-8c-grammar-readiness.json
+?? intervention-engine/debug/demo.mjs
+?? intervention-engine/debug/index.html
+?? mastery-engine/README-MASTERY-ENGINE.md
+?? mastery-engine/debug/index.html
+?? mastery-engine/firestore-layout.json
+?? mastery-engine/mastery-config.json
+?? mastery-engine/mastery-data.schema.json
+?? mastery-engine/tests/mastery-engine.test.mjs
+?? policies/REGLAS-GLOBALES-IMPLEMENTACION.md
+?? reports/adaptive-tutor-desktop.png
+?? reports/adaptive-tutor-mobile-390x844.png
+?? scripts/import-recorded-audio.mjs
+?? scripts/validate-estabilizacion-boot.mjs
+?? scripts/validate-estabilizacion-visual-completa.mjs
+?? scripts/validate-gestion-academica.mjs
+?? scripts/validate-local-assets.mjs
+?? scripts/validate-paso-3.mjs
+?? scripts/validate-paso-4.mjs
+?? scripts/validate-paso-5.mjs
+?? scripts/validate-paso-6-pre-firebase.mjs
+?? scripts/validate-paso-7A-5-parte-2.mjs
+?? scripts/validate-paso-7A-5.mjs
+?? scripts/validate-paso-7A.mjs
+?? scripts/validate-paso-7B-regressions.mjs
+?? scripts/validate-pre-8C-grammar.mjs
+?? scripts/validate-regresiones-estabilizacion-boot.mjs
+?? server/tests/adaptive-intervention-plan.test.mjs
+?? server/tests/firebase-id-token.test.mjs
+?? validation/screenshots/nalvi-activity-desktop.png
+?? validation/screenshots/nalvi-boot-cold-final.png
+?? validation/screenshots/nalvi-boot-desktop-final.png
+?? validation/screenshots/nalvi-boot-mobile-390x844-final.png
+?? validation/screenshots/nalvi-catalogo-desktop-estabilizacion-visual.png
+?? validation/screenshots/nalvi-catalogo-desktop-final.png
+?? validation/screenshots/nalvi-catalogo-mobile-390x844-final.png
+?? validation/screenshots/nalvi-diccionario-desktop-estabilizacion-visual.png
+?? validation/screenshots/nalvi-diccionario-desktop-final.png
+?? validation/screenshots/nalvi-diccionario-mobile-390x844-final.png
+?? validation/screenshots/nalvi-home-desktop-estabilizacion-visual.png
+?? validation/screenshots/nalvi-home-desktop-final.png
+?? validation/screenshots/nalvi-home-mobile-390x844-final.png
+?? validation/screenshots/nalvi-home-mobile-final.png
+?? validation/screenshots/nalvi-route-desktop-paso-7A-5-parte-2.png
+?? validation/screenshots/nalvi-route-mobile-390x844-paso-7A-5-parte-2.png
+?? versions/compiled-knowledge-NALVI-P4-stable.json
+?? versions/firestore-PRE-PASO-6.rules
+?? versions/grammar-engine-NALVI-P4-stable.mjs
+?? versions/index-NALVI-P2B-stable.html
+?? versions/index-NALVI-P3-stable.html
+?? versions/index-NALVI-P4-stable.html
+?? versions/index-NALVI-P5-stable.html
+?? versions/index-NALVI-P6-stable.html
+?? versions/kuaa-general-activities-NALVI-P4-stable.js
+?? versions/kuaa-general-activities-NALVI-P5-stable.js
+?? versions/nalvi-design-system-NALVI-P7A-stable.css
+?? versions/nalvi-general-route-ui-NALVI-P5-stable.js
+?? versions/nalvi-general-route-ui-NALVI-P7A-stable.js
+?? versions/nalvi-guarani-general-route-NALVI-P5-stable.js
+?? versions/paso-7A-5-estable/index.html
+?? versions/paso-7A-5-estable/nalvi-design-system.css
+?? versions/paso-7A-5-estable/nalvi-general-route-ui.js
+

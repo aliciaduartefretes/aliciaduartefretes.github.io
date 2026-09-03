@@ -1,0 +1,36 @@
+NALVI — PASO 7A.5 — UX POLISH DE LA RUTA DE APRENDIZAJE
+
+Estado: ESTABLE
+Base recuperable: NALVI-paso-7A
+Salida: NALVI-paso-7A-5
+
+Archivos funcionales modificados:
+- assets/js/nalvi-general-route-ui.js
+- assets/css/nalvi-design-system.css
+
+Archivos de validación/entrega nuevos:
+- scripts/validate-paso-7A-5.mjs
+- REPORTE-PASO-7A-5.md
+- VALIDACION-PASO-7A-5.md
+- MANIFIESTO-PASO-7A-5.txt
+
+Cambios prohibidos confirmados como NO realizados:
+- Firebase y Firebase Rules
+- Knowledge Base
+- Grammar Engine
+- Mastery Engine
+- OpenAI
+- XP, vidas y progreso
+- roles y permisos
+- cursos distintos de Guaraní General
+- index.html
+
+Pruebas: PASS
+Regresiones: 39/39 PASS
+Idiomas: es, en, pt, fr, it, de
+Paso siguiente iniciado: NO
+
+SHA-256 funcional:
+- index.html: 6b99ae337f2ac3b20d3a5baa4f22005a3fb5efd45b4f4e0f0f841dab856b8a87
+- assets/js/nalvi-general-route-ui.js: f5ced284dba0c892344cfec63d3ed3dbcf891cdcf865fc7690e689af9bab47ec
+- assets/css/nalvi-design-system.css: 8ca0b05f44c8b529245f37ae24000b6294e15b0319bcfbe6243d22d1984aaf26

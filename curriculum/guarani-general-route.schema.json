@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nalvi:curriculum:guarani-general-route:v1",
+  "title": "NALVI Guaraní General competency route",
+  "type": "object",
+  "required": [
+    "route",
+    "pedagogicalCycle",
+    "modules",
+    "learningObjectives",
+    "concepts"
+  ],
+  "properties": {
+    "route": {
+      "type": "object",
+      "required": [
+        "id",
+        "courseId",
+        "languageBeingLearned",
+        "learningModel",
+        "progressUnit",
+        "fixedLessonCount",
+        "practicePolicy",
+        "moduleIds"
+      ],
+      "properties": {
+        "courseId": { "const": "general" },
+        "languageBeingLearned": { "const": "gug-PY" },
+        "learningModel": { "const": "competency-route" },
+        "progressUnit": { "const": "learningObjective" },
+        "fixedLessonCount": { "type": "null" },
+        "practicePolicy": {
+          "type": "object",
+          "required": ["activityCount", "masteryDecisionImplemented", "fallback"],
+          "properties": {
+            "activityCount": { "const": "variable" },
+            "masteryDecisionImplemented": { "const": false }
+          }
+        }
+      }
+    },
+    "pedagogicalCycle": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "skill", "label"]
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "order", "title", "description", "learningObjectiveIds"]
+      }
+    },
+    "learningObjectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "moduleId",
+          "order",
+          "canDo",
+          "conceptIds",
+          "lexemeIds",
+          "grammarRuleIds",
+          "skills",
+          "difficulty",
+          "activityTypes",
+          "legacyContentRefs",
+          "institutionalMetadata"
+        ],
+        "properties": {
+          "institutionalMetadata": {
+            "type": "object",
+            "required": [
+              "reportableByObjective",
+              "reportableSkills",
+              "reinforcementSignalReady",
+              "masteryCalculated"
+            ],
+            "properties": {
+              "masteryCalculated": { "const": false }
+            }
+          }
+        }
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "validationScope"]
+      }
+    }
+  }
+}

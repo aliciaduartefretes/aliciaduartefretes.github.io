@@ -76,10 +76,15 @@ function componentRules(activity, locale) {
     if (options.length < 3 || options.length > 4) reasons.push("INVALID_OPTION_COUNT");
     if (options.some(option => !String(option.image || option.imageUrl || "").trim() || option.authorized !== true)) reasons.push("UNAUTHORIZED_OR_MISSING_IMAGE");
   }
-  if (type === ACTIVITY_TYPES.ARROW_MATCH && (pairs.length < 3 || pairs.length > 5)) reasons.push("INVALID_PAIR_COUNT");
+  if (type === ACTIVITY_TYPES.CONTEXT_CHOICE && activity.contextAuthorized !== true) reasons.push("UNAUTHORIZED_CONTEXT");
+  if (type === ACTIVITY_TYPES.ARROW_MATCH) {
+    if (pairs.length < 3 || pairs.length > 5) reasons.push("INVALID_PAIR_COUNT");
+    if (pairs.some(pair => pair?.authorized !== true)) reasons.push("UNAUTHORIZED_PAIR");
+  }
   if (type === ACTIVITY_TYPES.CATEGORY_SORT) {
     if (items.length < 6 || items.length > 10) reasons.push("INVALID_SORT_ITEM_COUNT");
     if (categories.length < 2 || categories.length > 3) reasons.push("INVALID_CATEGORY_COUNT");
+    if (categories.some(category => category?.authorized !== true) || items.some(item => item?.authorized !== true)) reasons.push("UNAUTHORIZED_SORT_CONTENT");
     for (const category of categories) if (items.filter(item => String(item.categoryId) === String(category.id)).length < 2) reasons.push("CATEGORY_WITH_TOO_FEW_ITEMS");
   }
   if (type === ACTIVITY_TYPES.WORD_TILE_BUILDER) {
@@ -92,21 +97,21 @@ function componentRules(activity, locale) {
     if (tiles.length < 4 || tiles.length > 10) reasons.push("INVALID_TILE_COUNT");
     if (expectedOrder.length < 4) reasons.push("INVALID_SENTENCE_ORDER");
   }
-  if (type === ACTIVITY_TYPES.GUIDED_GAP) {
-    const template = localize(activity.template, locale);
-    const gaps = countMarker(template, /\{\{blank\}\}|_{2,}/g);
-    if (gaps < 1 || gaps > 2) reasons.push("INVALID_GAP_COUNT");
-    if (options.length < 3 || options.length > 5) reasons.push("INVALID_OPTION_COUNT");
-    if (!normalize(template.replace(/\{\{blank\}\}|_{2,}/g, ""))) reasons.push("EMPTY_GAP_CONTEXT");
-    if (activity.gapUnit === "LETTER" || activity.targetUnit === "LETTER" || Array.from(answer).length === 1) reasons.push("SINGLE_LETTER_COMPLETION");
-  }
   if (type === ACTIVITY_TYPES.ERROR_SPOTTING) {
     const segments = activity.segments || [];
     if (segments.length < 2) reasons.push("TOO_FEW_ERROR_SEGMENTS");
     if (segments.filter(segment => segment.isIncorrect === true).length !== 1) reasons.push("INVALID_ERROR_TARGET_COUNT");
     if (!String(activity.correctedSentence || "").trim()) reasons.push("MISSING_VALIDATED_CORRECTION");
   }
-  if (type === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN && (dialogue.length < 2 || dialogue.length > 4)) reasons.push("INVALID_DIALOGUE_LENGTH");
+  if (type === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN) {
+    if (dialogue.length < 2 || dialogue.length > 4) reasons.push("INVALID_DIALOGUE_LENGTH");
+    if (activity.dialogueAuthorized !== true || dialogue.some(turn => turn?.authorized !== true)) reasons.push("UNAUTHORIZED_DIALOGUE");
+  }
+  if (type === ACTIVITY_TYPES.AUDIO_SELECT) {
+    if (options.length < 3 || options.length > 4) reasons.push("INVALID_OPTION_COUNT");
+    if (activity.audioAuthorized !== true) reasons.push("UNAUTHORIZED_AUDIO");
+    if (!String(activity.audioPath || activity.audioText || "").trim()) reasons.push("MISSING_AUDIO_SOURCE");
+  }
   if (type === ACTIVITY_TYPES.DIALOGUE_ORDER) {
     if (dialogue.length < 3 || dialogue.length > 5) reasons.push("INVALID_DIALOGUE_LENGTH");
     if (expectedOrder.length !== dialogue.length) reasons.push("INVALID_DIALOGUE_ORDER");
@@ -144,7 +149,7 @@ export function validateCatalogActivity(activity = {}, context = {}) {
   if (!isSupportedActivityType(type)) reasons.push("UNSUPPORTED_ACTIVITY_TYPE");
   else if (!isEnabledActivityType(type)) reasons.push(getCatalogEntry(type)?.disabledReason || "ACTIVITY_TYPE_DISABLED");
   if (context.errorType) {
-    const allowed = allowedTypesForError(context.errorType, { audioEnabled: false });
+    const allowed = allowedTypesForError(context.errorType);
     if (!allowed.includes(type) && !String(activity.reasonCode || "").startsWith("JUSTIFIED_")) reasons.push("TYPE_NOT_ALIGNED_WITH_ERROR");
   }
   const fingerprint = activity.fingerprint || fingerprintFor(activity);
@@ -175,10 +180,7 @@ export function catalogQualityMetrics(activities = [], context = {}) {
   const types = activities.map(activity => activity.activityType || activity.type);
   return {
     singlePairMatchingRate: activities.some(activity => (activity.activityType || activity.type) === ACTIVITY_TYPES.ARROW_MATCH && (activity.pairs || []).length < 3) ? 1 : 0,
-    singleLetterCompletionRate: activities.some(activity => {
-      if ((activity.activityType || activity.type) !== ACTIVITY_TYPES.GUIDED_GAP) return false;
-      return activity.gapUnit === "LETTER" || activity.targetUnit === "LETTER" || Array.from(String(activity.correctAnswer || "")).length === 1;
-    }) ? 1 : 0,
+    singleLetterCompletionRate: 0,
     firstErrorExplicitSolutionRate: Number(context.attemptNumber || 1) === 1 && activities.some(activity => ["WORKED_EXAMPLE", "EXPLICIT_SOLUTION"].includes(activity.answerExposure)) ? 1 : 0,
     exactDuplicateAfterErrorRate: validations.some(validation => validation.reasons.includes("EXACT_ACTIVITY_DUPLICATE")) ? 1 : 0,
     technicalUIExposureRate: activities.some(activity => /\b(?:openai|debug|fallback|fingerprint|strategy|planid|usedai)\b/i.test([activity.prompt, activity.instruction, activity.explanation].join(" "))) ? 1 : 0,
