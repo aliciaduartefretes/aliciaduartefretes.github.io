@@ -1,5 +1,5 @@
 import { ACTIVITY_TYPES, allowedTypesForError, cognitiveDemandFor } from "../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
-import { authorizeBundledRecordedAudio } from "./recorded-audio-manifest-index.mjs?v=NALVI-AUDIO-INDEX-2";
+import { authorizeBundledRecordedAudio } from "./recorded-audio-manifest-index.mjs?v=NALVI-AUDIO-INDEX-3";
 
 const COPY = Object.freeze({
   es: { contextQuestion: "Elige la opción que corresponde a esta situación.", match: "Relaciona cada elemento con su significado.", sort: "Clasifica las tarjetas en la categoría correcta.", dialogue: "Elige la respuesta que continúa la conversación.", listen: "Escucha y elige la opción correcta.", recall: "Recuerda la expresión sin verla." },

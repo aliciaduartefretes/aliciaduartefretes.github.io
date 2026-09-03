@@ -407,7 +407,13 @@ function stripAbsentSourceIdentityTransport(activity = {}) {
 }
 
 function canonicalContentDigest(content) {
-  const sortedRecords = values => [...values].sort((left, right) => tupleKey(left).localeCompare(tupleKey(right)));
+  const canonicalRecord = value => ({
+    ...value,
+    ...(Array.isArray(value?.sourceIds) ? { sourceIds: [...value.sourceIds].sort() } : {})
+  });
+  const canonicalRecords = values => values.map(canonicalRecord);
+  const sortedRecords = values => canonicalRecords(values)
+    .sort((left, right) => tupleKey(left).localeCompare(tupleKey(right)));
   return hash({
     ...content,
     conceptIds: [...content.conceptIds].sort(),
@@ -418,6 +424,7 @@ function canonicalContentDigest(content) {
     pairs: sortedRecords(content.pairs),
     categories: sortedRecords(content.categories),
     items: sortedRecords(content.items),
+    dialogue: canonicalRecords(content.dialogue),
     acceptedAnswers: [...content.acceptedAnswers].sort()
   });
 }
@@ -502,22 +509,27 @@ function canonicalPlanForActivity({ context, mode, activity, rejectedCandidates,
   };
 }
 
-export function toRenderable(activity, context, planId, index) {
-  const materialValid = validateActivityAgainstApprovedMaterial(activity, context).length === 0;
-  activity = canonicalizeVisibleActivityCopy(activity, context);
-  const locale = LOCALES.has(context.uiLocale) ? context.uiLocale : "es";
-  const type = activity.activityType || activity.type;
-  const approved = context.approvedActivityMaterial || {};
-  const selectionTypes = new Set(["CONTEXT_CHOICE", "DIALOGUE_NEXT_TURN", "AUDIO_SELECT"]);
-  const correctAnswer = type === "DIALOGUE_NEXT_TURN"
-    ? exactText(approved.dialogueCorrectAnswer, locale)
-    : exactText(approved.correctAnswer, locale);
-  const correctOptionId = selectionTypes.has(type)
-    ? exactId(type === "DIALOGUE_NEXT_TURN" ? approved.dialogueCorrectOptionId : approved.correctOptionId)
-    : "";
-  const optionText = option => exactText(option?.text ?? option?.label ?? option?.value, locale);
-  const options = selectionTypes.has(type)
-    ? (activity.options || []).filter(option => exactId(option?.id)).map(option => {
+export function toRenderable(activity = {}, context = {}, planId, index) {
+  try {
+    if (!activity || typeof activity !== "object" || Array.isArray(activity)
+      || !context || typeof context !== "object" || Array.isArray(context)) return null;
+    const materialReasons = validateActivityAgainstApprovedMaterial(activity, context);
+    if (materialReasons.length) return null;
+    const materialValid = true;
+    activity = canonicalizeVisibleActivityCopy(activity, context);
+    const locale = LOCALES.has(context.uiLocale) ? context.uiLocale : "es";
+    const type = activity.activityType || activity.type;
+    const approved = context.approvedActivityMaterial || {};
+    const selectionTypes = new Set(["CONTEXT_CHOICE", "DIALOGUE_NEXT_TURN", "AUDIO_SELECT"]);
+    const correctAnswer = type === "DIALOGUE_NEXT_TURN"
+      ? exactText(approved.dialogueCorrectAnswer, locale)
+      : exactText(approved.correctAnswer, locale);
+    const correctOptionId = selectionTypes.has(type)
+      ? exactId(type === "DIALOGUE_NEXT_TURN" ? approved.dialogueCorrectOptionId : approved.correctOptionId)
+      : "";
+    const optionText = option => exactText(option?.text ?? option?.label ?? option?.value, locale);
+    const options = selectionTypes.has(type)
+      ? (activity.options || []).filter(option => exactId(option?.id)).map(option => {
         const text = optionText(option);
         return {
           id: exactId(option.id),
@@ -529,54 +541,54 @@ export function toRenderable(activity, context, planId, index) {
           authorized: true,
           ...projectedSourceIdentity(option, materialValid)
         };
-      })
-    : [];
-  const correctOption = options.find(option => option.id === correctOptionId);
-  const correctOptionText = correctOption?.text || "";
-  const audioClaim = type === "AUDIO_SELECT" && materialValid
-    ? trustedRecordedAudio(activity, correctAnswer, { activityClaim: true })
-    : null;
-  const activityAudio = audioClaim ? authorizeRecordedAudioForTarget(audioClaim, correctAnswer) : null;
-  const recordedAudio = activityAudio ? authorizeRecordedAudioForTarget(audioClaim, correctOptionText) : null;
-  const pairs = type === "ARROW_MATCH" ? (activity.pairs || []).map(pair => ({
-    id: exactId(pair?.id),
-    left: exactText(pair?.left, locale),
-    right: exactText(pair?.right, locale),
-    authorized: true,
-    ...projectedSourceIdentity(pair, materialValid)
-  })) : [];
-  const categories = type === "CATEGORY_SORT" ? (activity.categories || []).map(category => ({
-    id: exactId(category?.id),
-    label: exactText(category?.label ?? category?.text, locale),
-    authorized: true,
-    ...projectedSourceIdentity(category, materialValid)
-  })) : [];
-  const items = type === "CATEGORY_SORT" ? (activity.items || []).map(item => ({
-    id: exactId(item?.id),
-    text: exactText(item?.text ?? item?.label, locale),
-    categoryId: exactId(item?.categoryId),
-    authorized: true,
-    ...projectedSourceIdentity(item, materialValid)
-  })) : [];
-  const dialogue = type === "DIALOGUE_NEXT_TURN" ? (activity.dialogue || []).map(turn => ({
-    id: exactId(turn?.id),
-    speaker: exactText(turn?.speaker, locale),
-    text: exactText(turn?.text, locale),
-    authorized: true,
-    ...projectedSourceIdentity(turn, materialValid)
-  })) : [];
-  const acceptedAnswers = type === "DIALOGUE_NEXT_TURN"
-    ? [correctAnswer].filter(Boolean)
-    : (approved.acceptedAnswers || []).map(value => exactText(value, locale)).filter(Boolean);
-  const renderSourceIdentity = materialValid ? (exactSourceIdentity(activity) || {}) : {};
-  const renderSourceIds = hasOwn(renderSourceIdentity, "sourceIds")
-    ? [...renderSourceIdentity.sourceIds]
-    : Array.isArray(context.sourceIds) ? [...context.sourceIds]
-      : Array.isArray(context.activity?.sourceIds) ? [...context.activity.sourceIds] : [];
-  const helpLevel = type === "INDEPENDENT_RECALL"
-    ? 0
-    : Math.min(2, Math.max(0, Number(context.attemptNumber || 1) - 1));
-  const canonicalContent = {
+        })
+      : [];
+    const correctOption = options.find(option => option.id === correctOptionId);
+    const correctOptionText = correctOption?.text || "";
+    const audioClaim = type === "AUDIO_SELECT" && materialValid
+      ? trustedRecordedAudio(activity, correctAnswer, { activityClaim: true })
+      : null;
+    const activityAudio = audioClaim ? authorizeRecordedAudioForTarget(audioClaim, correctAnswer) : null;
+    const recordedAudio = activityAudio ? authorizeRecordedAudioForTarget(audioClaim, correctOptionText) : null;
+    const pairs = type === "ARROW_MATCH" ? (activity.pairs || []).map(pair => ({
+      id: exactId(pair?.id),
+      left: exactText(pair?.left, locale),
+      right: exactText(pair?.right, locale),
+      authorized: true,
+      ...projectedSourceIdentity(pair, materialValid)
+    })) : [];
+    const categories = type === "CATEGORY_SORT" ? (activity.categories || []).map(category => ({
+      id: exactId(category?.id),
+      label: exactText(category?.label ?? category?.text, locale),
+      authorized: true,
+      ...projectedSourceIdentity(category, materialValid)
+    })) : [];
+    const items = type === "CATEGORY_SORT" ? (activity.items || []).map(item => ({
+      id: exactId(item?.id),
+      text: exactText(item?.text ?? item?.label, locale),
+      categoryId: exactId(item?.categoryId),
+      authorized: true,
+      ...projectedSourceIdentity(item, materialValid)
+    })) : [];
+    const dialogue = type === "DIALOGUE_NEXT_TURN" ? (activity.dialogue || []).map(turn => ({
+      id: exactId(turn?.id),
+      speaker: exactText(turn?.speaker, locale),
+      text: exactText(turn?.text, locale),
+      authorized: true,
+      ...projectedSourceIdentity(turn, materialValid)
+    })) : [];
+    const acceptedAnswers = type === "DIALOGUE_NEXT_TURN"
+      ? [correctAnswer].filter(Boolean)
+      : (approved.acceptedAnswers || []).map(value => exactText(value, locale)).filter(Boolean);
+    const renderSourceIdentity = materialValid ? (exactSourceIdentity(activity) || {}) : {};
+    const renderSourceIds = hasOwn(renderSourceIdentity, "sourceIds")
+      ? [...renderSourceIdentity.sourceIds]
+      : Array.isArray(context.sourceIds) ? [...context.sourceIds]
+        : Array.isArray(context.activity?.sourceIds) ? [...context.activity.sourceIds] : [];
+    const helpLevel = type === "INDEPENDENT_RECALL"
+      ? 0
+      : Math.min(2, Math.max(0, Number(context.attemptNumber || 1) - 1));
+    const canonicalContent = {
     type,
     activityType: type,
     conceptId: context.conceptId, conceptIds: [context.conceptId].filter(Boolean), learningObjectiveId: context.learningObjectiveId,
@@ -634,20 +646,23 @@ export function toRenderable(activity, context, planId, index) {
     independentRetest: false,
     spacedRetest: false,
     evidenceMode: "guided"
-  };
-  const contentDigest = canonicalContentDigest(canonicalContent);
-  const serverActivityId = `nalvi-intervention-${hash({
-    sourceActivityId: context.activity?.id || "",
-    attemptNumber: context.attemptNumber,
-    index,
-    contentDigest
-  }).slice(0, 40)}`;
-  return {
-    ...canonicalContent,
-    id: serverActivityId,
-    fingerprint: `nalvi-afp-${contentDigest.slice(0, 40)}`,
-    context: `adaptive-tutor:${planId}:${index + 1}`
-  };
+    };
+    const contentDigest = canonicalContentDigest(canonicalContent);
+    const serverActivityId = `nalvi-intervention-${hash({
+      sourceActivityId: context.activity?.id || "",
+      attemptNumber: context.attemptNumber,
+      index,
+      contentDigest
+    }).slice(0, 40)}`;
+    return {
+      ...canonicalContent,
+      id: serverActivityId,
+      fingerprint: `nalvi-afp-${contentDigest.slice(0, 40)}`,
+      context: `adaptive-tutor:${planId}:${index + 1}`
+    };
+  } catch {
+    return null;
+  }
 }
 
 function selectValidatedCandidate(plan, context, mode, allowedKnowledge) {
@@ -686,6 +701,10 @@ function selectValidatedCandidate(plan, context, mode, allowedKnowledge) {
       continue;
     }
     const activity = toRenderable({ ...selected.candidate.activity, validatedAgainstApprovedMaterial: true }, context, "server-validated", 0);
+    if (!activity) {
+      rejectedCandidates.push({ activityType: rawCandidate.activityType, reasons: ["RENDERABLE_MATERIAL_REJECTED"] });
+      continue;
+    }
     if (isCanonicalDuplicate(activity, context)) {
       rejectedCandidates.push({ activityType: rawCandidate.activityType, reasons: ["EXACT_ACTIVITY_DUPLICATE"] });
       continue;
@@ -735,6 +754,10 @@ export function createProfessionalFallbackPlan(context, {
         continue;
       }
       const renderedCandidate = toRenderable(candidateSelection.candidate.activity, context, `fallback-${context.conceptId}`, 0);
+      if (!renderedCandidate) {
+        rejectedCandidates.push({ activityType: rawCandidate.activityType, reasons: ["RENDERABLE_MATERIAL_REJECTED"] });
+        continue;
+      }
       if (isCanonicalDuplicate(renderedCandidate, context)) {
         rejectedCandidates.push({ activityType: rawCandidate.activityType, reasons: ["EXACT_ACTIVITY_DUPLICATE"] });
         continue;

@@ -48,37 +48,43 @@ const RESERVED_AUDIO_CLAIM_KEYS = Object.freeze([
 ]);
 
 export function authorizeBundledRecordedAudio(claim = {}, targetText = "") {
-  if (!claim || typeof claim !== "object" || Array.isArray(claim)) return null;
-  let prototype, claimKeys;
   try {
-    prototype = Object.getPrototypeOf(claim);
-    claimKeys = Object.keys(claim).sort();
+    if (!claim || typeof claim !== "object" || Array.isArray(claim) || typeof targetText !== "string") return null;
+    const prototype = Object.getPrototypeOf(claim);
+    if (prototype !== Object.prototype && prototype !== null) return null;
+    const ownKeys = Reflect.ownKeys(claim);
+    if (ownKeys.length !== AUTHORITY_CLAIM_KEYS.length
+      || ownKeys.some(key => typeof key !== "string")
+      || JSON.stringify([...ownKeys].sort()) !== JSON.stringify([...AUTHORITY_CLAIM_KEYS].sort())
+      || (prototype === Object.prototype
+        && RESERVED_AUDIO_CLAIM_KEYS.some(key => Object.prototype.hasOwnProperty.call(prototype, key)))) return null;
+    const descriptors = Object.fromEntries(AUTHORITY_CLAIM_KEYS
+      .map(key => [key, Object.getOwnPropertyDescriptor(claim, key)]));
+    if (AUTHORITY_CLAIM_KEYS.some(key => !descriptors[key] || !("value" in descriptors[key])
+      || descriptors[key].enumerable !== true)) return null;
+
+    const audioId = typeof descriptors.audioId.value === "string" ? descriptors.audioId.value : "";
+    const audioPath = typeof descriptors.audioPath.value === "string" ? descriptors.audioPath.value : "";
+    const audioText = typeof descriptors.audioText.value === "string"
+      ? descriptors.audioText.value.normalize("NFC") : "";
+    const recording = BY_ID.get(audioId);
+    if (!recording || audioPath !== recording.audioPath || audioText !== recording.audioText) return null;
+    const normalizedTarget = normalizeTarget(targetText);
+    const aliases = [recording.audioText, recording.audioText.split("(")[0]]
+      .map(normalizeTarget)
+      .filter(Boolean);
+    if (!normalizedTarget || !aliases.includes(normalizedTarget)) return null;
+    return Object.freeze({
+      audioId: recording.audioId,
+      audioPath: recording.audioPath,
+      audioText: recording.audioText,
+      audioAuthorized: true,
+      humanRecorded: true,
+      audioSource: "manifest-human-recording"
+    });
   } catch {
     return null;
   }
-  if (prototype !== Object.prototype && prototype !== null) return null;
-  if (claimKeys.length !== AUTHORITY_CLAIM_KEYS.length
-    || !AUTHORITY_CLAIM_KEYS.every(key => Object.hasOwn(claim, key))
-    || RESERVED_AUDIO_CLAIM_KEYS.some(key => key in claim && !Object.hasOwn(claim, key))
-    || JSON.stringify(claimKeys) !== JSON.stringify([...AUTHORITY_CLAIM_KEYS].sort())) return null;
-  const audioId = typeof claim.audioId === "string" ? claim.audioId : "";
-  const audioPath = typeof claim.audioPath === "string" ? claim.audioPath : "";
-  const audioText = typeof claim.audioText === "string" ? claim.audioText.normalize("NFC") : "";
-  const recording = BY_ID.get(audioId);
-  if (!recording || audioPath !== recording.audioPath || audioText !== recording.audioText) return null;
-  const normalizedTarget = normalizeTarget(targetText);
-  const aliases = [recording.audioText, recording.audioText.split("(")[0]]
-    .map(normalizeTarget)
-    .filter(Boolean);
-  if (!normalizedTarget || !aliases.includes(normalizedTarget)) return null;
-  return Object.freeze({
-    audioId: recording.audioId,
-    audioPath: recording.audioPath,
-    audioText: recording.audioText,
-    audioAuthorized: true,
-    humanRecorded: true,
-    audioSource: "manifest-human-recording"
-  });
 }
 
 export function bundledRecordedAudioIndexAudit() {

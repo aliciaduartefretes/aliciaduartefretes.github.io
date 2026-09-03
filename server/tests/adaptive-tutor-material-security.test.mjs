@@ -398,6 +398,32 @@ test("el matcher acepta exclusivamente las seis formas construidas con material 
   }
 });
 
+test("los seis formatos de intervención inmediata se proyectan siempre como evidencia guiada", () => {
+  const context = matcherContext();
+  for (const type of [
+    "CONTEXT_CHOICE",
+    "ARROW_MATCH",
+    "CATEGORY_SORT",
+    "DIALOGUE_NEXT_TURN",
+    "INDEPENDENT_RECALL",
+    "AUDIO_SELECT"
+  ]) {
+    const renderable = toRenderable({
+      ...validActivity(type),
+      independentRetest: true,
+      spacedRetest: true,
+      evidenceMode: "independent",
+      nalviGuided: false
+    }, context, `guided-${type.toLowerCase()}`, 0);
+
+    assert.ok(renderable, type);
+    assert.equal(renderable.nalviGuided, true, type);
+    assert.equal(renderable.independentRetest, false, type);
+    assert.equal(renderable.spacedRetest, false, type);
+    assert.equal(renderable.evidenceMode, "guided", type);
+  }
+});
+
 test("provenance exacta sobrevive authority → sanitizer → fallback → matcher → renderable", () => {
   const normalized = normalizeInterventionRequest(sourceRequest(), { activityAuthority });
   assert.equal(normalized.approvedActivityMaterial.sourceActivityId, SOURCE_ACTIVITY_ID);
@@ -461,6 +487,32 @@ test("provenance omitida, alterada, malformada o con whitespace se rechaza sin s
       dialogueCorrectOptionId: "", dialogueCorrectAnswer: "", dialogueSourceContentId: "", audio: null
     });
     assert.deepEqual(buildDeterministicFallbackCandidates({ ...matcherContext(), approvedActivityMaterial: { ...clone(APPROVED_MATERIAL), ...malformed } }), []);
+  }
+});
+
+test("toRenderable público no emite contenido cuyo matcher rechaza", () => {
+  const context = matcherContext();
+  const pairDrift = validActivity("ARROW_MATCH");
+  pairDrift.pairs[0].right = "FORGED_VISIBLE";
+  assert.ok(validateActivityAgainstApprovedMaterial(pairDrift, context).includes("UNAPPROVED_PAIRS"));
+  assert.equal(toRenderable(pairDrift, context, "rejected-pair", 0), null);
+
+  const optionDrift = validActivity("CONTEXT_CHOICE");
+  optionDrift.options[1].text = "FORGED_OPTION";
+  assert.ok(validateActivityAgainstApprovedMaterial(optionDrift, context).includes("UNAPPROVED_OPTIONS"));
+  assert.equal(toRenderable(optionDrift, context, "rejected-option", 0), null);
+
+  for (const [activity, invalidContext] of [
+    [null, context],
+    [{}, null],
+    [{ ...validActivity("ARROW_MATCH"), conceptIds: {} }, context],
+    [new Proxy(validActivity("ARROW_MATCH"), {
+      get() { throw new Error("HOSTILE_ACTIVITY"); }
+    }), context]
+  ]) {
+    let result = "not-called";
+    assert.doesNotThrow(() => { result = toRenderable(activity, invalidContext, "invalid-shape", 0); });
+    assert.equal(result, null);
   }
 });
 
@@ -836,6 +888,33 @@ test("el fingerprint emitido bloquea el mismo contenido en un intento posterior"
     const { planId, activities } = result.adaptiveInterventionPlan;
     for (const activity of activities) assert.equal(activity.context, `adaptive-tutor:${planId}:1`);
   }
+});
+
+test("permutar sourceIds anidados no cambia identidad ni elude antirrepetición", async () => {
+  const context = matcherContext();
+  const firstActivity = validActivity("ARROW_MATCH");
+  const reorderedActivity = clone(firstActivity);
+  reorderedActivity.pairs[2].sourceIds.reverse();
+  assert.deepEqual(validateActivityAgainstApprovedMaterial(firstActivity, context), []);
+  assert.deepEqual(validateActivityAgainstApprovedMaterial(reorderedActivity, context), []);
+
+  const firstDirect = toRenderable(firstActivity, context, "source-order", 0);
+  const reorderedDirect = toRenderable(reorderedActivity, context, "source-order", 0);
+  assert.equal(reorderedDirect.fingerprint, firstDirect.fingerprint);
+  assert.equal(reorderedDirect.id, firstDirect.id);
+
+  const first = await runPlanner({ activity: withSchemaSourceIdentityTransport(firstActivity) });
+  assert.equal(first.result.usedAI, true);
+  const fingerprint = first.result.adaptiveInterventionPlan.activities[0].fingerprint;
+  const second = await runPlanner({
+    activity: withSchemaSourceIdentityTransport(reorderedActivity),
+    request: sourceRequest({
+      previousActivityFingerprint: fingerprint,
+      recentActivityFingerprints: [fingerprint]
+    })
+  });
+  assert.equal(second.result.usedAI, false);
+  assert.ok(second.result.adaptiveInterventionPlan.activities.every(activity => activity.fingerprint !== fingerprint));
 });
 
 test("fallback y evento conservan strategy allowlisted y reasonCode server-side", async () => {

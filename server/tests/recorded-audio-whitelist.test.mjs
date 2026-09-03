@@ -108,10 +108,63 @@ test("el índice público exige una terna propia exacta y rechaza aliases hereda
   }
 });
 
+test("el índice público es total y rechaza accessors, símbolos y extras no enumerables", () => {
+  const recording = manifest.recordings[95];
+  const canonical = {
+    audioId: recording.id,
+    audioPath: canonicalRecordedAudioPath(recording.file),
+    audioText: recording.label
+  };
+  const expectClosed = value => {
+    let result = "not-called";
+    assert.doesNotThrow(() => { result = authorizeBundledRecordedAudio(value, recording.label); });
+    assert.equal(result, null);
+  };
+
+  const throwingAccessor = { ...canonical };
+  Object.defineProperty(throwingAccessor, "audioId", {
+    configurable: true,
+    enumerable: true,
+    get() { throw new Error("HOSTILE_GETTER"); }
+  });
+  expectClosed(throwingAccessor);
+
+  const benignAccessor = { ...canonical };
+  Object.defineProperty(benignAccessor, "audioId", {
+    configurable: true,
+    enumerable: true,
+    get() { return canonical.audioId; }
+  });
+  expectClosed(benignAccessor);
+  expectClosed({ ...canonical, [Symbol("extra")]: true });
+
+  const hiddenAlias = { ...canonical };
+  Object.defineProperty(hiddenAlias, "id", {
+    configurable: true,
+    enumerable: false,
+    value: canonical.audioId
+  });
+  expectClosed(hiddenAlias);
+
+  const hostileProxy = new Proxy(canonical, {
+    ownKeys() { throw new Error("HOSTILE_OWN_KEYS_TRAP"); }
+  });
+  expectClosed(hostileProxy);
+
+  let targetResult = "not-called";
+  assert.doesNotThrow(() => {
+    targetResult = authorizeBundledRecordedAudio(canonical, {
+      toString() { throw new Error("HOSTILE_TARGET"); }
+    });
+  });
+  assert.equal(targetResult, null);
+  assert.equal(authorizeBundledRecordedAudio(canonical, { toString: () => recording.label }), null);
+});
+
 test("los imports browser del fallback fijan catálogo e índice de audio versionados", () => {
   const source = readFileSync(new URL("../../progression-engine/fallback-intervention.mjs", import.meta.url), "utf8");
   assert.match(source, /nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
-  assert.match(source, /recorded-audio-manifest-index\.mjs\?v=NALVI-AUDIO-INDEX-2/);
+  assert.match(source, /recorded-audio-manifest-index\.mjs\?v=NALVI-AUDIO-INDEX-3/);
 });
 
 function requestWithAudio(audio, overrides = {}) {
@@ -709,11 +762,7 @@ test("toRenderable falla cerrado si el planner altera ID o ruta", () => {
   const candidate = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION")
     .find(item => item.activityType === "AUDIO_SELECT").activity;
   const renderable = toRenderable({ ...candidate, audioPath: "assets/audio/guarani/ali-2026/095-itati.m4a", audioAuthorized: true }, context, "tampered", 0);
-
-  assert.equal(renderable.audioId, "");
-  assert.equal(renderable.audioPath, "");
-  assert.equal(renderable.audioAuthorized, false);
-  assert.equal(renderable.humanRecorded, false);
+  assert.equal(renderable, null);
 });
 
 test("toRenderable vincula audio con correctAnswer y correctOptionId del candidato", () => {
@@ -722,12 +771,10 @@ test("toRenderable vincula audio con correctAnswer y correctOptionId del candida
     .find(item => item.activityType === "AUDIO_SELECT").activity;
 
   const changedAnswer = toRenderable({ ...candidate, correctAnswer: "Guyra", correctOptionId: "guyra" }, context, "tampered-answer", 0);
-  assert.equal(changedAnswer.audioAuthorized, false);
-  assert.equal(changedAnswer.audioPath, "");
+  assert.equal(changedAnswer, null);
 
   const changedOption = toRenderable({ ...candidate, correctOptionId: "guyra" }, context, "tampered-option", 0);
-  assert.equal(changedOption.audioAuthorized, false);
-  assert.equal(changedOption.audioPath, "");
+  assert.equal(changedOption, null);
 });
 
 test("el schema discrimina AUDIO_SELECT completo de actividades no-audio vacías", () => {

@@ -332,14 +332,7 @@ test("toRenderable elimina aliases anidados y falla cerrado ante cualquier contr
     { authorizedAudio: AGUYJE, audio: ITATI }
   ]) {
     const rejected = toRenderable(audioSelectActivity(nested), context, "contradictory-plan", 0);
-    assert.equal(rejected.audioId, "");
-    assert.equal(rejected.audioPath, "");
-    assert.equal(rejected.audioText, "");
-    assert.equal(rejected.audioAuthorized, false);
-    assert.equal(rejected.humanRecorded, false);
-    assert.equal(rejected.audioSource, "");
-    assert.equal(Object.hasOwn(rejected, "authorizedAudio"), false);
-    assert.equal(Object.hasOwn(rejected, "audio"), false);
+    assert.equal(rejected, null);
   }
 
   const topAliasConflict = toRenderable(audioSelectActivity({
@@ -350,53 +343,5 @@ test("toRenderable elimina aliases anidados y falla cerrado ante cualquier contr
     authorized: true,
     url: "https://evil.invalid/x.m4a"
   }), context, "top-alias-conflict", 0);
-  assert.equal(topAliasConflict.audioAuthorized, false);
-  assert.equal(topAliasConflict.audioPath, "");
-  assert.equal(Object.hasOwn(topAliasConflict, "source"), false);
-  assert.equal(Object.hasOwn(topAliasConflict, "authorized"), false);
-  assert.equal(Object.hasOwn(topAliasConflict, "url"), false);
-});
-
-test("toda intervencion inmediata llega como evidencia guiada, incluso INDEPENDENT_RECALL", () => {
-  const context = normalizeInterventionRequest(realAguyjeRequest({
-    approvedAudio: AGUYJE,
-    authorizedAudio: AGUYJE
-  }));
-  const types = [
-    "CONTEXT_CHOICE",
-    "ARROW_MATCH",
-    "CATEGORY_SORT",
-    "DIALOGUE_NEXT_TURN",
-    "AUDIO_SELECT",
-    "INDEPENDENT_RECALL"
-  ];
-
-  for (const type of types) {
-    const activity = type === "AUDIO_SELECT"
-      ? audioSelectActivity()
-      : {
-          ...audioSelectActivity({
-            audioId: "",
-            audioPath: "",
-            audioText: "",
-            audioAuthorized: false,
-            humanRecorded: false,
-            audioSource: ""
-          }),
-          type,
-          activityType: type
-        };
-    const renderable = toRenderable({
-      ...activity,
-      independentRetest: true,
-      spacedRetest: true,
-      evidenceMode: "independent",
-      nalviGuided: false
-    }, context, `immediate-${type.toLowerCase()}`, 0);
-
-    assert.equal(renderable.independentRetest, false, type);
-    assert.equal(renderable.spacedRetest, false, type);
-    assert.equal(renderable.evidenceMode, "guided", type);
-    assert.equal(renderable.nalviGuided, true, type);
-  }
+  assert.equal(topAliasConflict, null);
 });
