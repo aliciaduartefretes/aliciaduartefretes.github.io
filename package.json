@@ -9,16 +9,22 @@
     "validate:paso-8": "node scripts/validate-paso-8.mjs",
     "test:adaptive-plans": "node --test server/tests/adaptive-intervention-plan.test.mjs",
     "validate:paso-8b": "node scripts/validate-paso-8B.mjs",
-    "validate:paso-8b-5-normative": "node scripts/validate-paso-8B-5-normative.mjs"
-    ,"test:grammar": "node --test grammar-engine/tests/grammar-engine.test.mjs"
-    ,"validate:pre-8c": "node scripts/validate-pre-8C-grammar.mjs"
-    ,"test:progression": "node --test progression-engine/tests/*.test.mjs server/tests/mastery-attempt-service.test.mjs"
-    ,"validate:pre-8c-progression": "node scripts/validate-pre-8c-progression.mjs"
-    ,"test:adaptive-tutor": "node --test server/tests/adaptive-tutor-orchestrator.test.mjs evals/adaptive-tutor/*.test.mjs"
-    ,"test:activity-catalog": "node --test activity-catalog/tests/*.test.mjs"
-    ,"test:answer-evaluator": "node --test assessment/tests/*.test.mjs"
+    "validate:paso-8b-5-normative": "node scripts/validate-paso-8B-5-normative.mjs",
+    "test:grammar": "node --test grammar-engine/tests/grammar-engine.test.mjs",
+    "validate:pre-8c": "node scripts/validate-pre-8C-grammar.mjs",
+    "test:progression": "node --test progression-engine/tests/*.test.mjs server/tests/mastery-attempt-service.test.mjs",
+    "validate:pre-8c-progression": "node scripts/validate-pre-8c-progression.mjs",
+    "test:adaptive-tutor": "node --test server/tests/adaptive-tutor-orchestrator.test.mjs evals/adaptive-tutor/*.test.mjs",
+    "test:activity-catalog": "node --test activity-catalog/tests/*.test.mjs",
+    "test:answer-evaluator": "node --test assessment/tests/*.test.mjs",
+    "verify:pre-8c-qa": "node scripts/verify-pre-8c-qa.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.18.0",
+    "firebase-tools": "15.29.0"
   }
 }

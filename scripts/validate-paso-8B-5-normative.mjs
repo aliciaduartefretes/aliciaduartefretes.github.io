@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { compileKnowledgeBase, createGrammarEngine } from "../grammar-engine/grammar-engine.mjs";
 import { filterAllowedKnowledge } from "../server/reinforcement-engine.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 const readJson = path => read(path).then(JSON.parse);
+const resolvePath = path => fileURLToPath(new URL(path, root));
 const [corpus, governance, policy, dossier, compiled, html, debugHtml] = await Promise.all([
   readJson("knowledge-base/pilot-corpus.json"),
   readJson("knowledge-base/governance.json"),
@@ -92,7 +94,7 @@ for (const file of [
   "server/adaptive-intervention-plan.mjs",
   "scripts/activate-normative-pilot.mjs"
 ]) {
-  const result = spawnSync(process.execPath, ["--check", new URL(file, root).pathname], { encoding: "utf8" });
+  const result = spawnSync(process.execPath, ["--check", resolvePath(file)], { encoding: "utf8" });
   assert.equal(result.status, 0, `${file}: ${result.stderr}`);
 }
 
@@ -102,7 +104,7 @@ for (const suite of [
   "server/tests/adaptive-intervention-plan.test.mjs",
   "server/tests/normative-pilot-activation.test.mjs"
 ]) {
-  const result = spawnSync(process.execPath, ["--test", new URL(suite, root).pathname], { encoding: "utf8" });
+  const result = spawnSync(process.execPath, ["--test", resolvePath(suite)], { encoding: "utf8" });
   assert.equal(result.status, 0, `${suite}:\n${result.stdout}${result.stderr}`);
 }
 

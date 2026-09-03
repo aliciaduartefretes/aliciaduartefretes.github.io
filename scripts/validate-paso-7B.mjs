@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFileSync(new URL(path, root), "utf8");
+const resolvePath = path => fileURLToPath(new URL(path, root));
 const index = read("index.html");
 const client = read("assets/js/nalvi-reinforcement-client.js");
 const server = read("server/reinforcement-engine.mjs");
@@ -36,11 +38,11 @@ assert.equal((corpus.records || []).filter(record => record.validationStatus ===
 for (const language of ["es", "en", "pt", "fr", "it", "de"]) assert.match(client, new RegExp(`\\"${language}\\"`));
 
 for (const file of ["assets/js/nalvi-reinforcement-client.js", "api/generate-reinforcement-activity.js", "server/reinforcement-engine.mjs"]) {
-  const result = spawnSync(process.execPath, ["--check", new URL(file, root).pathname], { encoding: "utf8" });
+  const result = spawnSync(process.execPath, ["--check", resolvePath(file)], { encoding: "utf8" });
   assert.equal(result.status, 0, `${file}: ${result.stderr}`);
 }
 
-const tests = spawnSync(process.execPath, ["--test", new URL("ai/tests/reinforcement-engine.test.mjs", root).pathname], { encoding: "utf8" });
+const tests = spawnSync(process.execPath, ["--test", resolvePath("ai/tests/reinforcement-engine.test.mjs")], { encoding: "utf8" });
 assert.equal(tests.status, 0, tests.stdout + tests.stderr);
 
 console.log(JSON.stringify({

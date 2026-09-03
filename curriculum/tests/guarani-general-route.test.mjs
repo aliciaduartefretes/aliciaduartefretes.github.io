@@ -19,23 +19,16 @@ const loadDataLayer = activitySource => {
 
 const current = loadDataLayer(read("assets/js/kuaa-general-activities.js"));
 const previousContext = vm.createContext({ window: {} });
-vm.runInContext(read("versions/kuaa-general-activities-NALVI-P4-stable.js"), previousContext);
+vm.runInContext(read("versions/kuaa-general-activities-NALVI-P5-stable.js"), previousContext);
 const previousActivities = previousContext.window.KUAA_GENERAL_ACTIVITY_DATA.activities;
 const languages = ["es", "en", "pt", "fr", "it", "de"];
 const plain = value => JSON.parse(JSON.stringify(value));
-const metadataFields = new Set([
-  "learningObjectiveId",
-  "conceptIds",
-  "lexemeIds",
-  "grammarRuleIds",
-  "skill",
-  "difficulty",
-  "activityType",
-  "pedagogicalPhase",
-  "contentValidationStatus",
-  "allowedForMastery"
-]);
-const withoutPaso5Metadata = activity => Object.fromEntries(Object.entries(activity).filter(([key]) => !metadataFields.has(key)));
+const adaptiveMetadataFields = ["semanticPair", "adaptiveDialogue"];
+const withoutAdaptiveMetadata = activity => {
+  const result = plain(activity);
+  for (const field of adaptiveMetadataFields) delete result[field];
+  return result;
+};
 
 test("la ruta usa objetivos y práctica variable, no una cantidad fija de lecciones", () => {
   const route = current.curriculum.route;
@@ -79,10 +72,10 @@ test("los ocho componentes dinámicos del PASO 1 pueden asociarse a objetivos", 
   }
 });
 
-test("las tres actividades dinámicas conservan su contenido y ganan metadatos pedagógicos", () => {
+test("las tres actividades dinámicas conservan exactamente el contenido estable de PASO 5", () => {
   assert.equal(current.activityData.activities.length, previousActivities.length);
   for (let index = 0; index < previousActivities.length; index += 1) {
-    assert.deepEqual(plain(withoutPaso5Metadata(current.activityData.activities[index])), plain(previousActivities[index]));
+    assert.deepEqual(withoutAdaptiveMetadata(current.activityData.activities[index]), plain(previousActivities[index]));
     const activity = current.activityData.activities[index];
     assert.equal(activity.courseId, "general");
     assert.equal(activity.learningObjectiveId, "GG-LO-001");
@@ -94,6 +87,41 @@ test("las tres actividades dinámicas conservan su contenido y ganan metadatos p
     assert.equal(activity.activityType, activity.type);
     assert.equal(activity.allowedForMastery, false);
     assert.equal(activity.contentValidationStatus, "unreviewed");
+  }
+});
+
+test("los metadatos adaptativos autorizan sólo material completo y trazable", () => {
+  const dialogues = [];
+  for (const activity of current.activityData.activities) {
+    const pair = activity.semanticPair;
+    const stableActivity = previousActivities.find(candidate => candidate.id === activity.id);
+    const stableContent = JSON.stringify(plain(stableActivity)).normalize("NFC").toLocaleLowerCase();
+    assert.deepEqual(Object.keys(pair).sort(), ["adaptiveReuseAuthorized", "meaning", "target"]);
+    assert.equal(pair.adaptiveReuseAuthorized, true, `${activity.id} no autoriza explícitamente el par semántico.`);
+    assert.ok(String(pair.target || "").trim(), `${activity.id} no declara el término meta.`);
+    assert.ok(stableContent.includes(pair.target.normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un término ajeno al contenido estable.`);
+    assert.deepEqual(Object.keys(pair.meaning).sort(), [...languages].sort(), `${activity.id} declara un conjunto inesperado de idiomas.`);
+    for (const language of languages) {
+      assert.ok(String(pair.meaning?.[language] || "").trim(), `${activity.id} no declara significado ${language}.`);
+      assert.ok(stableContent.includes(pair.meaning[language].normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un significado ${language} ajeno al contenido estable.`);
+    }
+    if (activity.adaptiveDialogue) dialogues.push({ activityId: activity.id, value: activity.adaptiveDialogue });
+  }
+
+  assert.ok(dialogues.length > 0, "Falta al menos un diálogo adaptativo autorizado.");
+  for (const { activityId, value: dialogue } of dialogues) {
+    assert.deepEqual(Object.keys(dialogue).sort(), ["authorized", "correctAnswer", "correctOptionId", "options", "sourceContentId", "turns"]);
+    assert.equal(dialogue.authorized, true, `${activityId} no autoriza explícitamente el diálogo.`);
+    assert.ok(String(dialogue.sourceContentId || "").trim(), `${activityId} no declara sourceContentId.`);
+    assert.ok(dialogue.turns.length > 0 && dialogue.turns.length <= 4, `${activityId} tiene una cantidad inválida de turnos.`);
+    assert.ok(dialogue.turns.every(turn => turn.authorized === true && turn.id && turn.speaker && turn.text), `${activityId} contiene turnos incompletos o no autorizados.`);
+    assert.equal(new Set(dialogue.turns.map(turn => turn.id)).size, dialogue.turns.length, `${activityId} repite IDs de turnos.`);
+    assert.ok(dialogue.options.length >= 3, `${activityId} necesita al menos tres opciones de diálogo.`);
+    assert.ok(dialogue.options.every(option => option.authorized === true && option.id && option.text), `${activityId} contiene opciones incompletas o no autorizadas.`);
+    assert.equal(new Set(dialogue.options.map(option => option.id)).size, dialogue.options.length, `${activityId} repite IDs de opciones.`);
+    const correctOption = dialogue.options.find(option => option.id === dialogue.correctOptionId);
+    assert.ok(correctOption, `${activityId} refiere una opción correcta inexistente.`);
+    assert.equal(dialogue.correctAnswer, correctOption.text, `${activityId} no alinea correctAnswer con correctOptionId.`);
   }
 });
 
