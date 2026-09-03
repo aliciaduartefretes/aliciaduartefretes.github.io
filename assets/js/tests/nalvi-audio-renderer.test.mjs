@@ -14,14 +14,27 @@ function deferred() {
 class FakeButton {
   constructor({ disabled = false } = {}) {
     this.disabled = disabled;
+    this.hidden = false;
     this.dataset = {};
     this.attributes = new Map();
     this.listeners = new Map();
-    this.classList = { add() {}, remove() {} };
+    this.classes = new Set();
+    this.labelNode = { textContent: "" };
+    this.iconNode = { textContent: "" };
+    this.classList = {
+      add: name => this.classes.add(name),
+      remove: name => this.classes.delete(name),
+      toggle: (name, force) => force ? this.classes.add(name) : this.classes.delete(name)
+    };
   }
   addEventListener(name, listener) { this.listeners.set(name, listener); }
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
+  querySelector(selector) {
+    if (selector === "[data-audio-label]") return this.labelNode;
+    if (selector === "[data-audio-icon]") return this.iconNode;
+    return null;
+  }
   async dispatchClick() {
     const listener = this.listeners.get("click");
     if (listener) await listener({ target: this });
@@ -31,6 +44,7 @@ class FakeButton {
 class FakeTarget {
   constructor() {
     this.dataset = {};
+    this.audioCard = { hidden: true };
     this.audioButton = new FakeButton({ disabled: true });
     this.checkButton = new FakeButton({ disabled: true });
     this.resetButton = new FakeButton();
@@ -41,6 +55,7 @@ class FakeTarget {
   get innerHTML() { return this._innerHTML; }
   querySelector(selector) {
     if (selector === "[data-catalog-audio]") return this.audioButton;
+    if (selector === "[data-catalog-audio-card]") return this.audioCard;
     if (selector === "[data-catalog-check]") return this.checkButton;
     if (selector === "[data-catalog-reset]") return this.resetButton;
     return null;
@@ -111,8 +126,10 @@ test("la galería carga el registry antes del renderer", () => {
   assert.ok(registryPosition > 0);
   assert.ok(rendererPosition > registryPosition);
   assert.ok(galleryPosition > rendererPosition);
-  assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
-  assert.match(rendererSource, /NALVI-ACTIVITY-CATALOG-RENDERER-5/);
+  assert.match(galleryHtml, /nalvi-recorded-audio\.js\?v=NALVI-AUDIO-3/);
+  assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);
+  assert.match(galleryHtml, /id="recordedAudioLibrary"/);
+  assert.match(rendererSource, /NALVI-ACTIVITY-CATALOG-RENDERER-6/);
   assert.match(rendererSource, /nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
 });
 
@@ -130,6 +147,9 @@ test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproduc
   render(target, activity(), { language: "es" });
 
   assert.equal(target.audioButton.disabled, true);
+  assert.equal(target.audioButton.hidden, true);
+  assert.equal(target.audioCard.hidden, true);
+  assert.equal(target.audioButton.dataset.audioState, "loading");
   await target.audioButton.dispatchClick();
   assert.equal(selections.length, 0);
 
@@ -137,7 +157,10 @@ test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproduc
   await registry.ready;
   await Promise.resolve();
   assert.equal(target.audioButton.disabled, false);
+  assert.equal(target.audioButton.hidden, false);
+  assert.equal(target.audioCard.hidden, false);
   assert.equal(target.audioButton.dataset.audioState, "ready");
+  assert.equal(target.audioButton.labelNode.textContent, "Escuchar audio");
 
   await target.audioButton.dispatchClick();
   assert.deepEqual(selections, [{
@@ -148,6 +171,77 @@ test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproduc
     humanRecorded: true,
     audioSource: "manifest-human-recording"
   }]);
+  assert.equal(target.audioButton.dataset.audioState, "playing");
+  assert.equal(target.audioButton.labelNode.textContent, "Pausar audio");
+});
+
+test("los cinco estados del botón tienen etiquetas completas en los seis idiomas", async () => {
+  const expected = {
+    es: ["Cargando audio", "Escuchar audio", "Pausar audio", "Reiniciar audio", "Audio no disponible"],
+    en: ["Loading audio", "Play audio", "Pause audio", "Restart audio", "Audio unavailable"],
+    pt: ["Carregando áudio", "Ouvir áudio", "Pausar áudio", "Reiniciar áudio", "Áudio indisponível"],
+    fr: ["Chargement de l’audio", "Écouter l’audio", "Mettre l’audio en pause", "Recommencer l’audio", "Audio indisponible"],
+    it: ["Caricamento audio", "Ascolta l’audio", "Metti in pausa l’audio", "Riavvia l’audio", "Audio non disponibile"],
+    de: ["Audio wird geladen", "Audio abspielen", "Audio pausieren", "Audio neu starten", "Audio nicht verfügbar"]
+  };
+  for (const [locale, labels] of Object.entries(expected)) {
+    const registry = {
+      ready: Promise.resolve({ ok: true }),
+      authorize: authorizeCanonicalSelection,
+      playSelection: async () => true
+    };
+    const render = await audioRendererFor(registry);
+    const target = new FakeTarget();
+    render(target, activity(), { language: locale });
+    await registry.ready;
+    await Promise.resolve();
+    assert.deepEqual([
+      target.audioButton.dataset.audioLabelLoading,
+      target.audioButton.dataset.audioLabelReady,
+      target.audioButton.dataset.audioLabelPlaying,
+      target.audioButton.dataset.audioLabelPaused,
+      target.audioButton.dataset.audioLabelError
+    ], labels, locale);
+    assert.equal(target.audioButton.labelNode.textContent, labels[1], locale);
+  }
+});
+
+test("la vista técnica publica exactamente 99 controles y filtra cualquier entrada no autorizada", async () => {
+  const recordings = Array.from({ length: 100 }, (_, index) => {
+    const ordinal = String(index + 1).padStart(3, "0");
+    return {
+      audioId: `NALVI-AUDIO-${ordinal}`,
+      audioPath: `assets/audio/guarani/ali-2026/${ordinal}-sample.m4a`,
+      audioText: `Muestra ${ordinal}`,
+      audioAuthorized: true,
+      humanRecorded: true,
+      audioSource: "manifest-human-recording",
+      file: `${ordinal}-sample.m4a`
+    };
+  });
+  const registry = {
+    ready: Promise.resolve({ ok: true }),
+    list: () => recordings,
+    authorize: selection => selection.audioId === "NALVI-AUDIO-100"
+      ? null
+      : recordings.find(item => item.audioId === selection.audioId),
+    playSelection: async () => true,
+    stop() {}
+  };
+  await audioRendererFor(registry);
+  const target = {
+    dataset: {},
+    innerHTML: "",
+    querySelectorAll() { return []; }
+  };
+  const result = await globalThis.window.NALVI_ACTIVITY_CATALOG.renderRecordedAudioLibrary(target, { language: "es" });
+
+  assert.deepEqual(result, { ok: true, count: 99 });
+  assert.equal(target.dataset.audioLibraryState, "ready");
+  assert.equal((target.innerHTML.match(/data-recorded-audio-entry=/g) || []).length, 99);
+  assert.match(target.innerHTML, /NALVI-AUDIO-001/);
+  assert.match(target.innerHTML, /NALVI-AUDIO-099/);
+  assert.doesNotMatch(target.innerHTML, /NALVI-AUDIO-100/);
 });
 
 test("AUDIO_SELECT no usa fallback textual cuando ID/ruta no están autorizados", async () => {
@@ -165,7 +259,9 @@ test("AUDIO_SELECT no usa fallback textual cuando ID/ruta no están autorizados"
   await Promise.resolve();
 
   assert.equal(target.audioButton.disabled, true);
-  assert.equal(target.audioButton.dataset.audioState, "unavailable");
+  assert.equal(target.audioButton.hidden, true);
+  assert.equal(target.audioCard.hidden, true);
+  assert.equal(target.audioButton.dataset.audioState, "error");
   await target.audioButton.dispatchClick();
   assert.equal(playbackCalls, 0);
   assert.equal(legacyCalls, 0);
@@ -186,7 +282,10 @@ test("un fallo del reproductor deja AUDIO_SELECT cerrado", async () => {
   assert.equal(target.audioButton.disabled, false);
   await target.audioButton.dispatchClick();
   assert.equal(target.audioButton.disabled, true);
-  assert.equal(target.audioButton.dataset.audioState, "unavailable");
+  assert.equal(target.audioButton.hidden, false);
+  assert.equal(target.audioCard.hidden, false);
+  assert.equal(target.audioButton.dataset.audioState, "error");
+  assert.equal(target.audioButton.labelNode.textContent, "Audio no disponible");
 });
 
 test("un segundo clic mientras reproduce no deshabilita ni desincroniza AUDIO_SELECT", async () => {
@@ -215,12 +314,14 @@ test("un segundo clic mientras reproduce no deshabilita ni desincroniza AUDIO_SE
   const secondClick = target.audioButton.dispatchClick();
   await secondClick;
   assert.equal(audioInstances, 1);
-  assert.equal(target.audioButton.disabled, false);
-  assert.equal(target.audioButton.dataset.audioState, "ready");
+  assert.equal(target.audioButton.disabled, true);
+  assert.equal(target.audioButton.dataset.audioState, "loading");
   assert.equal(target.audioButton.getAttribute("aria-pressed"), "true");
 
   playing.resolve();
   await firstClick;
+  assert.equal(target.audioButton.disabled, false);
+  assert.equal(target.audioButton.dataset.audioState, "playing");
 });
 
 test("AUDIO_SELECT permanece cerrado si falta o difiere cualquiera de los seis campos canónicos", async t => {
@@ -246,7 +347,9 @@ test("AUDIO_SELECT permanece cerrado si falta o difiere cualquiera de los seis c
       await registry.ready;
       await Promise.resolve();
       assert.equal(target.audioButton.disabled, true);
-      assert.equal(target.audioButton.dataset.audioState, "unavailable");
+      assert.equal(target.audioButton.hidden, true);
+      assert.equal(target.audioCard.hidden, true);
+      assert.equal(target.audioButton.dataset.audioState, "error");
       await target.audioButton.dispatchClick();
       assert.equal(playbackCalls, 0);
     });

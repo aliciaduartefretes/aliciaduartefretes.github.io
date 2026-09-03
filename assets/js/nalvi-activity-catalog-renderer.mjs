@@ -6,15 +6,15 @@ import {
 } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
 import { ANSWER_STATUSES, evaluateAnswer, normalizeAnswerSurface } from "../../assessment/nalvi-answer-evaluator.mjs";
 
-const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-5";
+const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-6";
 const LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const COPY = Object.freeze({
-  es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", listen: "Escucha y selecciona", playAudio: "Escuchar audio", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma.", hint: "Ver pista", explanation: "Ver explicación", near: "Casi correcto. Revisa la forma.", equivalent: "¡Correcto! Esta forma también es válida.", review: "Vamos a practicar con una forma ya validada." },
-  en: { check: "Check", reset: "Reset", select: "Choose an answer", listen: "Listen and choose", playAudio: "Play audio", match: "Match each item", sort: "Sort the cards", buildWord: "Build the word", buildSentence: "Build the expression", findError: "Find the part that needs correction", chooseCorrection: "Choose the correction", dialogue: "Read the conversation", nextTurn: "What response makes sense now?", orderDialogue: "Put the conversation in order", recall: "Write your answer", step: "Step", correct: "Well done!", wrong: "Not quite. Let’s try another way.", hint: "View hint", explanation: "View explanation", near: "Almost right. Check the form.", equivalent: "Correct! This form is also valid.", review: "Let’s practise with an already validated form." },
-  pt: { check: "Verificar", reset: "Reiniciar", select: "Selecione uma resposta", listen: "Ouça e selecione", playAudio: "Ouvir áudio", match: "Relacione cada elemento", sort: "Classifique os cartões", buildWord: "Construa a palavra", buildSentence: "Construa a expressão", findError: "Encontre a parte que precisa de correção", chooseCorrection: "Escolha a correção", dialogue: "Observe a conversa", nextTurn: "Qual resposta faz sentido agora?", orderDialogue: "Ordene a conversa", recall: "Escreva sua resposta", step: "Passo", correct: "Muito bem!", wrong: "Ainda não. Vamos tentar de outra forma.", hint: "Ver pista", explanation: "Ver explicação", near: "Quase certo. Revise a forma.", equivalent: "Correto! Esta forma também é válida.", review: "Vamos praticar com uma forma já validada." },
-  fr: { check: "Vérifier", reset: "Recommencer", select: "Choisissez une réponse", listen: "Écoutez et choisissez", playAudio: "Écouter l’audio", match: "Associez chaque élément", sort: "Classez les cartes", buildWord: "Construisez le mot", buildSentence: "Construisez l’expression", findError: "Trouvez la partie à corriger", chooseCorrection: "Choisissez la correction", dialogue: "Lisez la conversation", nextTurn: "Quelle réponse convient maintenant ?", orderDialogue: "Remettez la conversation dans l’ordre", recall: "Écrivez votre réponse", step: "Étape", correct: "Très bien !", wrong: "Pas tout à fait. Essayons autrement.", hint: "Voir l’indice", explanation: "Voir l’explication", near: "Presque correct. Vérifiez la forme.", equivalent: "Correct ! Cette forme est également valable.", review: "Pratiquons avec une forme déjà validée." },
-  it: { check: "Controlla", reset: "Ricomincia", select: "Scegli una risposta", listen: "Ascolta e scegli", playAudio: "Ascolta l’audio", match: "Associa ogni elemento", sort: "Classifica le schede", buildWord: "Costruisci la parola", buildSentence: "Costruisci l’espressione", findError: "Trova la parte da correggere", chooseCorrection: "Scegli la correzione", dialogue: "Leggi la conversazione", nextTurn: "Quale risposta ha senso adesso?", orderDialogue: "Metti in ordine la conversazione", recall: "Scrivi la tua risposta", step: "Passaggio", correct: "Molto bene!", wrong: "Non proprio. Proviamo in un altro modo.", hint: "Vedi indizio", explanation: "Vedi spiegazione", near: "Quasi corretto. Controlla la forma.", equivalent: "Corretto! Anche questa forma è valida.", review: "Esercitiamoci con una forma già convalidata." },
-  de: { check: "Prüfen", reset: "Neu starten", select: "Wähle eine Antwort", listen: "Höre zu und wähle", playAudio: "Audio abspielen", match: "Ordne die Elemente zu", sort: "Sortiere die Karten", buildWord: "Bilde das Wort", buildSentence: "Bilde den Ausdruck", findError: "Finde den Teil, der korrigiert werden muss", chooseCorrection: "Wähle die Korrektur", dialogue: "Lies den Dialog", nextTurn: "Welche Antwort passt jetzt?", orderDialogue: "Bringe den Dialog in die richtige Reihenfolge", recall: "Schreibe deine Antwort", step: "Schritt", correct: "Sehr gut!", wrong: "Noch nicht ganz. Versuchen wir es anders.", hint: "Hinweis anzeigen", explanation: "Erklärung anzeigen", near: "Fast richtig. Prüfe die Form.", equivalent: "Richtig! Diese Form ist ebenfalls gültig.", review: "Üben wir mit einer bereits geprüften Form." }
+  es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", listen: "Escucha y selecciona", audioLoading: "Cargando audio", playAudio: "Escuchar audio", pauseAudio: "Pausar audio", restartAudio: "Reiniciar audio", audioError: "Audio no disponible", audioLibraryLoading: "Cargando grabaciones autorizadas…", audioLibraryEmpty: "No hay grabaciones autorizadas disponibles.", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma.", hint: "Ver pista", explanation: "Ver explicación", near: "Casi correcto. Revisa la forma.", equivalent: "¡Correcto! Esta forma también es válida.", review: "Vamos a practicar con una forma ya validada." },
+  en: { check: "Check", reset: "Reset", select: "Choose an answer", listen: "Listen and choose", audioLoading: "Loading audio", playAudio: "Play audio", pauseAudio: "Pause audio", restartAudio: "Restart audio", audioError: "Audio unavailable", audioLibraryLoading: "Loading authorized recordings…", audioLibraryEmpty: "No authorized recordings are available.", match: "Match each item", sort: "Sort the cards", buildWord: "Build the word", buildSentence: "Build the expression", findError: "Find the part that needs correction", chooseCorrection: "Choose the correction", dialogue: "Read the conversation", nextTurn: "What response makes sense now?", orderDialogue: "Put the conversation in order", recall: "Write your answer", step: "Step", correct: "Well done!", wrong: "Not quite. Let’s try another way.", hint: "View hint", explanation: "View explanation", near: "Almost right. Check the form.", equivalent: "Correct! This form is also valid.", review: "Let’s practise with an already validated form." },
+  pt: { check: "Verificar", reset: "Reiniciar", select: "Selecione uma resposta", listen: "Ouça e selecione", audioLoading: "Carregando áudio", playAudio: "Ouvir áudio", pauseAudio: "Pausar áudio", restartAudio: "Reiniciar áudio", audioError: "Áudio indisponível", audioLibraryLoading: "Carregando gravações autorizadas…", audioLibraryEmpty: "Não há gravações autorizadas disponíveis.", match: "Relacione cada elemento", sort: "Classifique os cartões", buildWord: "Construa a palavra", buildSentence: "Construa a expressão", findError: "Encontre a parte que precisa de correção", chooseCorrection: "Escolha a correção", dialogue: "Observe a conversa", nextTurn: "Qual resposta faz sentido agora?", orderDialogue: "Ordene a conversa", recall: "Escreva sua resposta", step: "Passo", correct: "Muito bem!", wrong: "Ainda não. Vamos tentar de outra forma.", hint: "Ver pista", explanation: "Ver explicação", near: "Quase certo. Revise a forma.", equivalent: "Correto! Esta forma também é válida.", review: "Vamos praticar com uma forma já validada." },
+  fr: { check: "Vérifier", reset: "Recommencer", select: "Choisissez une réponse", listen: "Écoutez et choisissez", audioLoading: "Chargement de l’audio", playAudio: "Écouter l’audio", pauseAudio: "Mettre l’audio en pause", restartAudio: "Recommencer l’audio", audioError: "Audio indisponible", audioLibraryLoading: "Chargement des enregistrements autorisés…", audioLibraryEmpty: "Aucun enregistrement autorisé n’est disponible.", match: "Associez chaque élément", sort: "Classez les cartes", buildWord: "Construisez le mot", buildSentence: "Construisez l’expression", findError: "Trouvez la partie à corriger", chooseCorrection: "Choisissez la correction", dialogue: "Lisez la conversation", nextTurn: "Quelle réponse convient maintenant ?", orderDialogue: "Remettez la conversation dans l’ordre", recall: "Écrivez votre réponse", step: "Étape", correct: "Très bien !", wrong: "Pas tout à fait. Essayons autrement.", hint: "Voir l’indice", explanation: "Voir l’explication", near: "Presque correct. Vérifiez la forme.", equivalent: "Correct ! Cette forme est également valable.", review: "Pratiquons avec une forme déjà validée." },
+  it: { check: "Controlla", reset: "Ricomincia", select: "Scegli una risposta", listen: "Ascolta e scegli", audioLoading: "Caricamento audio", playAudio: "Ascolta l’audio", pauseAudio: "Metti in pausa l’audio", restartAudio: "Riavvia l’audio", audioError: "Audio non disponibile", audioLibraryLoading: "Caricamento delle registrazioni autorizzate…", audioLibraryEmpty: "Non sono disponibili registrazioni autorizzate.", match: "Associa ogni elemento", sort: "Classifica le schede", buildWord: "Costruisci la parola", buildSentence: "Costruisci l’espressione", findError: "Trova la parte da correggere", chooseCorrection: "Scegli la correzione", dialogue: "Leggi la conversazione", nextTurn: "Quale risposta ha senso adesso?", orderDialogue: "Metti in ordine la conversazione", recall: "Scrivi la tua risposta", step: "Passaggio", correct: "Molto bene!", wrong: "Non proprio. Proviamo in un altro modo.", hint: "Vedi indizio", explanation: "Vedi spiegazione", near: "Quasi corretto. Controlla la forma.", equivalent: "Corretto! Anche questa forma è valida.", review: "Esercitiamoci con una forma già convalidata." },
+  de: { check: "Prüfen", reset: "Neu starten", select: "Wähle eine Antwort", listen: "Höre zu und wähle", audioLoading: "Audio wird geladen", playAudio: "Audio abspielen", pauseAudio: "Audio pausieren", restartAudio: "Audio neu starten", audioError: "Audio nicht verfügbar", audioLibraryLoading: "Autorisierte Aufnahmen werden geladen…", audioLibraryEmpty: "Keine autorisierten Aufnahmen verfügbar.", match: "Ordne die Elemente zu", sort: "Sortiere die Karten", buildWord: "Bilde das Wort", buildSentence: "Bilde den Ausdruck", findError: "Finde den Teil, der korrigiert werden muss", chooseCorrection: "Wähle die Korrektur", dialogue: "Lies den Dialog", nextTurn: "Welche Antwort passt jetzt?", orderDialogue: "Bringe den Dialog in die richtige Reihenfolge", recall: "Schreibe deine Antwort", step: "Schritt", correct: "Sehr gut!", wrong: "Noch nicht ganz. Versuchen wir es anders.", hint: "Hinweis anzeigen", explanation: "Erklärung anzeigen", near: "Fast richtig. Prüfe die Form.", equivalent: "Richtig! Diese Form ist ebenfalls gültig.", review: "Üben wir mit einer bereits geprüften Form." }
 });
 
 const engine = window.KUAA_ACTIVITY_ENGINE;
@@ -73,41 +73,131 @@ function actions(copy, disabled = true) {
   return `<div class="quiz-actions nalvi-catalog-actions"><button class="btn nalvi-secondary" type="button" data-catalog-reset>${escapeHtml(copy.reset)}</button><button class="btn" type="button" data-catalog-check ${disabled ? "disabled" : ""}>${escapeHtml(copy.check)}</button></div>`;
 }
 
+const AUDIO_BUTTON_STATES = Object.freeze(["loading", "ready", "playing", "paused", "error"]);
+const AUDIO_STATE_ICON = Object.freeze({ loading: "⏳", ready: "🔊", playing: "⏸", paused: "↻", error: "⚠️" });
+const audioHosts = new WeakSet();
+const audioLibraryTokens = new WeakMap();
+
+function audioButtonMarkup(copy, extraAttributes = "") {
+  return `<button type="button" data-catalog-audio data-audio-state="loading" data-audio-label-loading="${escapeHtml(copy.audioLoading)}" data-audio-label-ready="${escapeHtml(copy.playAudio)}" data-audio-label-playing="${escapeHtml(copy.pauseAudio)}" data-audio-label-paused="${escapeHtml(copy.restartAudio)}" data-audio-label-error="${escapeHtml(copy.audioError)}" aria-label="${escapeHtml(copy.audioLoading)}" aria-pressed="false" aria-busy="true" aria-disabled="true" disabled hidden ${extraAttributes}><span class="nalvi-audio-icon" data-audio-icon aria-hidden="true">⏳</span><span data-audio-label>${escapeHtml(copy.audioLoading)}</span></button>`;
+}
+
+function paintAudioButton(button, copy, nextState, visible = true) {
+  if (!button || !AUDIO_BUTTON_STATES.includes(nextState)) return;
+  const labels = {
+    loading: copy.audioLoading,
+    ready: copy.playAudio,
+    playing: copy.pauseAudio,
+    paused: copy.restartAudio,
+    error: copy.audioError
+  };
+  Object.assign(button.dataset, {
+    audioLabelLoading: labels.loading,
+    audioLabelReady: labels.ready,
+    audioLabelPlaying: labels.playing,
+    audioLabelPaused: labels.paused,
+    audioLabelError: labels.error,
+    audioState: nextState
+  });
+  button.hidden = !visible;
+  button.disabled = nextState === "loading" || nextState === "error";
+  button.classList?.toggle?.("is-playing", nextState === "playing");
+  button.classList?.toggle?.("is-paused", nextState === "paused");
+  button.classList?.toggle?.("is-error", nextState === "error");
+  button.setAttribute("aria-label", labels[nextState]);
+  button.setAttribute("aria-pressed", String(nextState === "playing"));
+  button.setAttribute("aria-busy", String(nextState === "loading"));
+  button.setAttribute("aria-disabled", String(button.disabled));
+  const label = button.querySelector?.("[data-audio-label]");
+  const icon = button.querySelector?.("[data-audio-icon]");
+  if (label) label.textContent = labels[nextState];
+  if (icon) icon.textContent = AUDIO_STATE_ICON[nextState];
+}
+
+function canonicalAudioSelection(source) {
+  try {
+    if (!source || typeof source !== "object" || Array.isArray(source)) return null;
+    return {
+      audioId: typeof source.audioId === "string" ? source.audioId.trim() : "",
+      audioPath: typeof source.audioPath === "string" ? source.audioPath.trim() : "",
+      audioText: typeof source.audioText === "string" ? source.audioText.trim() : "",
+      audioAuthorized: source.audioAuthorized === true,
+      humanRecorded: source.humanRecorded === true,
+      audioSource: typeof source.audioSource === "string" ? source.audioSource.trim() : ""
+    };
+  } catch {
+    return null;
+  }
+}
+
+function authorizedRecording(registry, selection) {
+  try {
+    return selection && typeof registry?.authorize === "function" ? registry.authorize(selection) : null;
+  } catch {
+    return null;
+  }
+}
+
+function attachAudioPlayback(button, card, selection, registry, copy) {
+  button?.addEventListener("click", async () => {
+    if (button.hidden || button.disabled || typeof registry?.playSelection !== "function") return;
+    const stateBeforeClick = button.dataset.audioState;
+    if (stateBeforeClick !== "playing") paintAudioButton(button, copy, "loading", true);
+    let handled = false;
+    try {
+      handled = await registry.playSelection(selection, button);
+    } catch {
+      handled = false;
+    }
+    if (!handled) {
+      paintAudioButton(button, copy, "error", true);
+      if (card) card.hidden = false;
+      return;
+    }
+    if (button.dataset.audioState === "loading") paintAudioButton(button, copy, "playing", true);
+  });
+}
+
+function bindAuthorizedAudioControl(button, card, selection, registry, copy) {
+  paintAudioButton(button, copy, "loading", false);
+  if (card) card.hidden = true;
+  const updateAvailability = () => {
+    const authorized = authorizedRecording(registry, selection);
+    if (!authorized) {
+      paintAudioButton(button, copy, "error", false);
+      if (card) card.hidden = true;
+      return false;
+    }
+    paintAudioButton(button, copy, "ready", true);
+    if (card) card.hidden = false;
+    return true;
+  };
+  try {
+    if (registry?.ready?.then) registry.ready.then(updateAvailability, () => updateAvailability());
+    else updateAvailability();
+  } catch {
+    paintAudioButton(button, copy, "error", false);
+    if (card) card.hidden = true;
+  }
+  attachAudioPlayback(button, card, selection, registry, copy);
+}
+
 function renderChoice(target, activity, context, { image = false, dialogue = false, audio = false } = {}) {
   const locale = localeFor(context.language), copy = COPY[locale], options = activity.options || [];
   const dialogueHtml = dialogue ? renderDialogueBubbles(activity.dialogue || activity.turns || [], locale) : "";
-  const audioHtml = audio ? `<div class="nalvi-audio-card"><button type="button" data-catalog-audio data-audio-state="loading" aria-label="${escapeHtml(copy.playAudio)}" aria-pressed="false" disabled><span aria-hidden="true">🔊</span><span>${escapeHtml(copy.playAudio)}</span></button></div>` : "";
+  const audioHtml = audio ? `<div class="nalvi-audio-card" data-catalog-audio-card hidden>${audioButtonMarkup(copy)}</div>` : "";
   const body = `${dialogueHtml}${audioHtml}<div class="nalvi-choice-grid ${image ? "nalvi-image-choice" : ""}">${options.map((option, index) => `<button type="button" class="nalvi-choice-card" data-choice="${escapeHtml(optionId(option, index))}">${image ? `<img src="${escapeHtml(option.image || option.imageUrl)}" alt="${escapeHtml(localize(option.alt || "", locale))}" loading="lazy">` : ""}<span>${escapeHtml(optionValue(option, locale))}</span></button>`).join("")}</div>${actions(copy)}`;
+  const registry = window.NALVI_RECORDED_AUDIO;
+  if (audio && audioHosts.has(target)) {
+    try { registry?.stop?.(); } catch {}
+  }
   shell(target, activity, context, body, audio ? copy.listen : copy.select);
   if (audio) {
+    audioHosts.add(target);
     const playButton = target.querySelector("[data-catalog-audio]");
-    const registry = window.NALVI_RECORDED_AUDIO;
-    const selection = {
-      audioId: String(activity.audioId || "").trim(),
-      audioPath: String(activity.audioPath || "").trim(),
-      audioText: String(activity.audioText || "").trim(),
-      audioAuthorized: activity.audioAuthorized === true,
-      humanRecorded: activity.humanRecorded === true,
-      audioSource: String(activity.audioSource || "").trim()
-    };
-    const updateAudioAvailability = () => {
-      const authorized = registry?.authorize?.(selection);
-      if (!playButton) return;
-      playButton.disabled = !authorized;
-      playButton.dataset.audioState = authorized ? "ready" : "unavailable";
-      playButton.setAttribute("aria-disabled", String(!authorized));
-    };
-    if (registry?.ready?.then) registry.ready.then(updateAudioAvailability, updateAudioAvailability);
-    else updateAudioAvailability();
-    playButton?.addEventListener("click", async () => {
-      if (playButton.disabled || !registry?.playSelection) return;
-      const played = await registry.playSelection(selection, playButton);
-      if (!played && playButton.getAttribute?.("aria-pressed") !== "true") {
-        playButton.dataset.audioState = "unavailable";
-        playButton.disabled = true;
-        playButton.setAttribute("aria-disabled", "true");
-      }
-    });
+    const audioCard = target.querySelector("[data-catalog-audio-card]");
+    const selection = canonicalAudioSelection(activity);
+    bindAuthorizedAudioControl(playButton, audioCard, selection, registry, copy);
   }
   let selected = "";
   const check = target.querySelector("[data-catalog-check]");
@@ -213,6 +303,49 @@ function renderTwoStep(target, activity, context) {
   renderStep();
 }
 
+export async function renderRecordedAudioLibrary(target, context = {}) {
+  if (!target || typeof target !== "object" || !("innerHTML" in target)) return Object.freeze({ ok: false, count: 0 });
+  const locale = localeFor(context.language);
+  const copy = COPY[locale];
+  const registry = window.NALVI_RECORDED_AUDIO;
+  const token = Object.freeze({});
+  audioLibraryTokens.set(target, token);
+  try { registry?.stop?.(); } catch {}
+  target.dataset.audioLibraryState = "loading";
+  target.innerHTML = `<p class="recorded-audio-library__status" data-recorded-audio-status aria-live="polite">${escapeHtml(copy.audioLibraryLoading)}</p>`;
+
+  try {
+    const readyStatus = registry?.ready?.then ? await registry.ready : null;
+    if (audioLibraryTokens.get(target) !== token) return Object.freeze({ ok: false, count: 0, stale: true });
+    if (!readyStatus?.ok || typeof registry?.list !== "function") throw new Error("RECORDED_AUDIO_LIBRARY_UNAVAILABLE");
+    const listed = registry.list();
+    const authorized = [];
+    for (const item of Array.isArray(listed) ? listed : []) {
+      const selection = canonicalAudioSelection(item);
+      const recording = authorizedRecording(registry, selection);
+      if (recording) authorized.push({ recording, selection });
+    }
+    if (!authorized.length) throw new Error("RECORDED_AUDIO_LIBRARY_EMPTY");
+
+    target.dataset.audioLibraryState = "ready";
+    target.innerHTML = `<p class="recorded-audio-library__status" data-recorded-audio-status aria-live="polite"><b>${authorized.length}</b> · ${escapeHtml(copy.playAudio)}</p><div class="recorded-audio-library__grid" data-recorded-audio-list>${authorized.map(({ recording }) => `<article class="recorded-audio-library__item" data-recorded-audio-entry="${escapeHtml(recording.audioId)}"><div><b lang="gn">${escapeHtml(recording.audioText)}</b><small>${escapeHtml(recording.audioId)} · ${escapeHtml(recording.file)}</small></div>${audioButtonMarkup(copy, `data-recorded-audio-id="${escapeHtml(recording.audioId)}"`)}</article>`).join("")}</div>`;
+    const byId = new Map(authorized.map(item => [item.recording.audioId, item]));
+    target.querySelectorAll?.("[data-recorded-audio-id]").forEach(button => {
+      const item = byId.get(button.dataset.recordedAudioId);
+      const card = button.closest?.("[data-recorded-audio-entry]") || null;
+      if (!item) return;
+      paintAudioButton(button, copy, "ready", true);
+      attachAudioPlayback(button, card, item.selection, registry, copy);
+    });
+    return Object.freeze({ ok: true, count: authorized.length });
+  } catch {
+    if (audioLibraryTokens.get(target) !== token) return Object.freeze({ ok: false, count: 0, stale: true });
+    target.dataset.audioLibraryState = "error";
+    target.innerHTML = `<p class="recorded-audio-library__status is-error" data-recorded-audio-status aria-live="polite">${escapeHtml(copy.audioLibraryEmpty)}</p>`;
+    return Object.freeze({ ok: false, count: 0 });
+  }
+}
+
 const renderers = {
   [ACTIVITY_TYPES.CONTEXT_CHOICE]: (target, activity, context) => renderChoice(target, activity, context),
   [ACTIVITY_TYPES.ARROW_MATCH]: renderArrowMatch,
@@ -227,5 +360,12 @@ for (const [type, renderer] of Object.entries(renderers)) if (isEnabledActivityT
 window.NALVI_ACTIVITY_CATALOG = Object.freeze({
   version: VERSION,
   definition: NALVI_ACTIVITY_CATALOG_V1,
-  audit: () => ({ ...catalogAudit(), registeredRendererTypes: Object.keys(renderers).filter(isEnabledActivityType) })
+  renderRecordedAudioLibrary,
+  audit: () => ({
+    ...catalogAudit(),
+    registeredRendererTypes: Object.keys(renderers).filter(isEnabledActivityType),
+    recordedAudioLibrary: true,
+    audioButtonStates: [...AUDIO_BUTTON_STATES],
+    audioLocales: [...LOCALES]
+  })
 });

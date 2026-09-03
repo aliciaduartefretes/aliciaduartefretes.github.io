@@ -1,7 +1,7 @@
 (function installNalviRecordedAudio() {
   "use strict";
 
-  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V2";
+  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V3";
   const MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V1";
   const MANIFEST_PATH = "assets/audio/guarani/ali-2026/manifest.json";
   const SCRIPT_URL = document.currentScript?.src ? new URL(document.currentScript.src, document.baseURI) : null;
@@ -20,11 +20,11 @@
   const byId = new Map();
   const byPath = new Map();
   const byUrl = new Map();
-  const activeButtons = new WeakSet();
-  const activeRecordingIds = new Set();
   let recordings = [];
   let state = "loading";
   let manifestError = "";
+  let activePlayback = null;
+  let playbackToken = 0;
 
   const legacyPlayPronunciation = typeof window.playPronunciation === "function"
     ? window.playPronunciation.bind(window)
@@ -186,77 +186,213 @@
     });
 
   function publicRecording(item) {
-    return item ? { ...item } : null;
+    return item ? Object.freeze({ ...item }) : null;
   }
 
   function resolve(value) {
-    if (state !== "ready") return null;
-    const item = byId.get(String(value || "")) || byLabel.get(normalize(value));
-    return publicRecording(item);
+    try {
+      if (state !== "ready" || (typeof value !== "string" && typeof value !== "number")) return null;
+      const item = byId.get(String(value || "")) || byLabel.get(normalize(value));
+      return publicRecording(item);
+    } catch {
+      return null;
+    }
+  }
+
+  function list() {
+    if (state !== "ready") return Object.freeze([]);
+    return Object.freeze(recordings.map(publicRecording));
   }
 
   function authorize(selection = {}) {
-    if (state !== "ready" || !selection || typeof selection !== "object") return null;
-    const keys = Object.keys(selection).sort();
-    const exactShape = expected => keys.length === expected.length
-      && expected.every(key => Object.hasOwn(selection, key))
-      && JSON.stringify(keys) === JSON.stringify([...expected].sort());
-    const rich = exactShape(RICH_AUDIO_KEYS);
-    if (!rich && !exactShape(CANONICAL_AUDIO_KEYS)) return null;
-    if (selection.audioAuthorized !== true || selection.humanRecorded !== true
-      || selection.audioSource !== "manifest-human-recording") return null;
-    const audioId = typeof selection.audioId === "string" ? selection.audioId.trim() : "";
-    const audioPath = typeof selection.audioPath === "string" ? selection.audioPath.trim() : "";
-    const audioText = typeof selection.audioText === "string" ? selection.audioText.trim() : "";
-    if (rich && (selection.authorized !== true || selection.source !== "manifest-human-recording"
-      || selection.id !== audioId || selection.recordingId !== audioId
-      || selection.path !== audioPath || typeof selection.text !== "string" || !selection.text.trim())) return null;
-    if (!audioId || !audioPath || !audioText) return null;
-    const byIdentifier = byId.get(audioId);
-    const byCanonicalPath = byPath.get(audioPath);
-    if (!byIdentifier || !byCanonicalPath || byIdentifier !== byCanonicalPath) return null;
-    if (byLabel.get(normalize(audioText)) !== byIdentifier) return null;
-    if (rich && byLabel.get(normalize(selection.text)) !== byIdentifier) return null;
-    return publicRecording(byIdentifier);
-  }
-
-  function setButtonState(button, playing) {
-    if (!(button instanceof Element)) return;
-    button.classList.toggle("is-playing", playing);
-    button.setAttribute("aria-pressed", String(playing));
-  }
-
-  async function playRecording(recording, button) {
-    if (!recording || state !== "ready") return false;
-    const hasButton = button instanceof Element;
-    if (activeRecordingIds.has(recording.id) || (hasButton && activeButtons.has(button))) return true;
-    activeRecordingIds.add(recording.id);
-    if (hasButton) activeButtons.add(button);
-    const release = () => {
-      activeRecordingIds.delete(recording.id);
-      if (hasButton) activeButtons.delete(button);
-      setButtonState(button, false);
-    };
     try {
-      const audio = new Audio(recording.url);
-      setButtonState(button, true);
-      audio.addEventListener("ended", release, { once: true });
-      audio.addEventListener("error", release, { once: true });
-      await audio.play();
+      if (state !== "ready" || !selection || typeof selection !== "object" || Array.isArray(selection)) return null;
+      const ownKeys = Reflect.ownKeys(selection);
+      if (ownKeys.some(key => typeof key !== "string")) return null;
+      const keys = [...ownKeys].sort();
+      const exactShape = expected => keys.length === expected.length
+        && JSON.stringify(keys) === JSON.stringify([...expected].sort());
+      const rich = exactShape(RICH_AUDIO_KEYS);
+      if (!rich && !exactShape(CANONICAL_AUDIO_KEYS)) return null;
+      const expectedKeys = rich ? RICH_AUDIO_KEYS : CANONICAL_AUDIO_KEYS;
+      const descriptors = Object.fromEntries(expectedKeys.map(key => [key, Object.getOwnPropertyDescriptor(selection, key)]));
+      if (expectedKeys.some(key => !descriptors[key] || !("value" in descriptors[key]) || descriptors[key].enumerable !== true)) return null;
+      const value = key => descriptors[key].value;
+      if (value("audioAuthorized") !== true || value("humanRecorded") !== true
+        || value("audioSource") !== "manifest-human-recording") return null;
+      const audioId = typeof value("audioId") === "string" ? value("audioId").trim() : "";
+      const audioPath = typeof value("audioPath") === "string" ? value("audioPath").trim() : "";
+      const audioText = typeof value("audioText") === "string" ? value("audioText").trim() : "";
+      if (rich && (value("authorized") !== true || value("source") !== "manifest-human-recording"
+        || value("id") !== audioId || value("recordingId") !== audioId
+        || value("path") !== audioPath || typeof value("text") !== "string" || !value("text").trim())) return null;
+      if (!audioId || !audioPath || !audioText) return null;
+      const byIdentifier = byId.get(audioId);
+      const byCanonicalPath = byPath.get(audioPath);
+      if (!byIdentifier || !byCanonicalPath || byIdentifier !== byCanonicalPath) return null;
+      if (byLabel.get(normalize(audioText)) !== byIdentifier) return null;
+      if (rich && byLabel.get(normalize(value("text"))) !== byIdentifier) return null;
+      return publicRecording(byIdentifier);
+    } catch {
+      return null;
+    }
+  }
+
+  const BUTTON_STATE_LABEL_KEYS = Object.freeze({
+    loading: "audioLabelLoading",
+    ready: "audioLabelReady",
+    playing: "audioLabelPlaying",
+    paused: "audioLabelPaused",
+    error: "audioLabelError"
+  });
+  const BUTTON_STATE_ICONS = Object.freeze({ loading: "⏳", ready: "🔊", playing: "⏸", paused: "↻", error: "⚠️" });
+
+  function isElement(value) {
+    return typeof Element !== "undefined" && value instanceof Element;
+  }
+
+  function setButtonState(button, nextState) {
+    if (!isElement(button) || !Object.hasOwn(BUTTON_STATE_LABEL_KEYS, nextState)) return;
+    try {
+      button.dataset.audioState = nextState;
+      button.classList?.toggle?.("is-playing", nextState === "playing");
+      button.classList?.toggle?.("is-paused", nextState === "paused");
+      button.classList?.toggle?.("is-error", nextState === "error");
+      button.setAttribute("aria-pressed", String(nextState === "playing"));
+      button.setAttribute("aria-busy", String(nextState === "loading"));
+      button.setAttribute("aria-disabled", String(nextState === "loading" || nextState === "error"));
+      button.disabled = nextState === "loading" || nextState === "error";
+      const label = button.dataset?.[BUTTON_STATE_LABEL_KEYS[nextState]] || "";
+      const labelNode = button.querySelector?.("[data-audio-label]");
+      const iconNode = button.querySelector?.("[data-audio-icon]");
+      if (label) {
+        button.setAttribute("aria-label", label);
+        if (labelNode) labelNode.textContent = label;
+      }
+      if (iconNode) iconNode.textContent = BUTTON_STATE_ICONS[nextState];
+    } catch {
+      // El fallo visual de un control no puede romper ni autorizar reproducción.
+    }
+  }
+
+  function releasePlayback(playback, nextState = "ready") {
+    if (!playback) return false;
+    if (activePlayback === playback) activePlayback = null;
+    try { playback.audio.pause(); } catch {}
+    try { playback.audio.currentTime = 0; } catch {}
+    playback.status = nextState;
+    setButtonState(playback.button, nextState);
+    return true;
+  }
+
+  function stop() {
+    return releasePlayback(activePlayback, "ready");
+  }
+
+  function pause() {
+    const playback = activePlayback;
+    if (!playback || playback.status !== "playing") return false;
+    try {
+      playback.audio.pause();
+      playback.status = "paused";
+      setButtonState(playback.button, "paused");
       return true;
     } catch (error) {
-      release();
+      releasePlayback(playback, "error");
       console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
       return false;
     }
   }
 
+  async function startPlayback(playback, { restart = false } = {}) {
+    if (restart) {
+      try { playback.audio.currentTime = 0; } catch (error) {
+        releasePlayback(playback, "error");
+        console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
+        return false;
+      }
+    }
+    playback.status = "loading";
+    setButtonState(playback.button, "loading");
+    try {
+      await playback.audio.play();
+      if (activePlayback !== playback || playback.token !== playbackToken) return false;
+      playback.status = "playing";
+      setButtonState(playback.button, "playing");
+      return true;
+    } catch (error) {
+      if (activePlayback === playback) releasePlayback(playback, "error");
+      console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
+      return false;
+    }
+  }
+
+  async function restart() {
+    const playback = activePlayback;
+    if (!playback || playback.status !== "paused") return false;
+    return startPlayback(playback, { restart: true });
+  }
+
+  async function playRecording(recording, button) {
+    if (!recording || state !== "ready") {
+      setButtonState(button, "error");
+      return false;
+    }
+    const hasButton = isElement(button);
+    if (activePlayback?.recording.id === recording.id && activePlayback.button === (hasButton ? button : null)) {
+      if (activePlayback.status === "playing") return pause();
+      if (activePlayback.status === "paused") return restart();
+      if (activePlayback.status === "loading") return true;
+    }
+    stop();
+    let audio;
+    try {
+      audio = new Audio(recording.url);
+      audio.preload = "metadata";
+    } catch (error) {
+      setButtonState(button, "error");
+      console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
+      return false;
+    }
+    const playback = {
+      audio,
+      button: hasButton ? button : null,
+      recording,
+      status: "loading",
+      token: ++playbackToken
+    };
+    activePlayback = playback;
+    const end = () => {
+      if (activePlayback === playback) releasePlayback(playback, "ready");
+    };
+    const fail = () => {
+      if (activePlayback === playback) releasePlayback(playback, "error");
+    };
+    try {
+      audio.addEventListener("ended", end, { once: true });
+      audio.addEventListener("error", fail, { once: true });
+    } catch (error) {
+      releasePlayback(playback, "error");
+      console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
+      return false;
+    }
+    return startPlayback(playback);
+  }
+
   async function playSelection(selection, button) {
     const status = await ready;
-    if (!status.ok) return false;
+    if (!status.ok) {
+      setButtonState(button, "error");
+      return false;
+    }
     const recording = authorize(selection);
-    if (!recording) return false;
-    if (legacyPlayPronunciation && legacyPlayPronunciation(recording.label, button)) return true;
+    if (!recording) {
+      setButtonState(button, "error");
+      return false;
+    }
+    if (!isElement(button) && legacyPlayPronunciation) {
+      try { if (legacyPlayPronunciation(recording.label, button)) return true; } catch {}
+    }
     return playRecording(recording, button);
   }
 
@@ -266,17 +402,27 @@
 
   async function play(value, button) {
     const status = await ready;
-    if (!status.ok) return false;
+    if (!status.ok) {
+      setButtonState(button, "error");
+      return false;
+    }
     const recording = resolve(value);
-    if (!recording) return false;
-    if (legacyPlayPronunciation && legacyPlayPronunciation(recording.label, button)) return true;
+    if (!recording) {
+      setButtonState(button, "error");
+      return false;
+    }
+    if (legacyPlayPronunciation) {
+      try { if (legacyPlayPronunciation(recording.label, button)) return true; } catch {}
+    }
     return playRecording(recording, button);
   }
 
   // Los audios históricos ya integrados conservan prioridad. El corpus importado
   // solo se consulta después de que el manifiesto completo haya sido validado.
   window.playPronunciation = function playPronunciationWithRecordedFallback(value, button) {
-    if (legacyPlayPronunciation && legacyPlayPronunciation(value, button)) return true;
+    if (legacyPlayPronunciation) {
+      try { if (legacyPlayPronunciation(value, button)) return true; } catch {}
+    }
     return play(value, button);
   };
 
@@ -284,11 +430,15 @@
     version: VERSION,
     ready,
     resolve,
+    list,
     authorize,
     has: value => Boolean(resolve(value)),
     play,
     playPath,
     playSelection,
+    pause,
+    restart,
+    stop,
     audit: () => ({
       version: VERSION,
       manifestVersion: MANIFEST_VERSION,
@@ -303,6 +453,8 @@
       indexedIds: byId.size,
       indexedCanonicalPaths: byPath.size,
       indexedPaths: byUrl.size,
+      playbackState: activePlayback?.status || "idle",
+      activeRecordingId: activePlayback?.recording.id || "",
       rejectsUnlistedPaths: true,
       requiresIdPathTextMatch: true,
       preservesExistingAudioPriority: true
