@@ -382,15 +382,15 @@
           "sourcePage": "general-u01-significado-mba-eichapa",
           "sourceEdition": null,
           "sourceLocatorType": "section",
-          "sourceForm": "Mba’éichapa",
+          "sourceForm": "Mba’éichapa reime",
           "validationStatus": "unreviewed"
         }
       ],
       "createdAt": "2026-08-27T00:00:00Z",
-      "updatedAt": "2026-08-27T00:00:00Z",
-      "normalizedForm": "mba’éichapa",
+      "updatedAt": "2026-09-03T00:00:00Z",
+      "normalizedForm": "mba’éichapa reime",
       "sourceForms": [
-        "Mba’éichapa"
+        "Mba’éichapa reime"
       ],
       "partOfSpeech": [
         "other"
@@ -505,7 +505,7 @@
         }
       ],
       "createdAt": "2026-08-27T00:00:00Z",
-      "updatedAt": "2026-08-27T00:00:00Z",
+      "updatedAt": "2026-09-03T00:00:00Z",
       "normalizedForm": "jajotopata",
       "sourceForms": [
         "Jajotopata"
@@ -517,12 +517,12 @@
         {
           "id": "sense-1",
           "definitionGuarani": null,
-          "glossEs": "nos vemos",
+          "glossEs": "nos vamos a encontrar",
           "register": [
             "unknown"
           ],
           "contexts": [
-            "farewellCandidate"
+            "futureMeetingCandidate"
           ],
           "professionalDomains": [],
           "exampleIds": []

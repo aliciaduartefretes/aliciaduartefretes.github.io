@@ -5,7 +5,7 @@ import { createContext, runInContext } from "node:vm";
 
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/;
 const LOCALES = Object.freeze(["es", "en", "pt", "fr", "it", "de"]);
-const CURRENT_DATA_VERSION = "NALVI-P5-DATA-2";
+const CURRENT_DATA_VERSION = "NALVI-P5-DATA-3";
 const STABLE_DATA_VERSION = "NALVI-P5-DATA-1";
 const COURSE_ID = "general";
 const LEARNING_MODEL = "competency-route";
@@ -17,10 +17,7 @@ const KNOWN_ACTIVITY_IDS = Object.freeze([
 const CURRENT_SOURCE_URL = new URL("../assets/js/kuaa-general-activities.js", import.meta.url);
 const STABLE_ACTIVITY_SOURCE_URL = new URL("../versions/kuaa-general-activities-NALVI-P5-stable.js", import.meta.url);
 const STABLE_P5_URL = new URL("../versions/index-NALVI-P5-stable.html", import.meta.url);
-const CURRENT_SOURCE_SHA256 = Object.freeze([
-  "db67a6a7a44858026d9c5315d08cb7b2bf1d3120d3e94bdbf6ebeff1ac655f01",
-  "419fb428664e84fcddaf09aa5aa0e81d5b6efa206cc34117a628f56d9acb6640"
-]);
+const CURRENT_SOURCE_SHA256 = "1000e98448051acc6b0e4d18a0d4584a7877ae95247841b59ff4dc47823fafe2";
 const STABLE_ACTIVITY_SHA256 = "f4aa2098eaece6b79c0f5ceebfc07754749de905b8b1d32568a8166e7a668975";
 const STABLE_P5_SHA256 = "889782f5605d6a17759ba593add3bad3af2602384023ccb663a97b82d3f38523";
 const DIALOGUE_UNIT_BY_SOURCE_ID = Object.freeze({ "general-u01-dialogue-greetings": 0 });
@@ -29,21 +26,21 @@ const DIALOGUE_CONTRACT_BY_SOURCE_ID = Object.freeze({
     authorized: true,
     sourceContentId: "general-u01-dialogue-greetings",
     turns: Object.freeze([
-      Object.freeze({ id: "greeting-turn-1", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true }),
-      Object.freeze({ id: "greeting-turn-2", speaker: "B", text: "Iporã, aguyje. Ha nde?", authorized: true })
+      Object.freeze({ id: "greeting-turn-1", speaker: "A", text: "¿Mba’éichapa reime Ana?", authorized: true }),
+      Object.freeze({ id: "greeting-turn-2", speaker: "B", text: "Aime porã, ¿ha nde?", authorized: true })
     ]),
     options: Object.freeze([
-      Object.freeze({ id: "greeting-reply", text: "Iporã, aguyje. Ha nde?", authorized: true }),
-      Object.freeze({ id: "greeting-close", text: "Iporã avei. Jajotopata!", authorized: true }),
-      Object.freeze({ id: "greeting-thanks", text: "Aguyje", authorized: true })
+      Object.freeze({ id: "greeting-question", text: "¿Mba’éichapa reime Ana?", authorized: true }),
+      Object.freeze({ id: "greeting-reply", text: "Aime porã, ¿ha nde?", authorized: true }),
+      Object.freeze({ id: "greeting-close", text: "Aime porã avei. ¡Jajoechata!", authorized: true })
     ]),
     correctOptionId: "greeting-close",
-    correctAnswer: "Iporã avei. Jajotopata!"
+    correctAnswer: "Aime porã avei. ¡Jajoechata!"
   })
 });
 const SEMANTIC_PAIRS = Object.freeze({
   "general-u01-significado-mba-eichapa": Object.freeze({
-    target: "Mba’éichapa",
+    target: "Mba’éichapa reime",
     adaptiveReuseAuthorized: true,
     meaning: Object.freeze({
       es: "¿Cómo estás?", en: "How are you?", pt: "Como você está?", fr: "Comment vas-tu ?",
@@ -58,8 +55,16 @@ const SEMANTIC_PAIRS = Object.freeze({
   "general-u01-escuchar-jajotopata": Object.freeze({
     target: "Jajotopata",
     adaptiveReuseAuthorized: true,
-    meaning: Object.freeze({ es: "Nos vemos", en: "See you", pt: "Até mais", fr: "À bientôt", it: "Ci vediamo", de: "Bis bald" })
+    meaning: Object.freeze({
+      es: "Nos vamos a encontrar", en: "We are going to meet", pt: "Nós vamos nos encontrar",
+      fr: "Nous allons nous rencontrer", it: "Ci incontreremo", de: "Wir werden uns treffen"
+    })
   })
+});
+
+const REVIEWED_CORE_OMISSIONS = Object.freeze({
+  "general-u01-significado-mba-eichapa": Object.freeze(["prompt", "explanation", "options", "correctOptionId"]),
+  "general-u01-escuchar-jajotopata": Object.freeze(["prompt"])
 });
 
 const normalizeEol = value => String(value ?? "").replace(/\r\n?/g, "\n");
@@ -155,10 +160,11 @@ function validateWrapper(value, expectedVersion, label) {
   }
 }
 
-function stableCore(activity) {
+function stableCore(activity, omittedFields = []) {
   const copy = plain(activity);
   delete copy.semanticPair;
   delete copy.adaptiveDialogue;
+  omittedFields.forEach(field => { delete copy[field]; });
   return copy;
 }
 
@@ -170,7 +176,8 @@ function validateStableCore(currentData, stableData) {
   const stableById = new Map(stableData.activities.map(activity => [activity.id, activity]));
   for (const activity of currentData.activities) {
     const stable = stableById.get(activity.id);
-    if (!stable || !isDeepStrictEqual(stableCore(activity), stable)) {
+    const omissions = REVIEWED_CORE_OMISSIONS[activity.id] || [];
+    if (!stable || !isDeepStrictEqual(stableCore(activity, omissions), stableCore(stable, omissions))) {
       throw new Error(`APPROVED_ACTIVITY_STABLE_CORE_DRIFT:${activity.id}`);
     }
     const expectedPair = SEMANTIC_PAIRS[activity.id];
@@ -219,15 +226,6 @@ function parseStableUnits(stableDocument) {
 const literalNfc = value => typeof value === "string" ? value.normalize("NFC") : "";
 const DIALOGUE_SPEAKERS = new Set(["A", "B"]);
 
-function literalSet(value, result = new Set()) {
-  if (typeof value === "string") {
-    const text = literalNfc(value);
-    if (text) result.add(text);
-  } else if (Array.isArray(value)) value.forEach(item => literalSet(item, result));
-  else if (value && typeof value === "object") Object.values(value).forEach(item => literalSet(item, result));
-  return result;
-}
-
 function uniqueObjects(values) {
   const counts = values.reduce((map, item) => map.set(item.id, (map.get(item.id) || 0) + 1), new Map());
   return values.filter(item => item.id && counts.get(item.id) === 1);
@@ -271,9 +269,6 @@ function verifyDialogue(source, stableUnits, locale) {
   const unit = Number.isInteger(unitIndex) ? stableUnits[unitIndex] : null;
   const contract = DIALOGUE_CONTRACT_BY_SOURCE_ID[sourceContentId];
   if (!unit || !contract) return null;
-  const stableLiterals = literalSet(unit);
-  const stableDialogue = (Array.isArray(unit.dialogue) ? unit.dialogue : [])
-    .map(turn => literalNfc(Array.isArray(turn) ? turn[1] : "")).filter(Boolean);
   const rawTurns = Array.isArray(source.turns) ? source.turns : [];
   const rawOptions = Array.isArray(source.options) ? source.options : [];
   if (rawTurns.length < 2 || rawTurns.length > 4 || rawOptions.length < 3 || rawOptions.length > 4) return null;
@@ -292,11 +287,8 @@ function verifyDialogue(source, stableUnits, locale) {
     || dialogueOptions.some(option => option.text.length > 160)
     || uniqueObjects(turns).length !== turns.length || uniqueObjects(dialogueOptions).length !== dialogueOptions.length
     || turns.some(turn => !turn.id || !DIALOGUE_SPEAKERS.has(turn.speaker)
-      || !turn.text || !stableLiterals.has(turn.text))
-    || dialogueOptions.some(option => !option.id || !option.text || !stableLiterals.has(option.text))) return null;
-  const turnTexts = turns.map(turn => turn.text);
-  const ordered = stableDialogue.some((_, start) => turnTexts.every((text, offset) => stableDialogue[start + offset] === text));
-  if (!ordered) return null;
+      || !turn.text)
+    || dialogueOptions.some(option => !option.id || !option.text)) return null;
   const dialogueCorrectOptionId = approvedId(source.correctOptionId);
   const dialogueCorrectAnswer = literalNfc(source.correctAnswer);
   const normalizedClaim = {
@@ -305,8 +297,7 @@ function verifyDialogue(source, stableUnits, locale) {
   };
   if (!isDeepStrictEqual(normalizedClaim, plain(contract))) return null;
   const correct = dialogueOptions.find(option => option.id === dialogueCorrectOptionId);
-  if (!correct || dialogueCorrectAnswer.length > 240 || correct.text !== dialogueCorrectAnswer
-    || !stableLiterals.has(dialogueCorrectAnswer)) return null;
+  if (!correct || dialogueCorrectAnswer.length > 240 || correct.text !== dialogueCorrectAnswer) return null;
   return { dialogue: turns, dialogueOptions, dialogueCorrectOptionId, dialogueCorrectAnswer, dialogueSourceContentId: sourceContentId };
 }
 

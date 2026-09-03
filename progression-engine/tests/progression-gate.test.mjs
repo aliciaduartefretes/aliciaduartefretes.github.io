@@ -47,7 +47,9 @@ const approvedMotherFixture = Object.freeze({
       authorized: false,
       stableRef: { unitIndex: 0, field: "key" }
     }
-  ]
+  ],
+  correctAnswer: "sy",
+  acceptedAnswers: ["sy"]
 });
 
 function stableP5GeneralUnits(sourcePath) {
@@ -61,11 +63,15 @@ function stableP5GeneralUnits(sourcePath) {
 }
 
 function filterAlreadyAuthorizedMaterial(source) {
-  if (source?.authorized !== true) return { options: [], pairs: [], contexts: [] };
+  if (source?.authorized !== true) {
+    return { options: [], pairs: [], contexts: [], correctAnswer: "", acceptedAnswers: [] };
+  }
   return {
     options: source.options.filter(item => item.authorized === true),
     pairs: source.pairs.filter(item => item.authorized === true),
-    contexts: source.contexts.filter(item => item.authorized === true)
+    contexts: source.contexts.filter(item => item.authorized === true),
+    correctAnswer: source.correctAnswer,
+    acceptedAnswers: [...source.acceptedAnswers]
   };
 }
 
@@ -244,12 +250,15 @@ test("respuesta incorrecta siempre bloquea, incluso sin OpenAI", () => {
 
 test("mamá: dos errores permanecen bloqueados y producen actividades aceptadas distintas", () => {
   assertApprovedMaterialMatchesStableSource(approvedMotherFixture);
-  assert.deepEqual(filterAlreadyAuthorizedMaterial({ ...approvedMotherFixture, authorized: false }), { options: [], pairs: [], contexts: [] });
+  assert.deepEqual(filterAlreadyAuthorizedMaterial({ ...approvedMotherFixture, authorized: false }), {
+    options: [], pairs: [], contexts: [], correctAnswer: "", acceptedAnswers: []
+  });
   const approvedActivityMaterial = filterAlreadyAuthorizedMaterial(approvedMotherFixture);
   assert.equal(approvedActivityMaterial.options.length, 3);
   assert.equal(approvedActivityMaterial.pairs.length, 3);
   assert.equal(approvedActivityMaterial.contexts.length, 1);
-  assert.ok(Object.values(approvedActivityMaterial).flat().every(item => item.authorized === true));
+  assert.ok([...approvedActivityMaterial.options, ...approvedActivityMaterial.pairs, ...approvedActivityMaterial.contexts]
+    .every(item => item.authorized === true));
   const context = {
     activity: mother,
     conceptId: mother.conceptId,
@@ -273,7 +282,7 @@ test("mamá: dos errores permanecen bloqueados y producen actividades aceptadas 
     buildDeterministicFallbackCandidates(context, 1, "SEMANTIC_CONFUSION"),
     { ...context, attemptNumber: 1, errorType: "SEMANTIC_CONFUSION" }
   );
-  assert.equal(firstSelection.accepted, true);
+  assert.equal(firstSelection.accepted, true, JSON.stringify(firstSelection));
   const first = firstSelection.candidate.activity;
   const firstFingerprint = createActivityFingerprint(first, { uiLocale: "es" });
   const secondContext = {

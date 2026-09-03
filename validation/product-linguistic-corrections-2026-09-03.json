@@ -22,6 +22,7 @@
     ]
   },
   "scopes": {
+    "index-full": {"file": "index.html", "kind": "markers", "start": "<!doctype html>", "end": "</html>"},
     "index-general-i18n": {"file": "index.html", "kind": "markers", "start": "const LESSON_I18N={", "end": "const UI={"},
     "index-general-es": {"file": "index.html", "kind": "markers", "start": "const U=[", "end": "const REELS={"},
     "index-general-de": {"file": "index.html", "kind": "markers", "start": "LESSON_I18N.de=[", "end": "const POLICE_LESSONS=["},
@@ -39,6 +40,7 @@
     {"id": "presentation-reviewed", "scope": "index-general-es", "text": "Che réra Alicia, che ha’e Paraguaygua, aiko Utah-pe", "minOccurrences": 1},
     {"id": "occupation-reviewed", "scope": "index-general-es", "text": "Che ha’e Mbo’ehára guaranímegua", "minOccurrences": 1},
     {"id": "name-question-reviewed", "scope": "index-general-es", "text": "¿Mba’éicha nde réra?", "minOccurrences": 1},
+    {"id": "surname-question-aligned", "scope": "index-full", "text": "Mba’éicha nde rerajoapy?", "minOccurrences": 2},
     {"id": "origin-question-reviewed", "scope": "index-general-es", "text": "¿Moõgua nde?", "minOccurrences": 1},
     {"id": "age-question-reviewed", "scope": "index-general-es", "text": "¿Mboy ary reguereko?", "minOccurrences": 1},
     {"id": "six-language-status", "scope": "index-general-i18n", "text": "Mba’éichapa peime", "minOccurrences": 4},
@@ -53,6 +55,15 @@
     {"id": "knowledge-age", "scope": "knowledge-general", "text": "¿Mboy ary reguereko?", "minOccurrences": 1}
   ],
   "absence": [
+    {"id": "no-global-old-name-compound", "scope": "index-full", "text": "Mba’éichapa nderéra"},
+    {"id": "no-global-old-name-spaced", "scope": "index-full", "text": "Mba’éichapa nde réra"},
+    {"id": "no-global-old-surname-compound", "scope": "index-full", "text": "Mba’éichapa ndererajoapy"},
+    {"id": "no-global-old-name-answer-compound", "scope": "index-full", "text": "Cheréra"},
+    {"id": "no-global-old-name-answer-unaccented", "scope": "index-full", "text": "Cherera"},
+    {"id": "no-global-old-origin", "scope": "index-full", "text": "Moõguápa nde"},
+    {"id": "no-global-incomplete-dialogue", "scope": "index-full", "text": "Mba'éichapa? — Iporã, aguyje. Ha nde?"},
+    {"id": "no-global-incomplete-assessment", "scope": "index-full", "text": "Mba'éichapa pregunta…"},
+    {"id": "no-global-wrong-farewell-assessment", "scope": "index-full", "text": "Jajotopata se usa para…"},
     {"id": "no-standalone-status-quiz", "scope": "index-general-es", "text": "¿Qué expresa «Mba’éichapa»?"},
     {"id": "no-old-dialogue-opening", "scope": "index-general-es", "text": "Mba’éichapa, Ana?"},
     {"id": "no-old-dialogue-answer", "scope": "index-general-es", "text": "Iporã, aguyje. Ha nde?"},

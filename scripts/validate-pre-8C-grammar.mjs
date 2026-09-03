@@ -108,5 +108,5 @@ console.log(JSON.stringify({
   paso8CMayStart: false,
   openAIUsed: false,
   firebaseChanged: false,
-  lexicalPilotChanged: false
+  lexicalPilotChanged: true
 }, null, 2));

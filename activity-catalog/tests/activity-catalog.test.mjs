@@ -596,11 +596,11 @@ test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera
   assert.equal(dialogue.sourceContentId, "general-u01-dialogue-greetings");
   assert.ok(dialogue.turns.length >= 2 && dialogue.turns.length <= 4);
   assert.deepEqual(dialogue.turns.map(turn => turn.text), [
-    "Mba’éichapa, Ana?",
-    "Iporã, aguyje. Ha nde?"
+    "¿Mba’éichapa reime Ana?",
+    "Aime porã, ¿ha nde?"
   ]);
   assert.equal(dialogue.correctOptionId, "greeting-close");
-  assert.equal(dialogue.correctAnswer, "Iporã avei. Jajotopata!");
+  assert.equal(dialogue.correctAnswer, "Aime porã avei. ¡Jajoechata!");
   assert.ok(dialogue.options.some(option => option.id === dialogue.correctOptionId && option.text === dialogue.correctAnswer));
 
   const validation = validateCatalogActivity({
@@ -617,7 +617,7 @@ test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera
   assert.equal(validation.valid, true, validation.reasons.join(", "));
   assert.equal(validation.leakage.codes.includes("ANSWER_IN_DIALOGUE"), false);
   const html = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
-  assert.match(html, /assets\/js\/kuaa-general-activities\.js\?v=NALVI-GENERAL-ACTIVITIES-2/);
+  assert.match(html, /assets\/js\/kuaa-general-activities\.js\?v=NALVI-GENERAL-ACTIVITIES-3/);
   assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-13/);
   const client = readFileSync(new URL("../../assets/js/nalvi-intervention-client.mjs", import.meta.url), "utf8");
   assert.match(client, /progression-engine\/fallback-intervention\.mjs\?v=NALVI-CATALOG-6/);
