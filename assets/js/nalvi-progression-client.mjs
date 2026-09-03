@@ -74,11 +74,13 @@ async function persistAuthenticated(event) {
 
 function evaluateActivityResult({ activity = {}, result = {}, uiLocale = "es", atObjectiveBoundary = false } = {}) {
   const resolved = readProfile(activity), activityType = normalizeActivityType(activity.type || activity.activityType);
-  const independentRetest = activity.independentRetest === true || activity.evidenceMode === "independent";
-  const guided = !independentRetest && Boolean(
-    activity.nalviGuided
+  const explicitlyIndependent = activity.independentRetest === true || activity.evidenceMode === "independent";
+  const guided = Boolean(
+    activity.evidenceMode === "guided"
+    || activity.nalviGuided
     || result.hintUsed
-    || (activity.adaptivePlanId && Number(activity.helpLevel || 0) > 0)
+    || Number(activity.helpLevel || 0) > 0
+    || (activity.adaptivePlanId && !explicitlyIndependent)
   );
   const input = {
     userId: resolved.userId,
