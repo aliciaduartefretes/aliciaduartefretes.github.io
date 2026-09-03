@@ -58,6 +58,8 @@ test("mobile-first styles include safe areas and compact layouts",()=>{
   assert.match(style,/@media\(max-width:820px\)/);
   assert.match(style,/@media\(max-width:560px\)/);
   assert.match(style,/overflow-x:auto/);
+  assert.match(style,/\.nalvi-institutional-layout>\*\{min-width:0\}/);
+  assert.match(style,/grid-template-columns:minmax\(0,1fr\)/);
 });
 
 test("index loads the protected service and experience with explicit flags",()=>{
@@ -65,5 +67,5 @@ test("index loads the protected service and experience with explicit flags",()=>
   assert.match(index,/communityWrites:false/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-1/);
   assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-2/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-1/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-2/);
 });
