@@ -13,6 +13,7 @@ export const ANSWER_LEAKAGE_CODES = Object.freeze([
   "ANSWER_IN_PROMPT",
   "ANSWER_IN_CONTEXT",
   "ANSWER_IN_VISIBLE_HINT",
+  "ANSWER_IN_DIALOGUE",
   "ANSWER_IN_SINGLE_PAIR",
   "ANSWER_ALREADY_ORDERED",
   "ANSWER_IN_IMAGE_LABEL"
@@ -24,12 +25,19 @@ const normalize = value => String(value ?? "")
   .toLocaleLowerCase()
   .replace(/[^a-z0-9\p{L}\p{N}]+/gu, " ")
   .trim();
-const localize = (value, locale = "es") => value && typeof value === "object" && !Array.isArray(value)
-  ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "")
-  : String(value ?? "");
+const localize = (value, locale = "es", seen = new Set()) => {
+  if (value == null) return "";
+  if (typeof value !== "object") return String(value);
+  if (seen.has(value)) return "";
+  seen.add(value);
+  if (Array.isArray(value)) return value.map(item => localize(item, locale, seen)).filter(Boolean).join(" ");
+  const localized = value[locale] ?? value.es ?? value.en ?? value.text ?? value.label ?? value.value;
+  return localized === undefined || localized === value ? "" : localize(localized, locale, seen);
+};
 const optionText = (option, locale) => localize(option?.text ?? option?.label ?? option?.value ?? option, locale);
 const unique = values => [...new Set(values.filter(Boolean))];
 const countMarker = (value, expression) => (String(value || "").match(expression) || []).length;
+const containsAnswer = (value, answer) => Boolean(value && answer && ` ${value} `.includes(` ${answer} `));
 
 export function detectAnswerLeakage(activity = {}, { uiLocale = "es" } = {}) {
   const answer = normalize(activity.correctAnswer ?? activity.answer ?? activity.acceptedAnswers?.[0]);
@@ -38,15 +46,17 @@ export function detectAnswerLeakage(activity = {}, { uiLocale = "es" } = {}) {
   const prompt = normalize(localize(activity.prompt, uiLocale));
   const context = normalize(localize(activity.contextText ?? activity.scenario ?? activity.lessonContext?.visibleContext, uiLocale));
   const hints = normalize((activity.hints || []).map(item => localize(item, uiLocale)).join(" "));
-  if (prompt && prompt.includes(answer)) codes.push("ANSWER_IN_PROMPT");
-  if (context && context.includes(answer)) codes.push("ANSWER_IN_CONTEXT");
-  if (hints && hints.includes(answer) && activity.answerExposure !== "EXPLICIT_SOLUTION") codes.push("ANSWER_IN_VISIBLE_HINT");
+  const dialogue = normalize((activity.dialogue || activity.turns || []).map(turn => localize(turn?.text ?? turn, uiLocale)).join(" "));
+  if (containsAnswer(prompt, answer)) codes.push("ANSWER_IN_PROMPT");
+  if (containsAnswer(context, answer)) codes.push("ANSWER_IN_CONTEXT");
+  if (containsAnswer(hints, answer) && activity.answerExposure !== "EXPLICIT_SOLUTION") codes.push("ANSWER_IN_VISIBLE_HINT");
+  if (containsAnswer(dialogue, answer)) codes.push("ANSWER_IN_DIALOGUE");
   if ((activity.pairs || []).length === 1) codes.push("ANSWER_IN_SINGLE_PAIR");
   const tokenIds = (activity.tokens || activity.tiles || []).map((item, index) => String(item?.id ?? index));
   const expectedOrder = (activity.correctOrder || []).map(String);
   if (expectedOrder.length > 1 && tokenIds.length === expectedOrder.length && tokenIds.every((id, index) => id === expectedOrder[index])) codes.push("ANSWER_ALREADY_ORDERED");
   const imageOption = (activity.options || []).find(option => normalize(optionText(option, uiLocale)) === answer || String(option?.id) === String(activity.correctOptionId));
-  if (imageOption && normalize(imageOption.alt ?? imageOption.imageAlt).includes(answer)) codes.push("ANSWER_IN_IMAGE_LABEL");
+  if (imageOption && containsAnswer(normalize(imageOption.alt ?? imageOption.imageAlt), answer)) codes.push("ANSWER_IN_IMAGE_LABEL");
   return { leaked: codes.length > 0, codes: unique(codes) };
 }
 
@@ -60,7 +70,7 @@ function componentRules(activity, locale) {
   const categories = activity.categories || [];
   const items = activity.items || [];
   const dialogue = activity.dialogue || activity.turns || [];
-  const answer = String(activity.correctAnswer || activity.answer || "");
+  const answer = localize(activity.correctAnswer || activity.answer || "", locale);
   const expectedOrder = activity.correctOrder || [];
 
   if (!entry) return ["UNSUPPORTED_ACTIVITY_TYPE"];
@@ -109,8 +119,9 @@ function componentRules(activity, locale) {
   }
   if (type === ACTIVITY_TYPES.AUDIO_SELECT) {
     if (options.length < 3 || options.length > 4) reasons.push("INVALID_OPTION_COUNT");
-    if (activity.audioAuthorized !== true) reasons.push("UNAUTHORIZED_AUDIO");
-    if (!String(activity.audioPath || activity.audioText || "").trim()) reasons.push("MISSING_AUDIO_SOURCE");
+    if (activity.audioAuthorized !== true || activity.humanRecorded !== true) reasons.push("UNAUTHORIZED_AUDIO");
+    if (!String(activity.audioId || "").trim() || !String(activity.audioPath || "").trim() || !String(activity.audioText || "").trim()) reasons.push("MISSING_AUDIO_SOURCE");
+    if (activity.audioSource !== "manifest-human-recording") reasons.push("UNAUTHORIZED_AUDIO_SOURCE");
   }
   if (type === ACTIVITY_TYPES.DIALOGUE_ORDER) {
     if (dialogue.length < 3 || dialogue.length > 5) reasons.push("INVALID_DIALOGUE_LENGTH");
@@ -131,7 +142,9 @@ function componentRules(activity, locale) {
   if (options.length) {
     const values = options.map(option => normalize(optionText(option, locale)));
     if (new Set(values).size !== values.length) reasons.push("DUPLICATE_OPTIONS");
-    if (options.length >= 3 && !options.some(option => String(option.id) === String(activity.correctOptionId) || normalize(optionText(option, locale)) === normalize(answer))) reasons.push("CORRECT_OPTION_MISSING");
+    const correctOption = options.find(option => String(option.id) === String(activity.correctOptionId));
+    if (options.length >= 3 && !correctOption) reasons.push("CORRECT_OPTION_MISSING");
+    if (correctOption && normalize(answer) && normalize(optionText(correctOption, locale)) !== normalize(answer)) reasons.push("CORRECT_OPTION_MISMATCH");
     if (activity.distractorQuality && activity.distractorQuality !== "PLAUSIBLE") reasons.push("UNRELATED_DISTRACTORS");
   }
   return unique(reasons);

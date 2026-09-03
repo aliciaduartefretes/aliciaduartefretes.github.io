@@ -35,7 +35,95 @@ const COPY = Object.freeze({
 });
 
 const locale = value => LANGUAGES.has(value) ? value : "es";
-const localize = (value, language) => value && typeof value === "object" && !Array.isArray(value) ? String(value[language] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "") : String(value ?? "");
+const localize = (value, language, seen = new Set()) => {
+  if (value == null) return "";
+  if (typeof value !== "object") return String(value);
+  if (seen.has(value)) return "";
+  seen.add(value);
+  if (Array.isArray(value)) return value.map(item => localize(item, language, seen)).filter(Boolean).join(" ");
+  const localized = value[language] ?? value.es ?? value.en ?? value.text ?? value.label ?? value.value;
+  return localized === undefined || localized === value ? "" : localize(localized, language, seen);
+};
+const canonicalAudioPath = value => {
+  const path = String(value || "").trim();
+  if (!path) return "";
+  try { return new URL(path, document.baseURI).href; } catch { return ""; }
+};
+const audioIdFrom = value => String(value?.audioId || value?.id || value?.recordingId || "").trim();
+const audioPathFrom = value => String(value?.path || value?.audioPath || "").trim();
+const registryAudioPathFrom = value => {
+  const declaredPath = audioPathFrom(value);
+  if (declaredPath) return declaredPath;
+  const file = String(value?.file || "").trim();
+  return file && !file.includes("/") && !file.includes("\\")
+    ? `assets/audio/guarani/ali-2026/${file}`
+    : "";
+};
+const audioTextFrom = value => localize(value?.audioText ?? value?.text ?? value?.label, document.documentElement.lang).trim();
+
+function canonicalRenderableAudio(activity = {}, language = document.documentElement.lang) {
+  const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
+  const audioId = String(activity.audioId || audioIdFrom(nested)).trim();
+  const audioPath = String(activity.audioPath || audioPathFrom(nested)).trim();
+  const audioText = localize(activity.audioText ?? nested.audioText ?? nested.text, language).trim();
+  const audioSource = String(activity.audioSource || nested.audioSource || nested.source || "").trim();
+  const audioAuthorized = activity.audioAuthorized === true || nested.audioAuthorized === true || nested.authorized === true;
+  const humanRecorded = activity.humanRecorded === true || nested.humanRecorded === true;
+  const registry = window.NALVI_RECORDED_AUDIO;
+  const registered = audioId && typeof registry?.resolve === "function" ? registry.resolve(audioId) : null;
+  const registeredId = audioIdFrom(registered);
+  const registeredPath = registryAudioPathFrom(registered);
+  const registeredText = audioTextFrom(registered);
+  const coherent = Boolean(
+    audioId
+    && audioPath
+    && audioText
+    && audioAuthorized
+    && humanRecorded
+    && audioSource === "manifest-human-recording"
+    && registered?.authorizedForPlayback === true
+    && registered?.humanRecorded === true
+    && registeredId === audioId
+    && registeredText
+    && registeredText.normalize("NFC").trim() === audioText.normalize("NFC").trim()
+    && canonicalAudioPath(registeredPath) === canonicalAudioPath(audioPath)
+  );
+  return coherent
+    ? { audioId, audioPath: registeredPath, audioText: registeredText, audioAuthorized: true, humanRecorded: true, audioSource }
+    : { audioId: "", audioPath: "", audioText: "", audioAuthorized: false, humanRecorded: false, audioSource: "" };
+}
+
+async function resolveApprovedAudio(activity, audioTerm) {
+  const registry = window.NALVI_RECORDED_AUDIO;
+  if (!registry || typeof registry.resolve !== "function") return null;
+  try { await registry.ready; } catch { return null; }
+  const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
+  const requestedId = String(activity.audioId || audioIdFrom(nested)).trim();
+  const lookup = requestedId || String(audioTerm || "").trim();
+  if (!lookup) return null;
+  const recording = registry.resolve(lookup);
+  const audioId = audioIdFrom(recording);
+  const audioPath = registryAudioPathFrom(recording);
+  const suppliedPath = String(activity.audioPath || audioPathFrom(nested)).trim();
+  if (!recording || recording.authorizedForPlayback !== true || recording.humanRecorded !== true || !audioId || !audioPath) return null;
+  if (requestedId && requestedId !== audioId) return null;
+  if (suppliedPath && canonicalAudioPath(suppliedPath) !== canonicalAudioPath(audioPath)) return null;
+  const text = audioTextFrom(recording);
+  if (!text || !canonicalAudioPath(audioPath)) return null;
+  return {
+    id: audioId,
+    audioId,
+    recordingId: audioId,
+    path: audioPath,
+    audioPath,
+    text,
+    audioText: text,
+    source: "manifest-human-recording",
+    authorized: true,
+    audioAuthorized: true,
+    humanRecorded: true
+  };
+}
 const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
 const readJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; } };
 const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* safe anonymous fallback */ } };
@@ -65,14 +153,19 @@ function semanticPairsForObjective(context) {
       && activity.semanticPair?.meaning)
     .map((activity, index) => ({
       id: `lesson-pair-${index + 1}`,
-      left: String(activity.semanticPair.target),
+      left: localize(activity.semanticPair.target, context.uiLocale).trim(),
       right: localize(activity.semanticPair.meaning, context.uiLocale),
       sourceActivityId: activity.id,
       authorized: true
     }))
     .filter(pair => pair.left && pair.right);
-  if (expected && !pairs.some(pair => [pair.left, pair.right].some(value => String(value).normalize("NFC").trim().toLocaleLowerCase() === expected))) return [];
-  return pairs;
+  const targetsExpected = pair => [pair.left, pair.right]
+    .some(value => String(value).normalize("NFC").trim().toLocaleLowerCase() === expected);
+  const requiredPair = expected ? pairs.find(targetsExpected) : null;
+  if (expected && !requiredPair) return [];
+  const limited = pairs.slice(0, 5);
+  if (requiredPair && !limited.includes(requiredPair)) limited.splice(Math.max(0, limited.length - 1), 1, requiredPair);
+  return limited;
 }
 
 function buildSpacedRetestPlan(context) {
@@ -241,11 +334,15 @@ function consumeDueRetest(targetSelector = "#lessonBody", options = {}) {
 function answerFor(activity, language) {
   if (activity.correctOptionId != null) {
     const option = (activity.options || []).find(item => String(item.id) === String(activity.correctOptionId));
-    return localize(option?.label ?? option?.value, language);
+    const answer = localize(option?.label ?? option?.text ?? option?.value, language);
+    if (answer) return answer;
   }
-  if (Array.isArray(activity.acceptedAnswers)) return localize(activity.acceptedAnswers[0], language);
+  if (Array.isArray(activity.acceptedAnswers)) {
+    const answer = localize(activity.acceptedAnswers.find(value => localize(value, language).trim()), language);
+    if (answer) return answer;
+  }
   if (Array.isArray(activity.correctOrder)) return activity.correctOrder.join(" ");
-  return localize(activity.answer, language);
+  return localize(activity.correctAnswer ?? activity.answer, language);
 }
 
 function history() {
@@ -268,6 +365,7 @@ function nextAttempt(activity) {
 
 function normalizeRenderableActivity(activity = {}, context) {
   const language = context.uiLocale, type = activity.activityType || activity.type || ACTIVITY_TYPES.INDEPENDENT_RECALL;
+  const canonicalAudio = canonicalRenderableAudio(activity, language);
   const correctAnswer = localize(activity.correctAnswer || activity.answer || context.correctAnswer, language);
   const sourcePrompt = localize(activity.lessonContext?.sourcePrompt || context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, language).trim();
   const sourceInstruction = localize(activity.lessonContext?.sourceInstruction || context.activity?.lessonContext?.sourceInstruction || context.activity?.instruction, language).trim();
@@ -281,13 +379,16 @@ function normalizeRenderableActivity(activity = {}, context) {
   const template = localize(activity.template, language);
   return {
     ...activity, type, activityType: type, options, tokens, tiles, template,
-    correctOptionId: activity.correctOptionId || correct?.id || "",
+    correctOptionId: activity.correctOptionId ?? correct?.id ?? "",
     acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : correctAnswer ? [correctAnswer] : [],
     answer: activity.answer || correctAnswer,
-    audioPath: activity.audioPath || activity.authorizedAudio?.path || activity.authorizedAudio?.url || "",
-    audioText: activity.audioText || activity.authorizedAudio?.text || (activity.media?.type === "audio" ? activity.media.value : ""),
-    audioAuthorized: activity.audioAuthorized === true || activity.authorizedAudio?.authorized === true,
-    audio: activity.audio || (activity.media?.type === "audio" ? activity.media.value : ""),
+    audioId: canonicalAudio.audioId,
+    audioPath: canonicalAudio.audioPath,
+    audioText: canonicalAudio.audioText,
+    audioAuthorized: canonicalAudio.audioAuthorized,
+    humanRecorded: canonicalAudio.humanRecorded,
+    audioSource: canonicalAudio.audioSource,
+    audio: canonicalAudio.audioPath,
     image: activity.image || (activity.media?.type === "image" ? activity.media.value : ""),
     imageAlt: activity.imageAlt || activity.media?.alt || "",
     lessonContext: {
@@ -492,11 +593,17 @@ function finishSequence(target, state, activity) {
 }
 
 function approvedOptions(activity, language) {
-  return (activity.options || []).slice(0, 4).map((option, index) => ({
-    id: String(option?.id || `approved-option-${index + 1}`),
+  const options = (activity.options || []).filter(option => option?.authorized !== false).map((option, index) => ({
+    id: String(option?.id ?? `approved-option-${index + 1}`),
     text: localize(option?.label ?? option?.text ?? option?.value ?? option, language),
     authorized: true
   })).filter(option => option.text);
+  const expectedAnswer = localize(answerFor(activity, language), language).normalize("NFC").trim().toLocaleLowerCase();
+  const correct = options.find(option => String(option.id) === String(activity.correctOptionId))
+    || options.find(option => option.text.normalize("NFC").trim().toLocaleLowerCase() === expectedAnswer);
+  const limited = options.slice(0, 4);
+  if (correct && !limited.includes(correct)) limited.splice(Math.max(0, limited.length - 1), 1, correct);
+  return limited;
 }
 
 function approvedDialogueForObjective(activity, language) {
@@ -504,22 +611,27 @@ function approvedDialogueForObjective(activity, language) {
     .map(candidate => candidate?.adaptiveDialogue)
     .find(dialogue => dialogue?.authorized === true);
   if (!source) return { turns: [], options: [], correctOptionId: "", correctAnswer: "" };
-  const turns = (source.turns || []).slice(0, 4).filter(turn => turn?.authorized === true).map((turn, index) => ({
-    id: String(turn.id || `approved-turn-${index + 1}`),
+  const turns = (source.turns || []).filter(turn => turn?.authorized === true).slice(0, 4).map((turn, index) => ({
+    id: String(turn.id ?? `approved-turn-${index + 1}`),
     speaker: localize(turn.speaker || (index % 2 ? "B" : "A"), language),
     text: localize(turn.text, language),
     authorized: true
   })).filter(turn => turn.text);
-  const options = (source.options || []).slice(0, 4).filter(option => option?.authorized === true).map((option, index) => ({
-    id: String(option.id || `approved-dialogue-option-${index + 1}`),
+  const options = (source.options || []).filter(option => option?.authorized === true).map((option, index) => ({
+    id: String(option.id ?? `approved-dialogue-option-${index + 1}`),
     text: localize(option.text ?? option.label ?? option.value, language),
     authorized: true
   })).filter(option => option.text);
+  const declaredCorrectAnswer = localize(source.correctAnswer, language).normalize("NFC").trim().toLocaleLowerCase();
+  const correct = options.find(option => String(option.id) === String(source.correctOptionId))
+    || options.find(option => option.text.normalize("NFC").trim().toLocaleLowerCase() === declaredCorrectAnswer);
+  const limitedOptions = options.slice(0, 4);
+  if (correct && !limitedOptions.includes(correct)) limitedOptions.splice(Math.max(0, limitedOptions.length - 1), 1, correct);
   return {
     turns,
-    options,
-    correctOptionId: String(source.correctOptionId || ""),
-    correctAnswer: localize(source.correctAnswer, language),
+    options: limitedOptions,
+    correctOptionId: String(correct?.id || ""),
+    correctAnswer: correct?.text || "",
     sourceContentId: String(source.sourceContentId || "")
   };
 }
@@ -527,24 +639,60 @@ function approvedDialogueForObjective(activity, language) {
 function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
   const language = context.uiLocale;
   const dialogue = approvedDialogueForObjective(activity, language);
-  const contexts = (activity.approvedContexts || [])
+  const options = approvedOptions(activity, language);
+  const directContext = activity.contextAuthorized === true
+    ? { text: activity.contextText ?? activity.scenario ?? activity.lessonContext?.visibleContext ?? activity.prompt, authorized: true }
+    : null;
+  const contexts = [...(activity.approvedContexts || []), directContext]
     .filter(item => item?.authorized === true)
-    .slice(0, 4)
     .map(item => ({ text: localize(item.text ?? item.value, language), authorized: true }))
-    .filter(item => item.text);
+    .filter((item, index, all) => item.text && all.findIndex(candidate => candidate.text === item.text) === index)
+    .slice(0, 4);
   const categories = (activity.adaptiveCategories || []).filter(item => item?.authorized === true).slice(0, 3).map((item, index) => ({
-    id: String(item.id || `approved-category-${index + 1}`),
+    id: String(item.id ?? `approved-category-${index + 1}`),
     label: localize(item.label ?? item.text, language),
     authorized: true
   })).filter(item => item.label);
   const items = (activity.adaptiveCategoryItems || []).filter(item => item?.authorized === true).slice(0, 10).map((item, index) => ({
-    id: String(item.id || `approved-item-${index + 1}`),
+    id: String(item.id ?? `approved-item-${index + 1}`),
     text: localize(item.text ?? item.label, language),
     categoryId: String(item.categoryId || ""),
     authorized: true
   })).filter(item => item.text && item.categoryId);
+  const correctAnswer = localize(context.correctAnswer, language).trim();
+  const correctOption = options.find(option => String(option.id) === String(activity.correctOptionId))
+    || options.find(option => option.text.normalize("NFC").trim().toLocaleLowerCase() === correctAnswer.normalize("NFC").trim().toLocaleLowerCase());
+  const acceptedAnswers = [...new Set([
+    ...(activity.acceptedAnswers || []).map(value => localize(value, language).trim()),
+    correctOption?.text,
+    correctAnswer
+  ].filter(Boolean))].slice(0, 10);
+  const audioId = audioIdFrom(authorizedAudio);
+  const audioPath = audioPathFrom(authorizedAudio);
+  const audioText = localize(authorizedAudio?.audioText ?? authorizedAudio?.text, language).trim();
+  const audio = authorizedAudio?.authorized === true
+    && authorizedAudio?.audioAuthorized === true
+    && authorizedAudio?.humanRecorded === true
+    && authorizedAudio?.source === "manifest-human-recording"
+    && audioId
+    && audioPath ? {
+      id: audioId,
+      audioId,
+      recordingId: audioId,
+      path: audioPath,
+      audioPath,
+      text: audioText,
+      audioText,
+      source: "manifest-human-recording",
+      authorized: true,
+      audioAuthorized: true,
+      humanRecorded: true
+    } : null;
   return {
-    options: approvedOptions(activity, language),
+    options,
+    correctOptionId: String(correctOption?.id || ""),
+    correctAnswer,
+    acceptedAnswers,
     pairs: semanticPairsForObjective(context),
     contexts,
     categories,
@@ -554,31 +702,17 @@ function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
     dialogueCorrectOptionId: dialogue.correctOptionId,
     dialogueCorrectAnswer: dialogue.correctAnswer,
     dialogueSourceContentId: dialogue.sourceContentId,
-    audio: authorizedAudio
+    audio
   };
 }
 
-function buildContext(detail) {
+async function buildContext(detail) {
   const activity = detail.activity || {}, language = locale(detail.uiLocale || document.documentElement.lang), attemptNumber = nextAttempt(activity);
   const recent = history(), conceptId = activity.conceptId || activity.conceptIds?.[0] || "GG-C-001";
   const previousFingerprint = createActivityFingerprint(activity, { uiLocale: language });
   const semanticAnswer = localize(activity.lessonContext?.sourceAnswer, language).trim() || answerFor(activity, language);
-  const audioTerm = String(activity.semanticPair?.target || activity.audioText || semanticAnswer).trim();
-  const embeddedRecording = typeof window.findPronunciation === "function" ? window.findPronunciation(audioTerm) : null;
-  const importedRecording = window.NALVI_RECORDED_AUDIO?.resolve?.(audioTerm) || null;
-  const authorizedAudio = embeddedRecording ? {
-    authorized: true,
-    path: String(embeddedRecording.file || embeddedRecording.url || ""),
-    text: audioTerm,
-    source: "existing-human-recording",
-    recordingId: String(embeddedRecording.id || "")
-  } : importedRecording ? {
-    authorized: true,
-    path: importedRecording.url,
-    text: audioTerm,
-    source: "imported-human-recording",
-    recordingId: importedRecording.id
-  } : activity.authorizedAudio?.authorized === true ? activity.authorizedAudio : null;
+  const audioTerm = localize(activity.semanticPair?.target ?? activity.audioText ?? semanticAnswer, language).trim();
+  const authorizedAudio = await resolveApprovedAudio(activity, audioTerm);
   const context = { correct: false, conceptId, learningObjectiveId: activity.learningObjectiveId || "GG-LO-001", currentSkill: activity.skill || "vocabulary",
     activityType: activity.activityType || activity.type || "multiple-choice", difficulty: activity.difficulty || "foundation-1",
     studentAnswer: typeof detail.result?.value === "string" ? detail.result.value : JSON.stringify(detail.result?.value || ""), correctAnswer: semanticAnswer, attemptNumber,
@@ -589,14 +723,35 @@ function buildContext(detail) {
     answerExposureHistory: readJson(EXPOSURE_KEY, []).filter(item => item.conceptId === conceptId).map(item => item.answerExposure),
     strategyEffectiveness: Object.fromEntries(Object.entries(readJson(EFFECTIVENESS_KEY, {})).map(([key, value]) => [key, Number(value.score || 0)])),
     prerequisiteGaps: [], independentRetestQueue: [], uiLocale: language, grammarRuleIds: activity.grammarRuleIds || [], lexemeIds: activity.lexemeIds || [],
-    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])], authorizedAudio, activity: { ...activity, conceptId }, availableActivities: activityCatalog(),
+    knowledgeIds: [...(activity.grammarRuleIds || []), ...(activity.lexemeIds || [])], authorizedAudio,
+    activity: {
+      ...activity,
+      conceptId,
+      audioId: authorizedAudio?.audioId || "",
+      audioPath: authorizedAudio?.audioPath || "",
+      audioText: authorizedAudio?.audioText || "",
+      audioAuthorized: authorizedAudio?.audioAuthorized === true,
+      humanRecorded: authorizedAudio?.humanRecorded === true,
+      audioSource: authorizedAudio?.source || "",
+      authorizedAudio
+    }, availableActivities: activityCatalog(),
     previousActivityFingerprint: previousFingerprint, aiPolicy: { allowInterventionAI: true, AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: true } };
   context.approvedActivityMaterial = buildApprovedActivityMaterial(activity, context, authorizedAudio);
   return context;
 }
 
 async function handleIncorrect(detail, target) {
-  const context = buildContext(detail);
+  const language = locale(detail.uiLocale || document.documentElement.lang);
+  const requestState = { id: `${Date.now()}-${Math.random()}` };
+  activeSequences.delete(target);
+  activeRequests.set(target, requestState);
+  shortFeedback(target, language, (COPY[language] || COPY.es).wrong);
+  const contextPromise = buildContext(detail);
+  await sleep(750);
+  if (activeRequests.get(target) !== requestState) return;
+  loadingState(target, language);
+  const context = await contextPromise;
+  if (activeRequests.get(target) !== requestState) return;
   const shouldSpaceRetest = !context.activity?.adaptivePlanId && !context.activity?.spacedRetest && !pendingRetest();
   const spacedPlan = shouldSpaceRetest ? buildSpacedRetestPlan(context) : null;
   if (spacedPlan && scheduleSpacedRetest(context, spacedPlan)) {
@@ -619,15 +774,9 @@ async function handleIncorrect(detail, target) {
     localPlan = { errorType: "UNKNOWN_ERROR", strategy: "CHANGE_MODALITY", diagnosis: { confidence: 0 } };
   }
   const localResponse = professionalLocalPlan(context, localPlan);
-  activeSequences.delete(target);
-  const requestState = { id: `${Date.now()}-${Math.random()}` }; activeRequests.set(target, requestState);
-  shortFeedback(target, context.uiLocale, (COPY[context.uiLocale] || COPY.es).wrong);
   window.NALVI_PROGRESSION?.diagnostic?.("INTERVENTION_REQUESTED", { activityId: context.activity.id, conceptId: context.conceptId, correct: false,
     strategy: localPlan?.strategy || "CHANGE_MODALITY", usedAI: false, progressionDecision: detail.progression?.decision || "BLOCK_AND_INTERVENE", fingerprint: context.previousActivityFingerprint });
   const requestPromise = context.activity?.spacedRetest ? Promise.resolve(null) : serverPlan(context);
-  await sleep(750);
-  if (activeRequests.get(target) !== requestState) return;
-  loadingState(target, context.uiLocale);
   const winner = await Promise.race([requestPromise, sleep(1500).then(() => null)]);
   if (activeRequests.get(target) !== requestState) return;
   const response = winner?.ok ? winner : localResponse;

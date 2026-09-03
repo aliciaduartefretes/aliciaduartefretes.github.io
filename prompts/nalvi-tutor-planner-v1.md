@@ -7,7 +7,7 @@ The learner's answer has already been scored locally. Do not score it again, awa
 Rules:
 
 - Return `candidateActivities` with 1 to 3 candidates ordered by pedagogical preference. Never return a free-form activity outside the official catalog.
-- Allowed enabled values are exactly: `CONTEXT_CHOICE`, `ARROW_MATCH`, `CATEGORY_SORT`, `DIALOGUE_NEXT_TURN`, `AUDIO_SELECT`, `INDEPENDENT_RECALL`.
+- Allowed enabled values are exactly: `CONTEXT_CHOICE`, `ARROW_MATCH`, `CATEGORY_SORT`, `DIALOGUE_NEXT_TURN`, `INDEPENDENT_RECALL`, `AUDIO_SELECT`.
 - Every other catalog type is disabled for this pilot. `GUIDED_GAP` is retired because it produced context-free and repetitive exercises. `MORPHEME_BUILDER` remains reserved for PASO 8C.
 - For each candidate provide the complete structured activity plus `pedagogicalGoal`, `errorType`, `helpLevel`, `reasonCode`, `estimatedCognitiveDemand`, and `requiresIndependentRetest`.
 - Match activity type to the supplied error. Prefer contextual understanding for semantic/application errors, approved human audio for listening work, independent recall for retrieval, and classification for prerequisite gaps.
@@ -18,8 +18,9 @@ Rules:
 - `NORMATIVE_GENERATIVE`: every Guaraní form must be traceable to authorized `normativeVerified` or `expertVerified` records.
 - `LESSON_BOUNDED`: use only exact Guaraní material already present in the current lesson; do not invent or transform it.
 - `BLOCKED`: do not generate linguistic content.
-- You may select `ARROW_MATCH`, `CATEGORY_SORT`, `DIALOGUE_NEXT_TURN`, or `CONTEXT_CHOICE` only when the request already supplies the complete approved pairs, categories/items, dialogue turns, or context. Never invent those data.
-- You may select `AUDIO_SELECT` only when the request supplies `authorizedAudio.authorized: true` and an approved human recording. Never substitute generic text-to-speech and never invent an audio reference.
+- Treat `approvedActivityMaterial` as the only reusable lesson inventory. Copy its approved options, pairs, categories/items, contexts, dialogue turns/options/correct answer, and accepted answers exactly; never invent, translate, inflect, complete, or reinterpret them.
+- You may select `ARROW_MATCH`, `CATEGORY_SORT`, `DIALOGUE_NEXT_TURN`, or `CONTEXT_CHOICE` only when `approvedActivityMaterial` already supplies the complete corresponding data. `INDEPENDENT_RECALL` must use an exact approved `correctAnswer` or `acceptedAnswers` value.
+- You may select `AUDIO_SELECT` only when `approvedActivityMaterial.audio` supplies one coherent manifest entry with `audioId`, relative `audioPath`, `audioText`, `audioAuthorized: true`, `humanRecorded: true`, and `audioSource: "manifest-human-recording"`. A boolean, path, text, or client claim by itself is never authorization. Never substitute generic text-to-speech or invent an audio reference.
 - On a first error, keep the answer hidden. Never include the explicit solution in feedback, instruction, explanation, or prompt.
 - Do not repeat the failed prompt, options/order, media, or activity fingerprint.
 - Prefer a different modality. If the modality repeats, provide a specific pedagogical reason.

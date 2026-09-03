@@ -1,28 +1,96 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs";
 import { createActivityFingerprint } from "../../intervention-engine/intervention-engine.mjs";
 import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs";
 import { createAdaptiveTutorOrchestrator, createProfessionalFallbackPlan } from "../adaptive-tutor-orchestrator.mjs";
+import { normalizeInterventionRequest } from "../intervention-service.mjs";
+
+const ENABLED_TYPES = [
+  "CONTEXT_CHOICE",
+  "ARROW_MATCH",
+  "CATEGORY_SORT",
+  "DIALOGUE_NEXT_TURN",
+  "INDEPENDENT_RECALL",
+  "AUDIO_SELECT"
+];
+const CANONICAL_AUDIO = Object.freeze({
+  audioId: "NALVI-AUDIO-096",
+  audioPath: "assets/audio/guarani/ali-2026/096-jagua.m4a",
+  audioText: "Jagua",
+  audioAuthorized: true,
+  humanRecorded: true,
+  audioSource: "manifest-human-recording"
+});
+
+const optionText = option => String(option?.text ?? option?.label ?? option?.value ?? "");
+
+function approvedMaterialFor(activity, correctAnswer) {
+  const options = (activity.options || []).map((option, index) => ({
+    id: String(option?.id || `option-${index + 1}`),
+    text: optionText(option),
+    authorized: true
+  }));
+  return {
+    options,
+    correctOptionId: String(activity.correctOptionId || ""),
+    correctAnswer,
+    acceptedAnswers: [correctAnswer].filter(Boolean),
+    pairs: options.slice(0, 3).map((option, index) => ({
+      id: `approved-pair-${index + 1}`,
+      left: option.text,
+      right: `significado aprobado ${index + 1}`,
+      authorized: true
+    })),
+    contexts: [{ text: "Una situación documentada de la lección.", authorized: true }],
+    categories: [
+      { id: "known", label: "Conocido", authorized: true },
+      { id: "contrast", label: "Contraste", authorized: true }
+    ],
+    items: Array.from({ length: 6 }, (_, index) => ({
+      id: `approved-item-${index + 1}`,
+      text: `elemento aprobado ${index + 1}`,
+      categoryId: index < 3 ? "known" : "contrast",
+      authorized: true
+    })),
+    dialogue: [
+      { id: "turn-1", speaker: "A", text: "Elige la continuación documentada.", authorized: true },
+      { id: "turn-2", speaker: "B", text: "La conversación sigue aquí.", authorized: true }
+    ],
+    dialogueOptions: options,
+    dialogueCorrectOptionId: String(activity.correctOptionId || ""),
+    dialogueCorrectAnswer: correctAnswer,
+    dialogueSourceContentId: "fixture-dialogue-source",
+    audio: { ...CANONICAL_AUDIO }
+  };
+}
 
 function context(overrides = {}) {
-  const activity = {
+  const baseActivity = {
     id: "family-mother-choice", conceptId: "family-mother", type: "multiple-choice",
     skill: "vocabulary", difficulty: "foundation-1", instruction: "Selecciona la respuesta.",
     prompt: "¿Cómo se dice mamá?", options: [
       { id: "sy", label: "sy" }, { id: "ru", label: "ru" }, { id: "oga", label: "óga" }
     ], correctOptionId: "sy"
   };
-  return {
+  const activity = overrides.activity || baseActivity;
+  const value = {
     correct: false, conceptId: "family-mother", learningObjectiveId: "GG-LO-FAMILY",
     currentSkill: "vocabulary", activityType: "multiple-choice", difficulty: "foundation-1",
     studentAnswer: "ru", correctAnswer: "sy", attemptNumber: 1, recentErrors: [],
     recentActivityFingerprints: [], modalitiesAlreadyUsed: ["multiple-choice"], hintHistory: [],
     retentionHistory: [], strategyEffectiveness: {}, uiLocale: "es", grammarRuleIds: [],
     lexemeIds: [], knowledgeIds: [], activity,
-    previousActivityFingerprint: createActivityFingerprint(activity, { uiLocale: "es" }),
     fullName: "Private Student", email: "private@example.com", institution: "Private School",
     administrativeRole: "student", ...overrides
   };
+  value.activity = activity;
+  value.previousActivityFingerprint = overrides.previousActivityFingerprint
+    || createActivityFingerprint(activity, { uiLocale: value.uiLocale });
+  if (!Object.hasOwn(overrides, "approvedActivityMaterial")) {
+    value.approvedActivityMaterial = approvedMaterialFor(activity, value.correctAnswer);
+  }
+  return value;
 }
 
 function validPlan(overrides = {}) {
@@ -69,13 +137,22 @@ test("orquestador: planner + critic aceptan un plan estructurado y sin PII", asy
   assert.equal(result.ok, true);
   assert.equal(result.usedAI, true);
   assert.equal(result.reason, "AI_TUTOR_PLAN_VALIDATED");
-  assert.equal(result.adaptiveInterventionPlan.activities[0].type, "CONCEPT_CONTRAST");
+  assert.deepEqual(catalogAudit().enabledTypes, ENABLED_TYPES);
+  assert.equal(result.adaptiveInterventionPlan.activities[0].type, "CONTEXT_CHOICE");
+  assert.ok(ENABLED_TYPES.includes(result.adaptiveInterventionPlan.activities[0].type));
   assert.notEqual(result.adaptiveInterventionPlan.activities[0].fingerprint, context().previousActivityFingerprint);
   assert.equal(result.metrics.answerLeakageRate, 0);
   assert.equal(result.metrics.duplicateRate, 0);
   assert.equal(result.persistence.status, "persisted");
   assert.equal(persisted.length, 1);
   assert.doesNotMatch(JSON.stringify(persisted[0]), /Private Student|private@example\.com|Private School/);
+  for (const call of calls) {
+    const input = JSON.parse(call.input);
+    assert.deepEqual(input.context.approvedActivityMaterial.audio, CANONICAL_AUDIO);
+    assert.equal(input.context.approvedActivityMaterial.dialogueCorrectOptionId, "sy");
+    assert.equal(input.context.approvedActivityMaterial.dialogueCorrectAnswer, "sy");
+    assert.doesNotMatch(JSON.stringify(input.context.approvedActivityMaterial), /\[object Object\]/);
+  }
 });
 
 test("un fallo de red usa fallback profesional y nunca permite avanzar", async () => {
@@ -87,7 +164,7 @@ test("un fallo de red usa fallback profesional y nunca permite avanzar", async (
   assert.equal(result.usedAI, false);
   assert.equal(result.mode, "fallback");
   assert.equal(result.adaptiveInterventionPlan.progressionPolicy.onIncorrect, "BLOCK_AND_INTERVENE");
-  assert.notEqual(result.adaptiveInterventionPlan.activities[0].activityType, "multiple-choice");
+  assert.ok(ENABLED_TYPES.includes(result.adaptiveInterventionPlan.activities[0].activityType));
   assert.ok(result.adaptiveInterventionPlan.activities[0].type);
   assert.ok(result.adaptiveInterventionPlan.activities[0].contextText);
   assert.notEqual(result.adaptiveInterventionPlan.activities[0].prompt, "¿Cómo se dice mamá?");
@@ -109,7 +186,7 @@ test("el primer refuerzo usa el catálogo oficial, muestra contexto y no repite 
     }
   }));
   const activity = plan.activities[0];
-  assert.equal(activity.activityType, "CONCEPT_CONTRAST");
+  assert.equal(activity.activityType, "CONTEXT_CHOICE");
   assert.ok(activity.contextText);
   assert.equal(activity.conceptId, "family-mother");
   assert.notEqual(activity.prompt, "¿Qué expresa «Mba’éichapa»?");
@@ -162,4 +239,140 @@ test("contenido lingüístico sin inventario queda BLOCKED y no llama a OpenAI",
   assert.equal(calls, 0);
   assert.equal(result.linguisticMode, "BLOCKED");
   assert.equal(result.usedAI, false);
+});
+
+test("el límite del servidor conserva solo material autorizado, localizado y trazable", () => {
+  const raw = context({
+    uiLocale: "en",
+    approvedActivityMaterial: {
+      ...approvedMaterialFor(context().activity, "sy"),
+      contexts: [
+        { text: { es: "Contexto aprobado", en: "Approved context" }, authorized: true },
+        { text: "No autorizado", authorized: false },
+        { arbitrary: "Nunca convertir este objeto", authorized: true }
+      ],
+      audio: {
+        id: CANONICAL_AUDIO.audioId,
+        path: CANONICAL_AUDIO.audioPath,
+        text: CANONICAL_AUDIO.audioText,
+        authorized: true,
+        humanRecorded: true,
+        source: CANONICAL_AUDIO.audioSource
+      }
+    }
+  });
+  const normalized = normalizeInterventionRequest(raw);
+
+  assert.deepEqual(normalized.approvedActivityMaterial.contexts, [
+    { text: "Approved context", authorized: true }
+  ]);
+  assert.equal(normalized.approvedActivityMaterial.dialogueCorrectOptionId, "sy");
+  assert.equal(normalized.approvedActivityMaterial.dialogueCorrectAnswer, "sy");
+  assert.equal(normalized.approvedActivityMaterial.dialogueSourceContentId, "fixture-dialogue-source");
+  assert.deepEqual(normalized.approvedActivityMaterial.audio, CANONICAL_AUDIO);
+  assert.doesNotMatch(JSON.stringify(normalized), /\[object Object\]/);
+
+  const mismatchedAudio = normalizeInterventionRequest(context({
+    approvedActivityMaterial: {
+      ...approvedMaterialFor(context().activity, "sy"),
+      audio: {
+        id: CANONICAL_AUDIO.audioId,
+        path: "assets/audio/guarani/ali-2026/095-itati.m4a",
+        text: CANONICAL_AUDIO.audioText,
+        authorized: true,
+        humanRecorded: true,
+        source: CANONICAL_AUDIO.audioSource
+      }
+    }
+  }));
+  assert.equal(mismatchedAudio.approvedActivityMaterial.audio, null);
+});
+
+test("la validación determinista rechaza material inventado aunque el Planner lo marque autorizado", async () => {
+  const source = context();
+  const invented = structuredClone(validPlan());
+  const arrow = buildDeterministicFallbackCandidates(source, 1, "SEMANTIC_CONFUSION")
+    .find(candidate => candidate.activityType === "ARROW_MATCH");
+  assert.ok(arrow);
+  arrow.activity.pairs[1] = {
+    id: "invented-pair",
+    left: "forma inventada",
+    right: "significado inventado",
+    authorized: true
+  };
+  invented.candidateActivities = [arrow];
+  const service = createAdaptiveTutorOrchestrator({
+    fetchImpl: async () => response(invented),
+    env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
+  });
+  const result = await service.orchestrateAdaptiveTutoring(source);
+
+  assert.equal(result.usedAI, false);
+  assert.equal(result.mode, "fallback");
+  assert.doesNotMatch(JSON.stringify(result.adaptiveInterventionPlan), /forma inventada|significado inventado/);
+});
+
+test("la validación determinista no cambia ni filtra la respuesta correcta aprobada", async () => {
+  const source = context();
+  const changed = structuredClone(validPlan());
+  changed.candidateActivities[0].activity.correctAnswer = "respuesta inventada";
+  changed.candidateActivities[0].activity.acceptedAnswers = ["respuesta inventada"];
+  const service = createAdaptiveTutorOrchestrator({
+    fetchImpl: async () => response(changed),
+    env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
+  });
+  const result = await service.orchestrateAdaptiveTutoring(source);
+
+  assert.equal(result.usedAI, false);
+  assert.equal(result.adaptiveInterventionPlan.activities[0].correctAnswer, "sy");
+  assert.deepEqual(result.adaptiveInterventionPlan.activities[0].acceptedAnswers, ["sy"]);
+});
+
+test("AUDIO_SELECT conserva el contrato canónico completo hasta la actividad renderizable", async () => {
+  const activity = {
+    ...context().activity,
+    id: "jagua-listening",
+    type: "listening",
+    skill: "listening",
+    options: [
+      { id: "jagua", label: "Jagua" },
+      { id: "sy", label: "Sy" },
+      { id: "oga", label: "Óga" }
+    ],
+    correctOptionId: "jagua"
+  };
+  const source = context({
+    conceptId: "animal-dog",
+    currentSkill: "listening",
+    activityType: "listening",
+    studentAnswer: "Sy",
+    correctAnswer: "Jagua",
+    activity,
+    approvedActivityMaterial: approvedMaterialFor(activity, "Jagua")
+  });
+  const audioCandidate = buildDeterministicFallbackCandidates(source, 1, "LISTENING_CONFUSION")
+    .find(candidate => candidate.activityType === "AUDIO_SELECT");
+  assert.ok(audioCandidate);
+  const plan = validPlan({
+    conceptId: source.conceptId,
+    diagnosis: { errorType: "LISTENING_CONFUSION", likelyDifficulty: "audio", confidence: 0.9, prerequisiteGap: null, skillAffected: "listening" },
+    candidateActivities: [audioCandidate]
+  });
+  const service = createAdaptiveTutorOrchestrator({
+    fetchImpl: async () => response(plan),
+    env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
+  });
+  const result = await service.orchestrateAdaptiveTutoring(source);
+  const rendered = result.adaptiveInterventionPlan.activities[0];
+
+  assert.equal(result.usedAI, true);
+  assert.equal(rendered.activityType, "AUDIO_SELECT");
+  assert.deepEqual({
+    audioId: rendered.audioId,
+    audioPath: rendered.audioPath,
+    audioText: rendered.audioText,
+    audioAuthorized: rendered.audioAuthorized,
+    humanRecorded: rendered.humanRecorded,
+    audioSource: rendered.audioSource
+  }, CANONICAL_AUDIO);
 });

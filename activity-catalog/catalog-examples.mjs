@@ -14,6 +14,12 @@ const base = (type, id, overrides = {}) => ({
   instruction: "Resuelve la actividad.",
   prompt: "",
   contextText: "",
+  audioId: "",
+  audioPath: "",
+  audioText: "",
+  audioAuthorized: false,
+  humanRecorded: false,
+  audioSource: "",
   options: [],
   pairs: [],
   tiles: [],
@@ -76,14 +82,15 @@ export function createCatalogExamples() {
       dialogue: [{ id: "t1", speaker: "A", text: "Estoy viendo algo brillante durante el día.", authorized: true }, { id: "t2", speaker: "B", text: "¿Qué ves en el cielo?", authorized: true }],
       options: [option("sun", "kuarahy"), option("moon", "jasy"), option("night", "pyhare")], correctOptionId: "sun", correctAnswer: "kuarahy", acceptedAnswers: ["kuarahy"]
     }),
-    base(ACTIVITY_TYPES.AUDIO_SELECT, "audio-select", {
-      instruction: "Escucha y elige la palabra grabada.", prompt: "Selecciona la opción que corresponde al audio.",
-      audioPath: "../assets/audio/guarani/ali-2026/096-jagua.m4a", audioText: "Jagua", audioAuthorized: true,
-      options: animalOptions, correctOptionId: "jagua", correctAnswer: "jagua", acceptedAnswers: ["jagua"]
-    }),
     base(ACTIVITY_TYPES.INDEPENDENT_RECALL, "independent-recall", {
       instruction: "Recupera la palabra sin opciones.", prompt: "Escribe en guaraní la palabra que significa libro.", contextText: "No hay pistas visibles.",
       skill: "writing", correctAnswer: "aranduka", acceptedAnswers: ["aranduka"], helpLevel: 0, answerExposure: "HIDDEN", hints: []
+    }),
+    base(ACTIVITY_TYPES.AUDIO_SELECT, "audio-select", {
+      instruction: "Escucha y elige la palabra grabada.", prompt: "Selecciona la opción que corresponde al audio.",
+      audioId: "NALVI-AUDIO-096", audioPath: "assets/audio/guarani/ali-2026/096-jagua.m4a", audioText: "Jagua",
+      audioAuthorized: true, humanRecorded: true, audioSource: "manifest-human-recording",
+      options: animalOptions, correctOptionId: "jagua", correctAnswer: "jagua", acceptedAnswers: ["jagua"]
     })
   ];
 }
