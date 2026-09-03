@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { filterAllowedKnowledge } from "./reinforcement-engine.mjs";
 import { ERROR_TYPES, STRATEGIES } from "../intervention-engine/intervention-config.mjs";
+import { authorizeRecordedAudioForTarget } from "./recorded-audio-authority.mjs";
 import {
   applyAISelection,
   canScoreWithoutAI,
@@ -23,7 +24,17 @@ const safeId = (value, fallback = "") => {
 const truncate = (value, max = 320) => String(value ?? "").slice(0, max);
 const arrayOfIds = (value, max = 16) => [...new Set((Array.isArray(value) ? value : []).map(item => safeId(item)).filter(Boolean))].slice(0, max);
 
-function sanitizeActivity(activity = {}) {
+function trustedRecordedAudio(value = {}, targetText = "") {
+  const nested = value?.authorizedAudio && typeof value.authorizedAudio === "object" ? value.authorizedAudio : {};
+  return authorizeRecordedAudioForTarget({
+    audioId: value.audioId || value.id || value.recordingId || nested.audioId || nested.id || nested.recordingId,
+    audioPath: value.audioPath || value.path || nested.audioPath || nested.path,
+    audioText: value.audioText || value.text || nested.audioText || nested.text
+  }, targetText);
+}
+
+function sanitizeActivity(activity = {}, targetText = "") {
+  const recordedAudio = trustedRecordedAudio(activity, targetText);
   return {
     id: safeId(activity.id, "activity"),
     conceptId: safeId(activity.conceptId || activity.conceptIds?.[0]),
@@ -37,9 +48,12 @@ function sanitizeActivity(activity = {}) {
     correctOptionId: safeId(activity.correctOptionId),
     acceptedAnswers: (activity.acceptedAnswers || []).slice(0, 10).map(item => truncate(item, 160)),
     correctOrder: (activity.correctOrder || []).slice(0, 16).map(item => safeId(item)),
-    audioText: truncate(activity.audioText, 200),
-    audioPath: truncate(activity.audioPath || activity.authorizedAudio?.path || activity.authorizedAudio?.url, 300),
-    audioAuthorized: activity.audioAuthorized === true || activity.authorizedAudio?.authorized === true,
+    audioId: recordedAudio?.audioId || "",
+    audioText: recordedAudio?.audioText || "",
+    audioPath: recordedAudio?.audioPath || "",
+    audioAuthorized: recordedAudio?.audioAuthorized === true,
+    humanRecorded: recordedAudio?.humanRecorded === true,
+    audioSource: recordedAudio?.audioSource || "",
     contextText: truncate(activity.contextText || activity.scenario || activity.lessonContext?.visibleContext, 500),
     contextAuthorized: activity.contextAuthorized === true,
     dialogueAuthorized: activity.dialogueAuthorized === true,
@@ -58,8 +72,9 @@ function sanitizeActivity(activity = {}) {
   };
 }
 
-function sanitizeApprovedActivityMaterial(material = {}) {
+function sanitizeApprovedActivityMaterial(material = {}, targetText = "") {
   const authorized = item => item?.authorized === true;
+  const recordedAudio = trustedRecordedAudio(material.audio || {}, targetText);
   return {
     options: (material.options || []).filter(authorized).slice(0, 4).map((option, index) => ({
       id: safeId(option?.id, `approved-option-${index}`), text: truncate(option?.text ?? option?.label ?? option?.value, 160), authorized: true
@@ -77,14 +92,25 @@ function sanitizeApprovedActivityMaterial(material = {}) {
     dialogue: (material.dialogue || []).filter(authorized).slice(0, 4).map((turn, index) => ({
       id: safeId(turn?.id, `approved-turn-${index}`), speaker: truncate(turn?.speaker || (index % 2 ? "B" : "A"), 40), text: truncate(turn?.text, 240), authorized: true
     })).filter(turn => turn.text),
-    audio: material.audio?.authorized === true ? {
-      path: truncate(material.audio.path || material.audio.url, 300), text: truncate(material.audio.text, 200), source: truncate(material.audio.source, 80), authorized: true
+    audio: recordedAudio ? {
+      id: recordedAudio.audioId,
+      audioId: recordedAudio.audioId,
+      path: recordedAudio.audioPath,
+      audioPath: recordedAudio.audioPath,
+      text: recordedAudio.audioText,
+      audioText: recordedAudio.audioText,
+      source: recordedAudio.audioSource,
+      audioSource: recordedAudio.audioSource,
+      authorized: true,
+      audioAuthorized: true,
+      humanRecorded: true
     } : null
   };
 }
 
 export function normalizeInterventionRequest(input = {}) {
-  const activity = sanitizeActivity(input.activity || {});
+  const correctAnswer = truncate(input.correctAnswer, 240);
+  const activity = sanitizeActivity(input.activity || {}, correctAnswer);
   const conceptId = safeId(input.conceptId || activity.conceptId);
   if (!conceptId) throw new TypeError("conceptId es obligatorio.");
   if (input.correct !== false) throw new TypeError("La intervención requiere una respuesta incorrecta ya corregida localmente.");
@@ -96,10 +122,10 @@ export function normalizeInterventionRequest(input = {}) {
     activityType: activity.type,
     difficulty: truncate(input.difficulty || activity.difficulty, 40),
     studentAnswer: truncate(input.studentAnswer, 240),
-    correctAnswer: truncate(input.correctAnswer, 240),
+    correctAnswer,
     attemptNumber: Math.min(12, Math.max(1, Number(input.attemptNumber) || 1)),
     recentErrors: (input.recentErrors || []).slice(-12).map(item => ({ conceptId: safeId(item.conceptId), errorType: ERROR_TYPES.includes(item.errorType) ? item.errorType : "UNKNOWN_ERROR" })),
-    recentActivities: (input.recentActivities || []).slice(-12).map(sanitizeActivity),
+    recentActivities: (input.recentActivities || []).slice(-12).map(item => sanitizeActivity(item, item?.correctAnswer)),
     recentActivityFingerprints: (input.recentActivityFingerprints || []).slice(-16).map(item => truncate(item, 80)),
     modalitiesAlreadyUsed: (input.modalitiesAlreadyUsed || []).slice(-12).map(item => truncate(item, 40)),
     hintHistory: (input.hintHistory || []).slice(-12).map(item => truncate(item, 100)),
@@ -113,11 +139,12 @@ export function normalizeInterventionRequest(input = {}) {
     grammarRuleIds: arrayOfIds(input.grammarRuleIds),
     lexemeIds: arrayOfIds(input.lexemeIds),
     knowledgeIds: arrayOfIds(input.knowledgeIds),
+    authorizedAudio: sanitizeApprovedActivityMaterial({ audio: input.authorizedAudio }, correctAnswer).audio,
     masteryBefore: Number.isFinite(Number(input.masteryBefore)) ? Number(input.masteryBefore) : null,
     masteryAfter: Number.isFinite(Number(input.masteryAfter)) ? Number(input.masteryAfter) : null,
     activity,
-    availableActivities: (input.availableActivities || []).slice(0, 24).map(sanitizeActivity),
-    approvedActivityMaterial: sanitizeApprovedActivityMaterial(input.approvedActivityMaterial),
+    availableActivities: (input.availableActivities || []).slice(0, 24).map(item => sanitizeActivity(item, item?.correctAnswer || correctAnswer)),
+    approvedActivityMaterial: sanitizeApprovedActivityMaterial(input.approvedActivityMaterial, correctAnswer),
     previousActivityFingerprint: truncate(input.previousActivityFingerprint || input.previousFingerprint, 80),
     aiPolicy: {
       allowInterventionAI: input.aiPolicy?.allowInterventionAI !== false,

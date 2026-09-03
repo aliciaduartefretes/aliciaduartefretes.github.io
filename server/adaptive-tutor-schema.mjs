@@ -54,15 +54,36 @@ const media = {
   properties: { type: { type: "string", enum: ["none", "image", "audio"] }, value: { type: "string" }, alt: { type: "string" }, sourceId: { type: "string" }, authorized: { type: "boolean" } }
 };
 
+const activityRequired = ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "contextAuthorized", "audioId", "audioPath", "audioText", "audioAuthorized", "humanRecorded", "audioSource", "dialogueAuthorized", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"];
+const commonActivityProperties = {
+  id: { type: "string" }, skill: { type: "string" }, difficulty: { type: "string" },
+  helpLevel: { type: "integer", minimum: 0, maximum: 4 }, answerExposure: { type: "string", enum: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"] }, requiresStudentResponse: { type: "boolean" },
+  instruction: { type: "string" }, prompt: { type: "string" }, contextText: { type: "string" }, contextAuthorized: { type: "boolean" }, dialogueAuthorized: { type: "boolean" }, options: { type: "array", items: option }, pairs: { type: "array", items: pair }, tiles: { type: "array", items: tile }, categories: { type: "array", items: category }, items: { type: "array", items: sortItem }, segments: { type: "array", items: segment }, corrections: { type: "array", items: correction }, correctedSentence: { type: "string" }, dialogue: { type: "array", items: turn }, questions: { type: "array", items: question }, steps: { type: "array", items: step }, template: { type: "string" }, correctOrder: strings,
+  media, hints: strings, explanation: { type: "string" }, correctAnswer: { type: "string" }, correctOptionId: { type: "string" }, correctCorrectionId: { type: "string" }, acceptedAnswers: strings, conceptIds: strings, lexemeIds: strings, grammarRuleIds: strings, sourceIds: strings, conflictIds: strings, hasOpenConflict: { type: "boolean" }, distractorQuality: { type: "string", enum: ["PLAUSIBLE"] }, fingerprintSeed: { type: "string" }
+};
+
+function activitySchema({ audio }) {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: activityRequired,
+    properties: {
+      ...commonActivityProperties,
+      activityType: audio
+        ? { type: "string", const: "AUDIO_SELECT" }
+        : { type: "string", enum: enabledTypes.filter(type => type !== "AUDIO_SELECT") },
+      audioId: audio ? { type: "string", minLength: 1 } : { type: "string", const: "" },
+      audioPath: audio ? { type: "string", minLength: 1 } : { type: "string", const: "" },
+      audioText: audio ? { type: "string", minLength: 1 } : { type: "string", const: "" },
+      audioAuthorized: audio ? { type: "boolean", const: true } : { type: "boolean", const: false },
+      humanRecorded: audio ? { type: "boolean", const: true } : { type: "boolean", const: false },
+      audioSource: audio ? { type: "string", const: "manifest-human-recording" } : { type: "string", const: "" }
+    }
+  };
+}
+
 const activity = {
-  type: "object", additionalProperties: false,
-  required: ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "contextAuthorized", "audioPath", "audioText", "audioAuthorized", "dialogueAuthorized", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"],
-  properties: {
-    id: { type: "string" }, activityType: { type: "string", enum: enabledTypes }, skill: { type: "string" }, difficulty: { type: "string" },
-    helpLevel: { type: "integer", minimum: 0, maximum: 4 }, answerExposure: { type: "string", enum: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"] }, requiresStudentResponse: { type: "boolean" },
-    instruction: { type: "string" }, prompt: { type: "string" }, contextText: { type: "string" }, contextAuthorized: { type: "boolean" }, audioPath: { type: "string" }, audioText: { type: "string" }, audioAuthorized: { type: "boolean" }, dialogueAuthorized: { type: "boolean" }, options: { type: "array", items: option }, pairs: { type: "array", items: pair }, tiles: { type: "array", items: tile }, categories: { type: "array", items: category }, items: { type: "array", items: sortItem }, segments: { type: "array", items: segment }, corrections: { type: "array", items: correction }, correctedSentence: { type: "string" }, dialogue: { type: "array", items: turn }, questions: { type: "array", items: question }, steps: { type: "array", items: step }, template: { type: "string" }, correctOrder: strings,
-    media, hints: strings, explanation: { type: "string" }, correctAnswer: { type: "string" }, correctOptionId: { type: "string" }, correctCorrectionId: { type: "string" }, acceptedAnswers: strings, conceptIds: strings, lexemeIds: strings, grammarRuleIds: strings, sourceIds: strings, conflictIds: strings, hasOpenConflict: { type: "boolean" }, distractorQuality: { type: "string", enum: ["PLAUSIBLE"] }, fingerprintSeed: { type: "string" }
-  }
+  anyOf: [activitySchema({ audio: true }), activitySchema({ audio: false })]
 };
 
 const candidate = {

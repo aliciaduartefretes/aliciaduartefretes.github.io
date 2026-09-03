@@ -8,6 +8,7 @@ import { INTERVENTION_CONFIG } from "../intervention-engine/intervention-config.
 import { filterAllowedKnowledge } from "./reinforcement-engine.mjs";
 import { ADAPTIVE_TUTOR_CRITIC_SCHEMA, ADAPTIVE_TUTOR_PLAN_SCHEMA } from "./adaptive-tutor-schema.mjs";
 import { planMetrics, validatePedagogicalQuality } from "./adaptive-tutor-quality.mjs";
+import { authorizeRecordedAudioForTarget } from "./recorded-audio-authority.mjs";
 
 export const ADAPTIVE_TUTOR_VERSION = "NALVI-TUTOR-CATALOG-1";
 const plannerPrompt = readFileSync(new URL("../prompts/nalvi-tutor-planner-v1.md", import.meta.url), "utf8");
@@ -61,6 +62,8 @@ function pseudonymizedContext(context, mode, errorType) {
     retentionHistory: context.retentionHistory || [], uiLocale: context.uiLocale, grammarRuleIds: context.grammarRuleIds || [],
     lexemeIds: context.lexemeIds || [], previousActivityFingerprint: context.previousActivityFingerprint || context.previousFingerprint,
     linguisticMode: mode, errorType, enabledActivityTypes: catalogAudit().enabledTypes,
+    approvedActivityMaterial: context.approvedActivityMaterial || {},
+    authorizedAudio: context.approvedActivityMaterial?.audio || context.authorizedAudio || null,
     lessonMaterial: mode === "LESSON_BOUNDED" ? {
       prompt: localize(context.activity?.prompt, context.uiLocale),
       instruction: localize(context.activity?.instruction, context.uiLocale),
@@ -113,8 +116,13 @@ function validateLinguisticActivity(activity, context, mode, allowedKnowledge) {
   return "";
 }
 
-function toRenderable(activity, context, planId, index) {
+export function toRenderable(activity, context, planId, index) {
   const type = activity.activityType || activity.type;
+  const correctOption = (activity.options || []).find(option => String(option?.id || "") === String(activity.correctOptionId || ""));
+  const correctOptionText = localize(correctOption?.text ?? correctOption?.label ?? correctOption?.value, context.uiLocale).trim();
+  const contextAudio = type === "AUDIO_SELECT" ? authorizeRecordedAudioForTarget(activity, context.correctAnswer) : null;
+  const activityAudio = contextAudio ? authorizeRecordedAudioForTarget(activity, activity.correctAnswer) : null;
+  const recordedAudio = activityAudio ? authorizeRecordedAudioForTarget(activity, correctOptionText) : null;
   const options = (activity.options || []).map((option, optionIndex) => ({
     ...option, id: String(option?.id || `option-${optionIndex + 1}`), label: localize(option?.text ?? option?.label ?? option?.value ?? option, context.uiLocale),
     value: localize(option?.text ?? option?.value ?? option?.label ?? option, context.uiLocale), image: option?.image || "", imageAlt: option?.imageAlt || ""
@@ -127,7 +135,9 @@ function toRenderable(activity, context, planId, index) {
     dialogue: activity.dialogue || [], questions: activity.questions || [], steps: activity.steps || [], correctOrder: activity.correctOrder || [],
     acceptedAnswers: activity.acceptedAnswers?.length ? activity.acceptedAnswers : activity.correctAnswer ? [activity.correctAnswer] : [],
     answer: activity.correctAnswer, image: activity.media?.type === "image" ? activity.media.value : "", imageAlt: activity.media?.alt || "",
-    audioText: "", audio: "", nalviGuided: Number(activity.helpLevel || 0) > 0,
+    audioId: recordedAudio?.audioId || "", audioPath: recordedAudio?.audioPath || "", audioText: recordedAudio?.audioText || "",
+    audioAuthorized: recordedAudio?.audioAuthorized === true, humanRecorded: recordedAudio?.humanRecorded === true,
+    audioSource: recordedAudio?.audioSource || "", audio: "", nalviGuided: Number(activity.helpLevel || 0) > 0,
     independentRetest: type === "INDEPENDENT_RECALL", context: `adaptive-tutor:${planId}:${index + 1}`
   };
   return { ...normalized, fingerprint: createActivityFingerprint(normalized, { uiLocale: context.uiLocale }) };

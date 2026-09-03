@@ -13,6 +13,14 @@ const localize = (value, locale) => value && typeof value === "object" && !Array
   ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "")
   : String(value ?? "");
 const normalize = value => String(value ?? "").normalize("NFC").trim().toLocaleLowerCase();
+const normalizeAudioTarget = value => String(value ?? "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[‘’`´ʼʹʻ]/g, "'")
+  .replace(/[¿?¡!.,;:()\[\]{}]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .toLocaleLowerCase("es");
 const uniqueBy = (values, key) => values.filter((value, index, array) => array.findIndex(candidate => key(candidate) === key(value)) === index);
 const optionText = (option, locale) => localize(option?.text ?? option?.label ?? option?.value ?? option, locale);
 
@@ -88,11 +96,22 @@ function safeSortData(context, locale) {
 
 function safeAudio(context) {
   const source = context.approvedActivityMaterial?.audio || context.authorizedAudio;
-  if (!source || source.authorized !== true) return null;
-  const audioPath = String(source.path || source.url || "").trim();
-  const audioText = String(source.text || context.correctAnswer || "").trim();
-  if (!audioPath && !audioText) return null;
-  return { audioPath, audioText, audioAuthorized: true, audioSource: String(source.source || "approved-recording") };
+  if (!source || source.authorized !== true || source.audioAuthorized !== true || source.humanRecorded !== true) return null;
+  const audioId = String(source.audioId || source.id || source.recordingId || "").trim();
+  const audioPath = String(source.audioPath || source.path || "").trim();
+  const audioText = String(source.audioText || source.text || "").trim();
+  if (!audioId || !audioPath || !audioText) return null;
+  const normalizedTarget = normalizeAudioTarget(context.correctAnswer);
+  const audioAliases = [audioText, audioText.split("(")[0]].map(normalizeAudioTarget).filter(Boolean);
+  if (!normalizedTarget || !audioAliases.includes(normalizedTarget)) return null;
+  return {
+    audioId,
+    audioPath,
+    audioText,
+    audioAuthorized: true,
+    humanRecorded: true,
+    audioSource: String(source.audioSource || source.source || "manifest-human-recording")
+  };
 }
 
 function shuffled(values, seed = 1) {
@@ -116,6 +135,12 @@ function base(context, type, attempt, overrides = {}) {
     instruction: "",
     prompt: "",
     contextText: "",
+    audioId: "",
+    audioPath: "",
+    audioText: "",
+    audioAuthorized: false,
+    humanRecorded: false,
+    audioSource: "",
     options: [],
     pairs: [],
     tiles: [],

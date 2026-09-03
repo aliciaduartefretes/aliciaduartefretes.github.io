@@ -76,16 +76,36 @@ function actions(copy, disabled = true) {
 function renderChoice(target, activity, context, { image = false, dialogue = false, audio = false } = {}) {
   const locale = localeFor(context.language), copy = COPY[locale], options = activity.options || [];
   const dialogueHtml = dialogue ? renderDialogueBubbles(activity.dialogue || activity.turns || [], locale) : "";
-  const audioHtml = audio ? `<div class="nalvi-audio-card"><button type="button" data-catalog-audio aria-label="${escapeHtml(copy.playAudio)}"><span aria-hidden="true">🔊</span><span>${escapeHtml(copy.playAudio)}</span></button></div>` : "";
+  const audioHtml = audio ? `<div class="nalvi-audio-card"><button type="button" data-catalog-audio data-audio-state="loading" aria-label="${escapeHtml(copy.playAudio)}" aria-pressed="false" disabled><span aria-hidden="true">🔊</span><span>${escapeHtml(copy.playAudio)}</span></button></div>` : "";
   const body = `${dialogueHtml}${audioHtml}<div class="nalvi-choice-grid ${image ? "nalvi-image-choice" : ""}">${options.map((option, index) => `<button type="button" class="nalvi-choice-card" data-choice="${escapeHtml(optionId(option, index))}">${image ? `<img src="${escapeHtml(option.image || option.imageUrl)}" alt="${escapeHtml(localize(option.alt || "", locale))}" loading="lazy">` : ""}<span>${escapeHtml(optionValue(option, locale))}</span></button>`).join("")}</div>${actions(copy)}`;
   shell(target, activity, context, body, audio ? copy.listen : copy.select);
   if (audio) {
     const playButton = target.querySelector("[data-catalog-audio]");
-    playButton?.addEventListener("click", () => {
-      const audioPath = String(activity.audioPath || "").trim();
-      const audioText = String(activity.audioText || activity.correctAnswer || "").trim();
-      if (audioPath && window.NALVI_RECORDED_AUDIO?.playPath?.(audioPath, playButton)) return;
-      if (audioText && typeof window.playPronunciation === "function") window.playPronunciation(audioText, playButton);
+    const registry = window.NALVI_RECORDED_AUDIO;
+    const selection = {
+      audioId: String(activity.audioId || "").trim(),
+      audioPath: String(activity.audioPath || "").trim(),
+      audioText: String(activity.audioText || activity.correctAnswer || "").trim(),
+      audioAuthorized: activity.audioAuthorized === true,
+      humanRecorded: activity.humanRecorded === true
+    };
+    const updateAudioAvailability = () => {
+      const authorized = registry?.authorize?.(selection);
+      if (!playButton) return;
+      playButton.disabled = !authorized;
+      playButton.dataset.audioState = authorized ? "ready" : "unavailable";
+      playButton.setAttribute("aria-disabled", String(!authorized));
+    };
+    if (registry?.ready?.then) registry.ready.then(updateAudioAvailability, updateAudioAvailability);
+    else updateAudioAvailability();
+    playButton?.addEventListener("click", async () => {
+      if (playButton.disabled || !registry?.playSelection) return;
+      const played = await registry.playSelection(selection, playButton);
+      if (!played) {
+        playButton.dataset.audioState = "unavailable";
+        playButton.disabled = true;
+        playButton.setAttribute("aria-disabled", "true");
+      }
     });
   }
   let selected = "";
