@@ -32,6 +32,9 @@ const stringsIn = (value, result = new Set()) => {
   else if (value && typeof value === "object") Object.values(value).forEach(item => stringsIn(item, result));
   return result;
 };
+const hasValidAdaptiveDialogueTurnCount = dialogue => Array.isArray(dialogue?.turns)
+  && dialogue.turns.length >= 2
+  && dialogue.turns.length <= 4;
 const stableGeneralUnit = source => {
   const stableHtml = read(source.path);
   const declarationStart = stableHtml.indexOf("const U=[");
@@ -135,7 +138,7 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
     const approvedSource = approvedAdaptiveDialogueSources.get(dialogue.sourceContentId);
     assert.ok(approvedSource, `${activityId} refiere una fuente de diálogo no aprobada: ${dialogue.sourceContentId}.`);
     const approvedLiterals = stringsIn(stableGeneralUnit(approvedSource));
-    assert.ok(dialogue.turns.length > 0 && dialogue.turns.length <= 4, `${activityId} tiene una cantidad inválida de turnos.`);
+    assert.ok(hasValidAdaptiveDialogueTurnCount(dialogue), `${activityId} debe tener entre 2 y 4 turnos.`);
     assert.ok(dialogue.turns.every(turn => turn.authorized === true && turn.id && turn.speaker && turn.text), `${activityId} contiene turnos incompletos o no autorizados.`);
     assert.ok(dialogue.turns.every(turn => approvedLiterals.has(turn.text.normalize("NFC"))), `${activityId} contiene turnos ajenos al bloque estable aprobado.`);
     assert.equal(new Set(dialogue.turns.map(turn => turn.id)).size, dialogue.turns.length, `${activityId} repite IDs de turnos.`);
@@ -147,6 +150,17 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
     assert.ok(correctOption, `${activityId} refiere una opción correcta inexistente.`);
     assert.equal(dialogue.correctAnswer, correctOption.text, `${activityId} no alinea correctAnswer con correctOptionId.`);
   }
+});
+
+test("un diálogo adaptativo de un solo turno incumple el contrato del catálogo", () => {
+  const activityWithDialogue = current.activityData.activities.find(activity => activity.adaptiveDialogue);
+  assert.ok(activityWithDialogue, "Falta una actividad con diálogo para probar el límite inferior.");
+  const oneTurnDialogue = {
+    ...plain(activityWithDialogue.adaptiveDialogue),
+    turns: plain(activityWithDialogue.adaptiveDialogue.turns.slice(0, 1))
+  };
+  assert.equal(oneTurnDialogue.turns.length, 1);
+  assert.equal(hasValidAdaptiveDialogueTurnCount(oneTurnDialogue), false);
 });
 
 test("cada actividad dinámica puede recuperarse por objetivo", () => {
