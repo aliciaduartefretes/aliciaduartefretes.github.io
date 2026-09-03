@@ -75,26 +75,142 @@ function approvedMaterialFor(activity, correctAnswer) {
     dialogueCorrectOptionId: String(activity.correctOptionId || ""),
     dialogueCorrectAnswer: correctAnswer,
     dialogueSourceContentId: "fixture-dialogue-source",
-    audio: { ...APPROVED_AUDIO }
+    audio: String(correctAnswer).normalize("NFC").trim().toLocaleLowerCase() === "jagua"
+      ? { ...APPROVED_AUDIO }
+      : null
   };
 }
 
-function context(overrides = {}) {
-  const baseActivity = {
-    id: "family-mother-choice", conceptId: "family-mother", type: "multiple-choice",
-    skill: "vocabulary", difficulty: "foundation-1", instruction: "Selecciona la respuesta.",
-    prompt: "¿Cómo se dice mamá?", options: [
-      { id: "sy", label: "sy" }, { id: "ru", label: "ru" }, { id: "oga", label: "óga" }
-    ], correctOptionId: "sy"
+const FIXTURE_FAMILY_ACTIVITY = Object.freeze({
+  id: "family-mother-choice",
+  conceptId: "family-mother",
+  conceptIds: ["family-mother"],
+  learningObjectiveId: "GG-LO-FAMILY",
+  type: "multiple-choice",
+  activityType: "multiple-choice",
+  skill: "vocabulary",
+  difficulty: "foundation-1",
+  instruction: "Selecciona la respuesta.",
+  prompt: "¿Cómo se dice mamá?",
+  options: [
+    { id: "sy", label: "sy" },
+    { id: "ru", label: "ru" },
+    { id: "oga", label: "óga" }
+  ],
+  correctOptionId: "sy",
+  correctAnswer: "sy",
+  acceptedAnswers: ["sy"],
+  requiresStudentResponse: true,
+  lexemeIds: [],
+  grammarRuleIds: [],
+  sourceIds: [],
+  contentValidationStatus: "lesson-approved",
+  allowedForMastery: false,
+  literalReuseOnly: true
+});
+
+const FIXTURE_GREETING_ACTIVITY = Object.freeze({
+  ...structuredClone(FIXTURE_FAMILY_ACTIVITY),
+  id: "legacy-general-0-0",
+  instruction: "Selecciona el significado.",
+  prompt: "¿Qué expresa «Mba’éichapa»?",
+  options: [
+    { id: "thanks", label: "Gracias" },
+    { id: "how", label: "¿Cómo estás?" },
+    { id: "goodbye", label: "Adiós" }
+  ],
+  correctOptionId: "how",
+  correctAnswer: "¿Cómo estás?",
+  acceptedAnswers: ["¿Cómo estás?"]
+});
+
+const FIXTURE_JAGUA_ACTIVITY = Object.freeze({
+  ...structuredClone(FIXTURE_FAMILY_ACTIVITY),
+  id: "jagua-listening",
+  conceptId: "animal-dog",
+  conceptIds: ["animal-dog"],
+  learningObjectiveId: "GG-LO-ANIMALS",
+  type: "listening",
+  activityType: "listening",
+  skill: "listening",
+  instruction: "Escucha y selecciona.",
+  prompt: "Selecciona la palabra escuchada.",
+  options: [
+    { id: "jagua", label: "Jagua" },
+    { id: "sy", label: "Sy" },
+    { id: "oga", label: "Óga" }
+  ],
+  correctOptionId: "jagua",
+  correctAnswer: "Jagua",
+  acceptedAnswers: ["Jagua"]
+});
+
+const FIXTURE_LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
+const FIXTURE_ACTIVITY_RECORDS = new Map([
+  FIXTURE_FAMILY_ACTIVITY,
+  FIXTURE_GREETING_ACTIVITY,
+  FIXTURE_JAGUA_ACTIVITY
+].map(activity => [activity.id, structuredClone(activity)]));
+
+function fixtureAuthorityRecord(activity, uiLocale) {
+  const sourceActivity = structuredClone(activity);
+  sourceActivity.lessonContext = {
+    sourceActivityId: sourceActivity.id,
+    sourceAnswer: sourceActivity.correctAnswer,
+    sourceOptions: structuredClone(sourceActivity.options),
+    sourceCorrectOptionId: sourceActivity.correctOptionId,
+    sourcePrompt: sourceActivity.prompt,
+    sourceInstruction: sourceActivity.instruction
   };
-  const activity = overrides.activity || baseActivity;
+  const approvedActivityMaterial = approvedMaterialFor(sourceActivity, sourceActivity.correctAnswer);
+  approvedActivityMaterial.contexts = [{
+    text: uiLocale === "en" ? "Approved context" : "Una situación documentada de la lección.",
+    authorized: true
+  }];
+  return {
+    sourceActivity,
+    correctAnswer: sourceActivity.correctAnswer,
+    knowledgeIds: [],
+    approvedActivityMaterial
+  };
+}
+
+const FIXTURE_ACTIVITY_AUTHORITY = Object.freeze({
+  resolve({ activityId, uiLocale = "es" } = {}) {
+    if (typeof activityId !== "string" || !FIXTURE_LOCALES.has(uiLocale)) return null;
+    const activity = FIXTURE_ACTIVITY_RECORDS.get(activityId);
+    return activity ? fixtureAuthorityRecord(activity, uiLocale) : null;
+  },
+  listByLearningObjective({ learningObjectiveId, uiLocale = "es" } = {}) {
+    if (typeof learningObjectiveId !== "string" || !FIXTURE_LOCALES.has(uiLocale)) return [];
+    return [...FIXTURE_ACTIVITY_RECORDS.values()]
+      .filter(activity => activity.learningObjectiveId === learningObjectiveId)
+      .map(activity => fixtureAuthorityRecord(activity, uiLocale).sourceActivity);
+  },
+  audit: () => Object.freeze({ ready: true, source: "strict-test-snapshots", activities: FIXTURE_ACTIVITY_RECORDS.size })
+});
+
+const createTestOrchestrator = options => createAdaptiveTutorOrchestrator({
+  ...options,
+  activityAuthority: FIXTURE_ACTIVITY_AUTHORITY
+});
+const createTestFallbackPlan = (sourceContext, options = {}) => createProfessionalFallbackPlan(sourceContext, {
+  ...options,
+  activityAuthority: FIXTURE_ACTIVITY_AUTHORITY
+});
+const normalizeTestRequest = input => normalizeInterventionRequest(input, {
+  activityAuthority: FIXTURE_ACTIVITY_AUTHORITY
+});
+
+function context(overrides = {}) {
+  const activity = structuredClone(overrides.activity || FIXTURE_FAMILY_ACTIVITY);
   const value = {
-    correct: false, conceptId: "family-mother", learningObjectiveId: "GG-LO-FAMILY",
-    currentSkill: "vocabulary", activityType: "multiple-choice", difficulty: "foundation-1",
-    studentAnswer: "ru", correctAnswer: "sy", attemptNumber: 1, recentErrors: [],
+    correct: false, conceptId: activity.conceptId, learningObjectiveId: activity.learningObjectiveId,
+    currentSkill: activity.skill, activityType: activity.activityType, difficulty: activity.difficulty,
+    studentAnswer: "ru", correctAnswer: activity.correctAnswer, attemptNumber: 1, recentErrors: [],
     recentActivityFingerprints: [], modalitiesAlreadyUsed: ["multiple-choice"], hintHistory: [],
-    retentionHistory: [], strategyEffectiveness: {}, uiLocale: "es", grammarRuleIds: [],
-    lexemeIds: [], knowledgeIds: [], activity,
+    retentionHistory: [], strategyEffectiveness: {}, uiLocale: "es", grammarRuleIds: [...activity.grammarRuleIds],
+    lexemeIds: [...activity.lexemeIds], knowledgeIds: [], activity,
     fullName: "Private Student", email: "private@example.com", institution: "Private School",
     administrativeRole: "student", ...overrides
   };
@@ -140,7 +256,7 @@ test("orquestador: planner + critic aceptan un plan estructurado y sin PII", asy
     }
     return response(validPlan());
   };
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl,
     env: { OPENAI_API_KEY: "server-secret", OPENAI_TUTOR_MODEL: "configured-model", AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: "true" },
     persistEvent: async payload => { persisted.push(payload); return { status: "persisted", path: "users/pseudonymous/learningEvents/event" }; }
@@ -162,7 +278,7 @@ test("orquestador: planner + critic aceptan un plan estructurado y sin PII", asy
   assert.doesNotMatch(JSON.stringify(persisted[0]), /Private Student|private@example\.com|Private School/);
   for (const call of calls) {
     const input = JSON.parse(call.input);
-    assert.deepEqual(input.context.approvedActivityMaterial.audio, CANONICAL_AUDIO);
+    assert.equal(input.context.approvedActivityMaterial.audio, null);
     assert.equal(input.context.approvedActivityMaterial.dialogueCorrectOptionId, "sy");
     assert.equal(input.context.approvedActivityMaterial.dialogueCorrectAnswer, "sy");
     assert.doesNotMatch(JSON.stringify(input.context.approvedActivityMaterial), /\[object Object\]/);
@@ -170,7 +286,7 @@ test("orquestador: planner + critic aceptan un plan estructurado y sin PII", asy
 });
 
 test("un fallo de red usa fallback profesional y nunca permite avanzar", async () => {
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl: async () => { throw new Error("network down"); },
     env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: "true" }
   });
@@ -186,19 +302,7 @@ test("un fallo de red usa fallback profesional y nunca permite avanzar", async (
 });
 
 test("el primer refuerzo usa el catálogo oficial, muestra contexto y no repite el prompt", () => {
-  const plan = createProfessionalFallbackPlan(context({
-    correctAnswer: "¿Cómo estás?",
-    activity: {
-      ...context().activity,
-      id: "legacy-general-0-0",
-      prompt: "¿Qué expresa «Mba’éichapa»?",
-      options: [
-        { id: "thanks", label: "Gracias" },
-        { id: "how", label: "¿Cómo estás?" },
-        { id: "goodbye", label: "Adiós" }
-      ]
-    }
-  }));
+  const plan = createTestFallbackPlan(context({ activity: structuredClone(FIXTURE_GREETING_ACTIVITY) }));
   const activity = plan.activities[0];
   assert.equal(activity.activityType, "CONTEXT_CHOICE");
   assert.ok(activity.contextText);
@@ -207,18 +311,16 @@ test("el primer refuerzo usa el catálogo oficial, muestra contexto y no repite 
   assert.ok(activity.options.length >= 3);
 });
 
-test("el segundo intento cambia de modalidad cuando la modalidad anterior ya fue utilizada", () => {
-  const first = createProfessionalFallbackPlan(context({ attemptNumber: 1 }));
-  const previous = first.activities[0];
-  const plan = createProfessionalFallbackPlan(context({
-    attemptNumber: 2,
-    recentActivities: [{ activityType: previous.activityType }],
-    recentActivityFingerprints: [previous.fingerprint]
+test("el historial descarta IDs desconocidos y rehidrata actividades conocidas desde autoridad", () => {
+  const normalized = normalizeTestRequest(context({
+    recentActivities: [
+      { id: "unknown-adaptive-id", activityType: "AUDIO_SELECT" },
+      { id: FIXTURE_GREETING_ACTIVITY.id, activityType: "AUDIO_SELECT" }
+    ]
   }));
-  const activity = plan.activities[0];
-  assert.notEqual(activity.activityType, previous.activityType);
-  assert.notEqual(activity.fingerprint, previous.fingerprint);
-  assert.notEqual(activity.prompt, "¿Cómo se dice mamá?");
+  assert.deepEqual(normalized.recentActivities.map(activity => ({ id: activity.id, type: activity.type })), [
+    { id: FIXTURE_GREETING_ACTIVITY.id, type: FIXTURE_GREETING_ACTIVITY.type }
+  ]);
 });
 
 test("el crítico puede rechazar y existe como máximo una revisión", async () => {
@@ -231,7 +333,7 @@ test("el crítico puede rechazar y existe como máximo una revisión", async () 
     plannerCalls += 1;
     return response(validPlan({ planId: `critic-rejected-${plannerCalls}` }));
   };
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl,
     env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_MAX_REVISION_ATTEMPTS: "1" }
   });
@@ -242,17 +344,16 @@ test("el crítico puede rechazar y existe como máximo una revisión", async () 
   assert.equal(result.telemetry.revisionCount, 1);
 });
 
-test("contenido lingüístico sin inventario queda BLOCKED y no llama a OpenAI", async () => {
+test("un ID no autorizado falla cerrado antes de llamar a OpenAI", async () => {
   let calls = 0;
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl: async () => { calls += 1; return response(validPlan()); },
     env: { OPENAI_API_KEY: "server-secret" }
   });
-  const blocked = context({ correctAnswer: "", activity: { id: "unknown", type: "writing", prompt: "", instruction: "", options: [] } });
-  const result = await service.orchestrateAdaptiveTutoring(blocked);
+  const unknown = { ...structuredClone(FIXTURE_FAMILY_ACTIVITY), id: "unknown-activity" };
+  await assert.rejects(service.orchestrateAdaptiveTutoring(context({ activity: unknown })), /UNAPPROVED_ACTIVITY_ID/);
   assert.equal(calls, 0);
-  assert.equal(result.linguisticMode, "BLOCKED");
-  assert.equal(result.usedAI, false);
+  assert.throws(() => normalizeInterventionRequest(context({ activity: unknown })), /UNAPPROVED_ACTIVITY_ID/);
 });
 
 test("el límite del servidor conserva solo material autorizado, localizado y trazable", () => {
@@ -268,7 +369,7 @@ test("el límite del servidor conserva solo material autorizado, localizado y tr
       audio: { ...APPROVED_AUDIO }
     }
   });
-  const normalized = normalizeInterventionRequest(raw);
+  const normalized = normalizeTestRequest(raw);
 
   assert.deepEqual(normalized.approvedActivityMaterial.contexts, [
     { text: "Approved context", authorized: true }
@@ -276,10 +377,10 @@ test("el límite del servidor conserva solo material autorizado, localizado y tr
   assert.equal(normalized.approvedActivityMaterial.dialogueCorrectOptionId, "sy");
   assert.equal(normalized.approvedActivityMaterial.dialogueCorrectAnswer, "sy");
   assert.equal(normalized.approvedActivityMaterial.dialogueSourceContentId, "fixture-dialogue-source");
-  assert.deepEqual(normalized.approvedActivityMaterial.audio, CANONICAL_AUDIO);
+  assert.equal(normalized.approvedActivityMaterial.audio, null);
   assert.doesNotMatch(JSON.stringify(normalized), /\[object Object\]/);
 
-  const mismatchedAudio = normalizeInterventionRequest(context({
+  const mismatchedAudio = normalizeTestRequest(context({
     approvedActivityMaterial: {
       ...approvedMaterialFor(context().activity, "sy"),
       audio: {
@@ -305,7 +406,7 @@ test("la validación determinista rechaza material inventado aunque el Planner l
     authorized: true
   };
   invented.candidateActivities = [arrow];
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl: async () => response(invented),
     env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
   });
@@ -321,7 +422,7 @@ test("la validación determinista no cambia ni filtra la respuesta correcta apro
   const changed = structuredClone(validPlan());
   changed.candidateActivities[0].activity.correctAnswer = "respuesta inventada";
   changed.candidateActivities[0].activity.acceptedAnswers = ["respuesta inventada"];
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl: async () => response(changed),
     env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
   });
@@ -333,26 +434,10 @@ test("la validación determinista no cambia ni filtra la respuesta correcta apro
 });
 
 test("AUDIO_SELECT conserva el contrato canónico completo hasta la actividad renderizable", async () => {
-  const activity = {
-    ...context().activity,
-    id: "jagua-listening",
-    type: "listening",
-    skill: "listening",
-    options: [
-      { id: "jagua", label: "Jagua" },
-      { id: "sy", label: "Sy" },
-      { id: "oga", label: "Óga" }
-    ],
-    correctOptionId: "jagua"
-  };
+  const activity = structuredClone(FIXTURE_JAGUA_ACTIVITY);
   const source = context({
-    conceptId: "animal-dog",
-    currentSkill: "listening",
-    activityType: "listening",
     studentAnswer: "Sy",
-    correctAnswer: "Jagua",
-    activity,
-    approvedActivityMaterial: approvedMaterialFor(activity, "Jagua")
+    activity
   });
   const audioCandidate = buildDeterministicFallbackCandidates(source, 1, "LISTENING_CONFUSION")
     .find(candidate => candidate.activityType === "AUDIO_SELECT");
@@ -362,7 +447,7 @@ test("AUDIO_SELECT conserva el contrato canónico completo hasta la actividad re
     diagnosis: { errorType: "LISTENING_CONFUSION", likelyDifficulty: "audio", confidence: 0.9, prerequisiteGap: null, skillAffected: "listening" },
     candidateActivities: [audioCandidate]
   });
-  const service = createAdaptiveTutorOrchestrator({
+  const service = createTestOrchestrator({
     fetchImpl: async () => response(plan),
     env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
   });

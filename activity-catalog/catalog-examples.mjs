@@ -1,4 +1,4 @@
-import { ACTIVITY_TYPES, cognitiveDemandFor } from "./nalvi-activity-catalog.mjs";
+import { ACTIVITY_TYPES, cognitiveDemandFor } from "./nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
 
 const lexemeIds = ["LEX-PILOT-AKA-001", "LEX-PILOT-ARANDUKA-001", "LEX-PILOT-JAGUA-001"];
 const option = (id, text, extra = {}) => ({ id, text, authorized: true, ...extra });

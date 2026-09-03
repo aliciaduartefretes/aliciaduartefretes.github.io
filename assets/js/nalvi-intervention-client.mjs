@@ -5,19 +5,21 @@ import {
   planPedagogicalIntervention,
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
-import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-4";
-import { selectFirstValidCandidate } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-3";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-5";
+import { detectAnswerLeakage, selectFirstValidCandidate, validateCatalogActivity } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-4";
 import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
-import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-4";
+import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-5";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-10";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-12";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
 const ATTEMPT_KEY = "nalvi.tutor.attempts.v2";
 const EFFECTIVENESS_KEY = "nalvi.tutor.strategy-effectiveness.v2";
 const EXPOSURE_KEY = "nalvi.tutor.answer-exposure.v2";
-const PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v1";
+const PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v2";
+const LEGACY_PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v1";
+const PENDING_RETEST_VERSION = 2;
 const MINIMUM_BRIDGE_ACTIVITIES = 2;
 const ATTEMPT_TTL_MS = 30 * 60 * 1000;
 const LANGUAGES = new Set(["es", "en", "pt", "fr", "it", "de"]);
@@ -82,15 +84,23 @@ const CLOSED_AUDIO = Object.freeze({
   audioSource: ""
 });
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const declaredClaims = entries => entries
+  .filter(([owner, key]) => hasOwn(owner, key))
+  .map(([owner, key]) => owner[key]);
+const trimStringClaim = value => typeof value === "string" ? value.trim() : "";
 
 function canonicalRenderableAudio(activity = {}, language = document.documentElement.lang) {
   const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
-  const declaredIds = [activity.audioId, activity.recordingId, nested.audioId, nested.id, nested.recordingId].map(value => String(value || "").trim()).filter(Boolean);
-  const declaredPaths = [activity.audioPath, activity.path, nested.path, nested.audioPath].map(value => String(value || "").trim()).filter(Boolean);
-  const declaredTexts = [activity.audioText, activity.text, nested.audioText, nested.text].map(value => localize(value, language).trim()).filter(Boolean);
-  const sourceClaims = [[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]
-    .filter(([owner, key]) => hasOwn(owner, key))
-    .map(([owner, key]) => String(owner[key] || "").trim());
+  const idClaims = declaredClaims([[activity, "audioId"], [activity, "recordingId"], [nested, "audioId"], [nested, "id"], [nested, "recordingId"]]);
+  const pathClaims = declaredClaims([[activity, "audioPath"], [activity, "path"], [nested, "path"], [nested, "audioPath"]]);
+  const textClaims = declaredClaims([[activity, "audioText"], [activity, "text"], [nested, "audioText"], [nested, "text"]]);
+  const rawSourceClaims = declaredClaims([[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]);
+  const validScalarDeclarations = [...idClaims, ...pathClaims, ...textClaims, ...rawSourceClaims]
+    .every(value => typeof value === "string");
+  const declaredIds = idClaims.map(trimStringClaim).filter(Boolean);
+  const declaredPaths = pathClaims.map(trimStringClaim).filter(Boolean);
+  const declaredTexts = textClaims.map(trimStringClaim).filter(Boolean);
+  const sourceClaims = rawSourceClaims.map(trimStringClaim);
   const authorizationClaims = [[activity, "audioAuthorized"], [activity, "authorized"], [nested, "audioAuthorized"], [nested, "authorized"]]
     .filter(([owner, key]) => hasOwn(owner, key))
     .map(([owner, key]) => owner[key]);
@@ -101,7 +111,8 @@ function canonicalRenderableAudio(activity = {}, language = document.documentEle
   const audioPath = declaredPaths[0] || "";
   const audioText = declaredTexts[0] || "";
   const audioSource = sourceClaims[0] || "";
-  const declarationsCoherent = new Set(declaredIds).size <= 1
+  const declarationsCoherent = validScalarDeclarations
+    && new Set(declaredIds).size <= 1
     && declaredPaths.every(path => canonicalAudioPath(path) === canonicalAudioPath(audioPath))
     && sourceClaims.length > 0
     && sourceClaims.every(value => value === "manifest-human-recording")
@@ -144,9 +155,12 @@ async function resolveApprovedAudio(activity, audioTerm, semanticAnswer) {
   if (!registry || typeof registry.resolve !== "function") return null;
   await registry.ready;
   const nested = activity.authorizedAudio && typeof activity.authorizedAudio === "object" ? activity.authorizedAudio : {};
-  const sourceClaims = [[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]
-    .filter(([owner, key]) => hasOwn(owner, key))
-    .map(([owner, key]) => String(owner[key] || "").trim());
+  const idClaims = declaredClaims([[activity, "audioId"], [activity, "recordingId"], [nested, "audioId"], [nested, "id"], [nested, "recordingId"]]);
+  const pathClaims = declaredClaims([[activity, "audioPath"], [activity, "path"], [nested, "path"], [nested, "audioPath"]]);
+  const textClaims = declaredClaims([[activity, "audioText"], [activity, "text"], [nested, "audioText"], [nested, "text"]]);
+  const rawSourceClaims = declaredClaims([[activity, "audioSource"], [activity, "source"], [nested, "audioSource"], [nested, "source"]]);
+  if ([...idClaims, ...pathClaims, ...textClaims, ...rawSourceClaims].some(value => typeof value !== "string")) return null;
+  const sourceClaims = rawSourceClaims.map(value => value.trim());
   const authorizationClaims = [[activity, "audioAuthorized"], [activity, "authorized"], [nested, "audioAuthorized"], [nested, "authorized"]]
     .filter(([owner, key]) => hasOwn(owner, key))
     .map(([owner, key]) => owner[key]);
@@ -156,7 +170,7 @@ async function resolveApprovedAudio(activity, audioTerm, semanticAnswer) {
   if (sourceClaims.some(value => value !== "manifest-human-recording")
     || authorizationClaims.some(value => value !== true)
     || humanRecordingClaims.some(value => value !== true)) return null;
-  const suppliedIds = [activity.audioId, activity.recordingId, nested.audioId, nested.id, nested.recordingId].map(value => String(value || "").trim()).filter(Boolean);
+  const suppliedIds = idClaims.map(value => value.trim()).filter(Boolean);
   if (new Set(suppliedIds).size > 1) return null;
   const requestedId = suppliedIds[0] || "";
   const lookup = requestedId || String(audioTerm || "").trim();
@@ -166,13 +180,11 @@ async function resolveApprovedAudio(activity, audioTerm, semanticAnswer) {
   const audioPath = registryAudioPathFrom(recording);
   if (!recording || recording.authorizedForPlayback !== true || recording.humanRecorded !== true || !audioId || !audioPath) return null;
   if (requestedId && requestedId !== audioId) return null;
-  const suppliedPaths = [activity.audioPath, activity.path, nested.path, nested.audioPath].map(value => String(value || "").trim()).filter(Boolean);
+  const suppliedPaths = pathClaims.map(value => value.trim()).filter(Boolean);
   if (suppliedPaths.some(path => canonicalAudioPath(path) !== canonicalAudioPath(audioPath))) return null;
   const text = audioTextFrom(recording);
   if (!text || !canonicalAudioPath(audioPath)) return null;
-  const suppliedTexts = [activity.audioText, activity.text, nested.audioText, nested.text]
-    .map(value => localize(value, document.documentElement.lang).trim())
-    .filter(Boolean);
+  const suppliedTexts = textClaims.map(value => value.trim()).filter(Boolean);
   const allowedAliases = registryAudioAliases(recording);
   if (suppliedTexts.some(value => !allowedAliases.has(normalizeAudioLookup(value)))) return null;
   const semanticTerms = [audioTerm, semanticAnswer].map(value => localize(value, document.documentElement.lang).trim()).filter(Boolean);
@@ -198,9 +210,82 @@ const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringi
 const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 const activityCatalog = () => (window.KUAA_GENERAL_ACTIVITY_DATA?.activities || []).map(activity => ({ ...activity, conceptId: activity.conceptId || activity.conceptIds?.[0] || "" }));
 
+function retestAuthorityFingerprint({ sourceActivityId, conceptId, learningObjectiveId, uiLocale, activityType, correctAnswer, acceptedAnswers } = {}) {
+  if (![sourceActivityId, conceptId, learningObjectiveId, activityType, correctAnswer]
+    .every(value => typeof value === "string" && value.trim() === value && value)
+    || !LANGUAGES.has(uiLocale)
+    || !Array.isArray(acceptedAnswers) || !acceptedAnswers.length
+    || acceptedAnswers.some(value => typeof value !== "string" || !value || value.trim() !== value)) return "";
+  try {
+    return createActivityFingerprint({
+      conceptId,
+      type: `retest-authority-${activityType}`,
+      prompt: sourceActivityId,
+      instruction: learningObjectiveId,
+      contextText: uiLocale,
+      options: acceptedAnswers.map((answer, index) => ({ id: `approved-${index + 1}`, label: answer })),
+      correctAnswer
+    }, { uiLocale });
+  } catch { return ""; }
+}
+
 function pendingRetest() {
+  try { localStorage.removeItem(LEGACY_PENDING_RETEST_KEY); } catch { /* discard unsafe legacy state */ }
   const value = readJson(PENDING_RETEST_KEY, null);
-  if (!value?.plan?.activities?.length || !value?.sourceActivityId) return null;
+  const bridgeFingerprints = value?.bridgeFingerprints;
+  const storedActivity = value?.plan?.activities?.[0];
+  const storedConceptIds = storedActivity?.conceptIds;
+  const approvedAnswers = value?.approvedAnswers;
+  const activityAnswers = storedActivity?.acceptedAnswers;
+  const canonicalString = candidate => typeof candidate === "string"
+    && Boolean(candidate) && candidate.trim() === candidate;
+  const exactStringSequence = (left, right) => Array.isArray(left) && Array.isArray(right)
+    && left.length === right.length
+    && left.every((item, index) => canonicalString(item) && item === right[index]);
+  let recomputedFingerprint = "";
+  try {
+    recomputedFingerprint = storedActivity && LANGUAGES.has(value?.uiLocale)
+      ? createActivityFingerprint(storedActivity, { uiLocale: value.uiLocale })
+      : "";
+  } catch { /* malformed persisted activity stays invalid */ }
+  const recomputedAuthorityFingerprint = retestAuthorityFingerprint({
+    sourceActivityId: value?.sourceActivityId,
+    conceptId: value?.conceptId,
+    learningObjectiveId: value?.learningObjectiveId,
+    uiLocale: value?.uiLocale,
+    activityType: storedActivity?.activityType || storedActivity?.type,
+    correctAnswer: storedActivity?.correctAnswer,
+    acceptedAnswers: approvedAnswers
+  });
+  const valid = value?.version === PENDING_RETEST_VERSION
+    && canonicalString(value.sourceActivityId)
+    && canonicalString(value.sourceFingerprint)
+    && canonicalString(value.conceptId)
+    && canonicalString(value.learningObjectiveId)
+    && LANGUAGES.has(value.uiLocale)
+    && typeof value.createdAt === "string" && Number.isFinite(Date.parse(value.createdAt))
+    && value.minimumBridgeActivities === MINIMUM_BRIDGE_ACTIVITIES
+    && Array.isArray(bridgeFingerprints)
+    && bridgeFingerprints.every(canonicalString)
+    && new Set(bridgeFingerprints).size === bridgeFingerprints.length
+    && value.plan && typeof value.plan === "object"
+    && canonicalString(value.plan.planId)
+    && value.plan.conceptId === value.conceptId
+    && Array.isArray(value.plan.activities) && value.plan.activities.length === 1
+    && storedActivity?.conceptId === value.conceptId
+    && exactStringSequence(storedConceptIds, [value.conceptId])
+    && storedActivity?.learningObjectiveId === value.learningObjectiveId
+    && storedActivity?.lessonContext?.sourceActivityId === value.sourceActivityId
+    && canonicalString(storedActivity?.fingerprint)
+    && value.activityFingerprint === storedActivity.fingerprint
+    && storedActivity.fingerprint === recomputedFingerprint
+    && canonicalString(value.authorityFingerprint)
+    && value.authorityFingerprint === recomputedAuthorityFingerprint
+    && exactStringSequence(approvedAnswers, activityAnswers);
+  if (!valid) {
+    writePendingRetest(null);
+    return null;
+  }
   return value;
 }
 
@@ -214,6 +299,8 @@ function writePendingRetest(value) {
 
 function semanticPairsForObjective(context) {
   const expected = localize(context.correctAnswer, context.uiLocale).normalize("NFC").trim().toLocaleLowerCase();
+  const seenLeft = new Set();
+  const seenRight = new Set();
   const pairs = activityCatalog()
     .filter(activity => activity.learningObjectiveId === context.learningObjectiveId
       && activity.semanticPair?.adaptiveReuseAuthorized === true
@@ -226,7 +313,14 @@ function semanticPairsForObjective(context) {
       sourceActivityId: activity.id,
       authorized: true
     }))
-    .filter(pair => pair.left && pair.right);
+    .filter(pair => {
+      const left = pair.left.normalize("NFC").trim().toLocaleLowerCase();
+      const right = pair.right.normalize("NFC").trim().toLocaleLowerCase();
+      if (!left || !right || left === right || seenLeft.has(left) || seenRight.has(right)) return false;
+      seenLeft.add(left);
+      seenRight.add(right);
+      return true;
+    });
   const targetsExpected = pair => [pair.left, pair.right]
     .some(value => String(value).normalize("NFC").trim().toLocaleLowerCase() === expected);
   const requiredPair = expected ? pairs.find(targetsExpected) : null;
@@ -239,7 +333,16 @@ function semanticPairsForObjective(context) {
 function buildSpacedRetestPlan(context) {
   const pairs = semanticPairsForObjective(context);
   const copy = COPY[context.uiLocale] || COPY.es;
-  const sourcePrompt = localize(context.activity?.lessonContext?.sourcePrompt || context.activity?.prompt || context.activity?.instruction, context.uiLocale).trim();
+  const approvedCorrectAnswer = context.approvedActivityMaterial?.correctAnswer;
+  const rawAcceptedAnswers = context.approvedActivityMaterial?.acceptedAnswers;
+  if (typeof approvedCorrectAnswer !== "string" || typeof context.correctAnswer !== "string"
+    || !Array.isArray(rawAcceptedAnswers)
+    || rawAcceptedAnswers.some(value => typeof value !== "string" || !value.trim())) return null;
+  const correctAnswer = approvedCorrectAnswer.trim();
+  const contextAnswer = context.correctAnswer.normalize("NFC").trim();
+  const acceptedAnswers = [...new Set(rawAcceptedAnswers.map(value => value.trim()))];
+  if (!correctAnswer || correctAnswer.normalize("NFC") !== contextAnswer
+    || !acceptedAnswers.includes(correctAnswer)) return null;
   const activityDefinition = pairs.length >= 3 ? {
     id: `spaced-match-${context.learningObjectiveId}-${Date.now()}`,
     type: ACTIVITY_TYPES.ARROW_MATCH,
@@ -251,14 +354,18 @@ function buildSpacedRetestPlan(context) {
     difficulty: context.difficulty,
     instruction: copy.matchInstruction,
     prompt: copy.match,
-    pairs: pairs.map(({ id, left, right }) => ({ id, left, right, authorized: true })),
-    answer: context.correctAnswer,
-    acceptedAnswers: [context.correctAnswer],
+    contextText: "",
+    pairs: pairs.map(({ id, left, right, sourceActivityId }) => ({ id, left, right, sourceActivityId, authorized: true })),
+    answer: correctAnswer,
+    correctAnswer,
+    acceptedAnswers,
     lexemeIds: context.lexemeIds,
     grammarRuleIds: context.grammarRuleIds,
     requiresStudentResponse: true,
     helpLevel: 0,
     answerExposure: "HIDDEN",
+    hints: [],
+    explanation: "",
     cognitiveDemand: "DISCRIMINATION",
     reasonCode: "JUSTIFIED_INTERLEAVED_RETRIEVAL",
     independentRetest: true,
@@ -268,7 +375,8 @@ function buildSpacedRetestPlan(context) {
       // cuál fue la pregunta fallada ni presentarla como un refuerzo técnico.
       sourcePrompt: copy.match,
       sourceInstruction: copy.matchInstruction,
-      sourceAnswer: context.correctAnswer,
+      sourceAnswer: correctAnswer,
+      visibleContext: "",
       sourceActivityId: context.activity?.id || ""
     }
   } : {
@@ -281,28 +389,34 @@ function buildSpacedRetestPlan(context) {
     skill: context.currentSkill || "vocabulary",
     difficulty: context.difficulty,
     instruction: copy.recall,
-    prompt: sourcePrompt || copy.recallContext,
-    contextText: copy.recallContext,
-    answer: context.correctAnswer,
-    correctAnswer: context.correctAnswer,
-    acceptedAnswers: [context.correctAnswer].filter(Boolean),
+    prompt: copy.recall,
+    contextText: "",
+    answer: correctAnswer,
+    correctAnswer,
+    acceptedAnswers,
     lexemeIds: context.lexemeIds,
     grammarRuleIds: context.grammarRuleIds,
     requiresStudentResponse: true,
     helpLevel: 0,
     answerExposure: "HIDDEN",
+    hints: [],
+    explanation: "",
     cognitiveDemand: "RECALL",
     reasonCode: "JUSTIFIED_INDEPENDENT_RETEST",
     independentRetest: true,
     spacedRetest: true,
     lessonContext: {
-      sourcePrompt,
+      sourcePrompt: copy.recall,
       sourceInstruction: copy.recall,
-      sourceAnswer: context.correctAnswer,
+      sourceAnswer: correctAnswer,
+      visibleContext: "",
       sourceActivityId: context.activity?.id || ""
     }
   };
+  if (detectAnswerLeakage(activityDefinition, { uiLocale: context.uiLocale }).leaked) return null;
   const activity = normalizeRenderableActivity(activityDefinition, context);
+  if (detectAnswerLeakage(activity, { uiLocale: context.uiLocale }).leaked) return null;
+  if (!validateCatalogActivity(activity, { uiLocale: context.uiLocale }).valid) return null;
   activity.fingerprint = createActivityFingerprint(activity, { uiLocale: context.uiLocale });
   return {
     planVersion: "NALVI-TUTOR-1",
@@ -323,9 +437,21 @@ function buildSpacedRetestPlan(context) {
 }
 
 function scheduleSpacedRetest(context, plan) {
-  if (!plan?.activities?.length) return false;
+  if (!Array.isArray(plan?.activities) || plan.activities.length !== 1) return false;
+  const activity = plan.activities[0];
+  if (!Array.isArray(activity?.acceptedAnswers) || !activity.fingerprint) return false;
+  const authorityFingerprint = retestAuthorityFingerprint({
+    sourceActivityId: context.activity?.id || "",
+    conceptId: context.conceptId,
+    learningObjectiveId: context.learningObjectiveId,
+    uiLocale: context.uiLocale,
+    activityType: activity.activityType || activity.type,
+    correctAnswer: activity.correctAnswer,
+    acceptedAnswers: activity.acceptedAnswers
+  });
+  if (!authorityFingerprint) return false;
   writePendingRetest({
-    version: 1,
+    version: PENDING_RETEST_VERSION,
     sourceActivityId: context.activity?.id || "",
     sourceFingerprint: context.previousActivityFingerprint,
     conceptId: context.conceptId,
@@ -333,6 +459,9 @@ function scheduleSpacedRetest(context, plan) {
     uiLocale: context.uiLocale,
     bridgeFingerprints: [],
     minimumBridgeActivities: MINIMUM_BRIDGE_ACTIVITIES,
+    approvedAnswers: [...activity.acceptedAnswers],
+    activityFingerprint: activity.fingerprint,
+    authorityFingerprint,
     createdAt: new Date().toISOString(),
     plan
   });
@@ -355,12 +484,143 @@ function noteBridgeActivity(activity, language = document.documentElement.lang) 
 function consumeDueRetest(targetSelector = "#lessonBody", options = {}) {
   const pending = pendingRetest();
   const force = options.force === true;
-  if (!pending || (!force && pending.bridgeFingerprints.length < Number(pending.minimumBridgeActivities || MINIMUM_BRIDGE_ACTIVITIES))) return false;
+  if (!pending || (!force && pending.bridgeFingerprints.length < MINIMUM_BRIDGE_ACTIVITIES)) return false;
+  const storedActivity = pending.plan.activities[0];
+  const storedType = storedActivity?.activityType || storedActivity?.type;
+  const language = locale(document.documentElement.lang || pending.uiLocale);
+  const correctAnswer = typeof storedActivity?.correctAnswer === "string" ? storedActivity.correctAnswer.trim() : "";
+  const acceptedAnswers = storedActivity?.acceptedAnswers;
+  const sourceMatches = activityCatalog().filter(activity => activity.id === pending.sourceActivityId);
+  const sourceActivity = sourceMatches.length === 1 ? sourceMatches[0] : null;
+  const sourceConceptId = sourceActivity?.conceptId || sourceActivity?.conceptIds?.[0] || "";
+  const sourceCorrectAnswer = sourceActivity
+    ? (localize(sourceActivity.lessonContext?.sourceAnswer, language).trim() || answerFor(sourceActivity, language).trim())
+    : "";
+  const sourceOptions = sourceActivity ? approvedOptions(sourceActivity, language) : [];
+  const sourceAcceptedAnswers = sourceActivity
+    ? approvedAnswerList(sourceActivity, sourceOptions, sourceCorrectAnswer, language)
+    : [];
+  let sourceFingerprint = "";
+  try {
+    sourceFingerprint = sourceActivity ? createActivityFingerprint(sourceActivity, { uiLocale: language }) : "";
+  } catch { /* malformed source authority stays invalid */ }
+  const exactSequence = (left, right) => Array.isArray(left) && Array.isArray(right)
+    && left.length === right.length && left.every((value, index) => value === right[index]);
+  const sourcePairs = semanticPairsForObjective({
+    correctAnswer: sourceCorrectAnswer,
+    learningObjectiveId: pending.learningObjectiveId,
+    uiLocale: language
+  });
+  const expectedType = sourcePairs.length >= 3 ? ACTIVITY_TYPES.ARROW_MATCH : ACTIVITY_TYPES.INDEPENDENT_RECALL;
+  const copy = COPY[language] || COPY.es;
+  const expectedPrompt = expectedType === ACTIVITY_TYPES.ARROW_MATCH ? copy.match : copy.recall;
+  const expectedInstruction = expectedType === ACTIVITY_TYPES.ARROW_MATCH ? copy.matchInstruction : copy.recall;
+  const expectedPairs = expectedType === ACTIVITY_TYPES.ARROW_MATCH
+    ? sourcePairs.map(({ id, left, right, sourceActivityId }) => ({ id, left, right, sourceActivityId, authorized: true }))
+    : [];
+  const sourceAuthorityFingerprint = retestAuthorityFingerprint({
+    sourceActivityId: sourceActivity?.id,
+    conceptId: sourceConceptId,
+    learningObjectiveId: sourceActivity?.learningObjectiveId,
+    uiLocale: language,
+    activityType: expectedType,
+    correctAnswer: sourceCorrectAnswer,
+    acceptedAnswers: sourceAcceptedAnswers
+  });
+  const sourceAuthorityIsTrusted = Boolean(sourceActivity
+    && sourceActivity.id === pending.sourceActivityId
+    && sourceConceptId === pending.conceptId
+    && sourceActivity.learningObjectiveId === pending.learningObjectiveId
+    && sourceFingerprint === pending.sourceFingerprint
+    && sourceCorrectAnswer === correctAnswer
+    && exactSequence(sourceAcceptedAnswers, pending.approvedAnswers)
+    && exactSequence(sourceAcceptedAnswers, acceptedAnswers)
+    && sourceAuthorityFingerprint
+    && sourceAuthorityFingerprint === pending.authorityFingerprint);
+  const activityMatchesRetestAuthority = activity => {
+    const activityType = activity?.activityType || activity?.type;
+    const pairsAreAuthorized = activityType === ACTIVITY_TYPES.ARROW_MATCH
+      ? Array.isArray(activity?.pairs) && JSON.stringify(activity.pairs) === JSON.stringify(expectedPairs)
+      : (!hasOwn(activity || {}, "pairs") || (Array.isArray(activity.pairs) && activity.pairs.length === 0));
+    const noUnapprovedScoringAliases = ["approvedEquivalents", "approvedVariants"]
+      .every(key => !hasOwn(activity || {}, key)
+        || (Array.isArray(activity[key]) && activity[key].length === 0))
+      && !hasOwn(activity || {}, "allowPendingReview");
+    const optionsAreEmpty = !hasOwn(activity || {}, "options")
+      || (Array.isArray(activity.options) && activity.options.length === 0);
+    return activityType === expectedType
+      && activity?.conceptId === pending.conceptId
+      && exactSequence(activity?.conceptIds, [pending.conceptId])
+      && activity?.learningObjectiveId === pending.learningObjectiveId
+      && activity?.lessonContext?.sourceActivityId === pending.sourceActivityId
+      && activity?.prompt === expectedPrompt
+      && activity?.instruction === expectedInstruction
+      && activity?.contextText === ""
+      && (!hasOwn(activity || {}, "scenario") || activity.scenario === "")
+      && activity?.lessonContext?.sourcePrompt === expectedPrompt
+      && activity?.lessonContext?.sourceInstruction === expectedInstruction
+      && activity?.lessonContext?.sourceAnswer === correctAnswer
+      && activity?.lessonContext?.visibleContext === ""
+      && optionsAreEmpty
+      && (!hasOwn(activity || {}, "correctOptionId") || activity.correctOptionId === "")
+      && pairsAreAuthorized
+      && noUnapprovedScoringAliases;
+  };
+  const leakageProbe = activity => ({
+    ...activity,
+    prompt: [activity?.prompt, activity?.lessonContext?.sourcePrompt],
+    instruction: [activity?.instruction, activity?.lessonContext?.sourceInstruction],
+    contextText: [activity?.contextText, activity?.scenario, activity?.lessonContext?.visibleContext]
+  });
+  const storedActivityIsTrusted = sourceAuthorityIsTrusted
+    && activityMatchesRetestAuthority(storedActivity)
+    && typeof storedActivity?.id === "string" && Boolean(storedActivity.id.trim())
+    && storedActivity.requiresStudentResponse === true
+    && storedActivity.independentRetest === true
+    && storedActivity.spacedRetest === true
+    && correctAnswer
+    && typeof storedActivity.answer === "string" && storedActivity.answer.trim() === correctAnswer
+    && Array.isArray(acceptedAnswers) && acceptedAnswers.length > 0
+    && acceptedAnswers.every(answer => typeof answer === "string" && Boolean(answer.trim()))
+    && acceptedAnswers.includes(correctAnswer)
+    && Number(storedActivity.helpLevel) === 0
+    && Array.isArray(storedActivity.hints) && storedActivity.hints.length === 0
+    && storedActivity.explanation === ""
+    && storedActivity.answerExposure === "HIDDEN"
+    && !detectAnswerLeakage(leakageProbe(storedActivity), { uiLocale: pending.uiLocale }).leaked
+    && validateCatalogActivity(storedActivity, { uiLocale: pending.uiLocale }).valid;
+  if (!storedActivityIsTrusted) {
+    writePendingRetest(null);
+    console.warn("NALVI_UNSAFE_PENDING_RETEST_DISCARDED", pending.sourceActivityId);
+    return false;
+  }
   const target = typeof targetSelector === "string" ? document.querySelector(targetSelector) : targetSelector;
   if (!target) return false;
-  const language = locale(document.documentElement.lang || pending.uiLocale);
-  const context = { uiLocale: language, correctAnswer: pending.plan.activities[0]?.answer || "", activity: pending.plan.activities[0] };
-  const plan = normalizePlanForRenderer(pending.plan, context);
+  const context = { uiLocale: language, correctAnswer, activity: storedActivity };
+  const normalizedPlan = normalizePlanForRenderer(pending.plan, context);
+  const normalizedActivity = normalizedPlan.activities[0];
+  const independentActivity = normalizedActivity ? {
+    ...normalizedActivity,
+    independentRetest: true,
+    spacedRetest: true,
+    evidenceMode: "independent",
+    nalviGuided: false,
+    helpLevel: 0,
+    hints: [],
+    explanation: "",
+    answerExposure: "HIDDEN"
+  } : null;
+  const finalActivityIsTrusted = Boolean(sourceAuthorityIsTrusted
+    && independentActivity
+    && activityMatchesRetestAuthority(independentActivity)
+    && !detectAnswerLeakage(leakageProbe(independentActivity), { uiLocale: language }).leaked
+    && validateCatalogActivity(independentActivity, { uiLocale: language }).valid);
+  if (!finalActivityIsTrusted) {
+    writePendingRetest(null);
+    console.warn("NALVI_UNSAFE_NORMALIZED_RETEST_DISCARDED", pending.sourceActivityId);
+    return false;
+  }
+  const plan = { ...normalizedPlan, activities: [independentActivity] };
   const candidateId = String(plan.activities[0]?.id || "");
   const candidateFingerprint = plan.activities[0]?.fingerprint || createActivityFingerprint(plan.activities[0], { uiLocale: language });
   const recentFingerprints = history().slice(-5).map(item => item.fingerprint).filter(Boolean);
@@ -701,6 +961,19 @@ function approvedOptions(activity, language) {
   return limited;
 }
 
+function approvedAnswerList(activity, options, correctAnswer, language) {
+  const normalizedAnswer = String(correctAnswer || "").normalize("NFC").trim().toLocaleLowerCase();
+  const correctOption = options.find(option => String(option.id) === String(activity.correctOptionId))
+    || options.find(option => option.text.normalize("NFC").trim().toLocaleLowerCase() === normalizedAnswer);
+  return [...new Set([
+    ...(Array.isArray(activity.acceptedAnswers)
+      ? activity.acceptedAnswers.map(value => localize(value, language).trim())
+      : []),
+    correctOption?.text,
+    correctAnswer
+  ].filter(Boolean))].slice(0, 10);
+}
+
 function approvedDialogueForObjective(activity, language) {
   const source = [activity, ...activityCatalog().filter(candidate => candidate.learningObjectiveId === activity.learningObjectiveId)]
     .map(candidate => candidate?.adaptiveDialogue)
@@ -757,11 +1030,7 @@ function buildApprovedActivityMaterial(activity, context, authorizedAudio) {
   const correctAnswer = localize(context.correctAnswer, language).trim();
   const correctOption = options.find(option => String(option.id) === String(activity.correctOptionId))
     || options.find(option => option.text.normalize("NFC").trim().toLocaleLowerCase() === correctAnswer.normalize("NFC").trim().toLocaleLowerCase());
-  const acceptedAnswers = [...new Set([
-    ...(activity.acceptedAnswers || []).map(value => localize(value, language).trim()),
-    correctOption?.text,
-    correctAnswer
-  ].filter(Boolean))].slice(0, 10);
+  const acceptedAnswers = approvedAnswerList(activity, options, correctAnswer, language);
   const audioId = audioIdFrom(authorizedAudio);
   const audioPath = audioPathFrom(authorizedAudio);
   const audioText = localize(authorizedAudio?.audioText ?? authorizedAudio?.text, language).trim();
@@ -973,7 +1242,8 @@ window.NALVI_INTERVENTION = Object.freeze({
   consumePendingRetestAtBoundary: targetSelector => consumeDueRetest(targetSelector, { force: true }),
   clearLocalHistory: () => {
     sessionHistory = [];
-    [HISTORY_KEY, ATTEMPT_KEY, EFFECTIVENESS_KEY, EXPOSURE_KEY, PENDING_RETEST_KEY].forEach(key => localStorage.removeItem(key));
+    [HISTORY_KEY, ATTEMPT_KEY, EFFECTIVENESS_KEY, EXPOSURE_KEY, PENDING_RETEST_KEY, LEGACY_PENDING_RETEST_KEY]
+      .forEach(key => localStorage.removeItem(key));
   },
   audit: () => ({ version: VERSION, automaticIntervention: true, technicalStudentUi: false, everyIncorrectRequestsTutor: true,
     immediateLocalFeedback: IMMEDIATE_LOCAL_FEEDBACK, adaptivePlanSequence: { min: 1, max: 4 }, exactRepeatBlocked: true,

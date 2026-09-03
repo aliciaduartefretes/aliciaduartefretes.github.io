@@ -49,6 +49,27 @@ const APPROVED_AUDIO = Object.freeze({
   audioAuthorized: true,
   humanRecorded: true
 });
+const DETERMINISTIC_COPY_ES = Object.freeze({
+  [ACTIVITY_TYPES.CONTEXT_CHOICE]: "Elige la opción que corresponde a esta situación.",
+  [ACTIVITY_TYPES.ARROW_MATCH]: "Relaciona cada elemento con su significado.",
+  [ACTIVITY_TYPES.CATEGORY_SORT]: "Clasifica las tarjetas en la categoría correcta.",
+  [ACTIVITY_TYPES.DIALOGUE_NEXT_TURN]: "Elige la respuesta que continúa la conversación.",
+  [ACTIVITY_TYPES.INDEPENDENT_RECALL]: "Recuerda la expresión sin verla.",
+  [ACTIVITY_TYPES.AUDIO_SELECT]: "Escucha y elige la opción correcta."
+});
+
+function canonicalApprovedCandidate(source) {
+  const activity = structuredClone(source);
+  const copy = DETERMINISTIC_COPY_ES[activity.activityType];
+  activity.prompt = copy;
+  activity.instruction = copy;
+  activity.hints = [];
+  activity.explanation = "";
+  if (activity.activityType === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN) {
+    activity.dialogueSourceContentId ||= "fixture-dialogue-source";
+  }
+  return activity;
+}
 
 const context = {
   conceptId: "lexeme-family-mother",
@@ -128,6 +149,30 @@ const context = {
   }
 };
 
+function approvedMaterialForExample(activity) {
+  return {
+    sourceIds: structuredClone(activity.sourceIds || []),
+    correctAnswer: activity.correctAnswer,
+    acceptedAnswers: structuredClone(activity.acceptedAnswers || []),
+    correctOptionId: activity.correctOptionId,
+    contexts: activity.contextText
+      ? [{ text: structuredClone(activity.contextText), authorized: true }]
+      : [],
+    options: structuredClone(activity.options || []),
+    pairs: structuredClone(activity.pairs || []),
+    categories: structuredClone(activity.categories || []),
+    items: structuredClone(activity.items || []),
+    dialogue: structuredClone(activity.dialogue || []),
+    dialogueOptions: structuredClone(activity.options || []),
+    dialogueCorrectOptionId: activity.correctOptionId,
+    dialogueCorrectAnswer: activity.correctAnswer,
+    dialogueSourceContentId: activity.dialogueSourceContentId || "fixture-dialogue-source",
+    hints: [],
+    tokens: [],
+    tiles: []
+  };
+}
+
 test("el contrato vigente habilita exactamente seis formatos y mantiene PASO 8C bloqueado", () => {
   const audit = catalogAudit();
   assert.deepEqual(audit.enabledTypes, ENABLED_TYPES);
@@ -178,6 +223,33 @@ test("acepta solo audio humano canónico y rechaza todo formato retirado o inven
   };
   assert.ok(validateCatalogActivity(wrongTarget).reasons.includes("AUDIO_TARGET_MISMATCH"));
 
+  const crossLocaleAudio = {
+    ...structuredClone(audio),
+    audioText: { es: "Jagua", pt: "som" }
+  };
+  const crossLocaleValidation = validateCatalogActivity(crossLocaleAudio, { uiLocale: "es" });
+  assert.equal(crossLocaleValidation.valid, false);
+  assert.ok(crossLocaleValidation.reasons.includes("INVALID_AUDIO_DECLARATION"));
+
+  const crossLocaleApproved = {
+    ...context,
+    correctAnswer: "jagua",
+    approvedActivityMaterial: {
+      ...context.approvedActivityMaterial,
+      correctAnswer: "jagua",
+      acceptedAnswers: ["jagua"],
+      audio: { ...CANONICAL_AUDIO, audioText: { es: "Jagua", pt: "som" } }
+    }
+  };
+  assert.equal(approvedAudioForTarget(crossLocaleApproved), null);
+  assert.equal(approvedAudioForTarget({
+    ...crossLocaleApproved,
+    approvedActivityMaterial: {
+      ...crossLocaleApproved.approvedActivityMaterial,
+      audio: { ...APPROVED_AUDIO, text: { es: "Jagua", pt: "som" } }
+    }
+  }), null);
+
   const manifest = JSON.parse(readFileSync(new URL("../../assets/audio/guarani/ali-2026/manifest.json", import.meta.url), "utf8"));
   const recording = manifest.recordings.find(item => item.id === CANONICAL_AUDIO.audioId);
   assert.ok(recording);
@@ -221,6 +293,13 @@ test("rechaza IDs de opción vacíos, duplicados o ambiguos antes de renderizar"
     const ambiguousValidation = validateCatalogActivity(ambiguousAnswer);
     assert.ok(ambiguousValidation.reasons.includes("ANSWER_ALSO_IN_DISTRACTOR"), type);
     if (type === ACTIVITY_TYPES.AUDIO_SELECT) assert.ok(ambiguousValidation.reasons.includes("AUDIO_TARGET_MISMATCH"));
+  }
+  for (const marker of ["\u200B", "\u200C", "\u2060", "\u00AD", "\uFE0F", "\u0483", "\u{E0100}"]) {
+    const visuallyDuplicate = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.AUDIO_SELECT));
+    visuallyDuplicate.options[1].text = `ja${marker}gua`;
+    const validation = validateCatalogActivity(visuallyDuplicate);
+    assert.ok(validation.reasons.includes("DUPLICATE_OPTIONS"), `duplicate U+${marker.codePointAt(0).toString(16)}`);
+    assert.ok(validation.reasons.includes("ANSWER_ALSO_IN_DISTRACTOR"), `distractor U+${marker.codePointAt(0).toString(16)}`);
   }
 });
 
@@ -407,6 +486,103 @@ test("detectAnswerLeakage evalúa cada respuesta aceptada sin confundir subcaden
     answerExposure: "HIDDEN"
   });
   assert.equal(boundaryOnly.leaked, false);
+
+  const hiddenByEmptyContext = detectAnswerLeakage({
+    activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    contextText: "",
+    scenario: "Escribe jagua",
+    correctAnswer: "jagua",
+    acceptedAnswers: ["jagua"]
+  });
+  assert.ok(hiddenByEmptyContext.codes.includes("ANSWER_IN_CONTEXT"));
+
+  const hiddenInAnotherLocale = detectAnswerLeakage({
+    activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    contextText: [{ es: "", pt: "Escribe aranduka" }],
+    correctAnswer: "aranduka",
+    acceptedAnswers: ["aranduka"]
+  }, { uiLocale: "es" });
+  assert.ok(hiddenInAnotherLocale.codes.includes("ANSWER_IN_CONTEXT"));
+
+  for (const [field, value] of [["prompt", 42], ["instruction", 42], ["contextText", 42]]) {
+    const numericLeak = detectAnswerLeakage({
+      activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+      prompt: "Responde.",
+      instruction: "Responde.",
+      [field]: value,
+      correctAnswer: "42",
+      acceptedAnswers: ["42"]
+    });
+    const expectedCode = field === "prompt" ? "ANSWER_IN_PROMPT" : field === "instruction" ? "ANSWER_IN_INSTRUCTION" : "ANSWER_IN_CONTEXT";
+    assert.ok(numericLeak.codes.includes(expectedCode), field);
+  }
+
+  const splitPhrase = detectAnswerLeakage({
+    activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+    prompt: { es: ["aran", "duka"] },
+    correctAnswer: "aran duka",
+    acceptedAnswers: ["aran duka"]
+  });
+  assert.ok(splitPhrase.codes.includes("ANSWER_IN_PROMPT"));
+
+  for (const marker of ["\u200B", "\u200C", "\u200D", "\u2060", "\u00AD", "\uFE0E", "\uFE0F", "\u{E0100}"]) {
+    const invisibleLeak = detectAnswerLeakage({
+      activityType: ACTIVITY_TYPES.INDEPENDENT_RECALL,
+      prompt: `Escribe aran${marker}duka`,
+      correctAnswer: "aranduka",
+      acceptedAnswers: ["aranduka"]
+    });
+    assert.ok(invisibleLeak.codes.includes("ANSWER_IN_PROMPT"), `U+${marker.codePointAt(0).toString(16).toUpperCase()}`);
+  }
+
+  const speakerLeak = detectAnswerLeakage({
+    activityType: ACTIVITY_TYPES.DIALOGUE_NEXT_TURN,
+    prompt: "Continúa el diálogo.",
+    dialogue: [
+      { id: "turn-1", speaker: "kuarahy", text: "Mba’éichapa?" },
+      { id: "turn-2", speaker: "B", text: "Iporã." }
+    ],
+    correctAnswer: "kuarahy",
+    acceptedAnswers: ["kuarahy"]
+  });
+  assert.ok(speakerLeak.codes.includes("ANSWER_IN_DIALOGUE"));
+  const dialogueActivity = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN));
+  dialogueActivity.dialogue[0].speaker = dialogueActivity.correctAnswer;
+  const dialogueValidation = validateCatalogActivity(dialogueActivity);
+  assert.equal(dialogueValidation.valid, false);
+  assert.ok(dialogueValidation.reasons.includes("ANSWER_IN_DIALOGUE"));
+  for (const dialogue of [
+    [{ id: "turn-1", speaker: "aran", text: "duka" }],
+    [{ id: "turn-1", speaker: "A", text: "aran" }, { id: "turn-2", speaker: "B", text: "duka" }]
+  ]) {
+    const splitDialogueLeak = detectAnswerLeakage({
+      activityType: ACTIVITY_TYPES.DIALOGUE_NEXT_TURN,
+      dialogue,
+      correctAnswer: "aran duka",
+      acceptedAnswers: ["aran duka"]
+    });
+    assert.ok(splitDialogueLeak.codes.includes("ANSWER_IN_DIALOGUE"), JSON.stringify(dialogue));
+  }
+});
+
+test("conflictIds exige una lista plana y cualquier conflicto declarado bloquea", () => {
+  const recall = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  assert.equal(validateCatalogActivity({ ...recall, conflictIds: [] }).valid, true);
+  for (const conflictIds of ["C-001", { id: "C-001" }, [["C-001"]], [""], [42], [" C-001 "], ["C-003", "C-003"], ["C-\u200B001"], ["C-00\u00AD1"]]) {
+    const validation = validateCatalogActivity({ ...recall, conflictIds });
+    assert.equal(validation.valid, false, JSON.stringify(conflictIds));
+    assert.ok(validation.reasons.includes("INVALID_CONFLICT_ID_DECLARATION"), JSON.stringify(conflictIds));
+    if (!Array.isArray(conflictIds)) assert.ok(validation.reasons.includes("INVALID_COLLECTION_SHAPE"));
+  }
+  const open = validateCatalogActivity({ ...recall, conflictIds: ["C-001"] });
+  assert.equal(open.valid, false);
+  assert.ok(open.reasons.includes("OPEN_LINGUISTIC_CONFLICT"));
+  const arbitraryOpen = validateCatalogActivity({ ...recall, conflictIds: ["C-003"] });
+  assert.ok(arbitraryOpen.reasons.includes("OPEN_LINGUISTIC_CONFLICT"));
+  for (const hasOpenConflict of ["true", 1, null]) {
+    const invalidFlag = validateCatalogActivity({ ...recall, hasOpenConflict });
+    assert.ok(invalidFlag.reasons.includes("INVALID_CONFLICT_DECLARATION"), String(hasOpenConflict));
+  }
 });
 
 test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera réplica oculta", () => {
@@ -442,6 +618,15 @@ test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera
   assert.equal(validation.leakage.codes.includes("ANSWER_IN_DIALOGUE"), false);
   const html = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
   assert.match(html, /assets\/js\/kuaa-general-activities\.js\?v=NALVI-GENERAL-ACTIVITIES-2/);
+  assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-12/);
+  const client = readFileSync(new URL("../../assets/js/nalvi-intervention-client.mjs", import.meta.url), "utf8");
+  assert.match(client, /progression-engine\/fallback-intervention\.mjs\?v=NALVI-CATALOG-5/);
+  assert.match(client, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
+  assert.match(html, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
+  for (const modulePath of ["../nalvi-activity-quality.mjs", "../catalog-examples.mjs"]) {
+    const source = readFileSync(new URL(modulePath, import.meta.url), "utf8");
+    assert.match(source, /\.\/nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
+  }
 });
 
 test("tres selecciones seguidas son rechazadas, pero la primera no", () => {
@@ -465,6 +650,7 @@ test("los seis formatos exigen una respuesta activa y material aprobado exacto",
   }
 
   const recall = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  recall.contextText = "";
   const exactContext = {
     correctAnswer: "aranduka",
     requireApprovedMaterial: true,
@@ -477,6 +663,18 @@ test("los seis formatos exigen una respuesta activa y material aprobado exacto",
     correctAnswer: "ambue"
   });
   assert.ok(mismatchedContext.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+  const emptyAlias = validateCatalogActivity({ ...recall, acceptedAnswers: ["aranduka", ""] }, {
+    ...exactContext,
+    approvedActivityMaterial: { ...exactContext.approvedActivityMaterial, acceptedAnswers: ["aranduka"] }
+  });
+  assert.ok(emptyAlias.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+  assert.ok(emptyAlias.reasons.includes("INVALID_ANSWER_DECLARATION"));
+  const nestedAlias = validateCatalogActivity({ ...recall, acceptedAnswers: [["aranduka", ""]] }, {
+    ...exactContext,
+    approvedActivityMaterial: { ...exactContext.approvedActivityMaterial, acceptedAnswers: ["aranduka"] }
+  });
+  assert.ok(nestedAlias.reasons.includes("INVALID_ANSWER_DECLARATION"));
+  assert.ok(nestedAlias.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
   const forgedAnswerAlias = validateCatalogActivity({
     ...recall,
     acceptedAnswers: ["aranduka", "aranduka-alias"],
@@ -505,6 +703,236 @@ test("los seis formatos exigen una respuesta activa y material aprobado exacto",
   const contextualLeak = { ...structuredClone(recall), contextText: "Contenido lingüístico inventado." };
   const contextualValidation = validateCatalogActivity(contextualLeak, exactContext);
   assert.ok(contextualValidation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+
+  const recallWithNestedAudio = { ...structuredClone(recall), audio: { id: "forged", path: "forged.m4a", authorized: true } };
+  assert.ok(validateCatalogActivity(recallWithNestedAudio).reasons.includes("UNEXPECTED_AUDIO_MATERIAL"));
+  for (const [key, value] of [
+    ["audio", null], ["audio", ""], ["audio", false], ["audio", {}], ["audio", []],
+    ["authorizedAudio", null], ["authorizedAudio", ""], ["authorizedAudio", false],
+    ["authorizedAudio", {}], ["authorizedAudio", []],
+    ["recordingId", ""], ["path", ""], ["text", ""], ["source", ""], ["authorized", false]
+  ]) {
+    const nestedPlaceholder = validateCatalogActivity({ ...structuredClone(recall), [key]: value });
+    assert.equal(nestedPlaceholder.valid, false, `${key}:${JSON.stringify(value)}`);
+    assert.ok(nestedPlaceholder.reasons.includes("UNEXPECTED_AUDIO_MATERIAL"));
+  }
+  const canonicalEmptyAudioPlaceholders = validateCatalogActivity({
+    ...structuredClone(recall),
+    audioId: "",
+    audioPath: "",
+    audioText: "",
+    audioSource: "",
+    audioAuthorized: false,
+    humanRecorded: false
+  });
+  assert.equal(canonicalEmptyAudioPlaceholders.valid, true, JSON.stringify(canonicalEmptyAudioPlaceholders.reasons));
+  const recallWithInactiveLocaleAudio = { ...structuredClone(recall), audioText: { es: "", pt: "som" } };
+  assert.ok(validateCatalogActivity(recallWithInactiveLocaleAudio, { uiLocale: "es" }).reasons.includes("UNEXPECTED_AUDIO_MATERIAL"));
+  const recallWithRichAudioAliases = {
+    ...structuredClone(recall),
+    recordingId: "forged",
+    path: "forged.m4a",
+    text: "aranduka",
+    source: "manifest-human-recording",
+    authorized: true
+  };
+  assert.ok(validateCatalogActivity(recallWithRichAudioAliases).reasons.includes("UNEXPECTED_AUDIO_MATERIAL"));
+  const recallWithInactiveRichLocale = { ...structuredClone(recall), text: { es: "", pt: "som" } };
+  assert.ok(validateCatalogActivity(recallWithInactiveRichLocale, { uiLocale: "es" }).reasons.includes("UNEXPECTED_AUDIO_MATERIAL"));
+});
+
+test("la copia visible de material aprobado se limita al copy pedagógico determinista", () => {
+  for (const example of CATALOG_EXAMPLES) {
+    const activity = canonicalApprovedCandidate(example);
+    const material = approvedMaterialForExample(activity);
+    const validationContext = {
+      uiLocale: "es",
+      correctAnswer: activity.correctAnswer,
+      requireApprovedMaterial: true,
+      approvedActivityMaterial: material
+    };
+    assert.equal(validateCatalogActivity(structuredClone(activity), validationContext).valid, true, activity.activityType);
+    const wrongTypeCopy = structuredClone(activity);
+    wrongTypeCopy.prompt = DETERMINISTIC_COPY_ES[activity.activityType === ACTIVITY_TYPES.CONTEXT_CHOICE
+      ? ACTIVITY_TYPES.ARROW_MATCH : ACTIVITY_TYPES.CONTEXT_CHOICE];
+    assert.ok(validateCatalogActivity(wrongTypeCopy, validationContext).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), activity.activityType);
+  }
+
+  const recall = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  const material = approvedMaterialForExample(recall);
+  const validationContext = {
+    uiLocale: "es",
+    correctAnswer: recall.correctAnswer,
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: material
+  };
+  assert.equal(validateCatalogActivity(structuredClone(recall), validationContext).valid, true);
+  const mutations = [
+    activity => { activity.prompt = "Escribe una forma guaraní inventada."; },
+    activity => { activity.instruction = "Usa una expresión guaraní no autorizada."; },
+    activity => { activity.explanation = "Contenido lingüístico añadido por el Planner."; },
+    activity => { activity.hints = ["Pista lingüística no aprobada."]; }
+  ];
+  for (const mutate of mutations) {
+    const candidate = structuredClone(recall);
+    mutate(candidate);
+    const validation = validateCatalogActivity(candidate, validationContext);
+    assert.equal(validation.valid, false);
+    assert.ok(validation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+  }
+});
+
+test("DIALOGUE_NEXT_TURN exige la procedencia documental exacta del diálogo", () => {
+  const dialogue = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN));
+  const material = approvedMaterialForExample(dialogue);
+  const validationContext = {
+    uiLocale: "es",
+    correctAnswer: dialogue.correctAnswer,
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: material
+  };
+  assert.equal(validateCatalogActivity(structuredClone(dialogue), validationContext).valid, true);
+  for (const value of [undefined, " otro-dialogo ", "otro-dialogo", { forged: "fixture-dialogue-source" }]) {
+    const candidate = structuredClone(dialogue);
+    if (value === undefined) delete candidate.dialogueSourceContentId;
+    else candidate.dialogueSourceContentId = value;
+    const validation = validateCatalogActivity(candidate, validationContext);
+    assert.equal(validation.valid, false, String(value));
+    assert.ok(validation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+  }
+  const recall = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  const recallMaterial = approvedMaterialForExample(recall);
+  const forgedNonDialogueSource = validateCatalogActivity({ ...recall, dialogueSourceContentId: "fixture-dialogue-source" }, {
+    uiLocale: "es",
+    correctAnswer: recall.correctAnswer,
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: recallMaterial
+  });
+  assert.ok(forgedNonDialogueSource.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+});
+
+test("la procedencia declarada coincide exactamente con la autoridad aprobada", () => {
+  const validateAgainst = (activity, material) => validateCatalogActivity(activity, {
+    uiLocale: "es",
+    correctAnswer: activity.correctAnswer,
+    activity: { id: activity.id, sourceIds: structuredClone(activity.sourceIds || []) },
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: material
+  });
+
+  for (const field of ["sourceActivityId", "sourceContentId"]) {
+    const activity = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(candidate => candidate.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+    const material = approvedMaterialForExample(activity);
+    activity[field] = field === "sourceActivityId" ? activity.id : `approved-${field}`;
+    material[field] = activity[field];
+    assert.equal(validateAgainst(structuredClone(activity), structuredClone(material)).valid, true, `${field} positive`);
+    for (const mutation of ["omit", "mismatch", "object"]) {
+      const candidate = structuredClone(activity);
+      const approved = structuredClone(material);
+      if (mutation === "omit") delete candidate[field];
+      if (mutation === "mismatch") candidate[field] = `different-${field}`;
+      if (mutation === "object") approved[field] = { forged: activity[field] };
+      assert.ok(validateAgainst(candidate, approved).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `${field} ${mutation}`);
+    }
+  }
+
+  const sourceActivity = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(candidate => candidate.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  sourceActivity.sourceIds = ["SRC-A", "SRC-B"];
+  const sourceMaterial = approvedMaterialForExample(sourceActivity);
+  sourceMaterial.sourceIds = ["SRC-B", "SRC-A"];
+  assert.equal(validateAgainst(structuredClone(sourceActivity), structuredClone(sourceMaterial)).valid, true, "sourceIds set positive");
+  for (const mutation of ["omit", "mismatch", "object"]) {
+    const candidate = structuredClone(sourceActivity);
+    const approved = structuredClone(sourceMaterial);
+    if (mutation === "omit") delete candidate.sourceIds;
+    if (mutation === "mismatch") candidate.sourceIds = ["SRC-A", "SRC-C"];
+    if (mutation === "object") approved.sourceIds = [{ forged: "SRC-A" }];
+    assert.ok(validateAgainst(candidate, approved).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `sourceIds ${mutation}`);
+  }
+  for (const sourceIds of [["SRC-A"], ["SRC-A", "SRC-A"], ["SRC-A", " SRC-B"]]) {
+    const candidate = { ...structuredClone(sourceActivity), sourceIds };
+    assert.ok(validateAgainst(candidate, structuredClone(sourceMaterial)).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), JSON.stringify(sourceIds));
+  }
+  for (const marker of ["\u200B", "\n", "\uFE0F"]) {
+    const hiddenSource = { ...structuredClone(sourceActivity), sourceIds: [`SRC${marker}-A`, "SRC-B"] };
+    const hiddenMaterial = { ...structuredClone(sourceMaterial), sourceIds: [`SRC${marker}-A`, "SRC-B"] };
+    assert.ok(validateAgainst(hiddenSource, hiddenMaterial).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `source marker U+${marker.codePointAt(0).toString(16)}`);
+  }
+  const contradictoryTrustedSources = validateCatalogActivity(structuredClone(sourceActivity), {
+    uiLocale: "es",
+    correctAnswer: sourceActivity.correctAnswer,
+    sourceIds: ["TRUSTED-SOURCE"],
+    activity: { id: "trusted-source-activity", sourceIds: ["TRUSTED-SOURCE"] },
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: structuredClone(sourceMaterial)
+  });
+  assert.ok(contradictoryTrustedSources.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+  const emptyMaterialCannotHideTrustedSources = validateCatalogActivity({ ...structuredClone(sourceActivity), sourceIds: [] }, {
+    uiLocale: "es",
+    correctAnswer: sourceActivity.correctAnswer,
+    activity: { id: "trusted-source-activity", sourceIds: ["TRUSTED-SOURCE"] },
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: { ...structuredClone(sourceMaterial), sourceIds: [] }
+  });
+  assert.ok(emptyMaterialCannotHideTrustedSources.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+
+  const recordCases = [
+    [ACTIVITY_TYPES.CONTEXT_CHOICE, "options", "options"],
+    [ACTIVITY_TYPES.ARROW_MATCH, "pairs", "pairs"],
+    [ACTIVITY_TYPES.CATEGORY_SORT, "categories", "categories"],
+    [ACTIVITY_TYPES.CATEGORY_SORT, "items", "items"],
+    [ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, "dialogue", "dialogue"],
+    [ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, "options", "dialogueOptions"]
+  ];
+  for (const [type, candidateKey, materialKey] of recordCases) {
+    const activity = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(candidate => candidate.activityType === type));
+    const material = approvedMaterialForExample(activity);
+    activity[candidateKey][0].sourceActivityId = "approved-record-source";
+    material[materialKey][0].sourceActivityId = "approved-record-source";
+    assert.equal(validateAgainst(structuredClone(activity), structuredClone(material)).valid, true, `${type}:${candidateKey} positive`);
+    for (const mutation of ["omit", "mismatch", "object"]) {
+      const candidate = structuredClone(activity);
+      const approved = structuredClone(material);
+      if (mutation === "omit") delete candidate[candidateKey][0].sourceActivityId;
+      if (mutation === "mismatch") candidate[candidateKey][0].sourceActivityId = "different-record-source";
+      if (mutation === "object") approved[materialKey][0].sourceActivityId = { forged: "approved-record-source" };
+      assert.ok(validateAgainst(candidate, approved).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `${type}:${candidateKey} ${mutation}`);
+    }
+    const duplicateRecordSources = structuredClone(activity);
+    const approvedDuplicateRecordSources = structuredClone(material);
+    duplicateRecordSources[candidateKey][0].sourceIds = ["SRC-RECORD", "SRC-RECORD"];
+    approvedDuplicateRecordSources[materialKey][0].sourceIds = ["SRC-RECORD", "SRC-RECORD"];
+    assert.ok(validateAgainst(duplicateRecordSources, approvedDuplicateRecordSources).reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `${type}:${candidateKey} duplicate sources`);
+  }
+});
+
+test("la whitelist compara toda declaración localizada, no sólo la locale activa", () => {
+  const cases = [
+    [ACTIVITY_TYPES.CONTEXT_CHOICE, "options", "options", "text"],
+    [ACTIVITY_TYPES.ARROW_MATCH, "pairs", "pairs", "left"],
+    [ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, "dialogue", "dialogue", "text"]
+  ];
+  for (const [type, candidateKey, materialKey, field] of cases) {
+    const candidate = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === type));
+    const material = approvedMaterialForExample(candidate);
+    const approvedText = candidate[candidateKey][0][field];
+    candidate[candidateKey][0][field] = { es: approvedText, pt: "CONTEÚDO AUTORIZADO" };
+    material[materialKey][0][field] = structuredClone(candidate[candidateKey][0][field]);
+    const validationContext = {
+      uiLocale: "es",
+      correctAnswer: candidate.correctAnswer,
+      requireApprovedMaterial: true,
+      approvedActivityMaterial: material
+    };
+    assert.equal(validateCatalogActivity(structuredClone(candidate), validationContext).valid, true, `${type} localized positive`);
+    const contradictoryMaterial = structuredClone(material);
+    contradictoryMaterial[materialKey][0][field].pt = "OUTRO CONTEÚDO";
+    const validation = validateCatalogActivity(candidate, {
+      ...validationContext,
+      approvedActivityMaterial: contradictoryMaterial
+    });
+    assert.ok(validation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), type);
+  }
 });
 
 test("cada error soportado conserva al menos un fallback habilitado, válido y autorizado", () => {
@@ -518,14 +946,16 @@ test("cada error soportado conserva al menos un fallback habilitado, válido y a
     }
   }
 
-  const audio = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.AUDIO_SELECT));
-  const arrow = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.ARROW_MATCH));
+  const audio = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.AUDIO_SELECT));
+  const arrow = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.ARROW_MATCH));
   const coherentAudioContext = {
     ...context,
     correctAnswer: "jagua",
-    activity: { ...context.activity, correctOptionId: "jagua", options: audio.options },
+    sourceIds: [...audio.sourceIds],
+    activity: { ...context.activity, correctOptionId: "jagua", options: audio.options, sourceIds: [...audio.sourceIds] },
     approvedActivityMaterial: {
       ...context.approvedActivityMaterial,
+      sourceIds: [...audio.sourceIds],
       correctOptionId: "jagua",
       correctAnswer: "jagua",
       acceptedAnswers: ["jagua"],
@@ -552,6 +982,151 @@ test("cada error soportado conserva al menos un fallback habilitado, válido y a
     humanRecorded: coherentAudio.candidate.activity.humanRecorded,
     audioSource: coherentAudio.candidate.activity.audioSource
   }, CANONICAL_AUDIO);
+
+  const coherentNestedAudio = {
+    ...structuredClone(audio),
+    authorizedAudio: { ...APPROVED_AUDIO }
+  };
+  assert.equal(selectFirstValidCandidate([{
+    activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+    errorType: "LISTENING_CONFUSION",
+    estimatedCognitiveDemand: coherentNestedAudio.cognitiveDemand,
+    reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+    activity: coherentNestedAudio
+  }], coherentAudioContext).accepted, true);
+
+  const akeCanonicalAudio = {
+    audioId: "NALVI-AUDIO-041",
+    audioPath: "assets/audio/guarani/ali-2026/041-ake-duermo.m4a",
+    audioText: "Ake (duermo)",
+    audioAuthorized: true,
+    humanRecorded: true,
+    audioSource: "manifest-human-recording"
+  };
+  const akeRichAudio = {
+    id: akeCanonicalAudio.audioId,
+    audioId: akeCanonicalAudio.audioId,
+    recordingId: akeCanonicalAudio.audioId,
+    path: akeCanonicalAudio.audioPath,
+    audioPath: akeCanonicalAudio.audioPath,
+    text: "Ake",
+    audioText: akeCanonicalAudio.audioText,
+    source: akeCanonicalAudio.audioSource,
+    audioSource: akeCanonicalAudio.audioSource,
+    authorized: true,
+    audioAuthorized: true,
+    humanRecorded: true
+  };
+  const akeActivity = {
+    ...structuredClone(audio),
+    ...akeCanonicalAudio,
+    options: [
+      { id: "ake", text: "Ake", authorized: true },
+      { id: "jagua", text: "Jagua", authorized: true },
+      { id: "guyra", text: "Guyra", authorized: true }
+    ],
+    correctOptionId: "ake",
+    correctAnswer: "Ake",
+    acceptedAnswers: ["Ake"],
+    authorizedAudio: akeRichAudio
+  };
+  const akeContext = {
+    ...coherentAudioContext,
+    correctAnswer: "Ake",
+    activity: {
+      ...coherentAudioContext.activity,
+      correctOptionId: "ake",
+      correctAnswer: "Ake",
+      acceptedAnswers: ["Ake"],
+      options: akeActivity.options
+    },
+    approvedActivityMaterial: {
+      ...coherentAudioContext.approvedActivityMaterial,
+      correctOptionId: "ake",
+      correctAnswer: "Ake",
+      acceptedAnswers: ["Ake"],
+      options: akeActivity.options,
+      audio: akeRichAudio
+    }
+  };
+  const akeNestedSelection = selectFirstValidCandidate([{
+    activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+    errorType: "LISTENING_CONFUSION",
+    estimatedCognitiveDemand: akeActivity.cognitiveDemand,
+    reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+    activity: akeActivity
+  }], akeContext);
+  assert.equal(akeNestedSelection.accepted, true, JSON.stringify(akeNestedSelection.rejected));
+  assert.equal(akeNestedSelection.candidate.activity.audioText, "Ake (duermo)");
+  const akeTopRichActivity = { ...structuredClone(akeActivity), recordingId: akeRichAudio.recordingId,
+    path: akeRichAudio.path, text: akeRichAudio.text, source: akeRichAudio.source, authorized: true };
+  delete akeTopRichActivity.authorizedAudio;
+  assert.equal(selectFirstValidCandidate([{
+    activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+    errorType: "LISTENING_CONFUSION",
+    estimatedCognitiveDemand: akeTopRichActivity.cognitiveDemand,
+    reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+    activity: akeTopRichActivity
+  }], akeContext).accepted, true);
+  for (const mutation of [
+    { authorizedAudio: { ...akeRichAudio, text: "Guyra" } },
+    { recordingId: akeRichAudio.recordingId, path: akeRichAudio.path, text: "Guyra", source: akeRichAudio.source, authorized: true }
+  ]) {
+    const mismatchedAlias = { ...structuredClone(akeActivity), ...mutation };
+    if (Object.prototype.hasOwnProperty.call(mutation, "recordingId")) delete mismatchedAlias.authorizedAudio;
+    const rejectedAlias = selectFirstValidCandidate([{
+      activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+      errorType: "LISTENING_CONFUSION",
+      estimatedCognitiveDemand: mismatchedAlias.cognitiveDemand,
+      reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+      activity: mismatchedAlias
+    }], akeContext);
+    assert.equal(rejectedAlias.accepted, false, JSON.stringify(mutation));
+    assert.ok(rejectedAlias.rejected[0].reasons.includes("AUDIO_NOT_AUTHORIZED_FOR_TARGET"));
+  }
+
+  for (const key of ["audio", "authorizedAudio"]) {
+    const contradictory = {
+      ...structuredClone(audio),
+      [key]: {
+        ...APPROVED_AUDIO,
+        id: "NALVI-AUDIO-095",
+        audioId: "NALVI-AUDIO-095",
+        recordingId: "NALVI-AUDIO-095",
+        path: "assets/audio/guarani/ali-2026/095-itati.m4a",
+        audioPath: "assets/audio/guarani/ali-2026/095-itati.m4a",
+        text: "Itatĩ",
+        audioText: "Itatĩ"
+      }
+    };
+    const rejected = selectFirstValidCandidate([{
+      activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+      errorType: "LISTENING_CONFUSION",
+      estimatedCognitiveDemand: contradictory.cognitiveDemand,
+      reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+      activity: contradictory
+    }], coherentAudioContext);
+    assert.equal(rejected.accepted, false, key);
+    assert.ok(rejected.rejected[0].reasons.includes("AUDIO_NOT_AUTHORIZED_FOR_TARGET"), key);
+  }
+
+  const contradictoryTopAliases = {
+    ...structuredClone(audio),
+    recordingId: audio.audioId,
+    path: "assets/audio/guarani/ali-2026/095-itati.m4a",
+    text: audio.audioText,
+    source: audio.audioSource,
+    authorized: true
+  };
+  const topAliasSelection = selectFirstValidCandidate([{
+    activityType: ACTIVITY_TYPES.AUDIO_SELECT,
+    errorType: "LISTENING_CONFUSION",
+    estimatedCognitiveDemand: contradictoryTopAliases.cognitiveDemand,
+    reasonCode: "HUMAN_AUDIO_DISCRIMINATION",
+    activity: contradictoryTopAliases
+  }], coherentAudioContext);
+  assert.equal(topAliasSelection.accepted, false);
+  assert.ok(topAliasSelection.rejected[0].reasons.includes("AUDIO_NOT_AUTHORIZED_FOR_TARGET"));
 
   const canonicalSixContext = {
     ...coherentAudioContext,
@@ -729,4 +1304,196 @@ test("la detección no confunde una respuesta corta con parte de otra palabra ni
   });
   assert.equal(localized.leaked, false);
   assert.doesNotMatch(JSON.stringify(localized), /\[object Object\]/);
+});
+
+test("rechaza contextos localizados que el renderer convertiría en objetos visibles", () => {
+  const recall = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.INDEPENDENT_RECALL));
+  const nestedContext = { es: { text: "Contexto autorizado" } };
+  const nested = validateCatalogActivity({ ...recall, contextText: nestedContext }, {
+    uiLocale: "es",
+    correctAnswer: recall.correctAnswer,
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: {
+      correctAnswer: recall.correctAnswer,
+      acceptedAnswers: structuredClone(recall.acceptedAnswers),
+      contexts: [{ text: nestedContext, authorized: true }]
+    }
+  });
+  assert.equal(nested.valid, false);
+  assert.ok(nested.reasons.includes("INVALID_VISIBLE_TEXT_DECLARATION"));
+  assert.ok(nested.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"));
+
+  const hiddenInAnotherLocale = validateCatalogActivity({
+    ...recall,
+    contextText: { es: "Contexto autorizado", pt: { text: "Contexto inseguro" } }
+  });
+  assert.ok(hiddenInAnotherLocale.reasons.includes("INVALID_VISIBLE_TEXT_DECLARATION"));
+});
+
+test("rechaza objetos localizados anidados en cada componente visible", () => {
+  const cases = [
+    ["option", ACTIVITY_TYPES.CONTEXT_CHOICE, activity => { activity.options[1].text = { es: { text: "Ambue" } }; }],
+    ["pair", ACTIVITY_TYPES.ARROW_MATCH, activity => { activity.pairs[1].left = { es: { text: "Ambue" } }; }],
+    ["category", ACTIVITY_TYPES.CATEGORY_SORT, activity => { activity.categories[1].label = { es: { text: "Ambue" } }; }],
+    ["item", ACTIVITY_TYPES.CATEGORY_SORT, activity => { activity.items[1].text = { es: { text: "Ambue" } }; }],
+    ["speaker", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, activity => { activity.dialogue[0].speaker = { es: { text: "A" } }; }],
+    ["turn", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, activity => { activity.dialogue[0].text = { es: { text: "Saludo" } }; }],
+    ["hint", ACTIVITY_TYPES.INDEPENDENT_RECALL, activity => {
+      activity.helpLevel = 1;
+      activity.hints = [{ es: { text: "Pista" } }];
+    }]
+  ];
+  for (const [label, type, mutate] of cases) {
+    const activity = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(candidate => candidate.activityType === type));
+    mutate(activity);
+    assert.ok(validateCatalogActivity(activity).reasons.includes("INVALID_VISIBLE_TEXT_DECLARATION"), label);
+  }
+});
+
+test("rechaza IDs estructurados antes de que String los vuelva ambiguos", () => {
+  const option = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.CONTEXT_CHOICE));
+  option.options[0].id = { x: "sun" };
+  option.correctOptionId = "[object Object]";
+  assert.ok(validateCatalogActivity(option).reasons.includes("MISSING_OPTION_ID"));
+
+  const correctOption = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.CONTEXT_CHOICE));
+  correctOption.correctOptionId = { x: "sun" };
+  assert.ok(validateCatalogActivity(correctOption).reasons.includes("CORRECT_OPTION_MISSING"));
+
+  const arrow = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.ARROW_MATCH));
+  arrow.pairs[0].id = { x: "one" };
+  assert.ok(validateCatalogActivity(arrow).reasons.includes("MISSING_PAIR_ID"));
+
+  const sortCategory = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.CATEGORY_SORT));
+  sortCategory.categories[0].id = { x: "category" };
+  sortCategory.items[0].categoryId = "[object Object]";
+  const categoryValidation = validateCatalogActivity(sortCategory);
+  assert.ok(categoryValidation.reasons.includes("MISSING_CATEGORY_ID"));
+  assert.ok(categoryValidation.reasons.includes("INVALID_CATEGORY_REFERENCE"));
+
+  const sortItem = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.CATEGORY_SORT));
+  sortItem.items[0].id = { x: "item" };
+  assert.ok(validateCatalogActivity(sortItem).reasons.includes("MISSING_ITEM_ID"));
+
+  const dialogue = structuredClone(CATALOG_EXAMPLES.find(activity => activity.activityType === ACTIVITY_TYPES.DIALOGUE_NEXT_TURN));
+  dialogue.dialogue[0].id = { x: "turn" };
+  assert.ok(validateCatalogActivity(dialogue).reasons.includes("MISSING_DIALOGUE_TURN_ID"));
+});
+
+test("la autoridad exige IDs string sin coerción en cada estructura", () => {
+  const validateAgainst = (activity, material) => validateCatalogActivity(activity, {
+    uiLocale: "es",
+    correctAnswer: activity.correctAnswer,
+    requireApprovedMaterial: true,
+    approvedActivityMaterial: material
+  });
+  const cases = [
+    ["option", ACTIVITY_TYPES.CONTEXT_CHOICE, (activity, material) => {
+      activity.options[0].id = "[object Object]";
+      activity.correctOptionId = "[object Object]";
+      material.options[0].id = { forged: "id" };
+      material.correctOptionId = { forged: "id" };
+    }],
+    ["pair", ACTIVITY_TYPES.ARROW_MATCH, (activity, material) => {
+      activity.pairs[0].id = "[object Object]";
+      material.pairs[0].id = { forged: "id" };
+    }],
+    ["pair-source", ACTIVITY_TYPES.ARROW_MATCH, (activity, material) => {
+      activity.pairs[0].sourceActivityId = "[object Object]";
+      material.pairs[0].sourceActivityId = { forged: "source" };
+    }],
+    ["category", ACTIVITY_TYPES.CATEGORY_SORT, (activity, material) => {
+      const originalId = activity.categories[0].id;
+      activity.categories[0].id = "[object Object]";
+      activity.items.filter(item => item.categoryId === originalId).forEach(item => { item.categoryId = "[object Object]"; });
+      material.categories[0].id = { forged: "id" };
+      material.items.filter(item => item.categoryId === originalId).forEach(item => { item.categoryId = "[object Object]"; });
+    }],
+    ["item", ACTIVITY_TYPES.CATEGORY_SORT, (activity, material) => {
+      activity.items[0].id = "[object Object]";
+      material.items[0].id = { forged: "id" };
+    }],
+    ["category-reference", ACTIVITY_TYPES.CATEGORY_SORT, (activity, material) => {
+      const originalId = activity.categories[0].id;
+      activity.categories[0].id = "[object Object]";
+      material.categories[0].id = "[object Object]";
+      activity.items.filter(item => item.categoryId === originalId).forEach(item => { item.categoryId = "[object Object]"; });
+      material.items.filter(item => item.categoryId === originalId).forEach(item => { item.categoryId = { forged: "id" }; });
+    }],
+    ["turn", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, (activity, material) => {
+      activity.dialogue[0].id = "[object Object]";
+      material.dialogue[0].id = { forged: "id" };
+    }],
+    ["dialogue-option", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, (activity, material) => {
+      activity.options[0].id = "[object Object]";
+      activity.correctOptionId = "[object Object]";
+      material.dialogueOptions[0].id = { forged: "id" };
+      material.dialogueCorrectOptionId = { forged: "id" };
+    }],
+    ["dialogue-source", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN, (_activity, material) => {
+      material.dialogueSourceContentId = { forged: "source" };
+    }],
+    ["source-ids", ACTIVITY_TYPES.INDEPENDENT_RECALL, (activity, material) => {
+      activity.sourceIds = ["[object Object]"];
+      material.sourceIds = [{ forged: "source" }];
+    }]
+  ];
+
+  for (const [label, type, mutate] of cases) {
+    const activity = canonicalApprovedCandidate(CATALOG_EXAMPLES.find(candidate => candidate.activityType === type));
+    const material = approvedMaterialForExample(activity);
+    assert.equal(validateAgainst(structuredClone(activity), structuredClone(material)).valid, true, `${label} baseline`);
+    mutate(activity, material);
+    const validation = validateAgainst(activity, material);
+    assert.equal(validation.valid, false, label);
+    assert.ok(validation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), label);
+  }
+});
+
+test("colecciones malformadas fallan cerrado sin lanzar", () => {
+  const candidateCases = [
+    ["contexts", ACTIVITY_TYPES.INDEPENDENT_RECALL],
+    ["options", ACTIVITY_TYPES.CONTEXT_CHOICE],
+    ["pairs", ACTIVITY_TYPES.ARROW_MATCH],
+    ["categories", ACTIVITY_TYPES.CATEGORY_SORT],
+    ["items", ACTIVITY_TYPES.CATEGORY_SORT],
+    ["dialogue", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN],
+    ["dialogueOptions", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN],
+    ["hints", ACTIVITY_TYPES.INDEPENDENT_RECALL],
+    ["acceptedAnswers", ACTIVITY_TYPES.INDEPENDENT_RECALL],
+    ["tokens", ACTIVITY_TYPES.INDEPENDENT_RECALL]
+  ];
+  for (const [key, type] of candidateCases) {
+    const activity = structuredClone(CATALOG_EXAMPLES.find(candidate => candidate.activityType === type));
+    activity[key] = {};
+    const validation = validateCatalogActivity(activity);
+    assert.equal(validation.valid, false, `candidate ${key}`);
+    assert.ok(validation.reasons.includes("INVALID_COLLECTION_SHAPE"), `candidate ${key}`);
+  }
+
+  const approvedCases = [
+    ["contexts", ACTIVITY_TYPES.CONTEXT_CHOICE],
+    ["options", ACTIVITY_TYPES.CONTEXT_CHOICE],
+    ["pairs", ACTIVITY_TYPES.ARROW_MATCH],
+    ["categories", ACTIVITY_TYPES.CATEGORY_SORT],
+    ["items", ACTIVITY_TYPES.CATEGORY_SORT],
+    ["dialogue", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN],
+    ["dialogueOptions", ACTIVITY_TYPES.DIALOGUE_NEXT_TURN],
+    ["acceptedAnswers", ACTIVITY_TYPES.INDEPENDENT_RECALL],
+    ["hints", ACTIVITY_TYPES.INDEPENDENT_RECALL],
+    ["tokens", ACTIVITY_TYPES.INDEPENDENT_RECALL]
+  ];
+  for (const [key, type] of approvedCases) {
+    const activity = structuredClone(CATALOG_EXAMPLES.find(candidate => candidate.activityType === type));
+    const material = approvedMaterialForExample(activity);
+    material[key] = {};
+    const validation = validateCatalogActivity(activity, {
+      uiLocale: "es",
+      correctAnswer: activity.correctAnswer,
+      requireApprovedMaterial: true,
+      approvedActivityMaterial: material
+    });
+    assert.equal(validation.valid, false, `approved ${key}`);
+    assert.ok(validation.reasons.includes("CONTENT_NOT_IN_APPROVED_MATERIAL"), `approved ${key}`);
+  }
 });

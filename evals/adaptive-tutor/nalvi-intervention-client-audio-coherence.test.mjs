@@ -197,7 +197,7 @@ async function captureContext({
       await new Promise(resolve => realSetTimeout(resolve, 5));
     }
     assert.ok(requestContext, "el cliente debe terminar de construir el contexto seguro");
-    if (responsePlan) assert.ok(renderedActivity, "el cliente debe normalizar y renderizar el plan recibido");
+    if (responsePlan) assert.ok(renderedActivity, `el cliente debe normalizar y renderizar el plan recibido: ${importToken}; ${warnings.join(" | ")}`);
     return {
       requestContext,
       lookups,
@@ -405,6 +405,46 @@ test("un audioText ajeno al ID autorizado no se cura con el label del registro",
     audioSource: requestContext.activity.audioSource
   }, CLOSED_AUDIO);
   assert.deepEqual(renderableAudio(renderedActivity), CLOSED_AUDIO);
+});
+
+test("declaraciones de audio localizadas no ocultan texto contradictorio", async () => {
+  for (const [token, overrides] of [
+    ["top-localized-audio", { audioText: { es: "Jagua", pt: "som" } }],
+    ["nested-localized-audio", {
+      authorizedAudio: {
+        id: CANONICAL_AUDIO.audioId,
+        audioId: CANONICAL_AUDIO.audioId,
+        recordingId: CANONICAL_AUDIO.audioId,
+        path: CANONICAL_AUDIO.audioPath,
+        audioPath: CANONICAL_AUDIO.audioPath,
+        text: { es: "Jagua", pt: "som" },
+        audioText: CANONICAL_AUDIO.audioText,
+        source: "manifest-human-recording",
+        audioSource: "manifest-human-recording",
+        authorized: true,
+        audioAuthorized: true,
+        humanRecorded: true
+      }
+    }]
+  ]) {
+    const responsePlan = serverAudioPlan({ id: `server-${token}`, ...overrides });
+    const { renderedActivity } = await captureContext({
+      audioText: CANONICAL_AUDIO.audioText,
+      targetText: CANONICAL_AUDIO.audioText,
+      responsePlan,
+      importToken: token
+    });
+    assert.notEqual(renderedActivity.id, `server-${token}`);
+    assert.notEqual(renderedActivity.activityType, "AUDIO_SELECT");
+  }
+
+  const { requestContext } = await captureContext({
+    audioText: { es: "Jagua", pt: "som" },
+    targetText: CANONICAL_AUDIO.audioText,
+    importToken: "source-localized-audio"
+  });
+  assert.equal(requestContext.authorizedAudio, null);
+  assert.equal(requestContext.approvedActivityMaterial.audio, null);
 });
 
 test("claims source y booleanos explícitamente contradictorios no autorizan audio", async () => {

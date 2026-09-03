@@ -19,15 +19,21 @@ const motherBase = {
   conceptIds: ["family-mother"],
   learningObjectiveId: "family-1",
   type: "multiple-choice",
+  activityType: "multiple-choice",
   skill: "vocabulary",
   difficulty: "foundation-1",
   prompt: localized("¿Cómo se dice mamá?"),
   options: [
     { id: "sy", label: "Sy" },
     { id: "ru", label: "Ru" },
-    { id: "mitã", label: "Mitã" }
+    { id: "mita", label: "Mitã" }
   ],
-  correctOptionId: "sy"
+  correctOptionId: "sy",
+  correctAnswer: "Sy",
+  acceptedAnswers: ["Sy"],
+  lexemeIds: ["LEX-SY"],
+  grammarRuleIds: [],
+  sourceIds: []
 };
 const motherAudio = {
   ...motherBase,
@@ -58,6 +64,39 @@ const motherFill = {
   options: []
 };
 const pool = [motherBase, motherAudio, motherMatching, motherFill];
+
+const INTERVENTION_ACTIVITY_AUTHORITY = Object.freeze({
+  resolve({ activityId, uiLocale = "es" } = {}) {
+    if (activityId !== motherBase.id || !INTERVENTION_CONFIG.uiLocales.includes(uiLocale)) return null;
+    const sourceActivity = structuredClone(motherBase);
+    return {
+      sourceActivity,
+      correctAnswer: "Sy",
+      knowledgeIds: ["LEX-SY"],
+      approvedActivityMaterial: {
+        options: sourceActivity.options.map(option => ({ id: option.id, text: option.label, authorized: true })),
+        correctOptionId: sourceActivity.correctOptionId,
+        correctAnswer: "Sy",
+        acceptedAnswers: ["Sy"],
+        pairs: [],
+        contexts: [],
+        categories: [],
+        items: [],
+        dialogue: [],
+        dialogueOptions: [],
+        dialogueCorrectOptionId: "",
+        dialogueCorrectAnswer: "",
+        dialogueSourceContentId: "",
+        audio: null
+      }
+    };
+  },
+  listByLearningObjective({ learningObjectiveId, uiLocale = "es" } = {}) {
+    return learningObjectiveId === motherBase.learningObjectiveId && INTERVENTION_CONFIG.uiLocales.includes(uiLocale)
+      ? [structuredClone(motherBase)]
+      : [];
+  }
+});
 
 const contextFor = (activity, changes = {}) => ({
   correct: false,
@@ -171,6 +210,7 @@ test("una recuperación guiada actualiza Mastery con evidencia penalizada, no eq
 test("IA solo mejora selección con conocimiento experto y no recibe identidad personal", async () => {
   let requestBody = null, persisted = null;
   const service = createInterventionService({
+    activityAuthority: INTERVENTION_ACTIVITY_AUTHORITY,
     corpusRecords: [{ id: "LEX-SY", validationStatus: "expertVerified", allowedForGeneration: true, recordType: "lexeme", lemma: "sy" }],
     env: { OPENAI_API_KEY: "test-only", OPENAI_MODEL: "test-model", OPENAI_INPUT_COST_PER_1M: "1", OPENAI_OUTPUT_COST_PER_1M: "2" },
     fetchImpl: async (_url, options) => {
@@ -195,7 +235,12 @@ test("IA solo mejora selección con conocimiento experto y no recibe identidad p
 
 test("sin conocimiento autorizado o si OpenAI falla, el plan local sigue funcionando", async () => {
   let calls = 0;
-  const noAuthority = createInterventionService({ corpusRecords: [], env: { OPENAI_API_KEY: "test" }, fetchImpl: async () => { calls += 1; throw new Error("no debe llamar"); } });
+  const noAuthority = createInterventionService({
+    activityAuthority: INTERVENTION_ACTIVITY_AUTHORITY,
+    corpusRecords: [],
+    env: { OPENAI_API_KEY: "test" },
+    fetchImpl: async () => { calls += 1; throw new Error("no debe llamar"); }
+  });
   const result = await noAuthority.planIntervention(contextFor(motherBase, { availableActivities: [] }), { verifiedUserId: "student" });
   assert.equal(result.ok, true);
   assert.equal(result.usedAI, false);

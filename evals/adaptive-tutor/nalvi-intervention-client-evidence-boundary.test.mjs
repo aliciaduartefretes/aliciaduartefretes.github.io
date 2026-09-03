@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { detectAnswerLeakage } from "../../activity-catalog/nalvi-activity-quality.mjs";
+import { createActivityFingerprint } from "../../intervention-engine/intervention-engine.mjs";
 
-const PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v1";
+const PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v2";
+const LEGACY_PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v1";
 
 function recallActivity(overrides = {}) {
   return {
@@ -37,7 +40,102 @@ function serverPlan(claims) {
   };
 }
 
-async function withClientEnvironment({ token, responsePlan = null, pendingRetest = null }, callback) {
+function trustedSourceActivity(overrides = {}) {
+  return {
+    id: "source-trusted-spaced-retest",
+    type: "writing",
+    activityType: "writing",
+    conceptId: "family-mother",
+    conceptIds: ["family-mother"],
+    learningObjectiveId: "GG-LO-FAMILY",
+    skill: "writing",
+    difficulty: "foundation-1",
+    instruction: "Escribe la palabra practicada.",
+    prompt: "Escribe la palabra practicada.",
+    answer: "sy",
+    correctAnswer: "sy",
+    acceptedAnswers: ["sy"],
+    lessonContext: {
+      sourceActivityId: "source-trusted-spaced-retest",
+      sourceAnswer: "sy",
+      sourcePrompt: "Escribe la palabra practicada.",
+      sourceInstruction: "Escribe la palabra practicada."
+    },
+    ...overrides
+  };
+}
+
+function authorityFingerprintFor({ sourceActivityId, conceptId, learningObjectiveId, uiLocale, activityType, correctAnswer, acceptedAnswers }) {
+  return createActivityFingerprint({
+    conceptId,
+    type: `retest-authority-${activityType}`,
+    prompt: sourceActivityId,
+    instruction: learningObjectiveId,
+    contextText: uiLocale,
+    options: acceptedAnswers.map((answer, index) => ({ id: `approved-${index + 1}`, label: answer })),
+    correctAnswer
+  }, { uiLocale });
+}
+
+function pendingEnvelope(activityOverrides = {}, envelopeOverrides = {}) {
+  const sourceActivity = trustedSourceActivity();
+  const activity = recallActivity({
+    id: "trusted-spaced-recall",
+    independentRetest: true,
+    spacedRetest: true,
+    evidenceMode: "independent",
+    nalviGuided: false,
+    helpLevel: 0,
+    hints: [],
+    explanation: "",
+    answerExposure: "HIDDEN",
+    instruction: "Responde sin opciones.",
+    prompt: "Responde sin opciones.",
+    contextText: "",
+    lessonContext: {
+      sourceActivityId: "source-trusted-spaced-retest",
+      sourceAnswer: "sy",
+      sourcePrompt: "Responde sin opciones.",
+      sourceInstruction: "Responde sin opciones.",
+      visibleContext: ""
+    },
+    ...activityOverrides
+  });
+  activity.fingerprint = createActivityFingerprint(activity, { uiLocale: "es" });
+  const envelope = {
+    version: 2,
+    sourceActivityId: "source-trusted-spaced-retest",
+    sourceFingerprint: createActivityFingerprint(sourceActivity, { uiLocale: "es" }),
+    conceptId: "family-mother",
+    learningObjectiveId: "GG-LO-FAMILY",
+    uiLocale: "es",
+    bridgeFingerprints: ["bridge-one", "bridge-two"],
+    minimumBridgeActivities: 2,
+    approvedAnswers: [...activity.acceptedAnswers],
+    activityFingerprint: activity.fingerprint,
+    authorityFingerprint: authorityFingerprintFor({
+      sourceActivityId: sourceActivity.id,
+      conceptId: sourceActivity.conceptId,
+      learningObjectiveId: sourceActivity.learningObjectiveId,
+      uiLocale: "es",
+      activityType: activity.activityType,
+      correctAnswer: sourceActivity.correctAnswer,
+      acceptedAnswers: sourceActivity.acceptedAnswers
+    }),
+    createdAt: "2026-09-03T00:00:00.000Z",
+    plan: {
+      planVersion: "NALVI-TUTOR-1",
+      planId: "trusted-spaced-retest-plan",
+      conceptId: "family-mother",
+      strategy: { primaryStrategy: "DELAYED_RETEST" },
+      activities: [activity]
+    },
+    ...envelopeOverrides
+  };
+  return envelope;
+}
+
+async function withClientEnvironment({ token, responsePlan = null, pendingRetest = null, legacyPendingRetest = null, catalogActivities = [trustedSourceActivity()] }, callback) {
   const originalGlobals = {
     document: globalThis.document,
     Element: globalThis.Element,
@@ -50,8 +148,11 @@ async function withClientEnvironment({ token, responsePlan = null, pendingRetest
   const realSetTimeout = globalThis.setTimeout;
   const storage = new Map();
   if (pendingRetest) storage.set(PENDING_RETEST_KEY, JSON.stringify(pendingRetest));
+  if (legacyPendingRetest) storage.set(LEGACY_PENDING_RETEST_KEY, JSON.stringify(legacyPendingRetest));
   let fetchCalls = 0;
   let renderedActivity = null;
+  const renderedActivities = [];
+  let adaptiveReadyEvents = 0;
 
   class FakeElement {
     constructor() {
@@ -70,8 +171,9 @@ async function withClientEnvironment({ token, responsePlan = null, pendingRetest
   document.querySelector = selector => selector === "#lessonBody" ? target : null;
 
   const window = new EventTarget();
+  window.addEventListener("nalvi:adaptive-plan-ready", () => { adaptiveReadyEvents += 1; });
   window.matchMedia = () => ({ matches: true });
-  window.KUAA_GENERAL_ACTIVITY_DATA = { activities: [] };
+  window.KUAA_GENERAL_ACTIVITY_DATA = { activities: catalogActivities };
   window.KUAA_ACTIVITY_ENGINE = {
     registerActivityRenderer() {},
     submitActivityResult() {}
@@ -79,6 +181,7 @@ async function withClientEnvironment({ token, responsePlan = null, pendingRetest
   window.NALVI_PROGRESSION = { diagnostic() {} };
   window.renderActivity = activity => {
     renderedActivity = activity;
+    renderedActivities.push(activity);
     return { rendered: true };
   };
 
@@ -111,6 +214,8 @@ async function withClientEnvironment({ token, responsePlan = null, pendingRetest
       storage,
       fetchCalls: () => fetchCalls,
       renderedActivity: () => renderedActivity,
+      renderedActivities: () => renderedActivities,
+      adaptiveReadyEvents: () => adaptiveReadyEvents,
       waitForRender: async () => {
         for (let attempt = 0; attempt < 40 && !renderedActivity; attempt += 1) {
           await new Promise(resolve => realSetTimeout(resolve, 5));
@@ -127,9 +232,8 @@ async function withClientEnvironment({ token, responsePlan = null, pendingRetest
   }
 }
 
-function dispatchIncorrect(document, id) {
-  document.dispatchEvent(new CustomEvent("nalvi:activity-scored", { detail: {
-    activity: {
+function dispatchIncorrect(document, id, overrides = {}) {
+  const activity = {
       id: `source-${id}`,
       type: "writing",
       activityType: "writing",
@@ -143,8 +247,15 @@ function dispatchIncorrect(document, id) {
       answer: "sy",
       correctAnswer: "sy",
       acceptedAnswers: ["sy"],
-      lessonContext: { sourceAnswer: "sy" }
-    },
+      lessonContext: { sourceAnswer: "sy" },
+      ...overrides
+    };
+  const catalog = globalThis.window?.KUAA_GENERAL_ACTIVITY_DATA?.activities;
+  if (Array.isArray(catalog) && !catalog.some(candidate => candidate?.id === activity.id)) {
+    catalog.push(structuredClone(activity));
+  }
+  document.dispatchEvent(new CustomEvent("nalvi:activity-scored", { detail: {
+    activity,
     result: { correct: false, value: "ru" },
     uiLocale: "es"
   } }));
@@ -183,41 +294,88 @@ test("solo el estado local de recuperación puede producir evidencia independien
     }
   });
 
+  await t.test("el recall espaciado no copia un prompt fuente que expone la respuesta", async () => {
+    await withClientEnvironment({
+      token: `safe-recall-${Date.now()}`,
+      responsePlan: serverPlan({ id: "safe-recall-source" })
+    }, async harness => {
+      dispatchIncorrect(harness.document, "leaking-source", {
+        prompt: "Escribe sy",
+        instruction: "Escribe sy",
+        lessonContext: { sourceAnswer: "sy", sourcePrompt: "Escribe sy", visibleContext: "Escribe sy" }
+      });
+      await harness.waitForRender();
+      const pending = JSON.parse(harness.storage.get(PENDING_RETEST_KEY) || "null");
+      const recall = pending?.plan?.activities?.[0];
+      assert.equal(recall?.activityType, "INDEPENDENT_RECALL");
+      assert.equal(recall?.contextText, "");
+      assert.doesNotMatch(recall?.prompt || "", /\bsy\b/i);
+      assert.doesNotMatch(recall?.lessonContext?.sourcePrompt || "", /\bsy\b/i);
+      assert.equal(recall?.lessonContext?.visibleContext, "");
+      assert.equal(detectAnswerLeakage(recall, { uiLocale: "es" }).leaked, false);
+      assert.equal(harness.window.NALVI_INTERVENTION.consumePendingRetestAtBoundary("#lessonBody"), true);
+      const rendered = harness.renderedActivities().at(-1);
+      assert.equal(rendered.activityType, "INDEPENDENT_RECALL");
+      assert.equal(rendered.contextText, "");
+      assert.equal(rendered.lessonContext?.visibleContext, "");
+      assert.doesNotMatch(rendered.prompt, /\bsy\b/i);
+      assert.equal(detectAnswerLeakage(rendered, { uiLocale: "es" }).leaked, false);
+    });
+  });
+
+  await t.test("pares semánticos ambiguos no se persisten como ARROW_MATCH", async () => {
+    const catalogActivities = [
+      { id: "pair-sy", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "sy", meaning: "mamá", adaptiveReuseAuthorized: true } },
+      { id: "pair-sy-duplicate", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "sy", meaning: "madre", adaptiveReuseAuthorized: true } },
+      { id: "pair-tuva", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "túva", meaning: "papá", adaptiveReuseAuthorized: true } }
+    ];
+    await withClientEnvironment({
+      token: `ambiguous-pairs-${Date.now()}`,
+      responsePlan: serverPlan({ id: "ambiguous-pairs-source" }),
+      catalogActivities
+    }, async harness => {
+      dispatchIncorrect(harness.document, "ambiguous-pairs");
+      await harness.waitForRender();
+      const pending = JSON.parse(harness.storage.get(PENDING_RETEST_KEY) || "null");
+      assert.equal(pending?.plan?.activities?.[0]?.activityType, "INDEPENDENT_RECALL");
+      assert.equal(pending?.plan?.activities?.[0]?.pairs, undefined);
+    });
+  });
+
+  await t.test("el ARROW_MATCH espaciado conserva correctAnswer canónico explícito", async () => {
+    const catalogActivities = [
+      { id: "pair-sy", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "sy", meaning: "mamá", adaptiveReuseAuthorized: true } },
+      { id: "pair-tuva", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "túva", meaning: "papá", adaptiveReuseAuthorized: true } },
+      { id: "pair-mita", learningObjectiveId: "GG-LO-FAMILY", semanticPair: { target: "mitã", meaning: "niño", adaptiveReuseAuthorized: true } }
+    ];
+    await withClientEnvironment({
+      token: `safe-arrow-${Date.now()}`,
+      responsePlan: serverPlan({ id: "safe-arrow-source" }),
+      catalogActivities
+    }, async harness => {
+      dispatchIncorrect(harness.document, "arrow-source");
+      await harness.waitForRender();
+      const pending = JSON.parse(harness.storage.get(PENDING_RETEST_KEY) || "null");
+      const arrow = pending?.plan?.activities?.[0];
+      assert.equal(arrow?.activityType, "ARROW_MATCH");
+      assert.equal(arrow?.correctAnswer, "sy");
+      assert.equal(arrow?.answer, "sy");
+      assert.deepEqual(arrow?.acceptedAnswers, ["sy"]);
+      assert.equal(harness.window.NALVI_INTERVENTION.consumePendingRetestAtBoundary("#lessonBody"), true);
+      const rendered = harness.renderedActivities().at(-1);
+      assert.equal(rendered.activityType, "ARROW_MATCH");
+      assert.equal(rendered.correctAnswer, "sy");
+    });
+  });
+
   await t.test("el pending retest consumido localmente sí es independiente y sin ayuda", async () => {
-    const pendingRetest = {
-      version: 1,
-      sourceActivityId: "source-trusted-spaced-retest",
-      sourceFingerprint: "source-trusted-fingerprint",
-      conceptId: "family-mother",
-      learningObjectiveId: "GG-LO-FAMILY",
-      uiLocale: "es",
-      bridgeFingerprints: [],
-      minimumBridgeActivities: 2,
-      createdAt: "2026-09-03T00:00:00.000Z",
-      plan: {
-        planVersion: "NALVI-TUTOR-1",
-        planId: "trusted-spaced-retest-plan",
-        conceptId: "family-mother",
-        strategy: { primaryStrategy: "DELAYED_RETEST" },
-        activities: [recallActivity({
-          id: "trusted-spaced-recall",
-          independentRetest: false,
-          spacedRetest: false,
-          evidenceMode: "guided",
-          nalviGuided: true,
-          helpLevel: 3,
-          hints: ["Ayuda que no debe sobrevivir."],
-          explanation: "Explicación que no debe sobrevivir.",
-          answerExposure: "EXPLICIT_SOLUTION"
-        })]
-      }
-    };
+    const pendingRetest = pendingEnvelope();
 
     await withClientEnvironment({
       token: `trusted-retest-${Date.now()}`,
       pendingRetest
     }, async harness => {
-      const consumed = harness.window.NALVI_INTERVENTION.consumePendingRetestAtBoundary("#lessonBody");
+      const consumed = harness.window.NALVI_INTERVENTION.consumeDueRetest("#lessonBody");
       assert.equal(consumed, true);
       assert.equal(harness.fetchCalls(), 0);
       assert.equal(harness.storage.has(PENDING_RETEST_KEY), false);
@@ -239,5 +397,103 @@ test("solo el estado local de recuperación puede producir evidencia independien
         answerExposure: "HIDDEN"
       });
     });
+  });
+
+  await t.test("descarta pending v1 y envelopes v2 con versión legada sin producir evidencia", async () => {
+    const leakingLegacy = pendingEnvelope({
+      lessonContext: { sourceAnswer: "sy", sourcePrompt: "Escribe sy", visibleContext: "Escribe sy" }
+    }, { version: 1 });
+    for (const [label, stored] of [
+      ["legacy-key", { legacyPendingRetest: leakingLegacy }],
+      ["legacy-envelope", { pendingRetest: leakingLegacy }]
+    ]) {
+      await withClientEnvironment({ token: `${label}-${Date.now()}`, ...stored }, async harness => {
+        assert.equal(harness.window.NALVI_INTERVENTION.hasPendingRetest(), false, label);
+        assert.equal(harness.window.NALVI_INTERVENTION.consumeDueRetest("#lessonBody"), false, label);
+        assert.equal(harness.renderedActivities().length, 0, label);
+        assert.equal(harness.adaptiveReadyEvents(), 0, label);
+        assert.equal(harness.storage.has(PENDING_RETEST_KEY), false, label);
+        assert.equal(harness.storage.has(LEGACY_PENDING_RETEST_KEY), false, label);
+      });
+    }
+  });
+
+  await t.test("descarta v2 con fuga heredada o actividad inválida antes de renderizar", async () => {
+    const unsafeCases = [
+      pendingEnvelope({
+        lessonContext: { sourceAnswer: "sy", sourcePrompt: "Escribe sy", visibleContext: "Escribe sy" }
+      }),
+      pendingEnvelope({ correctAnswer: "", answer: "", acceptedAnswers: [] }),
+      pendingEnvelope({}, { minimumBridgeActivities: -1 })
+    ];
+    for (const [index, pendingRetest] of unsafeCases.entries()) {
+      await withClientEnvironment({ token: `unsafe-v2-${index}-${Date.now()}`, pendingRetest }, async harness => {
+        assert.equal(harness.window.NALVI_INTERVENTION.consumeDueRetest("#lessonBody"), false);
+        assert.equal(harness.renderedActivities().length, 0);
+        assert.equal(harness.adaptiveReadyEvents(), 0);
+        assert.equal(harness.storage.has(PENDING_RETEST_KEY), false);
+      });
+    }
+  });
+
+  await t.test("ata identidades, respuestas aprobadas y fingerprint del envelope v2", async () => {
+    const mutations = [
+      pending => { pending.plan.conceptId = "other-concept"; },
+      pending => { pending.plan.activities[0].conceptId = "other-concept"; },
+      pending => { pending.plan.activities[0].conceptIds = ["other-concept"]; },
+      pending => { pending.plan.activities[0].learningObjectiveId = "OTHER-LO"; },
+      pending => { pending.plan.activities[0].lessonContext.sourceActivityId = "other-source"; },
+      pending => { pending.plan.activities[0].acceptedAnswers.push("túva"); },
+      pending => { pending.approvedAnswers.push("túva"); },
+      pending => { pending.plan.activities[0].fingerprint = "nalvi-afp-forged"; },
+      pending => { pending.activityFingerprint = "nalvi-afp-forged"; }
+    ];
+    for (const [index, mutate] of mutations.entries()) {
+      const pendingRetest = pendingEnvelope();
+      mutate(pendingRetest);
+      await withClientEnvironment({ token: `identity-v2-${index}-${Date.now()}`, pendingRetest }, async harness => {
+        assert.equal(harness.window.NALVI_INTERVENTION.consumeDueRetest("#lessonBody"), false, String(index));
+        assert.equal(harness.renderedActivities().length, 0, String(index));
+        assert.equal(harness.adaptiveReadyEvents(), 0, String(index));
+        assert.equal(harness.storage.has(PENDING_RETEST_KEY), false, String(index));
+      });
+    }
+  });
+
+  await t.test("ancla el envelope v2 a la autoridad viva de la actividad fuente", async () => {
+    const forgedAnswer = pendingEnvelope();
+    const forgedActivity = forgedAnswer.plan.activities[0];
+    forgedActivity.answer = "túva";
+    forgedActivity.correctAnswer = "túva";
+    forgedActivity.acceptedAnswers = ["túva"];
+    forgedActivity.lessonContext.sourceAnswer = "túva";
+    forgedActivity.fingerprint = createActivityFingerprint(forgedActivity, { uiLocale: "es" });
+    forgedAnswer.approvedAnswers = ["túva"];
+    forgedAnswer.activityFingerprint = forgedActivity.fingerprint;
+    forgedAnswer.authorityFingerprint = authorityFingerprintFor({
+      sourceActivityId: forgedAnswer.sourceActivityId,
+      conceptId: forgedAnswer.conceptId,
+      learningObjectiveId: forgedAnswer.learningObjectiveId,
+      uiLocale: forgedAnswer.uiLocale,
+      activityType: forgedActivity.activityType,
+      correctAnswer: forgedActivity.correctAnswer,
+      acceptedAnswers: forgedAnswer.approvedAnswers
+    });
+
+    for (const [label, pendingRetest, catalogActivities] of [
+      ["source-missing", pendingEnvelope(), []],
+      ["answer-rehashed-but-not-authorized", forgedAnswer, [trustedSourceActivity()]]
+    ]) {
+      await withClientEnvironment({
+        token: `live-authority-${label}-${Date.now()}`,
+        pendingRetest,
+        catalogActivities
+      }, async harness => {
+        assert.equal(harness.window.NALVI_INTERVENTION.consumeDueRetest("#lessonBody"), false, label);
+        assert.equal(harness.renderedActivities().length, 0, label);
+        assert.equal(harness.adaptiveReadyEvents(), 0, label);
+        assert.equal(harness.storage.has(PENDING_RETEST_KEY), false, label);
+      });
+    }
   });
 });

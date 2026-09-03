@@ -88,22 +88,68 @@ function approvedMaterialFor(activity, scenario, uiLocale) {
   };
 }
 
-function contextFor(scenario, uiLocale) {
+function sourceActivityFor(scenario, uiLocale) {
   const options = scenario.answer === "sy"
     ? [{ id: "sy", label: "sy" }, { id: "ru", label: "ru" }, { id: "oga", label: "óga" }]
     : scenario.answer === "Jagua"
       ? [{ id: "jagua", label: "Jagua" }, { id: "sy", label: "Sy" }, { id: "oga", label: "Óga" }]
       : [{ id: "ipora", label: "iporã" }, { id: "vai", label: "vai" }, { id: "puku", label: "puku" }];
-  const activity = {
-    id: `source-${scenario.id}-${uiLocale}`, conceptId: scenario.conceptId, type: scenario.type,
+  return {
+    id: `source-${scenario.id}-${uiLocale}`, conceptId: scenario.conceptId, conceptIds: [scenario.conceptId],
+    learningObjectiveId: `objective-${scenario.conceptId}`, type: scenario.type, activityType: scenario.type,
     skill: scenario.skill, difficulty: "foundation-1", instruction: scenario.prompt,
     prompt: scenario.prompt, options,
     correctOptionId: options.find(option => option.label === scenario.answer)?.id || "",
-    acceptedAnswers: [scenario.answer], answer: scenario.answer,
+    correctAnswer: scenario.answer, acceptedAnswers: [scenario.answer], answer: scenario.answer,
+    lexemeIds: [], grammarRuleIds: [], sourceIds: [],
     lessonContext: { sourcePrompt: scenario.prompt, sourceInstruction: scenario.prompt, sourceAnswer: scenario.answer }
   };
+}
+
+const EVAL_ACTIVITY_FIXTURES = new Map(scenarios.flatMap(scenario => locales.map(uiLocale => {
+  const sourceActivity = sourceActivityFor(scenario, uiLocale);
+  return [sourceActivity.id, Object.freeze({ scenario, uiLocale, sourceActivity: Object.freeze(sourceActivity) })];
+})));
+
+function evalAuthorityRecord(fixture) {
+  const sourceActivity = structuredClone(fixture.sourceActivity);
   return {
-    correct: false, conceptId: scenario.conceptId, learningObjectiveId: `objective-${scenario.conceptId}`,
+    sourceActivity,
+    correctAnswer: fixture.scenario.answer,
+    knowledgeIds: [],
+    approvedActivityMaterial: approvedMaterialFor(sourceActivity, fixture.scenario, fixture.uiLocale)
+  };
+}
+
+const EVAL_ACTIVITY_AUTHORITY = Object.freeze({
+  resolve({ activityId, uiLocale = "es" } = {}) {
+    if (typeof activityId !== "string") return null;
+    const fixture = EVAL_ACTIVITY_FIXTURES.get(activityId);
+    return fixture?.uiLocale === uiLocale ? evalAuthorityRecord(fixture) : null;
+  },
+  listByLearningObjective({ learningObjectiveId, uiLocale = "es" } = {}) {
+    if (typeof learningObjectiveId !== "string") return [];
+    return [...EVAL_ACTIVITY_FIXTURES.values()]
+      .filter(fixture => fixture.uiLocale === uiLocale
+        && fixture.sourceActivity.learningObjectiveId === learningObjectiveId)
+      .map(fixture => structuredClone(fixture.sourceActivity));
+  },
+  audit: () => Object.freeze({
+    ready: true,
+    source: "strict-eval-snapshots",
+    activities: EVAL_ACTIVITY_FIXTURES.size
+  })
+});
+
+const createEvalFallbackPlan = (context, options = {}) => createProfessionalFallbackPlan(context, {
+  ...options,
+  activityAuthority: EVAL_ACTIVITY_AUTHORITY
+});
+
+function contextFor(scenario, uiLocale) {
+  const activity = structuredClone(EVAL_ACTIVITY_FIXTURES.get(`source-${scenario.id}-${uiLocale}`).sourceActivity);
+  return {
+    correct: false, conceptId: scenario.conceptId, learningObjectiveId: activity.learningObjectiveId,
     currentSkill: scenario.skill, activityType: scenario.type, difficulty: "foundation-1",
     studentAnswer: scenario.wrong, correctAnswer: scenario.answer, attemptNumber: scenario.attempt,
     recentErrors: scenario.attempt > 1 ? [{ conceptId: scenario.conceptId, errorType: "RECALL_FAILURE" }] : [],
@@ -123,7 +169,7 @@ test(`suite profesional: ${evalCases.length} casos en seis idiomas`, async t => 
     await t.test(`${scenario.id}-${uiLocale}`, () => {
       const context = contextFor(scenario, uiLocale);
       context.previousActivityFingerprint = createActivityFingerprint(context.activity, { uiLocale });
-      const plan = createProfessionalFallbackPlan(context);
+      const plan = createEvalFallbackPlan(context);
       const fingerprints = plan.activities.map(activity => createActivityFingerprint({ ...activity, type: activity.activityType }, { uiLocale }));
       const quality = validatePedagogicalQuality(plan, context);
       const metrics = planMetrics(plan, context);
@@ -147,9 +193,13 @@ test(`suite profesional: ${evalCases.length} casos en seis idiomas`, async t => 
       for (const activity of plan.activities) {
         assert.ok(enabledTypes.includes(activity.activityType));
         if (Number(activity.helpLevel || 0) > 0) {
-          const support = [activity.contextText, activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
+          const visibleSupport = [activity.contextText, activity.lessonContext?.sourcePrompt, activity.lessonContext?.sourceInstruction, activity.explanation, ...(activity.hints || [])].join(" ").trim();
+          const structuralSupport = (activity.activityType === "ARROW_MATCH" && (activity.pairs || []).length >= 3)
+            || (activity.activityType === "CATEGORY_SORT" && (activity.categories || []).length >= 2 && (activity.items || []).length >= 6)
+            || (activity.activityType === "DIALOGUE_NEXT_TURN" && (activity.dialogue || []).length >= 2 && (activity.options || []).length >= 3)
+            || (["CONTEXT_CHOICE", "AUDIO_SELECT"].includes(activity.activityType) && (activity.options || []).length >= 3);
           const mediaSupport = ["audio", "image"].includes(activity.media?.type) && activity.media?.value;
-          assert.ok(support || mediaSupport, "guided activity must show learning support");
+          assert.ok(visibleSupport || structuralSupport || mediaSupport, "guided activity must expose approved visible or structural support");
         }
         if (activity.activityType === "AUDIO_SELECT") {
           assert.deepEqual({
@@ -172,8 +222,8 @@ test(`suite profesional: ${evalCases.length} casos en seis idiomas`, async t => 
 test("dos perfiles con el mismo concepto reciben modalidades diferentes", () => {
   const listener = contextFor(scenarios[1], "es");
   const writer = contextFor(scenarios[2], "es");
-  const listenerPlan = createProfessionalFallbackPlan(listener);
-  const writerPlan = createProfessionalFallbackPlan(writer);
+  const listenerPlan = createEvalFallbackPlan(listener);
+  const writerPlan = createEvalFallbackPlan(writer);
   assert.notEqual(listenerPlan.activities[0].activityType, writerPlan.activities[0].activityType);
 });
 
