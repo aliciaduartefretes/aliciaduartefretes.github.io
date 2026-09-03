@@ -26,7 +26,7 @@
       allowedForMastery: false,
       type: "multiple-choice",
       semanticPair: {
-        target: "Mba’éichapa",
+        target: "Mba’éichapa reime",
         adaptiveReuseAuthorized: true,
         meaning: {
           es: "¿Cómo estás?",
@@ -41,62 +41,40 @@
         authorized: true,
         sourceContentId: "general-u01-dialogue-greetings",
         turns: [
-          { id: "greeting-turn-1", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true },
-          { id: "greeting-turn-2", speaker: "B", text: "Iporã, aguyje. Ha nde?", authorized: true }
+          { id: "greeting-turn-1", speaker: "A", text: "¿Mba’éichapa reime Ana?", authorized: true },
+          { id: "greeting-turn-2", speaker: "B", text: "Aime porã, ¿ha nde?", authorized: true }
         ],
         options: [
-          { id: "greeting-reply", text: "Iporã, aguyje. Ha nde?", authorized: true },
-          { id: "greeting-close", text: "Iporã avei. Jajotopata!", authorized: true },
-          { id: "greeting-thanks", text: "Aguyje", authorized: true }
+          { id: "greeting-question", text: "¿Mba’éichapa reime Ana?", authorized: true },
+          { id: "greeting-reply", text: "Aime porã, ¿ha nde?", authorized: true },
+          { id: "greeting-close", text: "Aime porã avei. ¡Jajoechata!", authorized: true }
         ],
         correctOptionId: "greeting-close",
-        correctAnswer: "Iporã avei. Jajotopata!"
+        correctAnswer: "Aime porã avei. ¡Jajoechata!"
       },
       legacy: { unit: 0, question: 0 },
       prompt: {
-        es: "¿Qué expresa «Mba’éichapa»?",
-        en: "What does “Mba’éichapa” express?",
-        pt: "O que “Mba’éichapa” expressa?",
-        fr: "Que veut dire « Mba’éichapa » ?",
-        it: "Che cosa esprime «Mba’éichapa»?",
-        de: "Was drückt „Mba’éichapa“ aus?"
+        es: "¿Qué forma completa pregunta cómo está una persona?",
+        en: "Which complete form asks one person how they are?",
+        pt: "Qual forma completa pergunta a uma pessoa como ela está?",
+        fr: "Quelle forme complète demande à une personne comment elle va ?",
+        it: "Quale forma completa chiede a una persona come sta?",
+        de: "Welche vollständige Form fragt eine Person nach ihrem Befinden?"
+      },
+      explanation: {
+        es: "En guaraní, usa Mba’éichapa reime con una persona y Mba’éichapa peime con varias. Mba’éichapa solo puede aceptarse socialmente como abreviación, pero en los ejercicios se exige la forma completa. Puedes responder Aime porã.",
+        en: "In Guaraní, greetings often open a warm, personal conversation. Use Mba’éichapa reime with one person and Mba’éichapa peime with several people. Mba’éichapa alone can be accepted socially as an abbreviation, but exercises require the complete form. You can answer Aime porã.",
+        pt: "Em guarani, use Mba’éichapa reime com uma pessoa e Mba’éichapa peime com várias. Mba’éichapa sozinho pode ser aceito socialmente como abreviação, mas os exercícios exigem a forma completa. Você pode responder Aime porã.",
+        fr: "En guarani, utilisez Mba’éichapa reime avec une personne et Mba’éichapa peime avec plusieurs. Employé seul, Mba’éichapa peut être socialement accepté comme abréviation, mais les exercices exigent la forme complète. Vous pouvez répondre Aime porã.",
+        it: "In guaraní, usa Mba’éichapa reime con una persona e Mba’éichapa peime con più persone. Mba’éichapa da solo può essere accettato socialmente come abbreviazione, ma negli esercizi è richiesta la forma completa. Puoi rispondere Aime porã.",
+        de: "Auf Guaraní verwendest du Mba’éichapa reime für eine Person und Mba’éichapa peime für mehrere. Mba’éichapa allein kann gesellschaftlich als Abkürzung akzeptiert sein, in den Übungen ist aber die vollständige Form erforderlich. Du kannst mit Aime porã antworten."
       },
       options: [
-        {
-          id: "thanks",
-          label: {
-            es: "Gracias",
-            en: "Thank you",
-            pt: "Obrigado/a",
-            fr: "Merci",
-            it: "Grazie",
-            de: "Danke"
-          }
-        },
-        {
-          id: "status",
-          label: {
-            es: "¿Cómo estás?",
-            en: "How are you?",
-            pt: "Como você está?",
-            fr: "Comment vas-tu ?",
-            it: "Come stai?",
-            de: "Wie geht es dir?"
-          }
-        },
-        {
-          id: "see-you",
-          label: {
-            es: "Nos vemos",
-            en: "See you",
-            pt: "Até mais",
-            fr: "À bientôt",
-            it: "Ci vediamo",
-            de: "Bis bald"
-          }
-        }
+        { id: "plural", label: "¿Mba’éichapa peime?" },
+        { id: "singular", label: "¿Mba’éichapa reime?" },
+        { id: "greeting", label: "Maitei" }
       ],
-      correctOptionId: "status"
+      correctOptionId: "singular"
     },
     {
       id: "general-u01-elegir-aguyje",
@@ -160,22 +138,22 @@
         target: "Jajotopata",
         adaptiveReuseAuthorized: true,
         meaning: {
-          es: "Nos vemos",
-          en: "See you",
-          pt: "Até mais",
-          fr: "À bientôt",
-          it: "Ci vediamo",
-          de: "Bis bald"
+          es: "Nos vamos a encontrar",
+          en: "We are going to meet",
+          pt: "Nós vamos nos encontrar",
+          fr: "Nous allons nous rencontrer",
+          it: "Ci incontreremo",
+          de: "Wir werden uns treffen"
         }
       },
       legacy: { unit: 0, question: 2 },
       prompt: {
-        es: "¿Cómo dices «nos vemos»?",
-        en: "How do you say “see you”?",
-        pt: "Como se diz “até mais”?",
-        fr: "Comment dit-on « à bientôt » ?",
-        it: "Come si dice «ci vediamo»?",
-        de: "Wie sagt man „Bis bald“?"
+        es: "¿Cómo dices «nos vamos a encontrar»?",
+        en: "How do you say “we are going to meet”?",
+        pt: "Como se diz “nós vamos nos encontrar”?",
+        fr: "Comment dit-on « nous allons nous rencontrer » ?",
+        it: "Come si dice «ci incontreremo»?",
+        de: "Wie sagt man „Wir werden uns treffen“?"
       },
       instruction: {
         es: "Escucha la expresión y elige lo que oyes.",
@@ -202,7 +180,7 @@
   };
 
   window.KUAA_GENERAL_ACTIVITY_DATA = deepFreeze({
-    version: "NALVI-P5-DATA-2",
+    version: "NALVI-P5-DATA-3",
     courseId: "general",
     learningModel: "competency-route",
     activities

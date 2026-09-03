@@ -10,9 +10,284 @@
 (() => {
   "use strict";
 
-  const VERSION = "NALVI-P5-CURRICULUM-1";
+  const VERSION = "NALVI-GG-CURRICULUM-VERBS-1";
   const LANGUAGES = Object.freeze(["es", "en", "pt", "fr", "it", "de"]);
   const i18n = (es, en, pt, fr, it, de) => ({ es, en, pt, fr, it, de });
+
+  const PRESENT_VERBS_MATERIAL_ID = "GG-MATERIAL-PRESENT-VERBS-001";
+  const presentVerbsMaterial = {
+    id: PRESENT_VERBS_MATERIAL_ID,
+    version: "NALVI-GG-PRESENT-VERBS-1",
+    learningObjectiveId: "GG-LO-007",
+    source: {
+      fileName: "NALVI GUARANI CONJUGACIÓN EN TIEMPO PRESENTE.pdf",
+      sha256: "9c5034fe75709eaa099cfd65298db1facb49ad163224c5e126ea122e0d5d1a09",
+      pageCount: 12,
+      suppliedByAuthor: true
+    },
+    pages: [
+      {
+        page: 1,
+        kind: "cover",
+        blocks: [
+          { role: "title", text: "GUARANÍ DESDE CERO" },
+          { role: "credit", text: "CON MBO'EHÁRA MARCE" }
+        ]
+      },
+      {
+        page: 2,
+        kind: "objective",
+        blocks: [
+          { role: "title", text: "¿QUÉ APRENDEREMOS?" },
+          { role: "text", text: "Conjugaciones en tiempo presente." }
+        ]
+      },
+      {
+        page: 3,
+        kind: "reference",
+        blocks: [
+          { role: "title", text: "Terarãngue - pronombres." },
+          {
+            role: "columns",
+            columns: [
+              {
+                heading: "Singular",
+                lines: ["Che → yo", "Nde → tú / vos", "Ha’e → él, ella"]
+              },
+              {
+                heading: "Plural",
+                lines: [
+                  "Ñande → nosotros (inclusivo: vos y yo, nosotros todos)",
+                  "Ore → nosotros (excluyente: yo y otros, pero sin vos)",
+                  "Pende → ustedes",
+                  "Ha’ekuéra → ellos, ellas"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        page: 4,
+        kind: "dialogue",
+        blocks: [
+          { role: "title", text: "ÑOMONGETA" },
+          {
+            role: "lines",
+            lines: [
+              "¿Mba'éicha nde réra?",
+              "Che réra Marcelo, ¿ha nde?",
+              "Che réra Michel. ¡Che rory roikuaávo!",
+              "Che rory avei",
+              "¿Mba'e rejapo?",
+              "Che akaru hina, ¿ha nde?",
+              "Che aterere aína"
+            ]
+          }
+        ]
+      },
+      {
+        page: 5,
+        kind: "reference",
+        blocks: [
+          { role: "title", text: "Verbos básicos y conjugación" },
+          {
+            role: "paragraph",
+            text: "Algunos verbos básicos son karu (comer), guata (caminar), japo (hacer), inupã (golpear), ñani(correr) y purahéi (cantar). La estructura del verbo es Prefijo + Raíz del Verbo, y los prefijos varían para cada persona y tiempo."
+          },
+          {
+            role: "conjugation",
+            heading: "PRESENTE",
+            rows: [
+              { pronoun: "Che", form: "Aguata", row: 1 },
+              { pronoun: "Nde", form: "Reguata", row: 2 },
+              { pronoun: "Ha’e", form: "Oguata", row: 3 },
+              { pronoun: "Ñande", form: "Jaguata", row: 4 },
+              { pronoun: "Ore", form: "Roguata", row: 5 },
+              { pronoun: "Pende", form: "Peguata", row: 6 },
+              { pronoun: "Ha’ekuéra", form: "Oguata", row: 6 }
+            ]
+          }
+        ]
+      },
+      {
+        page: 6,
+        kind: "reference",
+        blocks: [
+          { role: "title", text: "Verbos básicos y conjugación" },
+          {
+            role: "paragraph",
+            text: "En el caso de los verbos con raíces nasales como inupã (golpear), ñani(correr), los pronombres “Nde, Ñande y Pende” cambia su estructura a “Ne, Ñane y Pene(o peẽ)” y el caso del pronombre “ñane” su prefijo “Ja” pasa a ser “Ña”."
+          },
+          {
+            role: "conjugation",
+            heading: "PRESENTE",
+            rows: [
+              { pronoun: "Che", form: "Añani", row: 1 },
+              { pronoun: "Ne", form: "Reñani", row: 2 },
+              { pronoun: "Ha’e", form: "Oñani", row: 3 },
+              { pronoun: "Ñane", form: "Ñañani", row: 4 },
+              { pronoun: "Ore", form: "Roñani", row: 5 },
+              { pronoun: "Pene(Peẽ)", form: "Peñani", row: 6 },
+              { pronoun: "Ha’ekuéra", form: "Oñani", row: 6 }
+            ]
+          }
+        ]
+      },
+      {
+        page: 7,
+        kind: "dialogue",
+        blocks: [
+          { role: "title", text: "ÑOMONGETARÃ" },
+          {
+            role: "lines",
+            lines: [
+              "¿Mba'éicha héra ha´e?",
+              "Ha´e héra Violeta, Violeta ha´e héra Michel",
+              "¡Che rory roikuaávo Violeta!",
+              "Che rory avei Michel",
+              "¿Mboy ary reguereko?",
+              "Che aguereko ___ ary, ¿Ha nde?",
+              "Aguereko 20 ary"
+            ]
+          }
+        ]
+      },
+      {
+        page: 8,
+        kind: "exercise",
+        blocks: [
+          { role: "title", text: "AMOÑE´Ẽ HA AMBOJOAPY TÉRARÃNGUE OIKOTEVẼVA" },
+          {
+            role: "items",
+            items: [
+              { text: "¿Mba'éicha héra ha´e?", answerParts: [], completed: "¿Mba'éicha héra ha´e?" },
+              { text: "__ héra Violeta, Violeta ___héra Marcos", answerParts: ["Ha´e", "ha´e"], completed: "Ha´e héra Violeta, Violeta ha´e héra Marcos" },
+              { text: "¡___ rory roikuaávo Violeta!", answerParts: ["Che"], completed: "¡Che rory roikuaávo Violeta!" },
+              { text: "___ rory avei Marcos", answerParts: ["Che"], completed: "Che rory avei Marcos" },
+              { text: "¿Mboy ary __guereko?", answerParts: ["re"], completed: "¿Mboy ary reguereko?" },
+              { text: "__ __guereko 26 ary, ¿Ha nde?", answerParts: ["Che", "a"], completed: "Che aguereko 26 ary, ¿Ha nde?" },
+              { text: "__guereko 20 ary", answerParts: ["A"], completed: "Aguereko 20 ary" }
+            ]
+          }
+        ]
+      },
+      {
+        page: 9,
+        kind: "dialogue",
+        blocks: [
+          { role: "title", text: "ÑOMONGETARÃ" },
+          {
+            role: "lines",
+            lines: [
+              "¿Nde ekaru?",
+              "Heẽ, akaru aina, ¿ha nde?",
+              "Che akaruse, ¿Marcelo okarúma?",
+              "Ha´e okarúma",
+              "¿Mba´e tembi´u ojapo?",
+              "Ahecha ojapo vori vori",
+              "Hetéikoo"
+            ]
+          }
+        ]
+      },
+      {
+        page: 10,
+        kind: "exercise",
+        blocks: [
+          { role: "title", text: "AMOÑE´Ẽ HA AMBOJOAPY" },
+          {
+            role: "items",
+            items: [
+              { text: "¿__ ekaru?", answerParts: ["Nde"], completed: "¿Nde ekaru?" },
+              { text: "Heẽ, __karu aina, ¿ha nde?", answerParts: ["a"], completed: "Heẽ, akaru aina, ¿ha nde?" },
+              { text: "__ __karuse, ¿Marcos __karúma?", answerParts: ["Che", "a", "o"], completed: "Che akaruse, ¿Marcos okarúma?" },
+              { text: "___ __karuma", answerParts: ["Ha´e", "o"], completed: "Ha´e okarúma" },
+              { text: "¿Mba´e tembi´u _japo?", answerParts: ["o"], completed: "¿Mba´e tembi´u ojapo?" },
+              { text: "_hecha __japo vori vori", answerParts: ["A", "o"], completed: "Ahecha ojapo vori vori" },
+              { text: "Hetéikoo", answerParts: [], completed: "Hetéikoo" }
+            ]
+          }
+        ]
+      },
+      {
+        page: 11,
+        kind: "dialogue",
+        blocks: [
+          { role: "title", text: "ÑOMONGETARÃ" },
+          {
+            role: "lines",
+            lines: [
+              "¿Nde repurahéi?",
+              "Heẽ, che apurahéi, ¿ha nde?",
+              "Nahániri, apurahéise",
+              "Japurahéi oñondive",
+              "Oima, japurahéi katu"
+            ]
+          }
+        ]
+      },
+      {
+        page: 12,
+        kind: "exercise",
+        blocks: [
+          { role: "title", text: "AMOÑE´Ẽ HA AMBOJOAPY" },
+          {
+            role: "items",
+            items: [
+              { text: "¿__ __purahéi?", answerParts: ["Nde", "re"], completed: "¿Nde repurahéi?" },
+              { text: "Heẽ, __ __purahéi, ¿ha nde?", answerParts: ["che", "a"], completed: "Heẽ, che apurahéi, ¿ha nde?" },
+              { text: "Nahániri, __purahéise", answerParts: ["a"], completed: "Nahániri, apurahéise" },
+              { text: "__purahéi oñondive", answerParts: ["Ja"], completed: "Japurahéi oñondive" },
+              { text: "Oima, __purahéi katu", answerParts: ["ja"], completed: "Oima, japurahéi katu" }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  const presentVerbActivities = presentVerbsMaterial.pages.flatMap(page => {
+    if (page.kind !== "exercise") return [];
+    const title = page.blocks.find(block => block.role === "title")?.text || "";
+    const items = page.blocks.find(block => block.role === "items")?.items || [];
+    return items.flatMap((item, index) => item.answerParts.length ? [{
+      id: `general-u07-verbos-presente-p${String(page.page).padStart(2, "0")}-l${String(index + 1).padStart(2, "0")}`,
+      version: presentVerbsMaterial.version,
+      courseId: "general",
+      unitId: "general-u07",
+      learningObjectiveId: presentVerbsMaterial.learningObjectiveId,
+      conceptIds: ["GG-C-007"],
+      lexemeIds: [],
+      grammarRuleIds: ["CP-AREAL-001", "CP-AIREAL-001", "CP-HAREAL-001"],
+      skill: "construction",
+      requiredSkills: ["construction", "grammar-awareness"],
+      difficulty: "foundation-2",
+      activityType: "fill-blank",
+      type: "fill-blank",
+      pedagogicalPhase: "CONSTRUYE",
+      contentValidationStatus: "unreviewed",
+      allowedForMastery: false,
+      literalReuseOnly: true,
+      requiresStudentResponse: true,
+      evidenceMode: "independent",
+      nalviGuided: false,
+      helpLevel: 0,
+      answerExposure: "HIDDEN",
+      hints: [],
+      explanation: "",
+      prompt: title,
+      template: item.text,
+      answerParts: [...item.answerParts],
+      answer: item.completed,
+      correctAnswer: item.completed,
+      acceptedAnswers: [item.completed],
+      options: [],
+      sourceMaterialId: presentVerbsMaterial.id,
+      sourcePage: page.page,
+      sourceLineOrder: index + 1
+    }] : []);
+  });
 
   const pedagogicalCycle = [
     { id: "ESCUCHA", skill: "listening", label: i18n("Escucha", "Listen", "Escute", "Écoutez", "Ascolta", "Hören") },
@@ -106,7 +381,7 @@
     { id: "GG-C-028", title: i18n("Conexión de ideas", "Connecting ideas", "Conexão de ideias", "Enchaînement des idées", "Connessione delle idee", "Ideen verknüpfen"), validationScope: "curriculum-mapping" }
   ];
 
-  const objective = ({ id, moduleId, order, canDo, conceptId, skills, difficulty, activityTypes, legacyUnitIndex, lexemeIds = [], grammarRuleIds = [], knowledgeStatus = "curriculumOnly", existingDynamicActivityIds = [] }) => ({
+  const objective = ({ id, moduleId, order, canDo, conceptId, skills, difficulty, activityTypes, legacyUnitIndex, lexemeIds = [], grammarRuleIds = [], knowledgeStatus = "curriculumOnly", existingDynamicActivityIds = [], sourceMaterialIds = [] }) => ({
     id,
     moduleId,
     order,
@@ -118,6 +393,7 @@
     difficulty,
     activityTypes,
     existingDynamicActivityIds,
+    sourceMaterialIds,
     legacyContentRefs: [{ source: "index.html", legacyUnitIndex, legacyQuestionRange: [0, 3] }],
     knowledgeStatus,
     institutionalMetadata: {
@@ -174,7 +450,9 @@
       canDo: i18n("Podrá comprender y producir algunas expresiones ya enseñadas sobre acciones cotidianas.", "Can understand and produce selected previously taught expressions about everyday actions.", "Poderá compreender e produzir algumas expressões já ensinadas sobre ações cotidianas.", "Pourra comprendre et produire certaines expressions déjà enseignées sur les actions quotidiennes.", "Potrà comprendere e produrre alcune espressioni già insegnate sulle azioni quotidiane.", "Kann einige bereits vermittelte Ausdrücke zu alltäglichen Handlungen verstehen und verwenden."),
       skills: ["comprehension", "construction", "speaking"], difficulty: "foundation-2",
       activityTypes: ["multiple-choice", "fill-blank", "order-sentence", "speaking"],
-      grammarRuleIds: ["CP-AREAL-001", "CP-AIREAL-001", "CP-HAREAL-001"], knowledgeStatus: "reviewRequired"
+      grammarRuleIds: ["CP-AREAL-001", "CP-AIREAL-001", "CP-HAREAL-001"], knowledgeStatus: "reviewRequired",
+      existingDynamicActivityIds: presentVerbActivities.map(activity => activity.id),
+      sourceMaterialIds: [PRESENT_VERBS_MATERIAL_ID]
     }),
     objective({
       id: "GG-LO-008", moduleId: "GG-MOD-02", order: 4, conceptId: "GG-C-008", legacyUnitIndex: 7,
@@ -326,11 +604,14 @@
   };
 
   const activityData = window.KUAA_GENERAL_ACTIVITY_DATA || { activities: [] };
+  const routeActivities = [...(activityData.activities || []), ...presentVerbActivities];
+  const sourceMaterials = [presentVerbsMaterial];
   const moduleById = new Map(modules.map(module => [module.id, module]));
   const conceptById = new Map(concepts.map(concept => [concept.id, concept]));
   const objectiveById = new Map(learningObjectives.map(item => [item.id, item]));
   const objectiveByLegacyUnit = new Map(learningObjectives.map(item => [item.legacyContentRefs[0].legacyUnitIndex, item]));
-  const activityById = new Map((activityData.activities || []).map(activity => [activity.id, activity]));
+  const activityById = new Map(routeActivities.map(activity => [activity.id, activity]));
+  const sourceMaterialById = new Map(sourceMaterials.map(material => [material.id, material]));
 
   const copy = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const language = requested => LANGUAGES.includes(requested) ? requested : "es";
@@ -342,7 +623,10 @@
   const getConcept = id => copy(conceptById.get(id) || null);
   const getLearningObjective = id => copy(objectiveById.get(id) || null);
   const getLearningObjectiveForLegacyUnit = legacyUnitIndex => copy(objectiveByLegacyUnit.get(Number(legacyUnitIndex)) || null);
-  const getActivitiesForLearningObjective = id => copy((activityData.activities || []).filter(activity => activity.learningObjectiveId === id));
+  const getActivity = id => copy(activityById.get(id) || null);
+  const getActivitiesForLearningObjective = id => copy(routeActivities.filter(activity => activity.learningObjectiveId === id));
+  const getSourceMaterial = id => copy(sourceMaterialById.get(id) || null);
+  const getSourceMaterialsForLearningObjective = id => copy(sourceMaterials.filter(material => material.learningObjectiveId === id));
   const getInstitutionalObjectiveDescriptor = (id, requestedLanguage = "es") => {
     const item = objectiveById.get(id);
     if (!item) return null;
@@ -368,6 +652,9 @@
     learningObjectives: learningObjectives.length,
     concepts: concepts.length,
     dynamicActivitiesLinked: activityById.size,
+    inheritedDynamicActivities: (activityData.activities || []).length,
+    canonicalVerbActivities: presentVerbActivities.length,
+    canonicalSourceMaterials: sourceMaterials.length,
     progressUnit: route.progressUnit,
     fixedLessonCount: route.fixedLessonCount,
     activityCountPolicy: route.practicePolicy.activityCount,
@@ -377,6 +664,172 @@
     artificialIntelligenceConnected: false,
     otherCoursesChanged: false
   });
+
+  const PRESENT_VERBS_LEGACY_UNIT_INDEX = 6;
+  const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  })[character]);
+  const renderPresentVerbsBlock = block => {
+    if (block.role === "title") return `<h3>${escapeHtml(block.text)}</h3>`;
+    if (["credit", "text", "paragraph"].includes(block.role)) return `<p class="explain">${escapeHtml(block.text)}</p>`;
+    if (block.role === "lines") {
+      return `<div class="dialogue">${block.lines.map(line => `<div class="line"><div class="bubble2">${escapeHtml(line)}</div></div>`).join("")}</div>`;
+    }
+    if (block.role === "columns") {
+      return `<div class="vocab-grid">${block.columns.map(column => `<div class="vocab"><div><b>${escapeHtml(column.heading)}</b>${column.lines.map(line => `<div><small>${escapeHtml(line)}</small></div>`).join("")}</div></div>`).join("")}</div>`;
+    }
+    if (block.role === "conjugation") {
+      const rows = [...new Set(block.rows.map(entry => entry.row))].map(row => block.rows.filter(entry => entry.row === row));
+      return `<div class="callout"><b>${escapeHtml(block.heading)}</b><div>${rows.map(row => `<div>${row.map(entry => `${escapeHtml(entry.pronoun)}: ${escapeHtml(entry.form)}`).join(" ")}</div>`).join("")}</div></div>`;
+    }
+    if (block.role === "items") {
+      return `<ol>${block.items.map(item => `<li>${escapeHtml(item.text)}</li>`).join("")}</ol>`;
+    }
+    return "";
+  };
+  const presentVerbsStudyHtml = () => presentVerbsMaterial.pages
+    .map(page => `<section class="module-card" data-source-page="${page.page}">${page.blocks.map(renderPresentVerbsBlock).join("")}</section>`)
+    .join("");
+
+  function installPresentVerbsExperience() {
+    if (typeof renderStudy !== "function" || typeof renderQuiz !== "function") return false;
+    const inheritedRenderStudy = renderStudy;
+    const inheritedRenderQuiz = renderQuiz;
+    let practiceActive = false;
+    let practiceIndex = 0;
+    const correctActivityIds = new Set();
+    const uiCopy = () => (typeof UI !== "undefined" && (UI[typeof lang === "string" ? lang : "es"] || UI.es)) || {};
+    const lessonBody = () => typeof document !== "undefined" ? document.querySelector("#lessonBody") : null;
+    const setProgress = value => {
+      const node = typeof document !== "undefined" ? document.querySelector("#lessonProgress") : null;
+      if (node) node.style.width = value;
+    };
+    const setLabel = value => {
+      const node = typeof document !== "undefined" ? document.querySelector("#lessonLabel") : null;
+      if (node) node.textContent = value;
+    };
+    const saveProgress = () => { if (typeof save === "function") save(); };
+
+    const renderStudyMaterial = () => {
+      const target = lessonBody();
+      if (!target) return;
+      practiceActive = false;
+      phase = "study";
+      setProgress("10%");
+      setLabel(presentVerbsMaterial.pages[1].blocks[0].text);
+      target.innerHTML = `<div class="study" data-present-verbs-study>${presentVerbsStudyHtml()}<div class="study-actions"><button class="btn" id="beginQuiz" type="button">${escapeHtml(uiCopy().begin || "")}</button></div></div>`;
+      const begin = target.querySelector("#beginQuiz");
+      if (begin) begin.onclick = () => {
+        practiceActive = true;
+        practiceIndex = 0;
+        correctActivityIds.clear();
+        phase = "quiz";
+        renderPresentVerbActivity();
+      };
+    };
+
+    const completePresentVerbsObjective = activity => {
+      const objectiveEvidence = {
+        independentCorrectEvents: correctActivityIds.size,
+        distinctActivityTypes: correctActivityIds.size ? 1 : 0,
+        lastEvidenceIndependentCorrect: correctActivityIds.size === presentVerbActivities.length,
+        hasPendingRetest: Boolean(window.NALVI_INTERVENTION?.hasPendingRetest?.()),
+        expectedActivityCount: presentVerbActivities.length,
+        completedActivityCount: correctActivityIds.size
+      };
+      const progression = window.NALVI_PROGRESSION?.evaluateObjectiveCompletion?.({
+        activity,
+        progression: { correct: true, guided: false, helpLevel: 0 },
+        objectiveEvidenceOverride: objectiveEvidence
+      }) || { decision: "CONTINUE_PRACTICE", canComplete: false };
+      if (progression.decision !== "COMPLETE_OBJECTIVE" || progression.canComplete !== true) {
+        practiceIndex = 0;
+        renderPresentVerbActivity();
+        return;
+      }
+      practiceActive = false;
+      phase = "finished";
+      if (typeof state !== "undefined" && Array.isArray(state.done) && !state.done.includes(PRESENT_VERBS_LEGACY_UNIT_INDEX)) {
+        state.done.push(PRESENT_VERBS_LEGACY_UNIT_INDEX);
+        state.done.sort((left, right) => left - right);
+      }
+      if (typeof renderGeneralFinishedScreen === "function") renderGeneralFinishedScreen();
+      const earned = lessonBody()?.querySelector?.(".finished p");
+      if (earned && uiCopy().earned) earned.textContent = String(uiCopy().earned).replace("40", String(presentVerbActivities.length * 10));
+      if (typeof finishReaction === "function") finishReaction(true);
+      if (typeof window.courseAnalytics === "function") {
+        window.courseAnalytics("unit_completed", { unit_number: PRESENT_VERBS_LEGACY_UNIT_INDEX + 1, language: typeof lang === "string" ? lang : "es" });
+      }
+      saveProgress();
+    };
+
+    const showOutcome = (activity, answer) => {
+      const target = lessonBody();
+      if (!target) return;
+      const feedback = target.querySelector("#feedback");
+      const copyForUi = uiCopy();
+      if (feedback) {
+        feedback.className = `feedback ${answer.correct ? "ok" : "no"}`;
+        feedback.textContent = answer.correct ? (copyForUi.correct || "") : (copyForUi.wrong || "");
+      }
+      const actions = target.querySelector(".quiz-actions");
+      if (!actions) return;
+      actions.innerHTML = `<button class="btn" data-present-verbs-action type="button">${escapeHtml(answer.correct ? (copyForUi.next || "") : (copyForUi.check || ""))}</button>`;
+      const action = actions.querySelector("[data-present-verbs-action]");
+      if (!answer.correct || answer.progression?.canAdvance !== true) {
+        if (typeof state !== "undefined") state.lives = Math.max(0, Number(state.lives || 0) - 1);
+        saveProgress();
+        if (action) action.onclick = () => renderPresentVerbActivity();
+        return;
+      }
+      if (typeof state !== "undefined") state.xp = Number(state.xp || 0) + 10;
+      correctActivityIds.add(activity.id);
+      saveProgress();
+      if (action) action.onclick = () => {
+        practiceIndex += 1;
+        if (practiceIndex < presentVerbActivities.length) renderPresentVerbActivity();
+        else completePresentVerbsObjective(activity);
+      };
+    };
+
+    function renderPresentVerbActivity() {
+      const target = lessonBody();
+      const activity = presentVerbActivities[practiceIndex];
+      if (!target || !activity) return;
+      const position = practiceIndex + 1;
+      setProgress(`${Math.min(96, 20 + (position / presentVerbActivities.length) * 76)}%`);
+      setLabel(`${activity.prompt} · ${position}/${presentVerbActivities.length}`);
+      const engine = window.KUAA_ACTIVITY_ENGINE;
+      if (!engine?.renderActivity) {
+        target.innerHTML = "";
+        return;
+      }
+      engine.renderActivity(activity, {
+        target,
+        language: typeof lang === "string" ? lang : "es",
+        onSubmit: answer => showOutcome(activity, answer)
+      });
+    }
+
+    renderStudy = function nalviPresentVerbsStudy(...args) {
+      if (Number(unit) !== PRESENT_VERBS_LEGACY_UNIT_INDEX) {
+        practiceActive = false;
+        return inheritedRenderStudy.apply(this, args);
+      }
+      return renderStudyMaterial();
+    };
+    renderQuiz = function nalviPresentVerbsQuiz(...args) {
+      if (Number(unit) === PRESENT_VERBS_LEGACY_UNIT_INDEX && practiceActive) return renderPresentVerbActivity();
+      return inheritedRenderQuiz.apply(this, args);
+    };
+    return true;
+  }
+
+  const presentVerbsExperienceInstalled = installPresentVerbsExperience();
 
   const deepFreeze = value => {
     if (!value || (typeof value !== "object" && typeof value !== "function") || Object.isFrozen(value)) return value;
@@ -392,13 +845,18 @@
     modules,
     learningObjectives,
     concepts,
+    sourceMaterials,
     localize,
     getModule,
     getConcept,
     getLearningObjective,
     getLearningObjectiveForLegacyUnit,
+    getActivity,
     getActivitiesForLearningObjective,
+    getSourceMaterial,
+    getSourceMaterialsForLearningObjective,
     getInstitutionalObjectiveDescriptor,
+    presentVerbsExperienceInstalled,
     audit
   });
 })();

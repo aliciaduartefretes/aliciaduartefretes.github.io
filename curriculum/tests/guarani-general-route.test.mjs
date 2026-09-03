@@ -46,9 +46,68 @@ const stableGeneralUnit = source => {
   return units[source.unitIndex];
 };
 const adaptiveMetadataFields = ["semanticPair", "adaptiveDialogue"];
+const directAuthorCorrections = {
+  "general-u01-significado-mba-eichapa": {
+    target: "Mba’éichapa reime",
+    prompt: {
+      es: "¿Qué forma completa pregunta cómo está una persona?",
+      en: "Which complete form asks one person how they are?",
+      pt: "Qual forma completa pergunta a uma pessoa como ela está?",
+      fr: "Quelle forme complète demande à une personne comment elle va ?",
+      it: "Quale forma completa chiede a una persona come sta?",
+      de: "Welche vollständige Form fragt eine Person nach ihrem Befinden?"
+    },
+    explanation: {
+      es: "En guaraní, usa Mba’éichapa reime con una persona y Mba’éichapa peime con varias. Mba’éichapa solo puede aceptarse socialmente como abreviación, pero en los ejercicios se exige la forma completa. Puedes responder Aime porã.",
+      en: "In Guaraní, greetings often open a warm, personal conversation. Use Mba’éichapa reime with one person and Mba’éichapa peime with several people. Mba’éichapa alone can be accepted socially as an abbreviation, but exercises require the complete form. You can answer Aime porã.",
+      pt: "Em guarani, use Mba’éichapa reime com uma pessoa e Mba’éichapa peime com várias. Mba’éichapa sozinho pode ser aceito socialmente como abreviação, mas os exercícios exigem a forma completa. Você pode responder Aime porã.",
+      fr: "En guarani, utilisez Mba’éichapa reime avec une personne et Mba’éichapa peime avec plusieurs. Employé seul, Mba’éichapa peut être socialement accepté comme abréviation, mais les exercices exigent la forme complète. Vous pouvez répondre Aime porã.",
+      it: "In guaraní, usa Mba’éichapa reime con una persona e Mba’éichapa peime con più persone. Mba’éichapa da solo può essere accettato socialmente come abbreviazione, ma negli esercizi è richiesta la forma completa. Puoi rispondere Aime porã.",
+      de: "Auf Guaraní verwendest du Mba’éichapa reime für eine Person und Mba’éichapa peime für mehrere. Mba’éichapa allein kann gesellschaftlich als Abkürzung akzeptiert sein, in den Übungen ist aber die vollständige Form erforderlich. Du kannst mit Aime porã antworten."
+    },
+    options: [
+      { id: "plural", label: "¿Mba’éichapa peime?" },
+      { id: "singular", label: "¿Mba’éichapa reime?" },
+      { id: "greeting", label: "Maitei" }
+    ],
+    correctOptionId: "singular",
+    dialogueLiterals: [
+      "¿Mba’éichapa reime Ana?",
+      "Aime porã, ¿ha nde?",
+      "Aime porã avei. ¡Jajoechata!"
+    ]
+  },
+  "general-u01-escuchar-jajotopata": {
+    meaning: {
+      es: "Nos vamos a encontrar",
+      en: "We are going to meet",
+      pt: "Nós vamos nos encontrar",
+      fr: "Nous allons nous rencontrer",
+      it: "Ci incontreremo",
+      de: "Wir werden uns treffen"
+    },
+    prompt: {
+      es: "¿Cómo dices «nos vamos a encontrar»?",
+      en: "How do you say “we are going to meet”?",
+      pt: "Como se diz “nós vamos nos encontrar”?",
+      fr: "Comment dit-on « nous allons nous rencontrer » ?",
+      it: "Come si dice «ci incontreremo»?",
+      de: "Wie sagt man „Wir werden uns treffen“?"
+    }
+  }
+};
 const withoutAdaptiveMetadata = activity => {
   const result = plain(activity);
   for (const field of adaptiveMetadataFields) delete result[field];
+  return result;
+};
+const expectedStableContent = activity => {
+  const result = withoutAdaptiveMetadata(activity);
+  const correction = directAuthorCorrections[result.id];
+  if (correction?.prompt) result.prompt = plain(correction.prompt);
+  if (correction?.explanation) result.explanation = plain(correction.explanation);
+  if (correction?.options) result.options = plain(correction.options);
+  if (correction?.correctOptionId) result.correctOptionId = correction.correctOptionId;
   return result;
 };
 
@@ -94,10 +153,10 @@ test("los ocho componentes dinámicos del PASO 1 pueden asociarse a objetivos", 
   }
 });
 
-test("las tres actividades dinámicas conservan exactamente el contenido estable de PASO 5", () => {
+test("las tres actividades dinámicas conservan el contenido estable y las correcciones directas de la autora", () => {
   assert.equal(current.activityData.activities.length, previousActivities.length);
   for (let index = 0; index < previousActivities.length; index += 1) {
-    assert.deepEqual(withoutAdaptiveMetadata(current.activityData.activities[index]), plain(previousActivities[index]));
+    assert.deepEqual(withoutAdaptiveMetadata(current.activityData.activities[index]), expectedStableContent(previousActivities[index]));
     const activity = current.activityData.activities[index];
     assert.equal(activity.courseId, "general");
     assert.equal(activity.learningObjectiveId, "GG-LO-001");
@@ -117,15 +176,15 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
   for (const activity of current.activityData.activities) {
     const pair = activity.semanticPair;
     const stableActivity = previousActivities.find(candidate => candidate.id === activity.id);
-    const stableContent = JSON.stringify(plain(stableActivity)).normalize("NFC").toLocaleLowerCase();
+    const approvedContent = JSON.stringify([plain(stableActivity), directAuthorCorrections[activity.id] || null]).normalize("NFC").toLocaleLowerCase();
     assert.deepEqual(Object.keys(pair).sort(), ["adaptiveReuseAuthorized", "meaning", "target"]);
     assert.equal(pair.adaptiveReuseAuthorized, true, `${activity.id} no autoriza explícitamente el par semántico.`);
     assert.ok(String(pair.target || "").trim(), `${activity.id} no declara el término meta.`);
-    assert.ok(stableContent.includes(pair.target.normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un término ajeno al contenido estable.`);
+    assert.ok(approvedContent.includes(pair.target.normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un término ajeno al contenido estable o a una corrección directa.`);
     assert.deepEqual(Object.keys(pair.meaning).sort(), [...languages].sort(), `${activity.id} declara un conjunto inesperado de idiomas.`);
     for (const language of languages) {
       assert.ok(String(pair.meaning?.[language] || "").trim(), `${activity.id} no declara significado ${language}.`);
-      assert.ok(stableContent.includes(pair.meaning[language].normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un significado ${language} ajeno al contenido estable.`);
+      assert.ok(approvedContent.includes(pair.meaning[language].normalize("NFC").toLocaleLowerCase()), `${activity.id} intenta reutilizar un significado ${language} ajeno al contenido estable o a una corrección directa.`);
     }
     if (activity.adaptiveDialogue) dialogues.push({ activityId: activity.id, value: activity.adaptiveDialogue });
   }
@@ -138,6 +197,7 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
     const approvedSource = approvedAdaptiveDialogueSources.get(dialogue.sourceContentId);
     assert.ok(approvedSource, `${activityId} refiere una fuente de diálogo no aprobada: ${dialogue.sourceContentId}.`);
     const approvedLiterals = stringsIn(stableGeneralUnit(approvedSource));
+    (directAuthorCorrections[activityId]?.dialogueLiterals || []).forEach(literal => approvedLiterals.add(literal.normalize("NFC")));
     assert.ok(hasValidAdaptiveDialogueTurnCount(dialogue), `${activityId} debe tener entre 2 y 4 turnos.`);
     assert.ok(dialogue.turns.every(turn => turn.authorized === true && turn.id && turn.speaker && turn.text), `${activityId} contiene turnos incompletos o no autorizados.`);
     assert.ok(dialogue.turns.every(turn => approvedLiterals.has(turn.text.normalize("NFC"))), `${activityId} contiene turnos ajenos al bloque estable aprobado.`);
@@ -150,6 +210,24 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
     assert.ok(correctOption, `${activityId} refiere una opción correcta inexistente.`);
     assert.equal(dialogue.correctAnswer, correctOption.text, `${activityId} no alinea correctAnswer con correctOptionId.`);
   }
+});
+
+test("las correcciones directas distinguen Jajoechata de Jajotopata", () => {
+  const greeting = current.activityData.activities.find(activity => activity.id === "general-u01-significado-mba-eichapa");
+  assert.equal(greeting.semanticPair.target, "Mba’éichapa reime");
+  assert.deepEqual(plain(greeting.prompt), directAuthorCorrections[greeting.id].prompt);
+  assert.deepEqual(plain(greeting.explanation), directAuthorCorrections[greeting.id].explanation);
+  assert.deepEqual(plain(greeting.options), directAuthorCorrections[greeting.id].options);
+  assert.equal(greeting.correctOptionId, "singular");
+  assert.deepEqual(plain(greeting.adaptiveDialogue.turns.map(turn => turn.text)), ["¿Mba’éichapa reime Ana?", "Aime porã, ¿ha nde?"]);
+  assert.deepEqual(plain(greeting.adaptiveDialogue.options.map(option => option.text)), ["¿Mba’éichapa reime Ana?", "Aime porã, ¿ha nde?", "Aime porã avei. ¡Jajoechata!"]);
+  assert.equal(greeting.adaptiveDialogue.correctAnswer, "Aime porã avei. ¡Jajoechata!");
+
+  const meeting = current.activityData.activities.find(activity => activity.id === "general-u01-escuchar-jajotopata");
+  assert.deepEqual(plain(meeting.semanticPair.meaning), directAuthorCorrections[meeting.id].meaning);
+  assert.deepEqual(plain(meeting.prompt), directAuthorCorrections[meeting.id].prompt);
+  assert.equal(meeting.audioText, "Jajotopata");
+  assert.equal(current.activityData.version, "NALVI-P5-DATA-3");
 });
 
 test("un diálogo adaptativo de un solo turno incumple el contrato del catálogo", () => {

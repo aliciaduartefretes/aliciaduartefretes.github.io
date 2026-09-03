@@ -8,7 +8,8 @@
     "pedagogicalCycle",
     "modules",
     "learningObjectives",
-    "concepts"
+    "concepts",
+    "sourceMaterials"
   ],
   "properties": {
     "route": {
@@ -72,10 +73,16 @@
           "skills",
           "difficulty",
           "activityTypes",
+          "sourceMaterialIds",
           "legacyContentRefs",
           "institutionalMetadata"
         ],
         "properties": {
+          "sourceMaterialIds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          },
           "institutionalMetadata": {
             "type": "object",
             "required": [
@@ -97,6 +104,27 @@
       "items": {
         "type": "object",
         "required": ["id", "title", "validationScope"]
+      }
+    },
+    "sourceMaterials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "version", "learningObjectiveId", "source", "pages"],
+        "properties": {
+          "source": {
+            "type": "object",
+            "required": ["fileName", "sha256", "pageCount", "suppliedByAuthor"]
+          },
+          "pages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["page", "kind", "blocks"]
+            }
+          }
+        }
       }
     }
   }
