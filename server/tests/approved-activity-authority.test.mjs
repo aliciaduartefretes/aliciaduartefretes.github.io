@@ -140,6 +140,10 @@ test("resolve y listByLearningObjective son read-only, enumeran 3/0 y aceptan so
   const record = approvedActivityAuthority.resolve({ sourceActivityId: KNOWN_IDS[1], uiLocale: "es" });
   assert.equal(record.sourceActivity.id, KNOWN_IDS[1]);
   assert.equal(record.correctAnswer, "Aguyje");
+  assert.deepEqual(
+    record.approvedActivityMaterial.pairs.map(pair => [pair.id, pair.sourceActivityId]),
+    KNOWN_IDS.map(id => [id, id])
+  );
   assert.equal(approvedActivityAuthority.resolve({ activityId: KNOWN_IDS[0], sourceActivityId: KNOWN_IDS[1] }), null);
   for (const invalidAlias of ["", 0, null]) {
     assert.equal(approvedActivityAuthority.resolve({ activityId: invalidAlias, sourceActivityId: KNOWN_IDS[1] }), null);

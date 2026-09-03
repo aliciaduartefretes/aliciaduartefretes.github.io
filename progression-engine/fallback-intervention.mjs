@@ -1,5 +1,5 @@
-import { ACTIVITY_TYPES, allowedTypesForError, cognitiveDemandFor } from "../activity-catalog/nalvi-activity-catalog.mjs";
-import { authorizeBundledRecordedAudio } from "./recorded-audio-manifest-index.mjs";
+import { ACTIVITY_TYPES, allowedTypesForError, cognitiveDemandFor } from "../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
+import { authorizeBundledRecordedAudio } from "./recorded-audio-manifest-index.mjs?v=NALVI-AUDIO-INDEX-2";
 
 const COPY = Object.freeze({
   es: { contextQuestion: "Elige la opción que corresponde a esta situación.", match: "Relaciona cada elemento con su significado.", sort: "Clasifica las tarjetas en la categoría correcta.", dialogue: "Elige la respuesta que continúa la conversación.", listen: "Escucha y elige la opción correcta.", recall: "Recuerda la expresión sin verla." },
@@ -23,9 +23,14 @@ export function deterministicInterventionCopy(activityType, locale = "es") {
   return byType[activityType] || "";
 }
 
-const localize = (value, locale) => value && typeof value === "object" && !Array.isArray(value)
-  ? String(value[locale] ?? value.es ?? value.en ?? Object.values(value)[0] ?? "")
-  : String(value ?? "");
+const localize = (value, locale) => {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+  return [locale, "es", "en", "pt", "fr", "it", "de"]
+    .filter((key, index, keys) => keys.indexOf(key) === index)
+    .map(key => value[key])
+    .find(candidate => typeof candidate === "string") || "";
+};
 const normalize = value => String(value ?? "").normalize("NFC").trim().toLocaleLowerCase();
 const normalizeAudioTarget = value => String(value ?? "")
   .normalize("NFD")
@@ -37,12 +42,39 @@ const normalizeAudioTarget = value => String(value ?? "")
   .toLocaleLowerCase("es");
 const uniqueBy = (values, key) => values.filter((value, index, array) => array.findIndex(candidate => key(candidate) === key(value)) === index);
 const optionText = (option, locale) => localize(option?.text ?? option?.label ?? option?.value ?? option, locale);
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const exactIdentifier = value => typeof value === "string" && value && value === value.trim() ? value : "";
+
+function exactRecordProvenance(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const provenance = {};
+  for (const key of ["sourceActivityId", "sourceContentId"]) {
+    if (!hasOwn(value, key)) continue;
+    if (typeof value[key] !== "string" || !value[key] || value[key] !== value[key].trim()) return null;
+    provenance[key] = value[key];
+  }
+  if (hasOwn(value, "sourceIds")) {
+    if (!Array.isArray(value.sourceIds)
+      || value.sourceIds.some(id => typeof id !== "string" || !id || id !== id.trim())
+      || new Set(value.sourceIds).size !== value.sourceIds.length) return null;
+    provenance.sourceIds = [...value.sourceIds];
+  }
+  return provenance;
+}
+
+function authorizedRecord(value, canonical) {
+  const provenance = exactRecordProvenance(value);
+  return provenance === null ? null : { ...canonical, ...provenance };
+}
 
 function lessonOptions(context, locale) {
   const source = context.approvedActivityMaterial?.options;
   return uniqueBy((Array.isArray(source) ? source : [])
     .filter(option => option?.authorized === true)
-    .map(option => ({ id: String(option?.id || "").trim(), text: optionText(option, locale), authorized: true }))
+    .map(option => authorizedRecord(option, {
+      id: exactIdentifier(option?.id), text: optionText(option, locale), authorized: true
+    }))
+    .filter(Boolean)
     .filter(option => option.id && option.text), option => normalize(option.text));
 }
 
@@ -51,12 +83,13 @@ function semanticPairs(context, locale) {
   const source = context.approvedActivityMaterial?.pairs;
   const pairs = uniqueBy((Array.isArray(source) ? source : [])
     .filter(pair => pair?.authorized === true)
-    .map(pair => ({
-      id: String(pair.id || "").trim(),
+    .map(pair => authorizedRecord(pair, {
+      id: exactIdentifier(pair?.id),
       left: localize(pair.left, locale),
       right: localize(pair.right, locale),
       authorized: true
     }))
+    .filter(Boolean)
     .filter(pair => pair.id && pair.left && pair.right), pair => `${normalize(pair.left)}:${normalize(pair.right)}`);
   if (answer && !pairs.some(pair => normalize(pair.left) === answer || normalize(pair.right) === answer)) return [];
   return pairs;
@@ -73,20 +106,27 @@ function safeContextText(context, locale) {
 function safeDialogue(context, locale) {
   const source = context.approvedActivityMaterial?.dialogue || [];
   const optionSource = context.approvedActivityMaterial?.dialogueOptions || [];
-  if (!Array.isArray(source) || source.length < 2 || source.length > 4) return null;
-  const turns = source.map(turn => ({
-    id: String(turn?.id || "").trim(),
+  if (!Array.isArray(source) || !Array.isArray(optionSource) || source.length < 2 || source.length > 4) return null;
+  const turns = source.map(turn => authorizedRecord(turn, {
+    id: exactIdentifier(turn?.id),
     speaker: localize(turn?.speaker, locale),
     text: localize(turn?.text ?? turn, locale),
     authorized: turn?.authorized === true
   }));
+  if (turns.some(turn => !turn)) return null;
   const options = uniqueBy(optionSource
     .filter(option => option?.authorized === true)
-    .map(option => ({ id: String(option?.id || "").trim(), text: optionText(option, locale), authorized: true }))
+    .map(option => authorizedRecord(option, {
+      id: exactIdentifier(option?.id), text: optionText(option, locale), authorized: true
+    }))
+    .filter(Boolean)
     .filter(option => option.id && option.text), option => normalize(option.text));
-  const correctOptionId = String(context.approvedActivityMaterial?.dialogueCorrectOptionId || "");
+  const correctOptionId = exactIdentifier(context.approvedActivityMaterial?.dialogueCorrectOptionId);
   const correctAnswer = localize(context.approvedActivityMaterial?.dialogueCorrectAnswer, locale).trim();
-  const sourceContentId = String(context.approvedActivityMaterial?.dialogueSourceContentId || "").trim();
+  const declaredSourceContentId = context.approvedActivityMaterial?.dialogueSourceContentId;
+  const sourceContentId = typeof declaredSourceContentId === "string" && declaredSourceContentId
+    && declaredSourceContentId === declaredSourceContentId.trim()
+    ? declaredSourceContentId : "";
   const correct = options.find(option => option.id === correctOptionId && option.text === correctAnswer);
   return turns.every(turn => turn.id && turn.speaker && turn.text && turn.authorized)
     && options.length >= 3 && options.length <= 4 && correct && sourceContentId
@@ -98,17 +138,17 @@ function safeSortData(context, locale) {
   const rawCategories = context.approvedActivityMaterial?.categories || [];
   const rawItems = context.approvedActivityMaterial?.items || [];
   if (!Array.isArray(rawCategories) || !Array.isArray(rawItems)) return null;
-  const categories = rawCategories.map(category => ({
-    id: String(category?.id || "").trim(),
+  const categories = rawCategories.map(category => authorizedRecord(category, {
+    id: exactIdentifier(category?.id),
     label: localize(category?.label ?? category?.text ?? category, locale),
     authorized: category?.authorized === true
-  })).filter(category => category.id && category.label && category.authorized);
-  const items = rawItems.map(item => ({
-    id: String(item?.id || "").trim(),
+  })).filter(Boolean).filter(category => category.id && category.label && category.authorized);
+  const items = rawItems.map(item => authorizedRecord(item, {
+    id: exactIdentifier(item?.id),
     text: localize(item?.text ?? item?.label ?? item, locale),
-    categoryId: String(item?.categoryId || ""),
+    categoryId: exactIdentifier(item?.categoryId),
     authorized: item?.authorized === true
-  })).filter(item => item.id && item.text && item.categoryId && item.authorized);
+  })).filter(Boolean).filter(item => item.id && item.text && item.categoryId && item.authorized);
   if (categories.length < 2 || categories.length > 3 || items.length < 6 || items.length > 10) return null;
   if (categories.some(category => items.filter(item => item.categoryId === category.id).length < 2)) return null;
   return { categories, items };
@@ -179,13 +219,18 @@ function safeAudio(context) {
 }
 
 function shuffled(values, seed = 1) {
-  return [...values].sort((left, right) => `${String(right.id)}-${seed}`.localeCompare(`${String(left.id)}-${seed}`));
+  return [...values].sort((left, right) => `${exactIdentifier(right?.id)}-${seed}`
+    .localeCompare(`${exactIdentifier(left?.id)}-${seed}`));
 }
 
 function base(context, type, attempt, overrides = {}) {
-  const correctAnswer = String(context.correctAnswer || "").trim();
+  const correctAnswer = typeof context.correctAnswer === "string" ? context.correctAnswer.trim() : "";
+  const materialSourceIdentity = exactRecordProvenance(context.approvedActivityMaterial) || {};
+  const sourceIds = hasOwn(materialSourceIdentity, "sourceIds")
+    ? [...materialSourceIdentity.sourceIds]
+    : Array.isArray(context.activity?.sourceIds) ? [...context.activity.sourceIds] : [];
   return {
-    id: `catalog-${String(context.conceptId || "concept")}-${attempt}-${type.toLocaleLowerCase()}`,
+    id: `catalog-${exactIdentifier(context.conceptId) || "concept"}-${attempt}-${type.toLocaleLowerCase()}`,
     type,
     activityType: type,
     conceptId: context.conceptId,
@@ -217,19 +262,23 @@ function base(context, type, attempt, overrides = {}) {
     correctAnswer,
     acceptedAnswers: correctAnswer ? [correctAnswer] : [],
     correctOptionId: "",
-    lexemeIds: context.lexemeIds || [],
-    grammarRuleIds: context.grammarRuleIds || [],
-    sourceIds: context.activity?.sourceIds || [],
+    lexemeIds: Array.isArray(context.lexemeIds) ? [...context.lexemeIds] : [],
+    grammarRuleIds: Array.isArray(context.grammarRuleIds) ? [...context.grammarRuleIds] : [],
+    sourceIds,
     conflictIds: [],
     hasOpenConflict: false,
     distractorQuality: "PLAUSIBLE",
     cognitiveDemand: cognitiveDemandFor(type),
     lessonContext: {
       ...(context.activity?.lessonContext || {}),
-      sourceActivityId: context.activity?.id || "",
+      sourceActivityId: exactIdentifier(context.activity?.id),
       sourceAnswer: correctAnswer
     },
     deterministicFallback: true,
+    ...(hasOwn(materialSourceIdentity, "sourceActivityId")
+      ? { sourceActivityId: materialSourceIdentity.sourceActivityId } : {}),
+    ...(hasOwn(materialSourceIdentity, "sourceContentId")
+      ? { sourceContentId: materialSourceIdentity.sourceContentId } : {}),
     ...overrides
   };
 }
@@ -250,8 +299,8 @@ function candidate(activity, errorType, reasonCode, goal) {
 export function buildDeterministicFallbackCandidates(context = {}, attempt = 1, errorType = "UNKNOWN_ERROR") {
   const uiLocale = COPY[context.uiLocale] ? context.uiLocale : "es";
   const copy = COPY[uiLocale];
-  const answer = String(context.correctAnswer || "").trim();
-  if (!answer) return [];
+  const answer = typeof context.correctAnswer === "string" ? context.correctAnswer.trim() : "";
+  if (!answer || exactRecordProvenance(context.approvedActivityMaterial || {}) === null) return [];
   const options = lessonOptions(context, uiLocale);
   const correct = options.find(option => normalize(option.text) === normalize(answer));
   const pairs = semanticPairs(context, uiLocale);
@@ -328,7 +377,8 @@ export function buildDeterministicFallbackCandidates(context = {}, attempt = 1, 
   const preferred = preferredTypes.flatMap(type => uniqueCandidates.filter(value => value.activityType === type));
   const remaining = uniqueCandidates.filter(value => !preferredTypes.includes(value.activityType));
   let ordered = [...preferred, ...remaining];
-  const lastType = (context.recentActivities || []).at(-1)?.activityType || (context.recentActivities || []).at(-1)?.type || "";
+  const recentActivities = Array.isArray(context.recentActivities) ? context.recentActivities : [];
+  const lastType = recentActivities.at(-1)?.activityType || recentActivities.at(-1)?.type || "";
   if (ordered.length > 1 && ordered[0]?.activityType === lastType) ordered = [...ordered.slice(1), ordered[0]];
   return ordered.slice(0, 3);
 }

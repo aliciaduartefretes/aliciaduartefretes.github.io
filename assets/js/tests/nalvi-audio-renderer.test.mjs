@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const galleryHtml = readFileSync(new URL("../../../debug/activity-catalog.html", import.meta.url), "utf8");
+const rendererSource = readFileSync(new URL("../nalvi-activity-catalog-renderer.mjs", import.meta.url), "utf8");
 
 function deferred() {
   let resolve;
@@ -110,7 +111,9 @@ test("la galería carga el registry antes del renderer", () => {
   assert.ok(registryPosition > 0);
   assert.ok(rendererPosition > registryPosition);
   assert.ok(galleryPosition > rendererPosition);
-  assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-4/);
+  assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
+  assert.match(rendererSource, /NALVI-ACTIVITY-CATALOG-RENDERER-5/);
+  assert.match(rendererSource, /nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
 });
 
 test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproducir antes", async () => {

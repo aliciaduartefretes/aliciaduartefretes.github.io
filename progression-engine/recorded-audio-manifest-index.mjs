@@ -41,9 +41,26 @@ const RECORDINGS = Object.freeze(LABELS.map((label, index) => {
   });
 }));
 const BY_ID = new Map(RECORDINGS.map(recording => [recording.audioId, recording]));
+const AUTHORITY_CLAIM_KEYS = Object.freeze(["audioId", "audioPath", "audioText"]);
+const RESERVED_AUDIO_CLAIM_KEYS = Object.freeze([
+  ...AUTHORITY_CLAIM_KEYS, "id", "recordingId", "path", "url", "text", "source", "authorized",
+  "audioSource", "audioAuthorized", "humanRecorded"
+]);
 
 export function authorizeBundledRecordedAudio(claim = {}, targetText = "") {
   if (!claim || typeof claim !== "object" || Array.isArray(claim)) return null;
+  let prototype, claimKeys;
+  try {
+    prototype = Object.getPrototypeOf(claim);
+    claimKeys = Object.keys(claim).sort();
+  } catch {
+    return null;
+  }
+  if (prototype !== Object.prototype && prototype !== null) return null;
+  if (claimKeys.length !== AUTHORITY_CLAIM_KEYS.length
+    || !AUTHORITY_CLAIM_KEYS.every(key => Object.hasOwn(claim, key))
+    || RESERVED_AUDIO_CLAIM_KEYS.some(key => key in claim && !Object.hasOwn(claim, key))
+    || JSON.stringify(claimKeys) !== JSON.stringify([...AUTHORITY_CLAIM_KEYS].sort())) return null;
   const audioId = typeof claim.audioId === "string" ? claim.audioId : "";
   const audioPath = typeof claim.audioPath === "string" ? claim.audioPath : "";
   const audioText = typeof claim.audioText === "string" ? claim.audioText.normalize("NFC") : "";

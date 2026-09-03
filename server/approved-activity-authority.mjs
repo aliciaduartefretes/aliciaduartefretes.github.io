@@ -328,6 +328,7 @@ function pairsFor(records, learningObjectiveId, locale) {
     id: activity.id,
     left: exactText(SEMANTIC_PAIRS[activity.id].target, locale, 160),
     right: exactText(SEMANTIC_PAIRS[activity.id].meaning, locale, 160),
+    sourceActivityId: activity.id,
     authorized: true
   }));
 }

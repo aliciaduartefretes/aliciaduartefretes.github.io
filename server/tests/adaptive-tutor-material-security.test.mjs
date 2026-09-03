@@ -4,14 +4,18 @@ import test from "node:test";
 import { cognitiveDemandFor } from "../../activity-catalog/nalvi-activity-catalog.mjs";
 import { classifyError } from "../../intervention-engine/intervention-engine.mjs";
 import { INTERVENTION_CONFIG } from "../../intervention-engine/intervention-config.mjs";
-import { deterministicInterventionCopy } from "../../progression-engine/fallback-intervention.mjs";
+import {
+  buildDeterministicFallbackCandidates,
+  deterministicInterventionCopy
+} from "../../progression-engine/fallback-intervention.mjs";
 import {
   createAdaptiveTutorOrchestrator,
   createProfessionalFallbackPlan,
   toRenderable,
   validateActivityAgainstApprovedMaterial
 } from "../adaptive-tutor-orchestrator.mjs";
-import { normalizeInterventionRequest } from "../intervention-service.mjs";
+import { ADAPTIVE_TUTOR_PLAN_SCHEMA } from "../adaptive-tutor-schema.mjs";
+import { normalizeInterventionRequest, sanitizeApprovedActivityMaterial } from "../intervention-service.mjs";
 
 const TARGET = "Jagua";
 const CONCEPT_ID = "security-dog";
@@ -20,43 +24,44 @@ const SOURCE_ACTIVITY_ID = "security-source-jagua";
 const LEXEME_ID = "LEX-SECURITY-JAGUA";
 const GRAMMAR_RULE_ID = "GRAMMAR-SECURITY-NOUN";
 const SOURCE_ID = "SOURCE-SECURITY-LITERAL";
+const SOURCE_CONTENT_ID = "SOURCE-CONTENT-SECURITY-LITERAL";
 const DIALOGUE_SOURCE_ID = "DIALOGUE-SECURITY-LITERAL";
 const VISIBLE_INJECTION = "PLANNER_VISIBLE_COPY_MUST_NOT_SURVIVE";
 const PLAN_INJECTION = "PLANNER_POLICY_MUST_NOT_SURVIVE";
 
 const clone = value => JSON.parse(JSON.stringify(value));
-const option = (id, text) => ({ id, text, authorized: true });
+const option = (id, text, provenance = {}) => ({ id, text, authorized: true, ...provenance });
 
 const OPTIONS = Object.freeze([
-  option("dog", "Jagua"),
-  option("bird", "Guyra"),
-  option("cat", "Mbarakaja")
+  option("dog", "Jagua", { sourceActivityId: SOURCE_ACTIVITY_ID }),
+  option("bird", "Guyra", { sourceContentId: SOURCE_CONTENT_ID }),
+  option("cat", "Mbarakaja", { sourceIds: [SOURCE_ID, "SOURCE-OPTION-CAT"] })
 ]);
 const PAIRS = Object.freeze([
-  { id: "pair-dog", left: "Jagua", right: "perro", authorized: true },
-  { id: "pair-bird", left: "Guyra", right: "ave", authorized: true },
-  { id: "pair-cat", left: "Mbarakaja", right: "gato", authorized: true }
+  { id: "pair-dog", left: "Jagua", right: "perro", authorized: true, sourceActivityId: SOURCE_ACTIVITY_ID },
+  { id: "pair-bird", left: "Guyra", right: "ave", authorized: true, sourceContentId: SOURCE_CONTENT_ID },
+  { id: "pair-cat", left: "Mbarakaja", right: "gato", authorized: true, sourceIds: [SOURCE_ID, "SOURCE-PAIR-CAT"] }
 ]);
 const CATEGORIES = Object.freeze([
-  { id: "animals", label: "Animales", authorized: true },
-  { id: "places", label: "Lugares", authorized: true }
+  { id: "animals", label: "Animales", authorized: true, sourceActivityId: SOURCE_ACTIVITY_ID },
+  { id: "places", label: "Lugares", authorized: true, sourceContentId: SOURCE_CONTENT_ID }
 ]);
 const ITEMS = Object.freeze([
-  { id: "dog-item", text: "Jagua", categoryId: "animals", authorized: true },
-  { id: "bird-item", text: "Guyra", categoryId: "animals", authorized: true },
+  { id: "dog-item", text: "Jagua", categoryId: "animals", authorized: true, sourceActivityId: SOURCE_ACTIVITY_ID },
+  { id: "bird-item", text: "Guyra", categoryId: "animals", authorized: true, sourceContentId: SOURCE_CONTENT_ID },
   { id: "cat-item", text: "Mbarakaja", categoryId: "animals", authorized: true },
   { id: "house-item", text: "Óga", categoryId: "places", authorized: true },
   { id: "road-item", text: "Tape", categoryId: "places", authorized: true },
   { id: "field-item", text: "Kokue", categoryId: "places", authorized: true }
 ]);
 const DIALOGUE = Object.freeze([
-  { id: "turn-one", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true },
-  { id: "turn-two", speaker: "B", text: "Ahendu peteĩ mymba okápe.", authorized: true }
+  { id: "turn-one", speaker: "A", text: "Mba’éichapa, Ana?", authorized: true, sourceActivityId: SOURCE_ACTIVITY_ID },
+  { id: "turn-two", speaker: "B", text: "Ahendu peteĩ mymba okápe.", authorized: true, sourceContentId: SOURCE_CONTENT_ID }
 ]);
 const DIALOGUE_OPTIONS = Object.freeze([
-  option("dog", "Jagua"),
-  option("bird", "Guyra"),
-  option("cat", "Mbarakaja")
+  option("dog", "Jagua", { sourceActivityId: SOURCE_ACTIVITY_ID }),
+  option("bird", "Guyra", { sourceContentId: SOURCE_CONTENT_ID }),
+  option("cat", "Mbarakaja", { sourceIds: [SOURCE_ID, "SOURCE-DIALOGUE-CAT"] })
 ]);
 const AUDIO = Object.freeze({
   audioId: "NALVI-AUDIO-096",
@@ -99,6 +104,9 @@ const SOURCE_ACTIVITY = Object.freeze({
 });
 
 const APPROVED_MATERIAL = Object.freeze({
+  sourceActivityId: SOURCE_ACTIVITY_ID,
+  sourceContentId: SOURCE_CONTENT_ID,
+  sourceIds: [SOURCE_ID],
   options: OPTIONS,
   correctOptionId: "dog",
   correctAnswer: TARGET,
@@ -229,6 +237,8 @@ function commonActivity(type, id = `planner-${type.toLocaleLowerCase()}`) {
     lexemeIds: [LEXEME_ID],
     grammarRuleIds: [GRAMMAR_RULE_ID],
     sourceIds: [SOURCE_ID],
+    sourceActivityId: SOURCE_ACTIVITY_ID,
+    sourceContentId: SOURCE_CONTENT_ID,
     conflictIds: [],
     hasOpenConflict: false,
     distractorQuality: "PLAUSIBLE",
@@ -268,6 +278,24 @@ function validActivity(type, id) {
     ...clone(AUDIO)
   });
   return activity;
+}
+
+function withSchemaSourceIdentityTransport(activity) {
+  const record = value => ({
+    ...value,
+    sourceActivityId: Object.hasOwn(value, "sourceActivityId") ? value.sourceActivityId : null,
+    sourceContentId: Object.hasOwn(value, "sourceContentId") ? value.sourceContentId : null,
+    sourceIds: Object.hasOwn(value, "sourceIds") ? clone(value.sourceIds) : null
+  });
+  const transported = {
+    ...clone(activity),
+    sourceActivityId: Object.hasOwn(activity, "sourceActivityId") ? activity.sourceActivityId : null,
+    sourceContentId: Object.hasOwn(activity, "sourceContentId") ? activity.sourceContentId : null
+  };
+  for (const key of ["options", "pairs", "categories", "items", "dialogue"]) {
+    transported[key] = (transported[key] || []).map(record);
+  }
+  return transported;
 }
 
 function expectReason(activity, reason, context = matcherContext()) {
@@ -328,14 +356,20 @@ const responseFor = value => ({
   json: async () => ({ output_text: JSON.stringify(value), usage: { input_tokens: 1, output_tokens: 1 } })
 });
 
-async function runPlanner({ activity, request = sourceRequest(), candidateOverrides = {}, planOverrides = {} }) {
-  const normalized = normalizeInterventionRequest(request, { activityAuthority });
+async function runPlanner({
+  activity,
+  request = sourceRequest(),
+  candidateOverrides = {},
+  planOverrides = {},
+  authority = activityAuthority
+}) {
+  const normalized = normalizeInterventionRequest(request, { activityAuthority: authority });
   const errorType = classifyError({ ...normalized, correct: false }).errorType;
   const candidate = candidateFor(activity, errorType, candidateOverrides);
   const plan = plannerPlan(candidate, normalized, planOverrides);
   let plannerCalls = 0;
   const orchestrator = createAdaptiveTutorOrchestrator({
-    activityAuthority,
+    activityAuthority: authority,
     fetchImpl: async () => {
       plannerCalls += 1;
       return responseFor(plan);
@@ -362,6 +396,160 @@ test("el matcher acepta exclusivamente las seis formas construidas con material 
   ]) {
     assert.deepEqual(validateActivityAgainstApprovedMaterial(validActivity(type), matcherContext()), [], type);
   }
+});
+
+test("provenance exacta sobrevive authority → sanitizer → fallback → matcher → renderable", () => {
+  const normalized = normalizeInterventionRequest(sourceRequest(), { activityAuthority });
+  assert.equal(normalized.approvedActivityMaterial.sourceActivityId, SOURCE_ACTIVITY_ID);
+  assert.equal(normalized.approvedActivityMaterial.sourceContentId, SOURCE_CONTENT_ID);
+  assert.deepEqual(normalized.approvedActivityMaterial.sourceIds, [SOURCE_ID]);
+  assert.deepEqual(normalized.approvedActivityMaterial.pairs, clone(PAIRS));
+
+  const arrow = buildDeterministicFallbackCandidates(normalized, 1, "SEMANTIC_CONFUSION")
+    .find(candidate => candidate.activityType === "ARROW_MATCH")?.activity;
+  assert.ok(arrow);
+  assert.equal(arrow.sourceActivityId, SOURCE_ACTIVITY_ID);
+  assert.equal(arrow.sourceContentId, SOURCE_CONTENT_ID);
+  assert.deepEqual(arrow.sourceIds, [SOURCE_ID]);
+  assert.deepEqual(arrow.pairs, clone(PAIRS));
+  assert.deepEqual(validateActivityAgainstApprovedMaterial(arrow, normalized), []);
+
+  const rendered = toRenderable(arrow, normalized, "provenance-plan", 0);
+  assert.equal(rendered.sourceActivityId, SOURCE_ACTIVITY_ID);
+  assert.equal(rendered.sourceContentId, SOURCE_CONTENT_ID);
+  assert.deepEqual(rendered.sourceIds, [SOURCE_ID]);
+  assert.deepEqual(rendered.pairs, clone(PAIRS));
+  assert.equal(rendered.validatedAgainstApprovedMaterial, true);
+
+  const reordered = clone(arrow);
+  reordered.pairs[2].sourceIds.reverse();
+  assert.deepEqual(validateActivityAgainstApprovedMaterial(reordered, normalized), []);
+});
+
+test("provenance omitida, alterada, malformada o con whitespace se rechaza sin sanarla", () => {
+  const context = matcherContext();
+  const cases = [
+    ["sourceActivityId omitido", activity => { delete activity.pairs[0].sourceActivityId; }, "UNAPPROVED_PAIRS"],
+    ["sourceActivityId alterado", activity => { activity.pairs[0].sourceActivityId = "forged-source"; }, "UNAPPROVED_PAIRS"],
+    ["sourceContentId alterado", activity => { activity.pairs[1].sourceContentId = "forged-content"; }, "UNAPPROVED_PAIRS"],
+    ["sourceIds alterados", activity => { activity.pairs[2].sourceIds = [SOURCE_ID, "forged-source"]; }, "UNAPPROVED_PAIRS"],
+    ["sourceIds duplicados", activity => { activity.pairs[2].sourceIds = [SOURCE_ID, SOURCE_ID]; }, "UNAPPROVED_PAIRS"],
+    ["sourceActivityId objeto", activity => { activity.pairs[0].sourceActivityId = { forged: true }; }, "UNAPPROVED_PAIRS"],
+    ["sourceActivityId con whitespace", activity => { activity.pairs[0].sourceActivityId = ` ${SOURCE_ACTIVITY_ID}`; }, "UNAPPROVED_PAIRS"],
+    ["sourceIds con whitespace", activity => { activity.pairs[2].sourceIds = [` ${SOURCE_ID}`]; }, "UNAPPROVED_PAIRS"],
+    ["top sourceActivityId alterado", activity => { activity.sourceActivityId = "forged-source"; }, "UNAPPROVED_SOURCE_IDENTITY"],
+    ["top sourceContentId omitido", activity => { delete activity.sourceContentId; }, "UNAPPROVED_SOURCE_IDENTITY"],
+    ["top sourceIds alterados", activity => { activity.sourceIds = ["forged-source"]; }, "UNAPPROVED_SOURCE_IDS"]
+  ];
+  for (const [name, mutate, reason] of cases) {
+    const activity = validActivity("ARROW_MATCH");
+    mutate(activity);
+    assert.ok(validateActivityAgainstApprovedMaterial(activity, context).includes(reason), name);
+  }
+
+  for (const malformed of [
+    { sourceActivityId: ` ${SOURCE_ACTIVITY_ID}` },
+    { sourceContentId: `${SOURCE_CONTENT_ID} ` },
+    { sourceIds: [` ${SOURCE_ID}`] },
+    { sourceIds: [SOURCE_ID, SOURCE_ID] },
+    { sourceIds: { forged: SOURCE_ID } }
+  ]) {
+    const sanitized = sanitizeApprovedActivityMaterial({ ...clone(APPROVED_MATERIAL), ...malformed }, TARGET, "es");
+    assert.deepEqual(sanitized, {
+      options: [], correctOptionId: "", correctAnswer: "", acceptedAnswers: [],
+      pairs: [], contexts: [], categories: [], items: [], dialogue: [], dialogueOptions: [],
+      dialogueCorrectOptionId: "", dialogueCorrectAnswer: "", dialogueSourceContentId: "", audio: null
+    });
+    assert.deepEqual(buildDeterministicFallbackCandidates({ ...matcherContext(), approvedActivityMaterial: { ...clone(APPROVED_MATERIAL), ...malformed } }), []);
+  }
+});
+
+test("el schema estricto transporta provenance nullable y el matcher elimina sólo null ausente", async () => {
+  const activitySchema = ADAPTIVE_TUTOR_PLAN_SCHEMA.properties.candidateActivities.items.properties.activity;
+  for (const branch of activitySchema.anyOf) {
+    for (const field of ["sourceActivityId", "sourceContentId"]) {
+      assert.ok(branch.required.includes(field));
+      assert.deepEqual(branch.properties[field].type, ["string", "null"]);
+    }
+    for (const recordKey of ["options", "pairs", "categories", "items", "dialogue"]) {
+      const recordSchema = branch.properties[recordKey].items;
+      for (const field of ["sourceActivityId", "sourceContentId", "sourceIds"]) assert.ok(recordSchema.required.includes(field));
+    }
+  }
+
+  const exact = await runPlanner({ activity: withSchemaSourceIdentityTransport(validActivity("ARROW_MATCH")) });
+  assert.equal(exact.result.usedAI, true);
+  assert.deepEqual(exact.result.adaptiveInterventionPlan.activities[0].pairs, clone(PAIRS));
+
+  const recordWithoutTopIdentity = clone(AUTHORITY_RECORD);
+  delete recordWithoutTopIdentity.approvedActivityMaterial.sourceActivityId;
+  delete recordWithoutTopIdentity.approvedActivityMaterial.sourceContentId;
+  const authorityWithoutTopIdentity = Object.freeze({
+    ...activityAuthority,
+    resolve({ activityId } = {}) {
+      return activityId === SOURCE_ACTIVITY_ID ? clone(recordWithoutTopIdentity) : null;
+    }
+  });
+  const activityWithoutTopIdentity = validActivity("ARROW_MATCH");
+  delete activityWithoutTopIdentity.sourceActivityId;
+  delete activityWithoutTopIdentity.sourceContentId;
+  const absentTop = await runPlanner({
+    activity: withSchemaSourceIdentityTransport(activityWithoutTopIdentity),
+    authority: authorityWithoutTopIdentity
+  });
+  assert.equal(absentTop.result.usedAI, true);
+  assert.equal(Object.hasOwn(absentTop.result.adaptiveInterventionPlan.activities[0], "sourceActivityId"), false);
+  assert.equal(Object.hasOwn(absentTop.result.adaptiveInterventionPlan.activities[0], "sourceContentId"), false);
+
+  const mismatched = withSchemaSourceIdentityTransport(validActivity("ARROW_MATCH"));
+  mismatched.pairs[0].sourceActivityId = "forged-source";
+  const rejected = await runPlanner({ activity: mismatched });
+  assert.equal(rejected.result.usedAI, false);
+  assert.ok(rejected.result.adaptiveInterventionPlan.activities.every(activity =>
+    !JSON.stringify(activity).includes("forged-source")));
+});
+
+test("el builder público rechaza IDs y referencias malformados sin coerción ni excepciones", async t => {
+  const cases = [
+    ["option id objeto", material => {
+      material.options[0].id = { evil: 1 };
+      material.correctOptionId = { evil: 1 };
+    }, ["CONTEXT_CHOICE", "AUDIO_SELECT"]],
+    ["option id con whitespace", material => {
+      material.options[0].id = " dog";
+      material.correctOptionId = " dog";
+    }, ["CONTEXT_CHOICE", "AUDIO_SELECT"]],
+    ["pair id objeto", material => { material.pairs[0].id = { evil: 1 }; }, ["ARROW_MATCH"]],
+    ["pair id con whitespace", material => { material.pairs[0].id = " pair-dog"; }, ["ARROW_MATCH"]],
+    ["category id objeto", material => { material.categories[0].id = { evil: 1 }; }, ["CATEGORY_SORT"]],
+    ["item id objeto", material => { material.items[0].id = { evil: 1 }; }, ["CATEGORY_SORT"]],
+    ["item categoryId objeto", material => { material.items[0].categoryId = { evil: 1 }; }, ["CATEGORY_SORT"]],
+    ["turn id objeto", material => { material.dialogue[0].id = { evil: 1 }; }, ["DIALOGUE_NEXT_TURN"]],
+    ["turn id con whitespace", material => { material.dialogue[0].id = " turn-one"; }, ["DIALOGUE_NEXT_TURN"]],
+    ["dialogue option/correct id objeto", material => {
+      material.dialogueOptions[0].id = { evil: 1 };
+      material.dialogueCorrectOptionId = { evil: 1 };
+    }, ["DIALOGUE_NEXT_TURN"]],
+    ["dialogue correct id con whitespace", material => {
+      material.dialogueCorrectOptionId = " dog";
+    }, ["DIALOGUE_NEXT_TURN"]],
+    ["dialogueOptions no-array", material => { material.dialogueOptions = {}; }, ["DIALOGUE_NEXT_TURN"]],
+    ["options no-array", material => { material.options = {}; }, ["CONTEXT_CHOICE", "AUDIO_SELECT"]],
+    ["pairs no-array", material => { material.pairs = {}; }, ["ARROW_MATCH"]],
+    ["contexts no-array", material => { material.contexts = {}; }, ["CONTEXT_CHOICE"]]
+  ];
+  for (const [name, mutate, forbiddenTypes] of cases) await t.test(name, () => {
+    const context = matcherContext();
+    mutate(context.approvedActivityMaterial);
+    let candidates;
+    assert.doesNotThrow(() => {
+      candidates = buildDeterministicFallbackCandidates(context, 1, "SEMANTIC_CONFUSION");
+    });
+    for (const type of forbiddenTypes) {
+      assert.equal(candidates.some(candidate => candidate.activityType === type), false, `${name}: ${type}`);
+    }
+    assert.doesNotMatch(JSON.stringify(candidates), /\[object Object\]/);
+  });
 });
 
 test("CONTEXT_CHOICE rechaza opción, distractor y contextText alterados", async t => {

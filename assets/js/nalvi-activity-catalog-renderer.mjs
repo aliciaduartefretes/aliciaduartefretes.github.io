@@ -3,10 +3,10 @@ import {
   NALVI_ACTIVITY_CATALOG_V1,
   catalogAudit,
   isEnabledActivityType
-} from "../../activity-catalog/nalvi-activity-catalog.mjs";
+} from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
 import { ANSWER_STATUSES, evaluateAnswer, normalizeAnswerSurface } from "../../assessment/nalvi-answer-evaluator.mjs";
 
-const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-4";
+const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-5";
 const LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const COPY = Object.freeze({
   es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", listen: "Escucha y selecciona", playAudio: "Escuchar audio", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma.", hint: "Ver pista", explanation: "Ver explicación", near: "Casi correcto. Revisa la forma.", equivalent: "¡Correcto! Esta forma también es válida.", review: "Vamos a practicar con una forma ya validada." },

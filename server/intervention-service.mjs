@@ -34,6 +34,37 @@ const sameIds = (left, right) => {
   const normalized = value => arrayOfIds(value).sort();
   return JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
 };
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+
+function exactSourceIdentity(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const identity = {};
+  for (const key of ["sourceActivityId", "sourceContentId"]) {
+    if (!hasOwn(value, key)) continue;
+    if (typeof value[key] !== "string" || !value[key] || value[key] !== value[key].trim()) return null;
+    identity[key] = value[key];
+  }
+  if (hasOwn(value, "sourceIds")) {
+    if (!Array.isArray(value.sourceIds)
+      || value.sourceIds.some(id => typeof id !== "string" || !id || id !== id.trim())
+      || new Set(value.sourceIds).size !== value.sourceIds.length) return null;
+    identity.sourceIds = [...value.sourceIds];
+  }
+  return identity;
+}
+
+function withExactSourceIdentity(source, canonical) {
+  const identity = exactSourceIdentity(source);
+  return identity === null ? null : { ...canonical, ...identity };
+}
+
+function emptyApprovedActivityMaterial() {
+  return {
+    options: [], correctOptionId: "", correctAnswer: "", acceptedAnswers: [],
+    pairs: [], contexts: [], categories: [], items: [], dialogue: [], dialogueOptions: [],
+    dialogueCorrectOptionId: "", dialogueCorrectAnswer: "", dialogueSourceContentId: "", audio: null
+  };
+}
 
 function localizedText(value, locale = "es", max = 320) {
   let selected = value;
@@ -195,10 +226,12 @@ export function sanitizeApprovedActivityMaterial(material = {}, targetText = "",
     const counts = entries.reduce((result, entry) => result.set(entry.id, (result.get(entry.id) || 0) + 1), new Map());
     return entries.filter(entry => counts.get(entry.id) === 1);
   };
+  const materialSourceIdentity = exactSourceIdentity(source);
+  if (materialSourceIdentity === null) return emptyApprovedActivityMaterial();
   const recordedAudio = trustedRecordedAudio(source, targetText);
-  const options = withoutDuplicateIds((Array.isArray(source.options) ? source.options : []).filter(authorized).slice(0, 4).map(option => ({
+  const options = withoutDuplicateIds((Array.isArray(source.options) ? source.options : []).filter(authorized).slice(0, 4).map(option => withExactSourceIdentity(option, {
     id: approvedId(option.id), text: localizedText(option.text ?? option.label ?? option.value, locale, 160), authorized: true
-  })).filter(option => option.id && option.text));
+  })).filter(option => option?.id && option.text));
   const requestedCorrectAnswer = localizedText(source.correctAnswer, locale, 240);
   const correctAnswer = requestedCorrectAnswer === localizedText(targetText, locale, 240) ? requestedCorrectAnswer : "";
   const requestedCorrectOptionId = approvedId(source.correctOptionId);
@@ -206,32 +239,34 @@ export function sanitizeApprovedActivityMaterial(material = {}, targetText = "",
   const correctOptionId = correctOption ? requestedCorrectOptionId : "";
   const acceptedAnswers = correctAnswer ? [...new Set((Array.isArray(source.acceptedAnswers) ? source.acceptedAnswers : [])
     .map(value => localizedText(value, locale, 160)).filter(Boolean))].slice(0, 10) : [];
-  const pairs = withoutDuplicateIds((Array.isArray(source.pairs) ? source.pairs : []).filter(authorized).slice(0, 5).map(pair => ({
+  const pairs = withoutDuplicateIds((Array.isArray(source.pairs) ? source.pairs : []).filter(authorized).slice(0, 5).map(pair => withExactSourceIdentity(pair, {
     id: approvedId(pair.id), left: localizedText(pair.left, locale, 160), right: localizedText(pair.right, locale, 160), authorized: true
-  })).filter(pair => pair.id && pair.left && pair.right));
+  })).filter(pair => pair?.id && pair.left && pair.right));
   const contexts = (Array.isArray(source.contexts) ? source.contexts : []).filter(authorized).slice(0, 4).map(context => ({
     text: localizedText(context.text ?? context.value, locale, 500), authorized: true
   })).filter(context => context.text);
-  const categories = withoutDuplicateIds((Array.isArray(source.categories) ? source.categories : []).filter(authorized).slice(0, 3).map(category => ({
+  const categories = withoutDuplicateIds((Array.isArray(source.categories) ? source.categories : []).filter(authorized).slice(0, 3).map(category => withExactSourceIdentity(category, {
     id: approvedId(category.id), label: localizedText(category.label ?? category.text, locale, 120), authorized: true
-  })).filter(category => category.id && category.label));
+  })).filter(category => category?.id && category.label));
   const categoryIds = new Set(categories.map(category => category.id));
-  const items = withoutDuplicateIds((Array.isArray(source.items) ? source.items : []).filter(authorized).slice(0, 10).map(item => ({
+  const items = withoutDuplicateIds((Array.isArray(source.items) ? source.items : []).filter(authorized).slice(0, 10).map(item => withExactSourceIdentity(item, {
     id: approvedId(item.id), text: localizedText(item.text ?? item.label, locale, 120), categoryId: approvedId(item.categoryId), authorized: true
-  })).filter(item => item.id && item.text && categoryIds.has(item.categoryId)));
-  const dialogue = withoutDuplicateIds((Array.isArray(source.dialogue) ? source.dialogue : []).filter(authorized).slice(0, 4).map(turn => ({
+  })).filter(item => item?.id && item.text && categoryIds.has(item.categoryId)));
+  const dialogue = withoutDuplicateIds((Array.isArray(source.dialogue) ? source.dialogue : []).filter(authorized).slice(0, 4).map(turn => withExactSourceIdentity(turn, {
     id: approvedId(turn.id), speaker: localizedText(turn.speaker, locale, 40), text: localizedText(turn.text, locale, 240), authorized: true
-  })).filter(turn => turn.id && turn.speaker && turn.text));
-  const dialogueOptions = withoutDuplicateIds((Array.isArray(source.dialogueOptions) ? source.dialogueOptions : []).filter(authorized).slice(0, 4).map(option => ({
+  })).filter(turn => turn?.id && turn.speaker && turn.text));
+  const dialogueOptions = withoutDuplicateIds((Array.isArray(source.dialogueOptions) ? source.dialogueOptions : []).filter(authorized).slice(0, 4).map(option => withExactSourceIdentity(option, {
     id: approvedId(option.id), text: localizedText(option.text ?? option.label ?? option.value, locale, 160), authorized: true
-  })).filter(option => option.id && option.text));
+  })).filter(option => option?.id && option.text));
   const requestedDialogueCorrectOptionId = approvedId(source.dialogueCorrectOptionId);
   const dialogueCorrectOption = dialogueOptions.find(option => option.id === requestedDialogueCorrectOptionId);
   const requestedDialogueCorrectAnswer = localizedText(source.dialogueCorrectAnswer, locale, 240);
   const dialogueCorrectOptionId = dialogueCorrectOption ? requestedDialogueCorrectOptionId : "";
   const dialogueCorrectAnswer = dialogueCorrectOption?.text === requestedDialogueCorrectAnswer ? requestedDialogueCorrectAnswer : "";
-  const dialogueSourceContentId = approvedId(source.dialogueSourceContentId);
+  const dialogueSourceContentId = typeof source.dialogueSourceContentId === "string"
+    && SAFE_ID.test(source.dialogueSourceContentId) ? source.dialogueSourceContentId : "";
   return {
+    ...materialSourceIdentity,
     options,
     correctOptionId,
     correctAnswer,

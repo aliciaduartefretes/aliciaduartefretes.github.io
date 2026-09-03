@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs";
 import {
+  authorizeBundledRecordedAudio,
   bundledRecordedAudioIndexAudit,
   bundledRecordedAudioRecords
 } from "../../progression-engine/recorded-audio-manifest-index.mjs";
@@ -76,6 +77,41 @@ test("el índice síncrono del fallback corresponde exactamente a las 99 entrada
       label: recording.label.normalize("NFC")
     }))
   );
+});
+
+test("el índice público exige una terna propia exacta y rechaza aliases heredados o extra", () => {
+  const recording = manifest.recordings[95];
+  const canonical = {
+    audioId: recording.id,
+    audioPath: canonicalRecordedAudioPath(recording.file),
+    audioText: recording.label
+  };
+  assert.deepEqual(authorizeBundledRecordedAudio(canonical, recording.label), claimFor(recording));
+  assert.equal(authorizeBundledRecordedAudio(Object.create(canonical), recording.label), null);
+  assert.equal(authorizeBundledRecordedAudio({ ...canonical, id: "NALVI-AUDIO-095" }, recording.label), null);
+  assert.equal(authorizeBundledRecordedAudio({ ...canonical, path: "assets/audio/guarani/ali-2026/095-itati.m4a" }, recording.label), null);
+
+  const nullPrototypeClaim = Object.assign(Object.create(null), canonical);
+  assert.deepEqual(authorizeBundledRecordedAudio(nullPrototypeClaim, recording.label), claimFor(recording));
+
+  const previousUrl = Object.getOwnPropertyDescriptor(Object.prototype, "url");
+  try {
+    Object.defineProperty(Object.prototype, "url", {
+      configurable: true,
+      enumerable: false,
+      value: "https://evil.invalid/096-jagua.m4a"
+    });
+    assert.equal(authorizeBundledRecordedAudio(canonical, recording.label), null);
+  } finally {
+    if (previousUrl) Object.defineProperty(Object.prototype, "url", previousUrl);
+    else delete Object.prototype.url;
+  }
+});
+
+test("los imports browser del fallback fijan catálogo e índice de audio versionados", () => {
+  const source = readFileSync(new URL("../../progression-engine/fallback-intervention.mjs", import.meta.url), "utf8");
+  assert.match(source, /nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
+  assert.match(source, /recorded-audio-manifest-index\.mjs\?v=NALVI-AUDIO-INDEX-2/);
 });
 
 function requestWithAudio(audio, overrides = {}) {

@@ -147,26 +147,57 @@ function validateLinguisticActivity(activity, context, mode, allowedKnowledge) {
 
 const tupleKey = values => JSON.stringify(values);
 const exactId = value => typeof value === "string" ? value.normalize("NFC") : "";
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const exactSourceIdentity = value => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const identity = {};
+  for (const key of ["sourceActivityId", "sourceContentId"]) {
+    if (!hasOwn(value, key)) continue;
+    if (typeof value[key] !== "string" || !value[key] || value[key] !== value[key].trim()) return null;
+    identity[key] = value[key];
+  }
+  if (hasOwn(value, "sourceIds")) {
+    if (!Array.isArray(value.sourceIds)
+      || value.sourceIds.some(id => typeof id !== "string" || !id || id !== id.trim())
+      || new Set(value.sourceIds).size !== value.sourceIds.length) return null;
+    identity.sourceIds = [...value.sourceIds];
+  }
+  return identity;
+};
+const sourceIdentityTuple = value => {
+  const identity = exactSourceIdentity(value);
+  return identity === null ? "" : tupleKey([
+    hasOwn(identity, "sourceActivityId"), identity.sourceActivityId || "",
+    hasOwn(identity, "sourceContentId"), identity.sourceContentId || "",
+    hasOwn(identity, "sourceIds"), hasOwn(identity, "sourceIds") ? [...identity.sourceIds].sort() : null
+  ]);
+};
+const projectedSourceIdentity = (value, materialValid) => materialValid ? (exactSourceIdentity(value) || {}) : {};
 const optionTuple = (option, locale) => {
   const id = exactId(option?.id);
   const text = exactText(option?.text ?? option?.label ?? option?.value, locale);
-  return id && text ? tupleKey([id, text]) : "";
+  const sourceIdentity = sourceIdentityTuple(option);
+  return id && text && sourceIdentity ? tupleKey([id, text, sourceIdentity]) : "";
 };
 const pairTuple = (pair, locale) => {
   const id = exactId(pair?.id), left = exactText(pair?.left, locale), right = exactText(pair?.right, locale);
-  return id && left && right ? tupleKey([id, left, right]) : "";
+  const sourceIdentity = sourceIdentityTuple(pair);
+  return id && left && right && sourceIdentity ? tupleKey([id, left, right, sourceIdentity]) : "";
 };
 const categoryTuple = (category, locale) => {
   const id = exactId(category?.id), label = exactText(category?.label ?? category?.text, locale);
-  return id && label ? tupleKey([id, label]) : "";
+  const sourceIdentity = sourceIdentityTuple(category);
+  return id && label && sourceIdentity ? tupleKey([id, label, sourceIdentity]) : "";
 };
 const itemTuple = (item, locale) => {
   const id = exactId(item?.id), text = exactText(item?.text ?? item?.label, locale), categoryId = exactId(item?.categoryId);
-  return id && text && categoryId ? tupleKey([id, text, categoryId]) : "";
+  const sourceIdentity = sourceIdentityTuple(item);
+  return id && text && categoryId && sourceIdentity ? tupleKey([id, text, categoryId, sourceIdentity]) : "";
 };
 const turnTuple = (turn, locale) => {
   const id = exactId(turn?.id), speaker = exactText(turn?.speaker, locale), text = exactText(turn?.text, locale);
-  return id && speaker && text ? tupleKey([id, speaker, text]) : "";
+  const sourceIdentity = sourceIdentityTuple(turn);
+  return id && speaker && text && sourceIdentity ? tupleKey([id, speaker, text, sourceIdentity]) : "";
 };
 
 function exactSubset(candidateValues, approvedValues, keyFor) {
@@ -228,6 +259,8 @@ export function validateActivityAgainstApprovedMaterial(activity = {}, context =
   const actualCorrectAnswer = exactText(activity.correctAnswer, locale);
   const actualAcceptedAnswers = (Array.isArray(activity.acceptedAnswers) ? activity.acceptedAnswers : [])
     .map(value => exactText(value, locale)).filter(Boolean);
+  const candidateSourceIdentity = exactSourceIdentity(activity);
+  const approvedSourceIdentity = exactSourceIdentity(approved);
 
   if (activity.requiresStudentResponse !== true) reasons.push("STUDENT_RESPONSE_REQUIRED");
   if (activity.conceptId && exactId(activity.conceptId) !== exactId(context.conceptId)) reasons.push("UNAPPROVED_CONCEPT_ID");
@@ -239,12 +272,43 @@ export function validateActivityAgainstApprovedMaterial(activity = {}, context =
   }
   for (const [field, approvedIds] of [
     ["lexemeIds", context.lexemeIds || []],
-    ["grammarRuleIds", context.grammarRuleIds || []],
-    ["sourceIds", context.sourceIds || context.activity?.sourceIds || []]
+    ["grammarRuleIds", context.grammarRuleIds || []]
   ]) {
     const candidateIds = Array.isArray(activity[field]) ? activity[field].map(exactId).filter(Boolean) : [];
     if (!exactSubset(candidateIds, approvedIds.map(exactId).filter(Boolean), value => value)) reasons.push(`UNAPPROVED_${field.replace(/([A-Z])/g, "_$1").toUpperCase()}`);
   }
+  if (candidateSourceIdentity === null || approvedSourceIdentity === null) reasons.push("INVALID_SOURCE_IDENTITY");
+  for (const field of ["sourceActivityId", "sourceContentId"]) {
+    const candidateHas = candidateSourceIdentity !== null && hasOwn(candidateSourceIdentity, field);
+    const approvedHas = approvedSourceIdentity !== null && hasOwn(approvedSourceIdentity, field);
+    if (candidateHas !== approvedHas
+      || (candidateHas && candidateSourceIdentity[field] !== approvedSourceIdentity[field])) reasons.push("UNAPPROVED_SOURCE_IDENTITY");
+    const trustedValue = field === "sourceActivityId"
+      ? context.activity?.id
+      : (hasOwn(context, "sourceContentId") ? context.sourceContentId : context.activity?.sourceContentId);
+    if (candidateHas && trustedValue != null
+      && (typeof trustedValue !== "string" || !trustedValue || trustedValue !== trustedValue.trim()
+        || candidateSourceIdentity[field] !== trustedValue)) reasons.push("UNAPPROVED_SOURCE_IDENTITY");
+  }
+  const candidateSourceIds = candidateSourceIdentity !== null && hasOwn(candidateSourceIdentity, "sourceIds")
+    ? candidateSourceIdentity.sourceIds : [];
+  const sourceDeclarations = [
+    ...(approvedSourceIdentity !== null && hasOwn(approvedSourceIdentity, "sourceIds") ? [approvedSourceIdentity.sourceIds] : []),
+    ...(hasOwn(context, "sourceIds") ? [context.sourceIds] : []),
+    ...(context.activity && hasOwn(context.activity, "sourceIds") ? [context.activity.sourceIds] : [])
+  ];
+  const validSourceSet = values => Array.isArray(values)
+    && values.every(value => typeof value === "string" && value && value === value.trim())
+    && new Set(values).size === values.length;
+  if (!validSourceSet(candidateSourceIds) || sourceDeclarations.some(values => !validSourceSet(values))
+    || sourceDeclarations.some(values => !exactMultiset(candidateSourceIds, values, value => value))) {
+    reasons.push("UNAPPROVED_SOURCE_IDS");
+  }
+  const lessonSourceActivityId = activity.lessonContext?.sourceActivityId;
+  if (lessonSourceActivityId != null
+    && (typeof lessonSourceActivityId !== "string" || !lessonSourceActivityId
+      || lessonSourceActivityId !== lessonSourceActivityId.trim()
+      || lessonSourceActivityId !== context.activity?.id)) reasons.push("UNAPPROVED_SOURCE_IDENTITY");
 
   if (!expectedCorrectAnswer || actualCorrectAnswer !== expectedCorrectAnswer) reasons.push("APPROVED_CORRECT_ANSWER_MISMATCH");
   if (!exactMultiset(actualAcceptedAnswers, expectedAcceptedAnswers, value => value)) reasons.push("APPROVED_ACCEPTED_ANSWERS_MISMATCH");
@@ -294,8 +358,9 @@ export function validateActivityAgainstApprovedMaterial(activity = {}, context =
 
   if (type === "DIALOGUE_NEXT_TURN") {
     const approvedDialogue = Array.isArray(approved.dialogue) ? approved.dialogue : [];
-    if (!exactId(approved.dialogueSourceContentId)
-      || exactId(activity.dialogueSourceContentId) !== exactId(approved.dialogueSourceContentId)) reasons.push("UNTRACEABLE_APPROVED_DIALOGUE");
+    if (typeof approved.dialogueSourceContentId !== "string" || !approved.dialogueSourceContentId.trim()
+      || typeof activity.dialogueSourceContentId !== "string"
+      || activity.dialogueSourceContentId !== approved.dialogueSourceContentId) reasons.push("UNTRACEABLE_APPROVED_DIALOGUE");
     if (dialogue.length < 2 || dialogue.length > 4) reasons.push("UNAPPROVED_DIALOGUE_LENGTH");
     if (!contiguousSubset(dialogue, approvedDialogue, value => turnTuple(value, locale))) reasons.push("UNAPPROVED_DIALOGUE");
   } else if (dialogue.length) reasons.push("UNAPPROVED_DIALOGUE_FOR_ACTIVITY_TYPE");
@@ -323,6 +388,22 @@ function canonicalizeVisibleActivityCopy(activity = {}, context = {}) {
   const type = activity.activityType || activity.type;
   const copy = deterministicInterventionCopy(type, context.uiLocale);
   return { ...activity, prompt: copy, instruction: copy, hints: [], explanation: "" };
+}
+
+function stripAbsentSourceIdentityTransport(activity = {}) {
+  const stripRecord = value => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+    const record = { ...value };
+    for (const key of ["sourceActivityId", "sourceContentId", "sourceIds"]) {
+      if (record[key] === null) delete record[key];
+    }
+    return record;
+  };
+  const canonical = stripRecord(activity);
+  for (const key of ["options", "pairs", "categories", "items", "dialogue"]) {
+    if (Array.isArray(activity[key])) canonical[key] = activity[key].map(stripRecord);
+  }
+  return canonical;
 }
 
 function canonicalContentDigest(content) {
@@ -445,7 +526,8 @@ export function toRenderable(activity, context, planId, index) {
           value: text,
           image: "",
           imageAlt: "",
-          authorized: true
+          authorized: true,
+          ...projectedSourceIdentity(option, materialValid)
         };
       })
     : [];
@@ -460,28 +542,37 @@ export function toRenderable(activity, context, planId, index) {
     id: exactId(pair?.id),
     left: exactText(pair?.left, locale),
     right: exactText(pair?.right, locale),
-    authorized: true
+    authorized: true,
+    ...projectedSourceIdentity(pair, materialValid)
   })) : [];
   const categories = type === "CATEGORY_SORT" ? (activity.categories || []).map(category => ({
     id: exactId(category?.id),
     label: exactText(category?.label ?? category?.text, locale),
-    authorized: true
+    authorized: true,
+    ...projectedSourceIdentity(category, materialValid)
   })) : [];
   const items = type === "CATEGORY_SORT" ? (activity.items || []).map(item => ({
     id: exactId(item?.id),
     text: exactText(item?.text ?? item?.label, locale),
     categoryId: exactId(item?.categoryId),
-    authorized: true
+    authorized: true,
+    ...projectedSourceIdentity(item, materialValid)
   })) : [];
   const dialogue = type === "DIALOGUE_NEXT_TURN" ? (activity.dialogue || []).map(turn => ({
     id: exactId(turn?.id),
     speaker: exactText(turn?.speaker, locale),
     text: exactText(turn?.text, locale),
-    authorized: true
+    authorized: true,
+    ...projectedSourceIdentity(turn, materialValid)
   })) : [];
   const acceptedAnswers = type === "DIALOGUE_NEXT_TURN"
     ? [correctAnswer].filter(Boolean)
     : (approved.acceptedAnswers || []).map(value => exactText(value, locale)).filter(Boolean);
+  const renderSourceIdentity = materialValid ? (exactSourceIdentity(activity) || {}) : {};
+  const renderSourceIds = hasOwn(renderSourceIdentity, "sourceIds")
+    ? [...renderSourceIdentity.sourceIds]
+    : Array.isArray(context.sourceIds) ? [...context.sourceIds]
+      : Array.isArray(context.activity?.sourceIds) ? [...context.activity.sourceIds] : [];
   const helpLevel = type === "INDEPENDENT_RECALL"
     ? 0
     : Math.min(2, Math.max(0, Number(context.attemptNumber || 1) - 1));
@@ -494,13 +585,18 @@ export function toRenderable(activity, context, planId, index) {
     cognitiveDemand: cognitiveDemandFor(type),
     answerExposure: "HIDDEN",
     lexemeIds: [...(context.lexemeIds || [])], grammarRuleIds: [...(context.grammarRuleIds || [])],
-    sourceIds: [...(context.sourceIds || context.activity?.sourceIds || [])], requiresStudentResponse: true,
+    sourceIds: renderSourceIds,
+    ...(hasOwn(renderSourceIdentity, "sourceActivityId")
+      ? { sourceActivityId: renderSourceIdentity.sourceActivityId } : {}),
+    ...(hasOwn(renderSourceIdentity, "sourceContentId")
+      ? { sourceContentId: renderSourceIdentity.sourceContentId } : {}),
+    requiresStudentResponse: true,
     instruction: deterministicInterventionCopy(type, locale),
     prompt: deterministicInterventionCopy(type, locale),
     contextText: type === "CONTEXT_CHOICE" ? exactText(activity.contextText, locale) : "",
     contextAuthorized: type === "CONTEXT_CHOICE",
-    dialogueAuthorized: type === "DIALOGUE_NEXT_TURN",
-    dialogueSourceContentId: type === "DIALOGUE_NEXT_TURN" ? exactId(approved.dialogueSourceContentId) : "",
+    dialogueAuthorized: type === "DIALOGUE_NEXT_TURN" && materialValid,
+    dialogueSourceContentId: type === "DIALOGUE_NEXT_TURN" && materialValid ? activity.dialogueSourceContentId : "",
     options,
     pairs,
     tiles: [],
@@ -572,7 +668,7 @@ function selectValidatedCandidate(plan, context, mode, allowedKnowledge) {
       errorType: expectedDiagnosis.errorType,
       estimatedCognitiveDemand: cognitiveDemandFor(type),
       reasonCode: `SERVER_APPROVED_${type}`,
-      activity: canonicalizeVisibleActivityCopy(rawCandidate.activity, context)
+      activity: canonicalizeVisibleActivityCopy(stripAbsentSourceIdentityTransport(rawCandidate.activity), context)
     };
     const selected = selectFirstValidCandidate([candidateWithSafeCopy], { ...context, errorType: expectedDiagnosis.errorType });
     if (!selected.accepted) {

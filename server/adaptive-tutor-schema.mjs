@@ -2,15 +2,21 @@ import { catalogAudit, COGNITIVE_DEMAND } from "../activity-catalog/nalvi-activi
 
 const enabledTypes = catalogAudit().enabledTypes;
 const strings = { type: "array", items: { type: "string" } };
+const sourceIdentityRequired = ["sourceActivityId", "sourceContentId", "sourceIds"];
+const sourceIdentityProperties = {
+  sourceActivityId: { type: ["string", "null"] },
+  sourceContentId: { type: ["string", "null"] },
+  sourceIds: { type: ["array", "null"], items: { type: "string" } }
+};
 const option = {
   type: "object", additionalProperties: false,
-  required: ["id", "text", "image", "imageAlt", "authorized"],
-  properties: { id: { type: "string" }, text: { type: "string" }, image: { type: "string" }, imageAlt: { type: "string" }, authorized: { type: "boolean" } }
+  required: ["id", "text", "image", "imageAlt", "authorized", ...sourceIdentityRequired],
+  properties: { id: { type: "string" }, text: { type: "string" }, image: { type: "string" }, imageAlt: { type: "string" }, authorized: { type: "boolean" }, ...sourceIdentityProperties }
 };
 const pair = {
   type: "object", additionalProperties: false,
-  required: ["id", "left", "right", "authorized"],
-  properties: { id: { type: "string" }, left: { type: "string" }, right: { type: "string" }, authorized: { type: "boolean" } }
+  required: ["id", "left", "right", "authorized", ...sourceIdentityRequired],
+  properties: { id: { type: "string" }, left: { type: "string" }, right: { type: "string" }, authorized: { type: "boolean" }, ...sourceIdentityProperties }
 };
 const tile = {
   type: "object", additionalProperties: false,
@@ -19,12 +25,12 @@ const tile = {
 };
 const category = {
   type: "object", additionalProperties: false,
-  required: ["id", "label", "authorized"], properties: { id: { type: "string" }, label: { type: "string" }, authorized: { type: "boolean" } }
+  required: ["id", "label", "authorized", ...sourceIdentityRequired], properties: { id: { type: "string" }, label: { type: "string" }, authorized: { type: "boolean" }, ...sourceIdentityProperties }
 };
 const sortItem = {
   type: "object", additionalProperties: false,
-  required: ["id", "text", "categoryId", "authorized"],
-  properties: { id: { type: "string" }, text: { type: "string" }, categoryId: { type: "string" }, authorized: { type: "boolean" } }
+  required: ["id", "text", "categoryId", "authorized", ...sourceIdentityRequired],
+  properties: { id: { type: "string" }, text: { type: "string" }, categoryId: { type: "string" }, authorized: { type: "boolean" }, ...sourceIdentityProperties }
 };
 const segment = {
   type: "object", additionalProperties: false,
@@ -36,7 +42,7 @@ const correction = {
 };
 const turn = {
   type: "object", additionalProperties: false,
-  required: ["id", "speaker", "text", "authorized"], properties: { id: { type: "string" }, speaker: { type: "string" }, text: { type: "string" }, authorized: { type: "boolean" } }
+  required: ["id", "speaker", "text", "authorized", ...sourceIdentityRequired], properties: { id: { type: "string" }, speaker: { type: "string" }, text: { type: "string" }, authorized: { type: "boolean" }, ...sourceIdentityProperties }
 };
 const question = {
   type: "object", additionalProperties: false,
@@ -54,12 +60,14 @@ const media = {
   properties: { type: { type: "string", enum: ["none", "image", "audio"] }, value: { type: "string" }, alt: { type: "string" }, sourceId: { type: "string" }, authorized: { type: "boolean" } }
 };
 
-const activityRequired = ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "contextAuthorized", "audioId", "audioPath", "audioText", "audioAuthorized", "humanRecorded", "audioSource", "dialogueAuthorized", "dialogueSourceContentId", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"];
+const activityRequired = ["id", "activityType", "skill", "difficulty", "helpLevel", "answerExposure", "requiresStudentResponse", "instruction", "prompt", "contextText", "contextAuthorized", "audioId", "audioPath", "audioText", "audioAuthorized", "humanRecorded", "audioSource", "dialogueAuthorized", "dialogueSourceContentId", "options", "pairs", "tiles", "categories", "items", "segments", "corrections", "correctedSentence", "dialogue", "questions", "steps", "template", "correctOrder", "media", "hints", "explanation", "correctAnswer", "correctOptionId", "correctCorrectionId", "acceptedAnswers", "conceptIds", "lexemeIds", "grammarRuleIds", "sourceIds", "sourceActivityId", "sourceContentId", "conflictIds", "hasOpenConflict", "distractorQuality", "fingerprintSeed"];
 const commonActivityProperties = {
   id: { type: "string" }, skill: { type: "string" }, difficulty: { type: "string" },
   helpLevel: { type: "integer", minimum: 0, maximum: 4 }, answerExposure: { type: "string", enum: ["HIDDEN", "PARTIAL_HINT", "WORKED_EXAMPLE", "EXPLICIT_SOLUTION"] }, requiresStudentResponse: { type: "boolean" },
   instruction: { type: "string" }, prompt: { type: "string" }, contextText: { type: "string" }, contextAuthorized: { type: "boolean" }, dialogueAuthorized: { type: "boolean" }, dialogueSourceContentId: { type: "string" }, options: { type: "array", items: option }, pairs: { type: "array", items: pair }, tiles: { type: "array", items: tile }, categories: { type: "array", items: category }, items: { type: "array", items: sortItem }, segments: { type: "array", items: segment }, corrections: { type: "array", items: correction }, correctedSentence: { type: "string" }, dialogue: { type: "array", items: turn }, questions: { type: "array", items: question }, steps: { type: "array", items: step }, template: { type: "string" }, correctOrder: strings,
-  media, hints: strings, explanation: { type: "string" }, correctAnswer: { type: "string" }, correctOptionId: { type: "string" }, correctCorrectionId: { type: "string" }, acceptedAnswers: strings, conceptIds: strings, lexemeIds: strings, grammarRuleIds: strings, sourceIds: strings, conflictIds: strings, hasOpenConflict: { type: "boolean" }, distractorQuality: { type: "string", enum: ["PLAUSIBLE"] }, fingerprintSeed: { type: "string" }
+  media, hints: strings, explanation: { type: "string" }, correctAnswer: { type: "string" }, correctOptionId: { type: "string" }, correctCorrectionId: { type: "string" }, acceptedAnswers: strings, conceptIds: strings, lexemeIds: strings, grammarRuleIds: strings, sourceIds: strings,
+  sourceActivityId: { type: ["string", "null"] }, sourceContentId: { type: ["string", "null"] },
+  conflictIds: strings, hasOpenConflict: { type: "boolean" }, distractorQuality: { type: "string", enum: ["PLAUSIBLE"] }, fingerprintSeed: { type: "string" }
 };
 
 function activitySchema({ audio }) {
