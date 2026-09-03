@@ -2,6 +2,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { delimiter, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveFirebaseToolsEntrypoint, runFirebaseTools } from "./firebase-tools-launcher.mjs";
+import { evaluatePre8CTestInventory, normalizeDiscoveredTestPath } from "./pre-8c-test-inventory.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const ignoredDirectories = new Set([".git", ".firebase", "node_modules", "versions"]);
@@ -30,7 +32,7 @@ function discoverTests(directory = root) {
     if (entry.isDirectory()) {
       if (!ignoredDirectories.has(entry.name)) tests.push(...discoverTests(join(directory, entry.name)));
     } else if (entry.isFile() && entry.name.endsWith(".test.mjs")) {
-      tests.push(relative(root, join(directory, entry.name)));
+      tests.push(normalizeDiscoveredTestPath(relative(root, join(directory, entry.name))));
     }
   }
   return tests.sort();
@@ -132,14 +134,14 @@ function javaEnvironment() {
 }
 
 function runFirestoreTest() {
-  const executable = join(root, "node_modules", ".bin", process.platform === "win32" ? "firebase.cmd" : "firebase");
-  if (!existsSync(executable)) {
+  const firebaseEntrypoint = resolveFirebaseToolsEntrypoint();
+  if (!firebaseEntrypoint) {
     return blockedFirestoreTotals("FIREBASE_CLI_NOT_INSTALLED");
   }
   const env = javaEnvironment();
   if (!env) return blockedFirestoreTotals("JAVA_NOT_AVAILABLE");
 
-  const result = run(executable, [
+  const result = runFirebaseTools([
     "emulators:exec",
     "--only", "firestore",
     "--project", "demo-nalvi-paso-6",
@@ -147,12 +149,18 @@ function runFirestoreTest() {
     "--non-interactive",
     "node --test --test-reporter=tap firebase/firestore-paso-6.test.mjs"
   ], {
+    cwd: root,
+    encoding: "utf8",
     env: {
       ...env,
       FIREBASE_TOOLS_DISABLE_UPDATE_CHECK: "true",
       XDG_CONFIG_HOME: join(root, ".firebase", "config")
-    }
+    },
+    maxBuffer: 20 * 1024 * 1024
+  }, {
+    firebaseEntrypoint
   });
+  emit(result);
   const totals = firestoreCheckTotals(`${result.stdout || ""}\n${result.stderr || ""}`);
   if (totals.observed === 0) {
     return blockedFirestoreTotals(result.error ? String(result.error.message || result.error) : "FIRESTORE_EMULATOR_DID_NOT_START");
@@ -223,6 +231,10 @@ const testTotals = {
 if (testTotals.pass + testTotals.fail + testTotals.blocked !== testTotals.total) {
   throw new Error("PRE_8C_TEST_INVENTORY_MISMATCH");
 }
+const testInventory = evaluatePre8CTestInventory({
+  discoveredTestFiles: discoveredTests,
+  observedTestCount: testTotals.total
+});
 const validatorTotals = {
   pass: validatorResults.filter(result => result.status === "PASS").length,
   fail: validatorResults.filter(result => result.status === "FAIL").length,
@@ -235,6 +247,7 @@ const summary = {
   node: nodeTotals,
   firestore: firestoreTotals,
   tests: testTotals,
+  testInventory,
   validators: validatorTotals,
   validatorResults,
   paso8CMayStart: false,
@@ -243,6 +256,6 @@ const summary = {
 
 console.log("\n=== Resumen PRE-8C QA ===");
 console.log(JSON.stringify(summary, null, 2));
-if (testTotals.fail > 0 || testTotals.blocked > 0 || validatorTotals.fail > 0 || validatorTotals.blocked > 0) {
+if (testInventory.status !== "PASS" || testTotals.fail > 0 || testTotals.blocked > 0 || validatorTotals.fail > 0 || validatorTotals.blocked > 0) {
   process.exitCode = 1;
 }
