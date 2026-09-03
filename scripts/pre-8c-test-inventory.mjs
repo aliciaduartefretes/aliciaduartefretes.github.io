@@ -7,11 +7,16 @@ export const PRE_8C_TEST_INVENTORY = Object.freeze({
     "ai/tests/reinforcement-engine.test.mjs",
     "api/tests/record-learning-attempt.test.mjs",
     "assessment/tests/nalvi-answer-evaluator.test.mjs",
+    "assets/js/tests/nalvi-audio-release.test.mjs",
+    "assets/js/tests/nalvi-audio-renderer.test.mjs",
+    "assets/js/tests/nalvi-recorded-audio.test.mjs",
+    "curriculum/tests/guarani-general-verbs-fidelity.test.mjs",
     "curriculum/tests/guarani-general-route.test.mjs",
     "evals/adaptive-tutor/adaptive-tutor.eval.test.mjs",
     "firebase/firestore-paso-6.test.mjs",
     "grammar-engine/tests/grammar-engine.test.mjs",
     "intervention-engine/tests/intervention-engine.test.mjs",
+    "institutional/tests/institutional-experience.test.mjs",
     "mastery-engine/tests/mastery-engine.test.mjs",
     "progression-engine/tests/progression-client-evidence.test.mjs",
     "progression-engine/tests/progression-gate.test.mjs",
@@ -19,9 +24,12 @@ export const PRE_8C_TEST_INVENTORY = Object.freeze({
     "scripts/tests/pre-8c-test-inventory.test.mjs",
     "server/tests/adaptive-intervention-plan.test.mjs",
     "server/tests/adaptive-tutor-orchestrator.test.mjs",
+    "server/tests/audio-claim-consensus.test.mjs",
     "server/tests/firebase-id-token.test.mjs",
     "server/tests/mastery-attempt-service.test.mjs",
-    "server/tests/normative-pilot-activation.test.mjs"
+    "server/tests/normative-pilot-activation.test.mjs",
+    "server/tests/recorded-audio-whitelist.test.mjs",
+    "validation/product-linguistic-corrections.test.mjs"
   ])
 });
 

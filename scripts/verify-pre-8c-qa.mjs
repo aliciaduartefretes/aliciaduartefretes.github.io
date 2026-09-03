@@ -23,7 +23,8 @@ const validators = [
   "scripts/validate-paso-8B.mjs",
   "scripts/validate-paso-8B-5-normative.mjs",
   "scripts/validate-pre-8C-grammar.mjs",
-  "scripts/validate-pre-8c-progression.mjs"
+  "scripts/validate-pre-8c-progression.mjs",
+  "scripts/validate-pre8c-audio.mjs"
 ];
 
 function discoverTests(directory = root) {

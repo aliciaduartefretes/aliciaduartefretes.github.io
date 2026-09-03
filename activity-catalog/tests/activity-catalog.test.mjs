@@ -618,11 +618,11 @@ test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera
   assert.equal(validation.leakage.codes.includes("ANSWER_IN_DIALOGUE"), false);
   const html = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
   assert.match(html, /assets\/js\/kuaa-general-activities\.js\?v=NALVI-GENERAL-ACTIVITIES-2/);
-  assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-12/);
+  assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-13/);
   const client = readFileSync(new URL("../../assets/js/nalvi-intervention-client.mjs", import.meta.url), "utf8");
-  assert.match(client, /progression-engine\/fallback-intervention\.mjs\?v=NALVI-CATALOG-5/);
-  assert.match(client, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
-  assert.match(html, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-5/);
+  assert.match(client, /progression-engine\/fallback-intervention\.mjs\?v=NALVI-CATALOG-6/);
+  assert.match(client, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);
+  assert.match(html, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);
   for (const modulePath of ["../nalvi-activity-quality.mjs", "../catalog-examples.mjs"]) {
     const source = readFileSync(new URL(modulePath, import.meta.url), "utf8");
     assert.match(source, /\.\/nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);

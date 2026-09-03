@@ -5,12 +5,12 @@ import {
   planPedagogicalIntervention,
   wouldAIImproveIntervention
 } from "../../intervention-engine/intervention-engine.mjs?v=NALVI-TUTOR-4";
-import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-5";
+import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs?v=NALVI-CATALOG-6";
 import { detectAnswerLeakage, selectFirstValidCandidate, validateCatalogActivity } from "../../activity-catalog/nalvi-activity-quality.mjs?v=NALVI-CATALOG-4";
 import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
-import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-5";
+import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-6";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-12";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-13";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
