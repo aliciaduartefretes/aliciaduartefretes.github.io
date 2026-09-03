@@ -13,6 +13,9 @@ const style=await readFile(styleUrl,"utf8");
 const index=await readFile(indexUrl,"utf8");
 
 test("institutional sprint exposes the five requested areas",()=>{
+  assert.match(script,/const VERSION="NALVI-INSTITUTIONAL-SPRINT-2"/);
+  assert.match(script,/const root=\$\("#institutionalExperience"\)/);
+  assert.doesNotMatch(script,/#nalviInstitutionalExperience/);
   for(const label of ["Comunidad","Aula","En vivo","Miembros","Gestión"])assert.match(script,new RegExp(label));
   for(const tab of ["community","classroom","live","members","management"])assert.match(script,new RegExp(`data-institutional-tab=\\"\\$\\{id\\}`));
 });
@@ -61,6 +64,6 @@ test("index loads the protected service and experience with explicit flags",()=>
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:false/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-1/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-1/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-2/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-1/);
 });
