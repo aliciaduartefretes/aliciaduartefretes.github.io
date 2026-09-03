@@ -6,7 +6,7 @@ import {
 } from "../../activity-catalog/nalvi-activity-catalog.mjs";
 import { ANSWER_STATUSES, evaluateAnswer, normalizeAnswerSurface } from "../../assessment/nalvi-answer-evaluator.mjs";
 
-const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-3";
+const VERSION = "NALVI-ACTIVITY-CATALOG-RENDERER-4";
 const LOCALES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const COPY = Object.freeze({
   es: { check: "Comprobar", reset: "Reiniciar", select: "Selecciona una respuesta", listen: "Escucha y selecciona", playAudio: "Escuchar audio", match: "Relaciona cada elemento", sort: "Clasifica las tarjetas", buildWord: "Construye la palabra", buildSentence: "Construye la expresión", findError: "Encuentra la parte que necesita corrección", chooseCorrection: "Elige la corrección", dialogue: "Observa la conversación", nextTurn: "¿Qué respuesta tendría sentido ahora?", orderDialogue: "Ordena la conversación", recall: "Escribe tu respuesta", step: "Paso", correct: "¡Bien!", wrong: "No del todo. Probemos de otra forma.", hint: "Ver pista", explanation: "Ver explicación", near: "Casi correcto. Revisa la forma.", equivalent: "¡Correcto! Esta forma también es válida.", review: "Vamos a practicar con una forma ya validada." },
@@ -85,9 +85,10 @@ function renderChoice(target, activity, context, { image = false, dialogue = fal
     const selection = {
       audioId: String(activity.audioId || "").trim(),
       audioPath: String(activity.audioPath || "").trim(),
-      audioText: String(activity.audioText || activity.correctAnswer || "").trim(),
+      audioText: String(activity.audioText || "").trim(),
       audioAuthorized: activity.audioAuthorized === true,
-      humanRecorded: activity.humanRecorded === true
+      humanRecorded: activity.humanRecorded === true,
+      audioSource: String(activity.audioSource || "").trim()
     };
     const updateAudioAvailability = () => {
       const authorized = registry?.authorize?.(selection);
@@ -101,7 +102,7 @@ function renderChoice(target, activity, context, { image = false, dialogue = fal
     playButton?.addEventListener("click", async () => {
       if (playButton.disabled || !registry?.playSelection) return;
       const played = await registry.playSelection(selection, playButton);
-      if (!played) {
+      if (!played && playButton.getAttribute?.("aria-pressed") !== "true") {
         playButton.dataset.audioState = "unavailable";
         playButton.disabled = true;
         playButton.setAttribute("aria-disabled", "true");

@@ -2,9 +2,19 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { buildDeterministicFallbackCandidates } from "../../progression-engine/fallback-intervention.mjs";
+import {
+  bundledRecordedAudioIndexAudit,
+  bundledRecordedAudioRecords
+} from "../../progression-engine/recorded-audio-manifest-index.mjs";
 import { ADAPTIVE_TUTOR_PLAN_SCHEMA } from "../adaptive-tutor-schema.mjs";
-import { createAdaptiveTutorOrchestrator, toRenderable } from "../adaptive-tutor-orchestrator.mjs";
-import { normalizeInterventionRequest } from "../intervention-service.mjs";
+import {
+  createAdaptiveTutorOrchestrator,
+  createProfessionalFallbackPlan,
+  determineLinguisticMode,
+  toRenderable,
+  validateActivityAgainstApprovedMaterial
+} from "../adaptive-tutor-orchestrator.mjs";
+import { normalizeInterventionRequest, sanitizeApprovedActivityMaterial } from "../intervention-service.mjs";
 import {
   authorizeRecordedAudioForTarget,
   canonicalRecordedAudioPath,
@@ -24,10 +34,54 @@ const claimFor = recording => ({
   audioPath: canonicalRecordedAudioPath(recording.file),
   audioText: recording.label,
   audioAuthorized: true,
-  humanRecorded: true
+  humanRecorded: true,
+  audioSource: "manifest-human-recording"
+});
+
+const richClaimFor = recording => {
+  const canonical = claimFor(recording);
+  return {
+    id: canonical.audioId,
+    audioId: canonical.audioId,
+    recordingId: canonical.audioId,
+    path: canonical.audioPath,
+    audioPath: canonical.audioPath,
+    text: canonical.audioText,
+    audioText: canonical.audioText,
+    source: canonical.audioSource,
+    audioSource: canonical.audioSource,
+    authorized: true,
+    audioAuthorized: true,
+    humanRecorded: true
+  };
+};
+
+test("el índice síncrono del fallback corresponde exactamente a las 99 entradas del manifiesto", () => {
+  assert.deepEqual(bundledRecordedAudioIndexAudit(), {
+    version: manifest.version,
+    count: 99,
+    basePath: "assets/audio/guarani/ali-2026",
+    exactIdPathTextRequired: true,
+    playbackReady: false
+  });
+  assert.deepEqual(
+    bundledRecordedAudioRecords.map(recording => ({
+      id: recording.audioId,
+      path: recording.audioPath,
+      label: recording.audioText
+    })),
+    manifest.recordings.map(recording => ({
+      id: recording.id,
+      path: canonicalRecordedAudioPath(recording.file),
+      label: recording.label.normalize("NFC")
+    }))
+  );
 });
 
 function requestWithAudio(audio, overrides = {}) {
+  const activityAudio = audio && typeof audio === "object" ? Object.fromEntries([
+    "audioId", "audioPath", "audioText", "audioAuthorized", "humanRecorded", "audioSource"
+  ].filter(key => Object.hasOwn(audio, key)).map(key => [key, audio[key]])) : {};
   return {
     correct: false,
     conceptId: "catalog-jagua",
@@ -47,15 +101,26 @@ function requestWithAudio(audio, overrides = {}) {
     lexemeIds: [],
     knowledgeIds: [],
     activity: {
-      id: "source-listening",
+      id: "server-rich-jagua",
       conceptId: "catalog-jagua",
+      conceptIds: ["catalog-jagua"],
       learningObjectiveId: "catalog-audio",
       type: "listening",
+      activityType: "listening",
       skill: "listening",
       difficulty: "foundation-1",
       prompt: "Escucha.",
       instruction: "Elige.",
-      ...audio
+      options: [
+        { id: "jagua", label: "Jagua" },
+        { id: "guyra", label: "Guyra" },
+        { id: "mbarakaja", label: "Mbarakaja" }
+      ],
+      correctOptionId: "jagua",
+      lexemeIds: [],
+      grammarRuleIds: [],
+      sourceIds: [],
+      ...activityAudio
     },
     authorizedAudio: audio,
     approvedActivityMaterial: {
@@ -64,11 +129,255 @@ function requestWithAudio(audio, overrides = {}) {
         { id: "guyra", text: "Guyra", authorized: true },
         { id: "mbarakaja", text: "Mbarakaja", authorized: true }
       ],
+      correctOptionId: "jagua",
+      correctAnswer: "Jagua",
+      acceptedAnswers: ["Jagua"],
       audio
     },
     aiPolicy: { allowInterventionAI: true, AI_TUTOR_ON_EVERY_INCORRECT_ANSWER: true },
     ...overrides
   };
+}
+
+const CANONICAL_AUDIO = Object.freeze({
+  audioId: "NALVI-AUDIO-096",
+  audioPath: "assets/audio/guarani/ali-2026/096-jagua.m4a",
+  audioText: "Jagua",
+  audioAuthorized: true,
+  humanRecorded: true,
+  audioSource: "manifest-human-recording"
+});
+
+const TEST_ACTIVITIES = [
+  {
+    id: "server-rich-jagua",
+    learningObjectiveId: "catalog-audio",
+    conceptIds: ["catalog-jagua"],
+    lexemeIds: [],
+    grammarRuleIds: [],
+    skill: "listening",
+    difficulty: "foundation-1",
+    activityType: "listening",
+    type: "listening",
+    contentValidationStatus: "unreviewed",
+    allowedForMastery: false,
+    prompt: { es: "Elige Jagua.", en: "Choose Jagua." },
+    options: [
+      { id: "jagua", label: "Jagua" },
+      { id: "guyra", label: "Guyra" },
+      { id: "mbarakaja", label: "Mbarakaja" }
+    ],
+    correctOptionId: "jagua",
+    semanticPair: { target: "Jagua", meaning: "perro", adaptiveReuseAuthorized: true },
+    approvedContexts: [{ text: { es: "Contexto aprobado", en: "Approved context" }, authorized: true }],
+    adaptiveCategories: [
+      { id: "animals", label: "Animales", authorized: true },
+      { id: "other", label: "Otros", authorized: true }
+    ],
+    adaptiveCategoryItems: [
+      { id: "item-1", text: "Jagua", categoryId: "animals", authorized: true },
+      { id: "item-2", text: "Guyra", categoryId: "animals", authorized: true },
+      { id: "item-3", text: "Mbarakaja", categoryId: "animals", authorized: true },
+      { id: "item-4", text: "Óga", categoryId: "other", authorized: true },
+      { id: "item-5", text: "Y", categoryId: "other", authorized: true },
+      { id: "item-6", text: "Tape", categoryId: "other", authorized: true }
+    ],
+    adaptiveDialogue: {
+      authorized: true,
+      sourceContentId: "server-dialogue-jagua",
+      turns: [
+        { id: "turn-1", speaker: "A", text: "¿Rehecha jagua?", authorized: true },
+        { id: "turn-2", speaker: "B", text: "Héẽ, ahecha.", authorized: true }
+      ],
+      options: [
+        { id: "jagua", text: "Jagua", authorized: true },
+        { id: "guyra", text: "Guyra", authorized: true },
+        { id: "mbarakaja", text: "Mbarakaja", authorized: true }
+      ],
+      correctOptionId: "jagua",
+      correctAnswer: "Jagua"
+    }
+  },
+  {
+    id: "server-rich-guyra",
+    learningObjectiveId: "catalog-audio",
+    conceptIds: ["catalog-jagua"],
+    skill: "vocabulary",
+    difficulty: "foundation-1",
+    activityType: "multiple-choice",
+    type: "multiple-choice",
+    options: [{ id: "guyra", label: "Guyra" }],
+    correctOptionId: "guyra",
+    semanticPair: { target: "Guyra", meaning: "pájaro", adaptiveReuseAuthorized: true }
+  },
+  {
+    id: "server-rich-mbarakaja",
+    learningObjectiveId: "catalog-audio",
+    conceptIds: ["catalog-jagua"],
+    skill: "vocabulary",
+    difficulty: "foundation-1",
+    activityType: "multiple-choice",
+    type: "multiple-choice",
+    options: [{ id: "mbarakaja", label: "Mbarakaja" }],
+    correctOptionId: "mbarakaja",
+    semanticPair: { target: "Mbarakaja", meaning: "gato", adaptiveReuseAuthorized: true }
+  }
+];
+const testLocalize = (value, locale = "es") => value && typeof value === "object" && !Array.isArray(value)
+  ? String(value[locale] ?? value.es ?? value.en ?? "")
+  : String(value ?? "");
+function testAuthorityDescriptor(raw, locale = "es") {
+  const options = (raw.options || []).map(option => ({
+    id: String(option.id),
+    text: testLocalize(option.label ?? option.text, locale),
+    authorized: true
+  }));
+  const correctAnswer = options.find(option => option.id === raw.correctOptionId)?.text || "";
+  const adaptiveDialogue = raw.adaptiveDialogue;
+  const dialogueOptions = (adaptiveDialogue?.options || []).map(option => ({
+    id: String(option.id), text: testLocalize(option.text, locale), authorized: true
+  }));
+  const sourceActivity = {
+    id: raw.id,
+    conceptId: raw.conceptIds[0],
+    conceptIds: [...raw.conceptIds],
+    learningObjectiveId: raw.learningObjectiveId,
+    type: raw.type,
+    activityType: raw.activityType,
+    skill: raw.skill,
+    difficulty: raw.difficulty,
+    prompt: testLocalize(raw.prompt, locale),
+    instruction: testLocalize(raw.instruction ?? raw.prompt, locale),
+    options: options.map(option => ({ id: option.id, label: option.text })),
+    correctOptionId: raw.correctOptionId,
+    acceptedAnswers: [correctAnswer],
+    requiresStudentResponse: true,
+    lexemeIds: [...(raw.lexemeIds || [])],
+    grammarRuleIds: [...(raw.grammarRuleIds || [])],
+    sourceIds: [...(raw.sourceIds || [])],
+    contentValidationStatus: raw.contentValidationStatus || "unreviewed",
+    allowedForMastery: raw.allowedForMastery === true,
+    literalReuseOnly: true,
+    lessonContext: { sourceActivityId: raw.id, sourceAnswer: correctAnswer }
+  };
+  return {
+    sourceActivity,
+    correctAnswer,
+    knowledgeIds: [...sourceActivity.grammarRuleIds, ...sourceActivity.lexemeIds],
+    approvedActivityMaterial: {
+      options,
+      correctOptionId: raw.correctOptionId,
+      correctAnswer,
+      acceptedAnswers: [correctAnswer],
+      pairs: TEST_ACTIVITIES.map(activity => ({
+        id: activity.id,
+        left: testLocalize(activity.semanticPair?.target, locale),
+        right: testLocalize(activity.semanticPair?.meaning, locale),
+        authorized: true
+      })),
+      contexts: (raw.approvedContexts || []).map(item => ({ text: testLocalize(item.text, locale), authorized: true })),
+      categories: (raw.adaptiveCategories || []).map(item => ({ id: item.id, label: testLocalize(item.label, locale), authorized: true })),
+      items: (raw.adaptiveCategoryItems || []).map(item => ({ id: item.id, text: testLocalize(item.text, locale), categoryId: item.categoryId, authorized: true })),
+      dialogue: (adaptiveDialogue?.turns || []).map(turn => ({ ...turn })),
+      dialogueOptions,
+      dialogueCorrectOptionId: adaptiveDialogue?.correctOptionId || "",
+      dialogueCorrectAnswer: adaptiveDialogue?.correctAnswer || "",
+      dialogueSourceContentId: adaptiveDialogue?.sourceContentId || "",
+      audio: null
+    }
+  };
+}
+const TEST_ACTIVITY_AUTHORITY = Object.freeze({
+  resolve({ activityId, uiLocale = "es" } = {}) {
+    const raw = TEST_ACTIVITIES.find(activity => activity.id === activityId);
+    return raw ? clone(testAuthorityDescriptor(raw, uiLocale)) : null;
+  },
+  listByLearningObjective({ learningObjectiveId, uiLocale = "es" } = {}) {
+    return TEST_ACTIVITIES.filter(activity => activity.learningObjectiveId === learningObjectiveId)
+      .map(activity => clone(testAuthorityDescriptor(activity, uiLocale).sourceActivity));
+  },
+  audit: () => ({ ready: true, source: "test-only-closed-authority" })
+});
+const normalizeTestRequest = input => normalizeInterventionRequest(input, { activityAuthority: TEST_ACTIVITY_AUTHORITY });
+const createTestOrchestrator = options => createAdaptiveTutorOrchestrator({ ...options, activityAuthority: TEST_ACTIVITY_AUTHORITY });
+
+function richApprovedMaterial(audio = claimFor(manifest.recordings[95])) {
+  const options = [
+    { id: "jagua", text: "Jagua", authorized: true },
+    { id: "guyra", text: "Guyra", authorized: true },
+    { id: "mbarakaja", text: "Mbarakaja", authorized: true }
+  ];
+  return {
+    options,
+    correctOptionId: "jagua",
+    correctAnswer: "Jagua",
+    acceptedAnswers: ["Jagua"],
+    pairs: [
+      { id: "pair-jagua", left: "Jagua", right: "perro", authorized: true },
+      { id: "pair-guyra", left: "Guyra", right: "pájaro", authorized: true },
+      { id: "pair-mbarakaja", left: "Mbarakaja", right: "gato", authorized: true }
+    ],
+    contexts: [{ text: { es: "Contexto aprobado", en: "Approved context" }, authorized: true }],
+    categories: [
+      { id: "animals", label: "Animales", authorized: true },
+      { id: "other", label: "Otros", authorized: true }
+    ],
+    items: Array.from({ length: 6 }, (_, index) => ({
+      id: `item-${index + 1}`,
+      text: `elemento ${index + 1}`,
+      categoryId: index < 3 ? "animals" : "other",
+      authorized: true
+    })),
+    dialogue: [
+      { id: "turn-1", speaker: "A", text: "¿Rehecha jagua?", authorized: true },
+      { id: "turn-2", speaker: "B", text: "Héẽ, ahecha.", authorized: true }
+    ],
+    dialogueOptions: options,
+    dialogueCorrectOptionId: "jagua",
+    dialogueCorrectAnswer: "Jagua",
+    dialogueSourceContentId: "fixture-dialogue-source",
+    audio
+  };
+}
+
+function richContext(overrides = {}) {
+  return normalizeTestRequest(requestWithAudio(claimFor(manifest.recordings[95]), {
+    approvedActivityMaterial: richApprovedMaterial(),
+    ...overrides
+  }));
+}
+
+function plannerPlan(context, candidate, overrides = {}) {
+  const errorType = candidate.errorType || "SEMANTIC_CONFUSION";
+  return {
+    planVersion: "NALVI-TUTOR-CATALOG-1",
+    planId: `plan-${candidate.activityType.toLocaleLowerCase()}`,
+    conceptId: context.conceptId,
+    linguisticMode: "LESSON_BOUNDED",
+    diagnosis: { errorType, likelyDifficulty: "test", confidence: 0.9, prerequisiteGap: null, skillAffected: context.currentSkill },
+    pedagogicalGoal: "Select approved material.",
+    strategy: { primaryStrategy: "CHANGE_MODALITY", secondaryStrategy: null, reasonCode: "approved-test" },
+    studentFeedback: { locale: context.uiLocale, shortMessage: "texto del Planner" },
+    candidateActivities: [candidate],
+    progressionPolicy: { onIncorrect: "BLOCK_AND_INTERVENE", onGuidedCorrect: "CONTINUE_PRACTICE", requiresIndependentRetest: true, maxInterventionsBeforeDefer: 4 },
+    fallbackPolicy: { strategy: "OFFICIAL_CATALOG_LOCAL_FALLBACK", reason: "test" },
+    validationMetadata: { sourceIds: [], knowledgeIds: [], claimedRiskLevel: "GREEN" },
+    ...overrides
+  };
+}
+
+const response = value => ({
+  ok: true,
+  json: async () => ({ output_text: JSON.stringify(value), usage: { input_tokens: 1, output_tokens: 1 } })
+});
+
+async function runPlannerCandidate(context, candidate, planOverrides = {}) {
+  const plan = plannerPlan(context, candidate, planOverrides);
+  const service = createTestOrchestrator({
+    fetchImpl: async () => response(plan),
+    env: { OPENAI_API_KEY: "server-secret", AI_TUTOR_CRITIC_ENABLED: "false", AI_TUTOR_MAX_REVISION_ATTEMPTS: "0" }
+  });
+  return service.orchestrateAdaptiveTutoring(context);
 }
 
 test("la whitelist default deriva 99 entradas presentes del manifiesto físico", () => {
@@ -165,19 +474,14 @@ test("duplicados estructurales y aliases ambiguos invalidan la whitelist", () =>
 });
 
 test("normalización server-side sustituye claims por el contrato canónico", () => {
-  const rawClaim = { ...claimFor(manifest.recordings[95]), audioAuthorized: false, humanRecorded: false };
-  const context = normalizeInterventionRequest(requestWithAudio(rawClaim));
+  const rawClaim = richClaimFor(manifest.recordings[95]);
+  const context = normalizeTestRequest(requestWithAudio(rawClaim));
 
   assert.deepEqual(context.approvedActivityMaterial.audio, {
-    id: "NALVI-AUDIO-096",
     audioId: "NALVI-AUDIO-096",
-    path: "assets/audio/guarani/ali-2026/096-jagua.m4a",
     audioPath: "assets/audio/guarani/ali-2026/096-jagua.m4a",
-    text: "Jagua",
     audioText: "Jagua",
-    source: "manifest-human-recording",
     audioSource: "manifest-human-recording",
-    authorized: true,
     audioAuthorized: true,
     humanRecorded: true
   });
@@ -186,9 +490,62 @@ test("normalización server-side sustituye claims por el contrato canónico", ()
   assert.equal(context.activity.humanRecorded, true);
 });
 
+test("el material aprobado se localiza, conserva completo y nunca fabrica contenido", () => {
+  const approved = richApprovedMaterial(richClaimFor(manifest.recordings[95]));
+  approved.options.push({ text: "sin id", authorized: true });
+  approved.contexts.push(
+    { text: "No autorizado", authorized: false },
+    { text: "Booleano falso", authorized: "true" },
+    { arbitrary: "Nunca convertir este objeto", authorized: true }
+  );
+  const material = sanitizeApprovedActivityMaterial(approved, "Jagua", "en");
+
+  assert.deepEqual(material.contexts, [{ text: "Approved context", authorized: true }]);
+  assert.deepEqual(material.options.map(({ id, text }) => ({ id, text })), [
+    { id: "jagua", text: "Jagua" },
+    { id: "guyra", text: "Guyra" },
+    { id: "mbarakaja", text: "Mbarakaja" }
+  ]);
+  assert.equal(material.correctOptionId, "jagua");
+  assert.equal(material.correctAnswer, "Jagua");
+  assert.deepEqual(material.acceptedAnswers, ["Jagua"]);
+  assert.equal(material.pairs.length, 3);
+  assert.equal(material.categories.length, 2);
+  assert.equal(material.items.length, 6);
+  assert.equal(material.dialogue.length, 2);
+  assert.equal(material.dialogueOptions.length, 3);
+  assert.equal(material.dialogueCorrectOptionId, "jagua");
+  assert.equal(material.dialogueCorrectAnswer, "Jagua");
+  assert.equal(material.dialogueSourceContentId, "fixture-dialogue-source");
+  assert.deepEqual(material.audio, CANONICAL_AUDIO);
+  assert.doesNotMatch(JSON.stringify(material), /\[object Object\]|sin id|No autorizado|Booleano falso|Nunca convertir/);
+});
+
+test("IDs duplicados o ausentes no se sustituyen dentro del material aprobado", () => {
+  const approved = richApprovedMaterial();
+  approved.options = [
+    { id: "duplicate", text: "Jagua", authorized: true },
+    { id: "duplicate", text: "Guyra", authorized: true },
+    { text: "Mbarakaja", authorized: true }
+  ];
+  approved.correctOptionId = "duplicate";
+  const material = sanitizeApprovedActivityMaterial(approved, "Jagua", "es");
+
+  assert.deepEqual(material.options, []);
+  assert.equal(material.correctOptionId, "");
+  assert.doesNotMatch(JSON.stringify(material), /approved-option|option-[0-9]/);
+});
+
+test("activity.id nunca puede suplantar audioId durante normalización", () => {
+  const audio = claimFor(manifest.recordings[95]);
+  const raw = requestWithAudio(audio);
+  raw.activity = { ...raw.activity, id: audio.audioId, audioId: "" };
+  assert.throws(() => normalizeTestRequest(raw), /UNAPPROVED_ACTIVITY_ID/);
+});
+
 test("una ruta no listada se elimina antes del planner y del fallback", async () => {
-  const invalid = { ...claimFor(manifest.recordings[95]), audioPath: "assets/audio/guarani/ali-2026/no-existe.m4a", audioAuthorized: true };
-  const context = normalizeInterventionRequest(requestWithAudio(invalid));
+  const invalid = { ...claimFor(manifest.recordings[95]), audioPath: "assets/audio/guarani/ali-2026/096-no-existe.m4a", audioAuthorized: true };
+  const context = normalizeTestRequest(requestWithAudio(invalid));
   assert.equal(context.approvedActivityMaterial.audio, null);
   assert.equal(context.authorizedAudio, null);
   assert.equal(context.activity.audioAuthorized, false);
@@ -196,13 +553,74 @@ test("una ruta no listada se elimina antes del planner y del fallback", async ()
   const candidates = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION");
   assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
 
-  const service = createAdaptiveTutorOrchestrator({ env: {} });
+  const service = createTestOrchestrator({ env: {} });
   const result = await service.orchestrateAdaptiveTutoring(context);
   assert.equal(result.adaptiveInterventionPlan.activities.some(activity => activity.activityType === "AUDIO_SELECT"), false);
 });
 
+test("el builder público rechaza una pareja audio ID/ruta con ordinales cruzados", () => {
+  const crossed = {
+    ...CANONICAL_AUDIO,
+    audioId: "NALVI-AUDIO-007"
+  };
+  const candidates = buildDeterministicFallbackCandidates(requestWithAudio(crossed), 1, "LISTENING_CONFUSION");
+  assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
+});
+
+test("el builder público rechaza una ruta inexistente aunque conserve el ordinal", () => {
+  const sameOrdinalFake = {
+    ...CANONICAL_AUDIO,
+    audioPath: "assets/audio/guarani/ali-2026/096-no-existe.m4a"
+  };
+  const candidates = buildDeterministicFallbackCandidates(requestWithAudio(sameOrdinalFake), 1, "LISTENING_CONFUSION");
+  assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
+});
+
+test("el builder público falla cerrado ante colecciones aprobadas malformadas", () => {
+  for (const field of ["options", "pairs", "contexts"]) {
+    const context = requestWithAudio(CANONICAL_AUDIO);
+    context.approvedActivityMaterial[field] = {};
+    let candidates;
+    assert.doesNotThrow(() => { candidates = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION"); }, field);
+    assert.ok(Array.isArray(candidates), field);
+    if (field === "options") assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
+  }
+});
+
+test("el builder rich12 rechaza un sufijo textual no incluido en el manifiesto", () => {
+  const recording = manifest.recordings.find(item => item.label.includes("("));
+  const rich = richClaimFor(recording);
+  const target = recording.label.split("(")[0].trim();
+  rich.text = `${target} (CLIENT_EVIL)`;
+  const context = {
+    correctAnswer: target,
+    approvedActivityMaterial: {
+      audio: rich,
+      options: [
+        { id: "correct", text: target, authorized: true },
+        { id: "other-1", text: "Ambue", authorized: true },
+        { id: "other-2", text: "Nahániri", authorized: true }
+      ],
+      correctOptionId: "correct"
+    }
+  };
+  const candidates = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION");
+  assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
+});
+
+test("el builder público exige consenso entre approved audio y authorizedAudio", () => {
+  const context = requestWithAudio(CANONICAL_AUDIO);
+  context.authorizedAudio = {
+    ...CANONICAL_AUDIO,
+    audioId: "NALVI-AUDIO-007",
+    audioPath: "assets/audio/guarani/ali-2026/007-aguyje.m4a"
+  };
+  const candidates = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION");
+  assert.equal(candidates.some(candidate => candidate.activityType === "AUDIO_SELECT"), false);
+});
+
 test("una grabación válida no puede asociarse a otro objetivo o respuesta", () => {
-  const adioForJagua = normalizeInterventionRequest(requestWithAudio(claimFor(manifest.recordings[0])));
+  const adioForJagua = normalizeTestRequest(requestWithAudio(claimFor(manifest.recordings[0])));
   assert.equal(adioForJagua.activity.audioAuthorized, false);
   assert.equal(adioForJagua.authorizedAudio, null);
   assert.equal(adioForJagua.approvedActivityMaterial.audio, null);
@@ -217,28 +635,15 @@ test("los targets completos y base de las cuatro etiquetas parentéticas permane
   for (const recording of manifest.recordings.filter(item => item.label.includes("("))) {
     const audio = claimFor(recording);
     for (const target of [recording.label, recording.label.split("(")[0].trim()]) {
-      const request = requestWithAudio(audio, {
-        correctAnswer: target,
-        approvedActivityMaterial: {
-          options: [
-            { id: "correct", text: target, authorized: true },
-            { id: "other-1", text: "Jagua", authorized: true },
-            { id: "other-2", text: "Guavira", authorized: true }
-          ],
-          audio
-        }
-      });
-      const context = normalizeInterventionRequest(request);
-      const candidate = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION")
-        .find(item => item.activityType === "AUDIO_SELECT");
-      assert.ok(candidate, `${recording.id} debe aceptar target ${target}`);
-      assert.equal(candidate.activity.audioId, recording.id);
+      const authorized = authorizeRecordedAudioForTarget(audio, target);
+      assert.ok(authorized, `${recording.id} debe aceptar target ${target}`);
+      assert.equal(authorized.audioId, recording.id);
     }
   }
 });
 
 test("AUDIO_SELECT conserva ID/ruta/autorización/origen humano hasta toRenderable", async () => {
-  const context = normalizeInterventionRequest(requestWithAudio(claimFor(manifest.recordings[95])));
+  const context = normalizeTestRequest(requestWithAudio(claimFor(manifest.recordings[95])));
   const candidates = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION");
   const audioCandidate = candidates.find(candidate => candidate.activityType === "AUDIO_SELECT");
   assert.ok(audioCandidate);
@@ -253,7 +658,7 @@ test("AUDIO_SELECT conserva ID/ruta/autorización/origen humano hasta toRenderab
   assert.equal(renderable.audioAuthorized, true);
   assert.equal(renderable.humanRecorded, true);
 
-  const service = createAdaptiveTutorOrchestrator({ env: {} });
+  const service = createTestOrchestrator({ env: {} });
   const result = await service.orchestrateAdaptiveTutoring(context);
   const serverActivity = result.adaptiveInterventionPlan.activities[0];
   assert.equal(serverActivity.activityType, "AUDIO_SELECT");
@@ -264,7 +669,7 @@ test("AUDIO_SELECT conserva ID/ruta/autorización/origen humano hasta toRenderab
 });
 
 test("toRenderable falla cerrado si el planner altera ID o ruta", () => {
-  const context = normalizeInterventionRequest(requestWithAudio(claimFor(manifest.recordings[95])));
+  const context = normalizeTestRequest(requestWithAudio(claimFor(manifest.recordings[95])));
   const candidate = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION")
     .find(item => item.activityType === "AUDIO_SELECT").activity;
   const renderable = toRenderable({ ...candidate, audioPath: "assets/audio/guarani/ali-2026/095-itati.m4a", audioAuthorized: true }, context, "tampered", 0);
@@ -276,7 +681,7 @@ test("toRenderable falla cerrado si el planner altera ID o ruta", () => {
 });
 
 test("toRenderable vincula audio con correctAnswer y correctOptionId del candidato", () => {
-  const context = normalizeInterventionRequest(requestWithAudio(claimFor(manifest.recordings[95])));
+  const context = normalizeTestRequest(requestWithAudio(claimFor(manifest.recordings[95])));
   const candidate = buildDeterministicFallbackCandidates(context, 1, "LISTENING_CONFUSION")
     .find(item => item.activityType === "AUDIO_SELECT").activity;
 

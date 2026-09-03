@@ -9,10 +9,19 @@
   const MANIFEST_TIMEOUT_MS = 8000;
   const SAFE_ID = /^NALVI-AUDIO-(\d{3})$/;
   const SAFE_FILE = /^(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*\.m4a$/;
+  const CANONICAL_AUDIO_KEYS = Object.freeze([
+    "audioId", "audioPath", "audioText", "audioAuthorized", "humanRecorded", "audioSource"
+  ]);
+  const RICH_AUDIO_KEYS = Object.freeze([
+    "id", "audioId", "recordingId", "path", "audioPath", "text", "audioText", "source", "audioSource",
+    "authorized", "audioAuthorized", "humanRecorded"
+  ]);
   const byLabel = new Map();
   const byId = new Map();
   const byPath = new Map();
   const byUrl = new Map();
+  const activeButtons = new WeakSet();
+  const activeRecordingIds = new Set();
   let recordings = [];
   let state = "loading";
   let manifestError = "";
@@ -108,8 +117,13 @@
         file: recording.file,
         path,
         audioPath: path,
+        text: label,
+        audioText: label,
         url,
         format: "audio/mp4",
+        source: "manifest-human-recording",
+        audioSource: "manifest-human-recording",
+        authorized: true,
         humanRecorded: true,
         authorizedForPlayback: true,
         audioAuthorized: true
@@ -138,22 +152,23 @@
     recordings = Object.freeze([...validatedRecordings]);
   }
 
-  function fetchManifestWithTimeout() {
+  function loadManifestWithTimeout() {
     let timeoutId;
     const timeout = new Promise((_, reject) => {
       timeoutId = setTimeout(() => reject(new Error("AUDIO_MANIFEST_TIMEOUT")), MANIFEST_TIMEOUT_MS);
     });
-    const request = Promise.resolve().then(() => fetch(manifestUrl().href, { cache: "no-cache", credentials: "same-origin" }));
+    const request = Promise.resolve()
+      .then(() => fetch(manifestUrl().href, { cache: "no-cache", credentials: "same-origin" }))
+      .then(response => {
+        if (!response.ok) throw new Error(`AUDIO_MANIFEST_HTTP_${response.status}`);
+        return response.json();
+      })
+      .then(manifest => ({ manifest, validatedRecordings: validateManifest(manifest) }));
     return Promise.race([request, timeout]).finally(() => clearTimeout(timeoutId));
   }
 
-  const ready = fetchManifestWithTimeout()
-    .then(response => {
-      if (!response.ok) throw new Error(`AUDIO_MANIFEST_HTTP_${response.status}`);
-      return response.json();
-    })
-    .then(manifest => {
-      const validatedRecordings = validateManifest(manifest);
+  const ready = loadManifestWithTimeout()
+    .then(({ manifest, validatedRecordings }) => {
       commitManifest(validatedRecordings);
       state = "ready";
       return Object.freeze({ ok: true, version: manifest.version, count: recordings.length });
@@ -182,17 +197,26 @@
 
   function authorize(selection = {}) {
     if (state !== "ready" || !selection || typeof selection !== "object") return null;
-    if (selection.audioAuthorized !== true || selection.humanRecorded !== true) return null;
-    const audioId = String(selection.audioId || selection.id || selection.recordingId || "").trim();
-    const audioPath = String(selection.audioPath || selection.path || selection.url || "").trim();
-    const audioText = String(selection.audioText || selection.text || "").trim();
+    const keys = Object.keys(selection).sort();
+    const exactShape = expected => keys.length === expected.length
+      && expected.every(key => Object.hasOwn(selection, key))
+      && JSON.stringify(keys) === JSON.stringify([...expected].sort());
+    const rich = exactShape(RICH_AUDIO_KEYS);
+    if (!rich && !exactShape(CANONICAL_AUDIO_KEYS)) return null;
+    if (selection.audioAuthorized !== true || selection.humanRecorded !== true
+      || selection.audioSource !== "manifest-human-recording") return null;
+    const audioId = typeof selection.audioId === "string" ? selection.audioId.trim() : "";
+    const audioPath = typeof selection.audioPath === "string" ? selection.audioPath.trim() : "";
+    const audioText = typeof selection.audioText === "string" ? selection.audioText.trim() : "";
+    if (rich && (selection.authorized !== true || selection.source !== "manifest-human-recording"
+      || selection.id !== audioId || selection.recordingId !== audioId
+      || selection.path !== audioPath || typeof selection.text !== "string" || !selection.text.trim())) return null;
     if (!audioId || !audioPath || !audioText) return null;
     const byIdentifier = byId.get(audioId);
     const byCanonicalPath = byPath.get(audioPath);
-    const byCanonicalUrl = byUrl.get(canonicalRequestedUrl(audioPath));
-    const byLocation = byCanonicalPath || byCanonicalUrl;
-    if (!byIdentifier || !byLocation || byIdentifier !== byLocation) return null;
+    if (!byIdentifier || !byCanonicalPath || byIdentifier !== byCanonicalPath) return null;
     if (byLabel.get(normalize(audioText)) !== byIdentifier) return null;
+    if (rich && byLabel.get(normalize(selection.text)) !== byIdentifier) return null;
     return publicRecording(byIdentifier);
   }
 
@@ -204,15 +228,24 @@
 
   async function playRecording(recording, button) {
     if (!recording || state !== "ready") return false;
-    const audio = new Audio(recording.url);
-    setButtonState(button, true);
-    audio.addEventListener("ended", () => setButtonState(button, false), { once: true });
-    audio.addEventListener("error", () => setButtonState(button, false), { once: true });
+    const hasButton = button instanceof Element;
+    if (activeRecordingIds.has(recording.id) || (hasButton && activeButtons.has(button))) return true;
+    activeRecordingIds.add(recording.id);
+    if (hasButton) activeButtons.add(button);
+    const release = () => {
+      activeRecordingIds.delete(recording.id);
+      if (hasButton) activeButtons.delete(button);
+      setButtonState(button, false);
+    };
     try {
+      const audio = new Audio(recording.url);
+      setButtonState(button, true);
+      audio.addEventListener("ended", release, { once: true });
+      audio.addEventListener("error", release, { once: true });
       await audio.play();
       return true;
     } catch (error) {
-      setButtonState(button, false);
+      release();
       console.info("NALVI_RECORDED_AUDIO_PLAYBACK", String(error?.message || error));
       return false;
     }
@@ -227,8 +260,8 @@
     return playRecording(recording, button);
   }
 
-  async function playPath(path, button, audioId, humanRecorded = false, audioAuthorized = false, audioText = "") {
-    return playSelection({ audioId, audioPath: path, audioText, humanRecorded, audioAuthorized }, button);
+  async function playPath(path, button, audioId, humanRecorded = false, audioAuthorized = false, audioText = "", audioSource = "") {
+    return playSelection({ audioId, audioPath: path, audioText, humanRecorded, audioAuthorized, audioSource }, button);
   }
 
   async function play(value, button) {

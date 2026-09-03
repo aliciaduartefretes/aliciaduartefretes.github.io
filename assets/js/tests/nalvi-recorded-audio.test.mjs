@@ -34,6 +34,7 @@ function loadClient({
   clearTimeoutImpl = clearTimeout
 } = {}) {
   const audioSources = [];
+  const audioInstances = [];
   const fetchRequests = [];
   const warnings = [];
   const infos = [];
@@ -51,6 +52,7 @@ function loadClient({
       this.source = source;
       this.listeners = new Map();
       audioSources.push(source);
+      audioInstances.push(this);
     }
     addEventListener(name, listener) { this.listeners.set(name, listener); }
     async play() {
@@ -75,13 +77,28 @@ function loadClient({
     window
   });
   vm.runInContext(script, context, { filename: "nalvi-recorded-audio.js" });
-  return { audioSources, fetchRequests, infos, registry: window.NALVI_RECORDED_AUDIO, warnings, window };
+  return { audioInstances, audioSources, ElementStub, fetchRequests, infos, registry: window.NALVI_RECORDED_AUDIO, warnings, window };
 }
 
 const firstSelection = Object.freeze({
   audioId: "NALVI-AUDIO-001",
   audioPath: "assets/audio/guarani/ali-2026/001-adio.m4a",
   audioText: "ADIÓ",
+  audioAuthorized: true,
+  humanRecorded: true,
+  audioSource: "manifest-human-recording"
+});
+const richFirstSelection = Object.freeze({
+  id: firstSelection.audioId,
+  audioId: firstSelection.audioId,
+  recordingId: firstSelection.audioId,
+  path: firstSelection.audioPath,
+  audioPath: firstSelection.audioPath,
+  text: firstSelection.audioText,
+  audioText: firstSelection.audioText,
+  source: firstSelection.audioSource,
+  audioSource: firstSelection.audioSource,
+  authorized: true,
   audioAuthorized: true,
   humanRecorded: true
 });
@@ -130,6 +147,36 @@ test("un fetch eternamente pendiente resuelve ready fail-closed al vencer el tim
   assert.equal(timers[0].cleared, true);
 });
 
+test("un response.json eternamente pendiente también resuelve ready fail-closed", async () => {
+  const pendingJson = deferred();
+  const timers = [];
+  const client = loadClient({
+    fetchImpl: async () => ({ ok: true, status: 200, json: () => pendingJson.promise }),
+    setTimeoutImpl: (callback, delay) => {
+      timers.push({ callback, delay, cleared: false });
+      return timers.length;
+    },
+    clearTimeoutImpl: id => { if (timers[id - 1]) timers[id - 1].cleared = true; }
+  });
+  const playResult = client.registry.playSelection(firstSelection);
+
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(client.registry.audit().state, "loading");
+  assert.equal(client.audioSources.length, 0);
+  assert.equal(timers.length, 1);
+
+  timers[0].callback();
+  const status = await client.registry.ready;
+  assert.equal(status.ok, false);
+  assert.match(status.error, /AUDIO_MANIFEST_TIMEOUT/);
+  assert.equal(await playResult, false);
+  assert.equal(client.registry.audit().state, "failed");
+  assert.equal(client.registry.audit().importedRecordings, 0);
+  assert.equal(client.audioSources.length, 0);
+  assert.equal(timers[0].cleared, true);
+});
+
 test("la resolución conserva el contrato ID/ruta/autorización/origen humano", async () => {
   const client = loadClient();
   assert.equal((await client.registry.ready).ok, true);
@@ -141,6 +188,7 @@ test("la resolución conserva el contrato ID/ruta/autorización/origen humano", 
   assert.equal(recording.url, "https://nalvi.test/assets/audio/guarani/ali-2026/099-nahaniri.m4a");
   assert.equal(recording.audioAuthorized, true);
   assert.equal(recording.humanRecorded, true);
+  assert.equal(recording.audioSource, "manifest-human-recording");
   assert.equal(client.registry.audit().importedRecordings, 99);
 });
 
@@ -153,7 +201,7 @@ test("la galería debug carga el manifiesto desde assets y autoriza la ruta can�
   assert.equal(client.registry.authorize({
     ...firstSelection,
     audioPath: "https://nalvi.test/assets/audio/guarani/ali-2026/001-adio.m4a"
-  })?.id, "NALVI-AUDIO-001");
+  }), null);
   assert.equal(client.registry.authorize({ ...firstSelection, audioPath: "../assets/audio/guarani/ali-2026/001-adio.m4a" }), null);
 
   const withoutCurrentScript = loadClient({
@@ -162,6 +210,25 @@ test("la galería debug carga el manifiesto desde assets y autoriza la ruta can�
   });
   assert.equal((await withoutCurrentScript.registry.ready).ok, true);
   assert.deepEqual(withoutCurrentScript.fetchRequests, ["https://nalvi.test/assets/audio/guarani/ali-2026/manifest.json"]);
+});
+
+test("authorize acepta canonical6 o rich12 exactos y rechaza aliases contradictorios", async () => {
+  const client = loadClient();
+  await client.registry.ready;
+
+  assert.equal(client.registry.authorize(firstSelection)?.id, firstSelection.audioId);
+  assert.equal(client.registry.authorize(richFirstSelection)?.id, firstSelection.audioId);
+  for (const contradiction of [
+    { id: "NALVI-AUDIO-002" },
+    { recordingId: "NALVI-AUDIO-002" },
+    { path: "assets/audio/guarani/ali-2026/002-agaite.m4a" },
+    { text: "ÁG̃AITE" },
+    { source: "client-claimed-source" },
+    { authorized: false }
+  ]) {
+    assert.equal(client.registry.authorize({ ...richFirstSelection, ...contradiction }), null);
+  }
+  assert.equal(client.registry.authorize({ ...firstSelection, url: "https://evil.invalid/x.m4a" }), null);
 });
 
 test("rechaza una ruta no incluida y una pareja ID/ruta incoherente", async () => {
@@ -183,6 +250,8 @@ test("los booleanos declarados no bastan y los campos de seguridad son obligator
   assert.equal(await client.registry.playSelection({ ...firstSelection, humanRecorded: false }), false);
   assert.equal(await client.registry.playSelection({ ...firstSelection, audioId: "" }), false);
   assert.equal(await client.registry.playSelection({ ...firstSelection, audioPath: "" }), false);
+  assert.equal(await client.registry.playSelection({ ...firstSelection, audioText: "" }), false);
+  assert.equal(await client.registry.playSelection({ ...firstSelection, audioSource: "client-claim" }), false);
   assert.equal(client.audioSources.length, 0);
 });
 
@@ -231,7 +300,8 @@ test("playPath exige el contrato completo y conserva la ruta relativa separada d
     firstSelection.audioId,
     true,
     true,
-    firstSelection.audioText
+    firstSelection.audioText,
+    firstSelection.audioSource
   ), true);
   assert.deepEqual(client.audioSources, ["https://nalvi.test/assets/audio/guarani/ali-2026/001-adio.m4a"]);
 });
@@ -243,6 +313,24 @@ test("un fallo real de reproducción se devuelve como false sin sintetizar ni su
   assert.equal(await client.registry.playSelection(firstSelection), false);
   assert.equal(client.audioSources.length, 1);
   assert.match(client.infos.join("\n"), /MEDIA_NOT_FOUND/);
+});
+
+test("un doble clic es idempotente, no crea reproducciones simultáneas y libera el estado accesible", async () => {
+  const client = loadClient();
+  const button = new client.ElementStub();
+  await client.registry.ready;
+
+  const firstPlay = client.registry.playSelection(firstSelection, button);
+  const secondPlay = client.registry.playSelection(firstSelection, button);
+  assert.equal(await firstPlay, true);
+  assert.equal(await secondPlay, true);
+  assert.equal(client.audioSources.length, 1);
+  assert.equal(button.attributes.get("aria-pressed"), "true");
+
+  client.audioInstances[0].listeners.get("ended")();
+  assert.equal(button.attributes.get("aria-pressed"), "false");
+  assert.equal(await client.registry.playSelection(firstSelection, button), true);
+  assert.equal(client.audioSources.length, 2);
 });
 
 test("si falla la descarga del manifiesto no se intenta reproducir", async () => {

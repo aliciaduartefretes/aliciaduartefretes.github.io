@@ -20,6 +20,7 @@ class FakeButton {
   }
   addEventListener(name, listener) { this.listeners.set(name, listener); }
   setAttribute(name, value) { this.attributes.set(name, String(value)); }
+  getAttribute(name) { return this.attributes.get(name) ?? null; }
   async dispatchClick() {
     const listener = this.listeners.get("click");
     if (listener) await listener({ target: this });
@@ -74,6 +75,7 @@ function activity(overrides = {}) {
     audioText: "Jagua",
     audioAuthorized: true,
     humanRecorded: true,
+    audioSource: "manifest-human-recording",
     options: [
       { id: "one", text: "Jagua" },
       { id: "two", text: "Guavira" },
@@ -85,6 +87,21 @@ function activity(overrides = {}) {
   };
 }
 
+const AUDIO_KEYS = Object.freeze([
+  "audioAuthorized", "audioId", "audioPath", "audioSource", "audioText", "humanRecorded"
+]);
+function authorizeCanonicalSelection(selection) {
+  if (!selection || JSON.stringify(Object.keys(selection).sort()) !== JSON.stringify(AUDIO_KEYS)) return null;
+  return selection.audioId === "NALVI-AUDIO-096"
+    && selection.audioPath === "assets/audio/guarani/ali-2026/096-jagua.m4a"
+    && selection.audioText === "Jagua"
+    && selection.audioAuthorized === true
+    && selection.humanRecorded === true
+    && selection.audioSource === "manifest-human-recording"
+    ? { id: selection.audioId }
+    : null;
+}
+
 test("la galería carga el registry antes del renderer", () => {
   const registryPosition = galleryHtml.indexOf("nalvi-recorded-audio.js");
   const rendererPosition = galleryHtml.indexOf("nalvi-activity-catalog-renderer.mjs");
@@ -93,6 +110,7 @@ test("la galería carga el registry antes del renderer", () => {
   assert.ok(registryPosition > 0);
   assert.ok(rendererPosition > registryPosition);
   assert.ok(galleryPosition > rendererPosition);
+  assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-4/);
 });
 
 test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproducir antes", async () => {
@@ -101,7 +119,7 @@ test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproduc
   const selections = [];
   const registry = {
     ready: pending.promise.then(value => { ready = true; return value; }),
-    authorize: selection => ready ? { id: selection.audioId } : null,
+    authorize: selection => ready ? authorizeCanonicalSelection(selection) : null,
     playSelection: async selection => { selections.push(selection); return true; }
   };
   const render = await audioRendererFor(registry);
@@ -124,7 +142,8 @@ test("el botón AUDIO_SELECT de la galería pasa de loading a ready sin reproduc
     audioPath: "assets/audio/guarani/ali-2026/096-jagua.m4a",
     audioText: "Jagua",
     audioAuthorized: true,
-    humanRecorded: true
+    humanRecorded: true,
+    audioSource: "manifest-human-recording"
   }]);
 });
 
@@ -152,7 +171,7 @@ test("AUDIO_SELECT no usa fallback textual cuando ID/ruta no están autorizados"
 test("un fallo del reproductor deja AUDIO_SELECT cerrado", async () => {
   const registry = {
     ready: Promise.resolve({ ok: true }),
-    authorize: selection => ({ id: selection.audioId }),
+    authorize: authorizeCanonicalSelection,
     playSelection: async () => false
   };
   const render = await audioRendererFor(registry);
@@ -165,4 +184,68 @@ test("un fallo del reproductor deja AUDIO_SELECT cerrado", async () => {
   await target.audioButton.dispatchClick();
   assert.equal(target.audioButton.disabled, true);
   assert.equal(target.audioButton.dataset.audioState, "unavailable");
+});
+
+test("un segundo clic mientras reproduce no deshabilita ni desincroniza AUDIO_SELECT", async () => {
+  const playing = deferred();
+  let active = false;
+  let audioInstances = 0;
+  const registry = {
+    ready: Promise.resolve({ ok: true }),
+    authorize: authorizeCanonicalSelection,
+    playSelection: async (_selection, button) => {
+      if (active) return false;
+      active = true;
+      audioInstances += 1;
+      button.setAttribute("aria-pressed", "true");
+      await playing.promise;
+      return true;
+    }
+  };
+  const render = await audioRendererFor(registry);
+  const target = new FakeTarget();
+  render(target, activity(), { language: "es" });
+  await registry.ready;
+  await Promise.resolve();
+
+  const firstClick = target.audioButton.dispatchClick();
+  const secondClick = target.audioButton.dispatchClick();
+  await secondClick;
+  assert.equal(audioInstances, 1);
+  assert.equal(target.audioButton.disabled, false);
+  assert.equal(target.audioButton.dataset.audioState, "ready");
+  assert.equal(target.audioButton.getAttribute("aria-pressed"), "true");
+
+  playing.resolve();
+  await firstClick;
+});
+
+test("AUDIO_SELECT permanece cerrado si falta o difiere cualquiera de los seis campos canónicos", async t => {
+  const cases = [
+    ["audioId", { audioId: "NALVI-AUDIO-095" }],
+    ["audioPath", { audioPath: "assets/audio/guarani/ali-2026/095-itati.m4a" }],
+    ["audioText sin fallback", { audioText: "" }],
+    ["audioAuthorized", { audioAuthorized: false }],
+    ["humanRecorded", { humanRecorded: false }],
+    ["audioSource", { audioSource: "client-claimed-source" }]
+  ];
+  for (const [name, override] of cases) {
+    await t.test(name, async () => {
+      let playbackCalls = 0;
+      const registry = {
+        ready: Promise.resolve({ ok: true }),
+        authorize: authorizeCanonicalSelection,
+        playSelection: async () => { playbackCalls += 1; return true; }
+      };
+      const render = await audioRendererFor(registry);
+      const target = new FakeTarget();
+      render(target, activity(override), { language: "es" });
+      await registry.ready;
+      await Promise.resolve();
+      assert.equal(target.audioButton.disabled, true);
+      assert.equal(target.audioButton.dataset.audioState, "unavailable");
+      await target.audioButton.dispatchClick();
+      assert.equal(playbackCalls, 0);
+    });
+  }
 });

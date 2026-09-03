@@ -22,6 +22,40 @@ const normalizeText = value => String(value ?? "")
   .trim()
   .toLocaleLowerCase("es");
 
+function normalizeClaimPath(value) {
+  if (typeof value !== "string") return "";
+  const raw = value.trim();
+  if (!raw || raw.startsWith("//") || /^[a-z][a-z0-9+.-]*:/i.test(raw) || /[\\?#\0]/.test(raw)) return "";
+  const relative = raw.startsWith("/") ? raw.slice(1) : raw.startsWith("./") ? raw.slice(2) : raw;
+  if (!relative.startsWith(`${RECORDED_AUDIO_BASE_PATH}/`)) return "";
+  const file = relative.slice(RECORDED_AUDIO_BASE_PATH.length + 1);
+  return canonicalRecordedAudioPath(file) === relative ? relative : "";
+}
+
+function declaredClaimValues(claim, keys, normalizeValue = value => value.trim()) {
+  const sources = [];
+  const pending = [claim];
+  const seen = new Set();
+  while (pending.length && sources.length < 8) {
+    const source = pending.shift();
+    if (!source || typeof source !== "object" || Array.isArray(source) || seen.has(source)) continue;
+    seen.add(source);
+    sources.push(source);
+    pending.push(source.authorizedAudio, source.audio);
+  }
+  const values = [];
+  for (const source of sources) {
+    for (const key of keys) {
+      if (!Object.hasOwn(source, key) || source[key] === undefined || source[key] === null || source[key] === "") continue;
+      if (typeof source[key] !== "string") return null;
+      const value = normalizeValue(source[key]);
+      if (!value) return null;
+      values.push(value);
+    }
+  }
+  return values;
+}
+
 const frozenCopy = value => Object.freeze({ ...value });
 
 export function canonicalRecordedAudioPath(file) {
@@ -198,14 +232,20 @@ export function createRecordedAudioAuthority({
 
   function resolveAudio(claim = {}) {
     if (!claim || typeof claim !== "object" || Array.isArray(claim)) return null;
-    const audioId = String(claim.audioId || claim.id || claim.recordingId || "").trim();
-    const audioPath = String(claim.audioPath || claim.path || "").trim();
-    const audioText = String(claim.audioText || claim.text || "").trim();
+    const declaredIds = declaredClaimValues(claim, ["audioId", "id", "recordingId"]);
+    const declaredPaths = declaredClaimValues(claim, ["audioPath", "path", "url"], normalizeClaimPath);
+    const declaredTexts = declaredClaimValues(claim, ["audioText", "text"]);
     const targetText = String(claim.targetText || "").trim();
-    if (!audioId || !audioPath || !audioText) return null;
+    if (!declaredIds?.length || !declaredPaths?.length || !declaredTexts?.length) return null;
+    const ids = new Set(declaredIds);
+    const paths = new Set(declaredPaths);
+    if (ids.size !== 1 || paths.size !== 1) return null;
+    const [audioId] = ids;
+    const [audioPath] = paths;
     const idRecording = byId.get(audioId);
     const pathRecording = byPath.get(audioPath);
-    if (!idRecording || idRecording !== pathRecording || !idRecording.aliases.has(normalizeText(audioText))) return null;
+    if (!idRecording || idRecording !== pathRecording
+      || declaredTexts.some(audioText => !idRecording.aliases.has(normalizeText(audioText)))) return null;
     if (targetText && !idRecording.aliases.has(normalizeText(targetText))) return null;
     return canonicalOutput(idRecording);
   }
@@ -225,6 +265,7 @@ export function createRecordedAudioAuthority({
     rejectedRecordings: rejected.length,
     rejected: Object.freeze(rejected.map(frozenCopy)),
     requiresIdPathTextMatch: true,
+    rejectsContradictoryAliases: true,
     ignoresClientAuthorizationBoolean: true,
     verifiesPhysicalFiles: true,
     verifiesRecoveryChecksums: Boolean(checksumByPath),
