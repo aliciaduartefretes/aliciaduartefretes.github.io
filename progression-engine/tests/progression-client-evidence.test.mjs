@@ -83,31 +83,31 @@ test("el plan adaptativo y evidenceMode guided son señales guiadas independient
 });
 
 test("una ayuda real no puede elevarse a independiente mediante metadatos contradictorios", () => {
+  const spacedRetest = {
+    adaptivePlanId: "adaptive-spaced-retest-with-help",
+    spacedRetest: true,
+    independentRetest: true,
+    evidenceMode: "independent"
+  };
   assertGuidedEvidence(evaluate({
     id: "independent-claim-with-hint",
-    adaptivePlanId: "independent-claim-with-hint",
-    independentRetest: true,
-    evidenceMode: "independent",
+    ...spacedRetest,
     helpLevel: 0
   }, { hintUsed: true }));
   assertGuidedEvidence(evaluate({
     id: "independent-claim-with-help-level",
-    adaptivePlanId: "independent-claim-with-help-level",
-    independentRetest: true,
-    evidenceMode: "independent",
+    ...spacedRetest,
     helpLevel: 1
   }));
   assertGuidedEvidence(evaluate({
     id: "independent-claim-with-guided-flag",
-    adaptivePlanId: "independent-claim-with-guided-flag",
-    independentRetest: true,
-    evidenceMode: "independent",
+    ...spacedRetest,
     nalviGuided: true,
     helpLevel: 0
   }));
   assertGuidedEvidence(evaluate({
     id: "independent-claim-with-guided-mode",
-    adaptivePlanId: "independent-claim-with-guided-mode",
+    ...spacedRetest,
     independentRetest: true,
     evidenceMode: "guided",
     nalviGuided: false,
@@ -115,29 +115,52 @@ test("una ayuda real no puede elevarse a independiente mediante metadatos contra
   }));
 });
 
-test("sólo un retest explícito y sin ayuda puede aportar evidencia independiente al plan", () => {
-  for (const independentMarker of [
-    { independentRetest: true },
-    { evidenceMode: "independent" }
+test("claims parciales e INDEPENDENT_RECALL inmediato no elevan evidencia dentro del plan", () => {
+  for (const partialClaim of [
+    { id: "isolated-independent-retest", independentRetest: true },
+    { id: "isolated-independent-mode", evidenceMode: "independent" },
+    { id: "isolated-spaced-retest", spacedRetest: true },
+    { id: "missing-independent-mode", spacedRetest: true, independentRetest: true },
+    { id: "missing-independent-retest", spacedRetest: true, evidenceMode: "independent" },
+    { id: "missing-spaced-retest", independentRetest: true, evidenceMode: "independent" },
+    {
+      id: "immediate-independent-recall",
+      type: "INDEPENDENT_RECALL",
+      activityType: "INDEPENDENT_RECALL",
+      spacedRetest: false,
+      independentRetest: true,
+      evidenceMode: "independent"
+    }
   ]) {
-    const evaluated = evaluate({
-      id: independentMarker.independentRetest ? "explicit-independent-retest" : "explicit-independent-mode",
-      adaptivePlanId: "adaptive-independent-retest",
+    assertGuidedEvidence(evaluate({
+      adaptivePlanId: "adaptive-partial-independent-claim",
       nalviGuided: false,
       helpLevel: 0,
-      ...independentMarker
-    });
-    assert.equal(evaluated.progression.guided, false);
-    assert.equal(evaluated.progression.evidenceStrength, "independent");
-    assert.equal(evaluated.progression.event.hintUsed, false);
-    assert.equal(evaluated.progression.event.performanceFactors.hint, 1);
-
-    const completion = progressionClient.evaluateObjectiveCompletion(evaluated);
-    assert.equal(completion.objectiveEvidence.independentCorrectEvents, 1);
-    assert.equal(completion.objectiveEvidence.lastEvidenceIndependentCorrect, true);
-    assert.equal(completion.decision, "COMPLETE_OBJECTIVE");
-    assert.equal(completion.canComplete, true);
+      ...partialClaim
+    }));
   }
+});
+
+test("sólo el retest espaciado con triple marca coherente puede aportar evidencia independiente al plan", () => {
+  const evaluated = evaluate({
+    id: "coherent-spaced-independent-retest",
+    adaptivePlanId: "adaptive-independent-retest",
+    spacedRetest: true,
+    independentRetest: true,
+    evidenceMode: "independent",
+    nalviGuided: false,
+    helpLevel: 0
+  });
+  assert.equal(evaluated.progression.guided, false);
+  assert.equal(evaluated.progression.evidenceStrength, "independent");
+  assert.equal(evaluated.progression.event.hintUsed, false);
+  assert.equal(evaluated.progression.event.performanceFactors.hint, 1);
+
+  const completion = progressionClient.evaluateObjectiveCompletion(evaluated);
+  assert.equal(completion.objectiveEvidence.independentCorrectEvents, 1);
+  assert.equal(completion.objectiveEvidence.lastEvidenceIndependentCorrect, true);
+  assert.equal(completion.decision, "COMPLETE_OBJECTIVE");
+  assert.equal(completion.canComplete, true);
 });
 
 test("una actividad ordinaria limpia conserva evidencia independiente", () => {
