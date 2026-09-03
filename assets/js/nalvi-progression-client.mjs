@@ -74,15 +74,29 @@ async function persistAuthenticated(event) {
 
 function evaluateActivityResult({ activity = {}, result = {}, uiLocale = "es", atObjectiveBoundary = false } = {}) {
   const resolved = readProfile(activity), activityType = normalizeActivityType(activity.type || activity.activityType);
-  const coherentSpacedRetest = activity.spacedRetest === true
+  const adaptiveEvidenceClaimed = ["adaptivePlanId", "adaptivePlanIndex", "adaptivePlanLength", "spacedRetest", "independentRetest", "evidenceMode"]
+    .some(field => Object.prototype.hasOwnProperty.call(activity, field));
+  const validAdaptivePlanId = typeof activity.adaptivePlanId === "string"
+    && activity.adaptivePlanId.length > 0
+    && activity.adaptivePlanId === activity.adaptivePlanId.trim();
+  const coherentSpacedRetest = validAdaptivePlanId
+    && activity.spacedRetest === true
     && activity.independentRetest === true
-    && activity.evidenceMode === "independent";
+    && activity.evidenceMode === "independent"
+    && activity.requiresStudentResponse === true
+    && activity.helpLevel === 0
+    && activity.answerExposure === "HIDDEN"
+    && activity.nalviGuided === false
+    && Array.isArray(activity.hints)
+    && activity.hints.length === 0
+    && activity.explanation === ""
+    && result.hintUsed !== true;
   const guided = Boolean(
     activity.evidenceMode === "guided"
     || activity.nalviGuided
     || result.hintUsed
     || Number(activity.helpLevel || 0) > 0
-    || (activity.adaptivePlanId && !coherentSpacedRetest)
+    || (adaptiveEvidenceClaimed && !coherentSpacedRetest)
   );
   const input = {
     userId: resolved.userId,
