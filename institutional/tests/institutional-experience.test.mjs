@@ -6,9 +6,11 @@ import vm from "node:vm";
 const scriptUrl=new URL("../../assets/js/nalvi-institutional-experience.js",import.meta.url);
 const serviceUrl=new URL("../../assets/js/nalvi-community-service.js",import.meta.url);
 const styleUrl=new URL("../../assets/css/nalvi-institutional-experience.css",import.meta.url);
+const indexUrl=new URL("../../index.html",import.meta.url);
 const script=await readFile(scriptUrl,"utf8");
 const service=await readFile(serviceUrl,"utf8");
 const style=await readFile(styleUrl,"utf8");
+const index=await readFile(indexUrl,"utf8");
 
 test("institutional sprint exposes the five requested areas",()=>{
   for(const label of ["Comunidad","Aula","En vivo","Miembros","Gestión"])assert.match(script,new RegExp(label));
@@ -53,4 +55,12 @@ test("mobile-first styles include safe areas and compact layouts",()=>{
   assert.match(style,/@media\(max-width:820px\)/);
   assert.match(style,/@media\(max-width:560px\)/);
   assert.match(style,/overflow-x:auto/);
+});
+
+test("index loads the protected service and experience with explicit flags",()=>{
+  assert.match(index,/institutionalExperience:true/);
+  assert.match(index,/communityWrites:false/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-1/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-INSTITUTIONAL-SPRINT-1/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-INSTITUTIONAL-SPRINT-1/);
 });
