@@ -5,6 +5,16 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const ignoredDirectories = new Set([".git", ".firebase", "node_modules", "versions"]);
+const expectedFirestoreChecks = Object.freeze([
+  "Estudiante puede leer su propia memoria pedagógica",
+  "Estudiante no puede leer la memoria de otro estudiante",
+  "Docente autorizado puede leer y docente ajeno no",
+  "Cliente no puede fabricar eventos, mastery, baseline ni repaso",
+  "Estudiante no puede elevar su rol pero conserva progreso heredado",
+  "Docente con membresía confiable puede conservar su rol de perfil",
+  "Cliente no puede aprobar conocimiento ni emitir certificados"
+]);
+const expectedFirestoreCheckCount = expectedFirestoreChecks.length;
 const validators = [
   "scripts/validate-paso-7B.mjs",
   "scripts/validate-paso-8.mjs",
@@ -53,10 +63,51 @@ function tapTotals(output) {
 
 function firestoreCheckTotals(output) {
   const text = String(output || "");
-  const pass = [...text.matchAll(/^(?:# )?PASS /gm)].length;
-  const fail = [...text.matchAll(/^(?:# )?FAIL /gm)].length;
-  return { tests: pass + fail, pass, fail };
+  const observedResults = [...text.matchAll(/^(?:# )?(PASS|FAIL) (.+)$/gm)].map(match => ({ status: match[1], detail: match[2].trim() }));
+  const matchesExpectedName = (result, name) => result.detail === name || result.detail.startsWith(`${name}:`);
+  const slotResults = expectedFirestoreChecks.map(name => {
+    const matches = observedResults.filter(result => matchesExpectedName(result, name));
+    if (matches.length === 0) return "BLOCKED";
+    if (matches.length > 1) return "FAIL";
+    return matches[0].status;
+  });
+  const unexpectedResults = observedResults.filter(result => !expectedFirestoreChecks.some(name => matchesExpectedName(result, name)));
+  const duplicateExpectedResults = expectedFirestoreChecks.filter(name => observedResults.filter(result => matchesExpectedName(result, name)).length > 1);
+  let pass = slotResults.filter(status => status === "PASS").length;
+  let fail = slotResults.filter(status => status === "FAIL").length;
+  let blocked = slotResults.filter(status => status === "BLOCKED").length;
+  const inventoryMismatch = unexpectedResults.length > 0 || duplicateExpectedResults.length > 0;
+  if (unexpectedResults.length > 0 && fail === 0) {
+    if (pass > 0) pass -= 1;
+    else blocked -= 1;
+    fail += 1;
+  }
+  return {
+    tests: expectedFirestoreCheckCount,
+    expectedChecks: expectedFirestoreCheckCount,
+    pass,
+    fail,
+    blocked,
+    observed: observedResults.length,
+    unexpectedResults: unexpectedResults.length,
+    duplicateExpectedResults: duplicateExpectedResults.length,
+    inventoryMismatch
+  };
 }
+
+const blockedFirestoreTotals = reason => ({
+  status: "BLOCKED",
+  reason,
+  tests: expectedFirestoreCheckCount,
+  expectedChecks: expectedFirestoreCheckCount,
+  pass: 0,
+  fail: 0,
+  blocked: expectedFirestoreCheckCount,
+  observed: 0,
+  unexpectedResults: 0,
+  duplicateExpectedResults: 0,
+  inventoryMismatch: false
+});
 
 function javaEnvironment() {
   const current = spawnSync("java", ["-version"], { encoding: "utf8" });
@@ -83,10 +134,10 @@ function javaEnvironment() {
 function runFirestoreTest() {
   const executable = join(root, "node_modules", ".bin", process.platform === "win32" ? "firebase.cmd" : "firebase");
   if (!existsSync(executable)) {
-    return { status: "BLOCKED", reason: "FIREBASE_CLI_NOT_INSTALLED", tests: 0, pass: 0, fail: 0, blocked: 1 };
+    return blockedFirestoreTotals("FIREBASE_CLI_NOT_INSTALLED");
   }
   const env = javaEnvironment();
-  if (!env) return { status: "BLOCKED", reason: "JAVA_NOT_AVAILABLE", tests: 0, pass: 0, fail: 0, blocked: 1 };
+  if (!env) return blockedFirestoreTotals("JAVA_NOT_AVAILABLE");
 
   const result = run(executable, [
     "emulators:exec",
@@ -103,33 +154,29 @@ function runFirestoreTest() {
     }
   });
   const totals = firestoreCheckTotals(`${result.stdout || ""}\n${result.stderr || ""}`);
-  if (totals.tests === 0) {
-    return {
-      status: "BLOCKED",
-      reason: result.error ? String(result.error.message || result.error) : "FIRESTORE_EMULATOR_DID_NOT_START",
-      tests: 0,
-      pass: 0,
-      fail: 0,
-      blocked: 1
-    };
+  if (totals.observed === 0) {
+    return blockedFirestoreTotals(result.error ? String(result.error.message || result.error) : "FIRESTORE_EMULATOR_DID_NOT_START");
   }
   if (result.status !== 0 && totals.fail === 0) {
+    const processBlockedTotals = totals.blocked > 0
+      ? totals
+      : { ...totals, pass: Math.max(0, totals.pass - 1), blocked: 1 };
     return {
       status: "BLOCKED",
       reason: result.error ? String(result.error.message || result.error) : "FIRESTORE_EMULATOR_PROCESS_FAILED",
-      tests: totals.tests,
-      pass: totals.pass,
-      fail: 0,
-      blocked: 1
+      ...processBlockedTotals
     };
   }
   return {
-    status: result.status === 0 && totals.fail === 0 ? "PASS" : "FAIL",
-    reason: result.error ? String(result.error.message || result.error) : null,
-    tests: totals.tests,
-    pass: totals.pass,
-    fail: totals.fail,
-    blocked: 0
+    status: result.status === 0 && totals.fail === 0 && totals.blocked === 0 && !totals.inventoryMismatch ? "PASS" : totals.fail > 0 ? "FAIL" : "BLOCKED",
+    reason: totals.inventoryMismatch
+      ? `FIRESTORE_CHECK_INVENTORY_MISMATCH:${totals.observed}/${expectedFirestoreCheckCount}`
+      : result.error
+        ? String(result.error.message || result.error)
+        : totals.blocked > 0
+          ? `FIRESTORE_CHECKS_NOT_OBSERVED:${totals.observed}/${expectedFirestoreCheckCount}`
+          : null,
+    ...totals
   };
 }
 
@@ -141,12 +188,15 @@ console.log(`PRE-8C QA: ${discoveredTests.length} archivos de prueba descubierto
 console.log("\n=== Pruebas Node (sin Firestore) ===");
 const nodeResult = run(process.execPath, ["--test", "--test-reporter=tap", ...nodeTests]);
 const parsedNodeTotals = tapTotals(`${nodeResult.stdout || ""}\n${nodeResult.stderr || ""}`);
+const nodePass = parsedNodeTotals.pass ?? 0;
+const nodeFail = parsedNodeTotals.fail ?? (nodeResult.status === 0 ? 0 : 1);
+const nodeTestInventory = Math.max(parsedNodeTotals.tests ?? 0, nodePass + nodeFail);
 const nodeTotals = {
   status: nodeResult.status === 0 ? "PASS" : "FAIL",
-  tests: parsedNodeTotals.tests ?? 0,
-  pass: parsedNodeTotals.pass ?? 0,
-  fail: parsedNodeTotals.fail ?? (nodeResult.status === 0 ? 0 : 1),
-  blocked: 0
+  tests: nodeTestInventory,
+  pass: nodePass,
+  fail: nodeFail,
+  blocked: nodeTestInventory - nodePass - nodeFail
 };
 
 console.log("\n=== Reglas Firestore (emulador local, proyecto demo) ===");
@@ -168,8 +218,11 @@ const testTotals = {
   pass: nodeTotals.pass + firestoreTotals.pass,
   fail: nodeTotals.fail + firestoreTotals.fail,
   blocked: nodeTotals.blocked + firestoreTotals.blocked,
-  total: nodeTotals.tests + firestoreTotals.tests + firestoreTotals.blocked
+  total: nodeTotals.tests + firestoreTotals.tests
 };
+if (testTotals.pass + testTotals.fail + testTotals.blocked !== testTotals.total) {
+  throw new Error("PRE_8C_TEST_INVENTORY_MISMATCH");
+}
 const validatorTotals = {
   pass: validatorResults.filter(result => result.status === "PASS").length,
   fail: validatorResults.filter(result => result.status === "FAIL").length,

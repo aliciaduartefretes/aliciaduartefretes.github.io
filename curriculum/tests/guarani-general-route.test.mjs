@@ -22,7 +22,26 @@ const previousContext = vm.createContext({ window: {} });
 vm.runInContext(read("versions/kuaa-general-activities-NALVI-P5-stable.js"), previousContext);
 const previousActivities = previousContext.window.KUAA_GENERAL_ACTIVITY_DATA.activities;
 const languages = ["es", "en", "pt", "fr", "it", "de"];
+const approvedAdaptiveDialogueSources = new Map([
+  ["general-u01-dialogue-greetings", { path: "versions/index-NALVI-P5-stable.html", unitIndex: 0 }]
+]);
 const plain = value => JSON.parse(JSON.stringify(value));
+const stringsIn = (value, result = new Set()) => {
+  if (typeof value === "string") result.add(value.normalize("NFC"));
+  else if (Array.isArray(value)) value.forEach(item => stringsIn(item, result));
+  else if (value && typeof value === "object") Object.values(value).forEach(item => stringsIn(item, result));
+  return result;
+};
+const stableGeneralUnit = source => {
+  const stableHtml = read(source.path);
+  const declarationStart = stableHtml.indexOf("const U=[");
+  const valueStart = stableHtml.indexOf("[", declarationStart);
+  const valueEnd = stableHtml.indexOf("];\nconst quizBase", valueStart);
+  assert.ok(declarationStart >= 0 && valueStart > declarationStart && valueEnd > valueStart, `No se pudo leer ${source.path}.`);
+  const units = vm.runInNewContext(`(${stableHtml.slice(valueStart, valueEnd + 1)})`);
+  assert.ok(units[source.unitIndex], `No existe la unidad estable ${source.unitIndex} en ${source.path}.`);
+  return units[source.unitIndex];
+};
 const adaptiveMetadataFields = ["semanticPair", "adaptiveDialogue"];
 const withoutAdaptiveMetadata = activity => {
   const result = plain(activity);
@@ -113,11 +132,16 @@ test("los metadatos adaptativos autorizan sólo material completo y trazable", (
     assert.deepEqual(Object.keys(dialogue).sort(), ["authorized", "correctAnswer", "correctOptionId", "options", "sourceContentId", "turns"]);
     assert.equal(dialogue.authorized, true, `${activityId} no autoriza explícitamente el diálogo.`);
     assert.ok(String(dialogue.sourceContentId || "").trim(), `${activityId} no declara sourceContentId.`);
+    const approvedSource = approvedAdaptiveDialogueSources.get(dialogue.sourceContentId);
+    assert.ok(approvedSource, `${activityId} refiere una fuente de diálogo no aprobada: ${dialogue.sourceContentId}.`);
+    const approvedLiterals = stringsIn(stableGeneralUnit(approvedSource));
     assert.ok(dialogue.turns.length > 0 && dialogue.turns.length <= 4, `${activityId} tiene una cantidad inválida de turnos.`);
     assert.ok(dialogue.turns.every(turn => turn.authorized === true && turn.id && turn.speaker && turn.text), `${activityId} contiene turnos incompletos o no autorizados.`);
+    assert.ok(dialogue.turns.every(turn => approvedLiterals.has(turn.text.normalize("NFC"))), `${activityId} contiene turnos ajenos al bloque estable aprobado.`);
     assert.equal(new Set(dialogue.turns.map(turn => turn.id)).size, dialogue.turns.length, `${activityId} repite IDs de turnos.`);
     assert.ok(dialogue.options.length >= 3, `${activityId} necesita al menos tres opciones de diálogo.`);
     assert.ok(dialogue.options.every(option => option.authorized === true && option.id && option.text), `${activityId} contiene opciones incompletas o no autorizadas.`);
+    assert.ok(dialogue.options.every(option => approvedLiterals.has(option.text.normalize("NFC"))), `${activityId} contiene opciones ajenas al bloque estable aprobado.`);
     assert.equal(new Set(dialogue.options.map(option => option.id)).size, dialogue.options.length, `${activityId} repite IDs de opciones.`);
     const correctOption = dialogue.options.find(option => option.id === dialogue.correctOptionId);
     assert.ok(correctOption, `${activityId} refiere una opción correcta inexistente.`);
