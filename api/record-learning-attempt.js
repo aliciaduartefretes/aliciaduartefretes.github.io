@@ -3,6 +3,18 @@ import { createMasteryAttemptService } from "../server/mastery-attempt-service.m
 
 const service = createMasteryAttemptService();
 const rateWindows = new Map(), RATE_WINDOW_MS = 10 * 60 * 1000, RATE_LIMIT = 90;
+const PUBLIC_SERVICE_REASONS = new Set([
+  "INVALID_ATTEMPT_PAYLOAD",
+  "ATTEMPT_NOT_AUTHORIZED",
+  "ACTIVITY_NOT_APPROVED_FOR_MASTERY",
+  "UNSUPPORTED_SERVER_SCORING",
+  "INVALID_ATTEMPT_RESPONSE",
+  "ATTEMPT_REPLAYED",
+  "ATTEMPT_CLAIM_FAILED",
+  "PROFILE_SCOPE_MISMATCH",
+  "MASTERY_READ_FAILED",
+  "MASTERY_PERSISTENCE_FAILED"
+]);
 
 function send(response, status, payload) {
   response.statusCode = status;
@@ -29,19 +41,33 @@ function withinRateLimit(uid) {
   current.count += 1; return current.count <= RATE_LIMIT;
 }
 
-export default async function handler(request, response) {
-  if (request.method !== "POST") { response.setHeader("Allow", "POST"); return send(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" }); }
-  if (!sameOrigin(request)) return send(response, 403, { ok: false, reason: "CROSS_ORIGIN_DENIED" });
-  try {
-    const user = await verifyFirebaseIdToken(request.headers.authorization?.replace(/^Bearer\s+/i, ""));
-    if (!user) return send(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
-    if (!withinRateLimit(user.uid)) return send(response, 429, { ok: false, reason: "RATE_LIMITED" });
-    const result = await service.recordAttempt(await bodyOf(request), { verifiedUserId: user.uid });
-    return send(response, result.ok ? 200 : 400, result);
-  } catch (error) {
-    const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
-    return send(response, tooLarge ? 413 : 400, { ok: false, reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "INVALID_REQUEST" });
-  }
+function publicServiceResult(result) {
+  if (result?.ok === true) return result;
+  const reason = PUBLIC_SERVICE_REASONS.has(result?.reason) ? result.reason : "ATTEMPT_NOT_AUTHORIZED";
+  return { ok: false, reason };
 }
 
+export function createRecordLearningAttemptHandler({
+  verifyIdToken = verifyFirebaseIdToken,
+  masteryService = createMasteryAttemptService(),
+  rateLimit = withinRateLimit
+} = {}) {
+  return async function handler(request, response) {
+    if (request.method !== "POST") { response.setHeader("Allow", "POST"); return send(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" }); }
+    if (!sameOrigin(request)) return send(response, 403, { ok: false, reason: "CROSS_ORIGIN_DENIED" });
+    try {
+      const user = await verifyIdToken(request.headers.authorization?.replace(/^Bearer\s+/i, ""));
+      if (!user) return send(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
+      if (!rateLimit(user.uid)) return send(response, 429, { ok: false, reason: "RATE_LIMITED" });
+      const result = await masteryService.recordAttempt(await bodyOf(request), { verifiedUserId: user.uid });
+      return send(response, result.ok ? 200 : 400, publicServiceResult(result));
+    } catch (error) {
+      const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
+      return send(response, tooLarge ? 413 : 400, { ok: false, reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "INVALID_REQUEST" });
+    }
+  };
+}
+
+export default createRecordLearningAttemptHandler({ masteryService: service });
 export const __audit = () => service.audit();
+export const __test = { publicServiceResult };

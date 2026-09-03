@@ -5,6 +5,7 @@ export const PRE_8C_TEST_INVENTORY = Object.freeze({
   requiredTestFiles: Object.freeze([
     "activity-catalog/tests/activity-catalog.test.mjs",
     "ai/tests/reinforcement-engine.test.mjs",
+    "api/tests/record-learning-attempt.test.mjs",
     "assessment/tests/nalvi-answer-evaluator.test.mjs",
     "curriculum/tests/guarani-general-route.test.mjs",
     "evals/adaptive-tutor/adaptive-tutor.eval.test.mjs",

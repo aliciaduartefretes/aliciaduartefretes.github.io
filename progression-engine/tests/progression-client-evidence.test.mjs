@@ -215,3 +215,28 @@ test("una actividad ordinaria limpia conserva evidencia independiente", () => {
   assert.equal(evaluated.progression.evidenceStrength, "independent");
   assert.equal(evaluated.progression.event.hintUsed, false);
 });
+
+test("un rechazo 400 de persistencia remota no altera el resultado ni el feedback local", async () => {
+  const originalFetch = globalThis.fetch;
+  let submittedBody = null;
+  window.GCA_FIREBASE_LIVE = {
+    auth: { currentUser: { uid: "authenticated-test-user", getIdToken: async () => "test-token" } }
+  };
+  globalThis.fetch = async (_url, options) => {
+    submittedBody = JSON.parse(options.body);
+    return { ok: false, status: 400 };
+  };
+  try {
+    const evaluated = evaluate({ id: "remote-denial-keeps-local-result" });
+    const persistence = await evaluated.progression.persisted;
+
+    assert.deepEqual(persistence, { status: "failed", reason: "HTTP_400" });
+    assert.equal(evaluated.progression.event.correct, true);
+    assert.equal(evaluated.progression.guided, false);
+    assert.equal(progressionClient.getLocalEvents().length, 1);
+    assert.equal(submittedBody.correct, true);
+  } finally {
+    window.GCA_FIREBASE_LIVE = null;
+    globalThis.fetch = originalFetch;
+  }
+});
