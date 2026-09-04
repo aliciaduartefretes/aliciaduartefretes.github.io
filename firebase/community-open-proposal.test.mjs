@@ -38,8 +38,8 @@ try{
   await assertFails(setDoc(doc(alicia,"communityProfiles","spoofed"),profileData("spoofed","Alicia Duarte","https://example.com/alicia.jpg")));
   await assertFails(setDoc(doc(alicia,"communityProfiles","wrong-photo"),profileData("alicia","Alicia Duarte","https://example.com/other.jpg")));
   await assertSucceeds(updateDoc(aliciaProfile,{bio:"Docente de guaraní",updatedAt:serverTimestamp()}));
-  await assertSucceeds(updateDoc(aliciaProfile,{avatarPath:"communityMedia/alicia/profile/avatar",coverPath:"communityMedia/alicia/profile/cover",updatedAt:serverTimestamp()}));
-  await assertFails(updateDoc(aliciaProfile,{avatarPath:"communityMedia/marcelo/profile/avatar",updatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(aliciaProfile,{displayName:"Alicia Ñe’ẽ",updatedAt:serverTimestamp()}));
+  await assertFails(updateDoc(aliciaProfile,{email:"otra@example.com",updatedAt:serverTimestamp()}));
   await assertFails(updateDoc(doc(marcelo,"communityProfiles","alicia"),{bio:"Perfil ajeno",updatedAt:serverTimestamp()}));
 
   const follow=doc(marcelo,"communityProfiles","alicia","followers","marcelo");
@@ -49,11 +49,10 @@ try{
   await assertFails(setDoc(doc(marcelo,"communityProfiles","alicia","followers","alicia"),{createdAt:serverTimestamp()}));
   await assertSucceeds(deleteDoc(follow));
 
-  await assertSucceeds(setDoc(post,postData("alicia","Alicia Duarte")));
-  await assertSucceeds(setDoc(doc(alicia,"communityPosts","resource"),{...postData("alicia","Alicia Duarte","Material para practicar"),category:"resources",mediaPath:"communityMedia/alicia/posts/123456789abc",mediaType:"image",resourceTitle:"Guía",resourceUrl:"https://example.com/guia"}));
-  await assertFails(setDoc(doc(alicia,"communityPosts","wrong-media"),{...postData("alicia","Alicia Duarte"),mediaPath:"communityMedia/marcelo/posts/123456789abc",mediaType:"image"}));
-  await assertFails(setDoc(doc(alicia,"communityPosts","unsafe-link"),{...postData("alicia","Alicia Duarte"),category:"resources",resourceUrl:"javascript:alert(1)"}));
-  await assertFails(setDoc(doc(alicia,"communityPosts","misplaced-link"),{...postData("alicia","Alicia Duarte"),resourceTitle:"No corresponde",resourceUrl:"https://example.com"}));
+  await assertSucceeds(setDoc(post,postData("alicia","Alicia Ñe’ẽ")));
+  await assertFails(setDoc(doc(alicia,"communityPosts","resource"),{...postData("alicia","Alicia Ñe’ẽ","Material para practicar"),category:"resources"}));
+  await assertFails(setDoc(doc(alicia,"communityPosts","media"),{...postData("alicia","Alicia Ñe’ẽ"),mediaPath:"communityMedia/alicia/posts/123456789abc",mediaType:"image"}));
+  await assertFails(setDoc(doc(alicia,"communityPosts","external"),{...postData("alicia","Alicia Ñe’ẽ"),resourceUrl:"https://example.com"}));
   await assertSucceeds(getDoc(doc(marcelo,"communityPosts","welcome")));
   await assertFails(setDoc(doc(marcelo,"communityPosts","spoofed"),postData("marcelo","Otra persona")));
   await assertFails(setDoc(doc(marcelo,"communityPosts","announcement"),{...postData("marcelo","Marcelo Benítez"),category:"announcements"}));
@@ -80,6 +79,17 @@ try{
   await assertFails(setDoc(doc(marcelo,"communityPosts","welcome","views","alicia"),{createdAt:serverTimestamp()}));
 
   await assertSucceeds(deleteDoc(post));
+
+  const selfInstitution=doc(alicia,"institutions","self__alicia");
+  await assertSucceeds(setDoc(selfInstitution,{name:"Aula de Alicia",country:"",active:true,status:"active",ownerUid:"alicia",selfService:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(anonymous,"institutions","self__anonymous"),{name:"Aula anónima",country:"",active:true,status:"active",ownerUid:"anonymous",selfService:true,createdBy:"anonymous",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(alicia,"institutions","self__otra"),{name:"Aula ajena",country:"",active:true,status:"active",ownerUid:"alicia",selfService:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  const selfMembership=doc(alicia,"institutionMembers","self__alicia__alicia");
+  await assertSucceeds(setDoc(selfMembership,{institutionId:"self__alicia",uid:"alicia",claimedUid:"alicia",email:"alicia@example.com",name:"Alicia Duarte",role:"institution_manager",active:true,selfService:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(marcelo,"institutionMembers","self__alicia__marcelo"),{institutionId:"self__alicia",uid:"marcelo",claimedUid:"marcelo",email:"marcelo@example.com",name:"Marcelo",role:"institution_manager",active:true,selfService:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  const wheel=doc(alicia,"academicActivities","wheel-1");
+  await assertSucceeds(setDoc(wheel,{institutionId:"self__alicia",ownerUid:"alicia",activityType:"wheel",title:"Ruleta de verbos",content:"Aha\nReho\nOho",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(marcelo,"academicActivities","foreign"),{institutionId:"self__alicia",ownerUid:"marcelo",activityType:"wheel",title:"Ruleta ajena",content:"A\nB",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   console.log("PASS comunidad pública, participación autenticada y métricas únicas protegidas");
 }finally{
   await testEnv.cleanup();

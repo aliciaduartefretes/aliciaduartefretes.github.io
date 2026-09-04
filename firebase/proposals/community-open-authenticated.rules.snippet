@@ -7,12 +7,6 @@ function isCommunityMember() {
     && request.auth.token.firebase.sign_in_provider != 'anonymous';
 }
 
-function communityName() {
-  return isCommunityMember()
-    ? request.auth.token.get('name', '')
-    : '';
-}
-
 function communityPhoto() {
   return isCommunityMember()
     ? request.auth.token.get('picture', '')
@@ -21,7 +15,7 @@ function communityPhoto() {
 
 function validCommunityCategory(value) {
   return value is string
-    && value in ['announcements', 'questions', 'community', 'learning', 'resources'];
+    && value in ['announcements', 'questions', 'community', 'learning'];
 }
 
 function validCommunityText(value, maximum) {
@@ -34,18 +28,8 @@ function validCommunityPhoto(value) {
     && value == communityPhoto();
 }
 
-function validCommunityMediaPath(value, userId, scope) {
-  return value is string
-    && (
-      value == ''
-      || value.matches('^communityMedia/' + userId + '/' + scope + '/[A-Za-z0-9_-]{1,80}$')
-    );
-}
-
-function validCommunityUrl(value) {
-  return value is string
-    && value.size() <= 500
-    && (value == '' || value.matches('^https://[^\\s]+$'));
+function communityProfilePath(userId) {
+  return /databases/$(database)/documents/communityProfiles/$(userId);
 }
 
 match /communityProfiles/{userId} {
@@ -54,18 +38,14 @@ match /communityProfiles/{userId} {
   allow create: if isCommunityMember()
     && userId == request.auth.uid
     && request.resource.data.keys().hasOnly([
-      'userId', 'displayName', 'photoURL', 'avatarPath', 'coverPath',
-      'bio', 'createdAt', 'updatedAt'
+      'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.keys().hasAll([
       'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.userId == request.auth.uid
     && validCommunityText(request.resource.data.displayName, 80)
-    && request.resource.data.displayName == communityName()
     && validCommunityPhoto(request.resource.data.photoURL)
-    && validCommunityMediaPath(request.resource.data.get('avatarPath', ''), userId, 'profile')
-    && validCommunityMediaPath(request.resource.data.get('coverPath', ''), userId, 'profile')
     && request.resource.data.bio is string
     && request.resource.data.bio.size() <= 160
     && request.resource.data.createdAt == request.time
@@ -77,13 +57,10 @@ match /communityProfiles/{userId} {
     && request.resource.data.userId == resource.data.userId
     && request.resource.data.createdAt == resource.data.createdAt
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-      'displayName', 'photoURL', 'avatarPath', 'coverPath', 'bio', 'updatedAt'
+      'displayName', 'photoURL', 'bio', 'updatedAt'
     ])
     && validCommunityText(request.resource.data.displayName, 80)
-    && request.resource.data.displayName == communityName()
     && validCommunityPhoto(request.resource.data.photoURL)
-    && validCommunityMediaPath(request.resource.data.get('avatarPath', ''), userId, 'profile')
-    && validCommunityMediaPath(request.resource.data.get('coverPath', ''), userId, 'profile')
     && request.resource.data.bio is string
     && request.resource.data.bio.size() <= 160
     && request.resource.data.updatedAt == request.time;
@@ -110,30 +87,17 @@ match /communityPosts/{postId} {
 
   allow create: if isCommunityMember()
     && request.resource.data.keys().hasOnly([
-      'authorId', 'authorName', 'body', 'category', 'pinned',
-      'mediaPath', 'mediaType', 'resourceTitle', 'resourceUrl',
-      'createdAt', 'updatedAt'
+      'authorId', 'authorName', 'body', 'category', 'pinned', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.keys().hasAll([
       'authorId', 'authorName', 'body', 'category', 'pinned', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.authorId == request.auth.uid
     && validCommunityText(request.resource.data.authorName, 80)
-    && request.resource.data.authorName == communityName()
+    && exists(communityProfilePath(request.auth.uid))
+    && request.resource.data.authorName == get(communityProfilePath(request.auth.uid)).data.displayName
     && validCommunityText(request.resource.data.body, 700)
     && validCommunityCategory(request.resource.data.category)
-    && validCommunityMediaPath(request.resource.data.get('mediaPath', ''), request.auth.uid, 'posts')
-    && request.resource.data.get('mediaType', '') in ['', 'image']
-    && request.resource.data.get('resourceTitle', '') is string
-    && request.resource.data.get('resourceTitle', '').size() <= 100
-    && validCommunityUrl(request.resource.data.get('resourceUrl', ''))
-    && (
-      request.resource.data.category == 'resources'
-      || (
-        request.resource.data.get('resourceTitle', '') == ''
-        && request.resource.data.get('resourceUrl', '') == ''
-      )
-    )
     && (
       request.resource.data.category != 'announcements'
       || isPlatformAdmin()
@@ -171,7 +135,8 @@ match /communityPosts/{postId} {
       ])
       && request.resource.data.authorId == request.auth.uid
       && validCommunityText(request.resource.data.authorName, 80)
-      && request.resource.data.authorName == communityName()
+      && exists(communityProfilePath(request.auth.uid))
+      && request.resource.data.authorName == get(communityProfilePath(request.auth.uid)).data.displayName
       && validCommunityText(request.resource.data.body, 500)
       && request.resource.data.parentCommentId is string
       && request.resource.data.parentCommentId.size() <= 120

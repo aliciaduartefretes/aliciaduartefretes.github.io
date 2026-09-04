@@ -156,6 +156,29 @@ body:has(#institutionalExperience:not(.hide)) .reaction-sound-toggle{display:non
 .nalvi-community-upload-preview .nalvi-community-avatar{width:100%;height:100%;font-size:22px}
 .nalvi-community-profile-posts-title{padding:13px 20px;border-bottom:1px solid var(--institutional-line);font-size:13px;font-weight:950;text-transform:uppercase;letter-spacing:.05em}
 
+/* Text-only discovery and directory. Kept inside the feed to avoid a crowded sidebar. */
+.nalvi-community-stream{width:min(720px,100%);margin-inline:auto}
+.nalvi-community-discovery{border-bottom:1px solid var(--institutional-line);background:#fbfaff}
+.nalvi-community-discovery>summary{display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:12px 18px;color:var(--institutional-purple-dark);font-size:13px;font-weight:900;cursor:pointer;list-style:none}
+.nalvi-community-discovery>summary::-webkit-details-marker{display:none}
+.nalvi-community-discovery[open]>summary span:last-child{transform:rotate(180deg)}
+.nalvi-community-discovery-body{padding:0 16px 16px}
+.nalvi-community-discovery .nalvi-community-feed-tabs{overflow:hidden;border:1px solid var(--institutional-line);border-radius:14px}
+.nalvi-community-discovery .nalvi-community-categories{grid-template-columns:repeat(4,minmax(0,1fr));border:0;padding:11px 0}
+.nalvi-community-discovery-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px}
+.nalvi-community-discovery-grid>section{min-width:0;border:1px solid var(--institutional-line);border-radius:15px;background:#fff;padding:13px}
+.nalvi-community-discovery-grid h3{margin:0 0 9px;font-size:14px}
+.nalvi-community-topic-list{display:grid;gap:4px}
+.nalvi-community-topic-list button{display:grid;gap:2px;border:0;border-radius:10px;background:transparent;padding:8px;color:var(--institutional-ink);font:inherit;text-align:left;cursor:pointer}
+.nalvi-community-topic-list button:hover{background:var(--institutional-purple-soft)}
+.nalvi-community-topic-list small{color:var(--institutional-muted);font-size:10px}
+.nalvi-community-search{display:flex;align-items:center;gap:7px;margin-bottom:5px;border:1px solid var(--institutional-line);border-radius:999px;padding:8px 11px;background:#fff;color:var(--institutional-muted)}
+.nalvi-community-search input{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:var(--institutional-ink);font:inherit;font-size:12px}
+.nalvi-community-no-people{margin:12px 0 4px;color:var(--institutional-muted);font-size:12px;line-height:1.4}
+.nalvi-community-profile-editor label{display:grid;gap:7px;color:var(--institutional-ink);font-size:12px}
+.nalvi-community-profile-editor input,.nalvi-community-profile-editor textarea{width:100%;border:1px solid var(--institutional-line);border-radius:13px;padding:10px 12px;background:#fff;color:var(--institutional-ink);font:inherit}
+.nalvi-community-profile-editor input:focus,.nalvi-community-profile-editor textarea:focus{outline:3px solid rgba(101,71,199,.12);border-color:var(--institutional-purple)}
+
 @media(max-width:900px){
   .nalvi-community-layout{grid-template-columns:minmax(0,1fr)}
   .nalvi-community-sidebar{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -176,6 +199,10 @@ body:has(#institutionalExperience:not(.hide)) .reaction-sound-toggle{display:non
   .nalvi-community-categories{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px 12px}
   .nalvi-community-category{font-size:10.5px}
   .nalvi-community-category:last-child{grid-column:1/-1}
+  .nalvi-community-discovery-body{padding-inline:10px}
+  .nalvi-community-discovery .nalvi-community-categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nalvi-community-discovery .nalvi-community-category:last-child{grid-column:auto}
+  .nalvi-community-discovery-grid{grid-template-columns:minmax(0,1fr)}
   .nalvi-community-author-link{grid-template-columns:40px minmax(0,1fr)}
   .nalvi-community-person-actions{gap:3px}
   .nalvi-community-follow{padding:7px 9px}

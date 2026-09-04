@@ -174,6 +174,24 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function selfInstitutionId() {
+      return signedIn() ? 'self__' + request.auth.uid : '';
+    }
+
+    function isOwnSelfInstitution(institutionId) {
+      return signedIn()
+        && email() != ''
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && institutionId == selfInstitutionId();
+    }
+
+    function ownsSelfInstitution(institutionId) {
+      return isOwnSelfInstitution(institutionId)
+        && exists(/databases/$(database)/documents/institutions/$(institutionId))
+        && get(/databases/$(database)/documents/institutions/$(institutionId)).data.get('ownerUid', '') == request.auth.uid
+        && get(/databases/$(database)/documents/institutions/$(institutionId)).data.get('active', false) == true;
+    }
+
     function userProfilePath(userId) {
       return /databases/$(database)/documents/users/$(userId);
     }
@@ -287,17 +305,60 @@ service cloud.firestore {
 
     match /institutions/{institutionId} {
       allow get, list: if isPlatformAdmin()
-        || isInstitutionMember(institutionId);
-      allow create: if isPlatformAdmin()
-        && request.resource.data.get('active', false) == true
-        && request.resource.data.get('status', '') == 'active';
-      allow update, delete: if isPlatformAdmin();
+        || isInstitutionMember(institutionId)
+        || isOwnSelfInstitution(institutionId);
+      allow create: if (
+          isPlatformAdmin()
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('status', '') == 'active'
+        )
+        || (
+          isOwnSelfInstitution(institutionId)
+          && request.resource.data.keys().hasOnly([
+            'name', 'country', 'active', 'status', 'ownerUid',
+            'selfService', 'createdBy', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.get('ownerUid', '') == request.auth.uid
+          && request.resource.data.get('createdBy', '') == request.auth.uid
+          && request.resource.data.get('selfService', false) == true
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('status', '') == 'active'
+          && request.resource.data.get('name', '') is string
+          && request.resource.data.get('name', '').size() >= 2
+          && request.resource.data.get('name', '').size() <= 160
+          && request.resource.data.get('country', '') is string
+          && request.resource.data.get('country', '').size() <= 80
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+        );
+      allow update: if isPlatformAdmin()
+        || (
+          ownsSelfInstitution(institutionId)
+          && request.resource.data.get('ownerUid', '') == resource.data.get('ownerUid', '')
+          && request.resource.data.get('selfService', false) == true
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('status', '') == 'active'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'country', 'updatedAt'
+          ])
+          && request.resource.data.get('name', '') is string
+          && request.resource.data.get('name', '').size() >= 2
+          && request.resource.data.get('name', '').size() <= 160
+          && request.resource.data.get('country', '') is string
+          && request.resource.data.get('country', '').size() <= 80
+          && request.resource.data.updatedAt == request.time
+        );
+      allow delete: if isPlatformAdmin();
     }
 
     match /institutionMembers/{memberId} {
       allow get, list: if isPlatformAdmin()
         || sameEmail(resource.data.get('email', ''))
-        || isInstitutionMember(resource.data.get('institutionId', ''));
+        || isInstitutionMember(resource.data.get('institutionId', ''))
+        || (
+          signedIn()
+          && memberId == selfInstitutionId() + '__' + request.auth.uid
+        );
 
       allow create: if isPlatformAdmin()
         || (
@@ -313,6 +374,26 @@ service cloud.firestore {
           && hasInviteMembership(request.resource.data.get('institutionId', ''))
           && get(inviteMembershipPath(request.resource.data.get('institutionId', ''))).data.get('role', '')
             == request.resource.data.get('role', '')
+        )
+        || (
+          isOwnSelfInstitution(request.resource.data.get('institutionId', ''))
+          && ownsSelfInstitution(request.resource.data.get('institutionId', ''))
+          && memberId == request.resource.data.get('institutionId', '') + '__' + request.auth.uid
+          && request.resource.data.keys().hasOnly([
+            'institutionId', 'uid', 'claimedUid', 'email', 'name', 'role',
+            'active', 'selfService', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.get('uid', '') == request.auth.uid
+          && request.resource.data.get('claimedUid', '') == request.auth.uid
+          && sameEmail(request.resource.data.get('email', ''))
+          && request.resource.data.get('name', '') is string
+          && request.resource.data.get('name', '').size() >= 2
+          && request.resource.data.get('name', '').size() <= 120
+          && request.resource.data.get('role', '') == 'institution_manager'
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('selfService', false) == true
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
         );
 
       allow update: if isPlatformAdmin()
@@ -480,6 +561,54 @@ service cloud.firestore {
         || canTeach(request.resource.data.get('institutionId', ''));
       allow update, delete: if isPlatformAdmin()
         || canTeach(resource.data.get('institutionId', ''));
+    }
+
+    match /academicActivities/{activityId} {
+      allow get, list: if isPlatformAdmin()
+        || canTeach(resource.data.get('institutionId', ''));
+
+      allow create: if signedIn()
+        && canTeach(request.resource.data.get('institutionId', ''))
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'ownerUid', 'activityType', 'title', 'content',
+          'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.get('ownerUid', '') == request.auth.uid
+        && request.resource.data.get('activityType', '') in ['wheel', 'assessment']
+        && request.resource.data.get('title', '') is string
+        && request.resource.data.get('title', '').size() >= 2
+        && request.resource.data.get('title', '').size() <= 120
+        && request.resource.data.get('content', '') is string
+        && request.resource.data.get('content', '').size() >= 1
+        && request.resource.data.get('content', '').size() <= 8000
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if signedIn()
+        && request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+        && request.resource.data.get('ownerUid', '') == resource.data.get('ownerUid', '')
+        && (
+          resource.data.get('ownerUid', '') == request.auth.uid
+          || isInstitutionManager(resource.data.get('institutionId', ''))
+        )
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'activityType', 'title', 'content', 'updatedAt'
+        ])
+        && request.resource.data.get('activityType', '') in ['wheel', 'assessment']
+        && request.resource.data.get('title', '') is string
+        && request.resource.data.get('title', '').size() >= 2
+        && request.resource.data.get('title', '').size() <= 120
+        && request.resource.data.get('content', '') is string
+        && request.resource.data.get('content', '').size() >= 1
+        && request.resource.data.get('content', '').size() <= 8000
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if signedIn()
+        && (
+          resource.data.get('ownerUid', '') == request.auth.uid
+          || isInstitutionManager(resource.data.get('institutionId', ''))
+          || isPlatformAdmin()
+        );
     }
 
     match /certificateRequests/{requestId} {

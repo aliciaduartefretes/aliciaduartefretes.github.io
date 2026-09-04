@@ -1,0 +1,35 @@
+.nalvi-academic-entry{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:20px 0}
+.nalvi-academic-entry-card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:15px;align-items:start;padding:22px;border:2px solid var(--gesa-border,#e5dfed);border-radius:24px;background:#fff;box-shadow:0 6px 0 #eeeaf6}
+.nalvi-academic-entry-card.teacher{background:linear-gradient(145deg,#fff,#f5f1ff)}
+.nalvi-academic-entry-card.student{background:linear-gradient(145deg,#fff,#effbf7)}
+.nalvi-academic-entry-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:18px;background:#eee8ff;font-size:28px}
+.nalvi-academic-entry-card.student .nalvi-academic-entry-icon{background:#e1f7ef}
+.nalvi-academic-entry-card small{color:#68589d;font-size:10px;font-weight:950;letter-spacing:.05em}
+.nalvi-academic-entry-card h3{margin:5px 0 8px;font-size:22px}
+.nalvi-academic-entry-card p{margin:0 0 14px;color:var(--muted,#6d667d);line-height:1.5}
+.nalvi-academic-entry-card label{display:grid;gap:6px;margin:12px 0;color:#514861;font-size:12px;font-weight:900}
+.nalvi-academic-entry-card input{width:100%;min-width:0;min-height:46px;border:2px solid #ddd5ed;border-radius:13px;padding:10px 12px;background:#fff;color:inherit;font:inherit}
+.nalvi-academic-pin-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.nalvi-academic-pin-row input{font-size:20px;font-weight:900;letter-spacing:.16em;text-align:center}
+.nalvi-academic-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.nalvi-academic-tools .gesa-card{min-width:0}
+.nalvi-academic-tools .gesa-card>h3{margin-top:10px}
+.nalvi-academic-tools .gesa-form{margin-top:15px}
+.nalvi-wheel-stage{position:relative;display:grid;place-items:center;gap:12px;margin-top:18px;padding:18px;border-radius:20px;background:linear-gradient(145deg,#f7f3ff,#edfaf5);overflow:hidden}
+.nalvi-wheel{--wheel-segments:6;position:relative;display:grid;place-items:center;width:min(230px,70vw);aspect-ratio:1;border:8px solid #fff;border-radius:50%;background:conic-gradient(#6949cc 0 16.6%,#1a8a70 16.6% 33.2%,#ef7180 33.2% 49.8%,#ffc95a 49.8% 66.4%,#4e83d6 66.4% 83%,#8c64d8 83%);box-shadow:0 11px 24px rgba(48,37,75,.18);color:#fff;font-size:48px;font-weight:950;transition:transform 1.2s cubic-bezier(.14,.72,.18,1)}
+.nalvi-wheel:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border:7px solid #fff;border-radius:50%;background:#213d39;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.nalvi-wheel>span{position:relative;z-index:1}
+.nalvi-wheel-pointer{position:absolute;z-index:3;top:7px;color:#241d3b;font-size:28px;filter:drop-shadow(0 2px 0 #fff)}
+.nalvi-wheel-stage>strong{min-height:24px;color:#46358d;text-align:center}
+
+@media(max-width:760px){
+  .nalvi-academic-entry,.nalvi-academic-tools-grid{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-entry-card{grid-template-columns:48px minmax(0,1fr);padding:17px}
+  .nalvi-academic-entry-icon{width:48px;height:48px;border-radius:15px;font-size:23px}
+  .nalvi-academic-entry-card h3{font-size:19px}
+}
+@media(max-width:430px){
+  .nalvi-academic-entry-card{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-pin-row{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-pin-row button{width:100%}
+}
