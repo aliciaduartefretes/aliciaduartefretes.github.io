@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-1";
+  const VERSION="NALVI-ACADEMIC-STUDIO-2";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
   const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]);
@@ -21,7 +21,7 @@
 
   function publicHubMarkup(){
     const user=currentUser(),action=!signedIn()?"Entrar con Google":canManage()?"Abrir Gestión académica":"Crear mi espacio académico";
-    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon">🏫</span><div><small>PARA DOCENTES E INSTITUCIONES</small><h3>Tu espacio académico, sin aprobación manual</h3><p>Crea grupos, asigna tareas, prepara evaluaciones y organiza actividades en vivo. Cada espacio mantiene sus datos separados.</p>${signedIn()&&!canManage()?`<label>Nombre de tu institución o aula<input id="nalviAcademicWorkspaceName" maxlength="160" value="Aula de ${esc(user?.displayName||"guaraní")}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status"></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon">🎯</span><div><small>PARA ESTUDIANTES</small><h3>Entrar con PIN</h3><p>Usa el PIN de seis números compartido por tu profesor. No necesitas pedir acceso adicional.</p><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" aria-label="PIN de la actividad"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">Entrar →</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status"></div></div></article></section>`;
+    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon">🏫</span><div><small>PARA DOCENTES E INSTITUCIONES</small><h3>Tu espacio académico</h3><p>Crea grupos, asigna tareas, prepara evaluaciones y organiza actividades en vivo. Cada espacio mantiene sus datos separados.</p>${signedIn()&&!canManage()?`<label>Nombre de tu institución o aula<input id="nalviAcademicWorkspaceName" maxlength="160" value="Aula de ${esc(user?.displayName||"guaraní")}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status"></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon">🎯</span><div><small>PARA ESTUDIANTES</small><h3>Entrar con PIN</h3><p>Usa el PIN de seis números compartido por tu profesor. No necesitas pedir acceso adicional.</p><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="123456" aria-label="PIN de la actividad"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">Entrar →</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status"></div></div></article></section>`;
   }
 
   function installPublicHub(){

@@ -10,6 +10,7 @@ const notificationScriptUrl=new URL("../../assets/js/nalvi-notification-center.j
 const notificationStyleUrl=new URL("../../assets/css/nalvi-notification-center.css",import.meta.url);
 const academicScriptUrl=new URL("../../assets/js/nalvi-academic-studio.js",import.meta.url);
 const academicStyleUrl=new URL("../../assets/css/nalvi-academic-studio.css",import.meta.url);
+const audioManifestUrl=new URL("../../assets/audio/guarani/ali-2026/manifest.json",import.meta.url);
 const indexUrl=new URL("../../index.html",import.meta.url);
 const firestoreRulesUrl=new URL("../../firebase/proposals/REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules",import.meta.url);
 const script=await readFile(scriptUrl,"utf8");
@@ -19,12 +20,13 @@ const notificationScript=await readFile(notificationScriptUrl,"utf8");
 const notificationStyle=await readFile(notificationStyleUrl,"utf8");
 const academicScript=await readFile(academicScriptUrl,"utf8");
 const academicStyle=await readFile(academicStyleUrl,"utf8");
+const audioManifest=JSON.parse(await readFile(audioManifestUrl,"utf8"));
 const index=await readFile(indexUrl,"utf8");
 const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-13"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-14"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -80,10 +82,12 @@ test("enabled service writes only through authenticated Firestore operations",as
   const api=context.window.NALVI_COMMUNITY_SERVICE;
   assert.equal(await api.createRemotePost("Un aporte"),"post-1");
   await assert.rejects(api.createRemotePost("Otro aporte"),/COMMUNITY_POST_COOLDOWN/);
+  assert.equal(await api.createComment("post-1","Mba’éichapa reime?","comment-1"),"post-1");
   assert.equal(await api.toggleFollow("otra"),true);
   assert.equal(await api.saveOwnProfile("Alicia Ñe’ẽ","Docente de guaraní"),true);
   assert.equal(await api.deleteRemotePost("post-1"),true);
   assert.ok(writes.some(item=>item.kind==="add"&&item.path.endsWith("communityPosts")));
+  assert.ok(writes.some(item=>item.kind==="add"&&item.path.endsWith("communityPosts/post-1/comments")&&item.data.parentCommentId==="comment-1"&&item.data.body==="Mba’éichapa reime?"));
   assert.ok(writes.some(item=>item.kind==="set"&&item.path.endsWith("communityProfiles/alicia")));
   assert.ok(writes.some(item=>item.kind==="set"&&item.path.endsWith("communityProfiles/otra/followers/alicia")));
   assert.ok(writes.some(item=>item.kind==="delete"&&item.path.endsWith("communityPosts/post-1")));
@@ -92,10 +96,11 @@ test("enabled service writes only through authenticated Firestore operations",as
 });
 
 test("feed supports discovery, likes, replies, views, sharing, own deletion and followers",()=>{
-  for(const marker of ["data-community-feed","data-community-topic","data-community-comment","data-community-like","data-community-share","data-community-delete","data-community-follow","data-community-hide","data-community-report","recordView","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
+  for(const marker of ["data-community-feed","data-community-topic","data-community-comment","data-community-reply-comment","data-parent-comment-id","parentCommentId","data-community-like","data-community-share","data-community-delete","data-community-follow","data-community-hide","data-community-report","recordView","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
   assert.match(script,/currentUid\(\)===post\.authorId/);
   assert.match(script,/state\.feed==="following"/);
   assert.match(service,/communityProfiles/);
+  assert.match(service,/firebase\.limit\(12\)/);
   assert.match(service,/POST_COOLDOWN_MS=15000/);
   assert.match(service,/COMMUNITY_DUPLICATE_POST/);
   assert.match(script,/show\("suggestions",true\)/);
@@ -160,7 +165,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell exposes relevant read-only Community notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-8"/);
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-9"/);
   assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-1"/);
   for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","nalviCommunityNotificationsSeen.v1","openPost"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
@@ -221,9 +226,9 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-8/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-13/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-13/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-9/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-14/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-14/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-1/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
@@ -231,13 +236,28 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and reuses the protected groups, tasks and live PIN",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-1"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-2"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-1/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-2/);
   assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-1/);
+  assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(firestoreRules,/match \/academicActivities\/\{activityId\}/);
   assert.match(firestoreRules,/isOwnSelfInstitution/);
   assert.match(firestoreRules,/ownsSelfInstitution/);
   assert.match(firestoreRules,/memberId == request\.resource\.data\.get\('institutionId', ''\) \+ '__' \+ request\.auth\.uid/);
+});
+
+test("listening practice expands to every authorized human recording without exposing internal metadata",()=>{
+  assert.equal(audioManifest.count,99);
+  assert.equal(audioManifest.recordings.length,99);
+  assert.equal(new Set(audioManifest.recordings.map(recording=>recording.id)).size,99);
+  assert.match(index,/const AUTHORIZED_LISTENING_COUNT=99/);
+  assert.match(index,/registry\.list\(\)\.map\(recording=>registry\.authorize\(/);
+  assert.match(index,/practices\.listen=activities/);
+  assert.match(index,/audio:recording\.audioId/);
+  assert.match(index,/publicAudioLabel=value=>String\(value\|\|""\)\.split\("\("\)\[0\]\.trim\(\)/);
+  assert.match(index,/showsInternalAudioMetadata:false/);
+  assert.match(index,/data-audio-label-playing="Pausar"/);
+  assert.match(index,/playPronunciation\(item\.audio,event\.currentTarget\)/);
 });

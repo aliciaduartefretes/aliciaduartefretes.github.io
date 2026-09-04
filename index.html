@@ -472,7 +472,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   @media(max-width:760px){.pro-course-overview{padding:18px 15px}.pro-overview-top{grid-template-columns:1fr}.pro-kpis{min-width:0;grid-template-columns:repeat(3,1fr)}.pro-kpi{padding:9px 5px}.pro-kpi b{font-size:15px}.pro-outcomes{grid-template-columns:1fr}.general-module-head{align-items:flex-start}.module-pro-badge{font-size:9px}}
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-1">
-<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-13">
+<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-14">
 <link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-1">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1"></head>
@@ -2701,12 +2701,33 @@ onAuthStateChanged(auth,async user=>{
     {topic:"Conversación",q:"Responde: ¿Mba’éichapa reime?",a:"Aime porã, ¿ha nde?",speak:true},
     {topic:"Medicina",q:"Practica la pregunta: ¿Dónde te duele?",a:"Moõpa hasy ndéve?",speak:true}
   );
+  const AUTHORIZED_LISTENING_COUNT=99;
+  let authorizedListeningReady=false;
+  const publicAudioLabel=value=>String(value||"").split("(")[0].trim();
+  function listeningOptions(recordings,index){
+    const labels=[],offsets=[0,33,66,17,50,82,1,2];
+    for(const offset of offsets){const label=publicAudioLabel(recordings[(index+offset)%recordings.length]?.audioText);if(label&&!labels.includes(label))labels.push(label);if(labels.length===3)break}
+    if(labels.length!==3)return[];
+    const shift=index%3;
+    return labels.slice(shift).concat(labels.slice(0,shift));
+  }
+  async function installAuthorizedListeningPractice(){
+    const registry=window.NALVI_RECORDED_AUDIO;if(!registry?.ready||typeof registry.list!=="function"||typeof registry.authorize!=="function")return false;
+    const status=await registry.ready;if(!status?.ok)return false;
+    const recordings=registry.list().map(recording=>registry.authorize({audioId:recording.audioId,audioPath:recording.audioPath,audioText:recording.audioText,audioAuthorized:true,humanRecorded:true,audioSource:"manifest-human-recording"})).filter(Boolean);
+    if(recordings.length!==AUTHORIZED_LISTENING_COUNT||new Set(recordings.map(recording=>recording.audioId)).size!==AUTHORIZED_LISTENING_COUNT)return false;
+    const activities=recordings.map((recording,index)=>({topic:"Ñehendu · Escuchar",q:"Ehendu ha eiporavo ñe’ẽ rehendúva. · Escucha y elige la palabra o expresión.",audio:recording.audioId,a:publicAudioLabel(recording.audioText),o:listeningOptions(recordings,index)}));
+    if(activities.some(activity=>!activity.a||activity.o.length!==3||!activity.o.includes(activity.a)))return false;
+    practices.listen=activities;authorizedListeningReady=true;practiceIndex%=practices.listen.length;if(skill==="listen")renderPractice();return true;
+  }
+  window.NALVI_LISTENING_PRACTICE=Object.freeze({refresh:installAuthorizedListeningPractice,audit:()=>Object.freeze({ready:authorizedListeningReady,activities:authorizedListeningReady?practices.listen.length:0,expected:AUTHORIZED_LISTENING_COUNT,authorizedOnly:true,showsInternalAudioMetadata:false})});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installAuthorizedListeningPractice,{once:true});else setTimeout(installAuthorizedListeningPractice,0);
   let skill="listen",practiceIndex=0,retry=[],practiceStats=JSON.parse(localStorage.getItem("gcaPracticeStats")||'{"correct":0,"errors":0}');
   function updatePracticeStats(){const total=practiceStats.correct+practiceStats.errors,mastery=total?Math.round(practiceStats.correct/total*100):0;document.querySelector("#practiceCorrect").textContent=practiceStats.correct;document.querySelector("#practiceErrors").textContent=practiceStats.errors;document.querySelector("#practiceMastery").textContent=mastery+"%";localStorage.setItem("gcaPracticeStats",JSON.stringify(practiceStats))}
   function nextPractice(){if(retry.length&&practiceIndex>=practices[skill].length)practiceIndex=retry.shift();else practiceIndex%=practices[skill].length;renderPractice()}
   function completePractice(ok,index){const feedback=document.querySelector("#practiceFeedback");if(!ok){practiceStats.errors++;if(!retry.includes(index))retry.push(index);feedback.textContent="Todavía no. Esta pregunta volverá a aparecer antes de completar la práctica.";feedback.className="feedback no"}else{practiceStats.correct++;feedback.textContent=retry.includes(index)?"¡Ahora sí! Error corregido y aprendizaje reforzado.":"¡Correcto! Seguimos avanzando.";feedback.className="feedback ok";retry=retry.filter(x=>x!==index)}updatePracticeStats();setTimeout(()=>{practiceIndex++;nextPractice()},1050)}
-  function renderPractice(){const root=document.querySelector("#practicePanel");if(!root)return;const item=practices[skill][practiceIndex%practices[skill].length],idx=practiceIndex%practices[skill].length;let action="";if(item.write)action=`<div class="practice-write-form"><input id="practiceWrite" placeholder="Escribe tu respuesta…"><button id="practiceCheck">Comprobar</button></div>`;else if(item.speak)action=`<button class="btn" id="practiceSpeak">🎙️ Iniciar práctica oral</button>`;else action=`${item.audio?`<button class="mini-btn" id="practiceAudio">🔊 Escuchar</button>`:""}<div class="practice-options">${item.o.map(x=>`<button data-practice-answer="${x}">${x}</button>`).join("")}</div>`;root.innerHTML=`<span class="practice-topic">${item.topic||"Fundamentos"}</span><small>${skill==="listen"?"COMPRENSIÓN AUDITIVA":skill==="read"?"COMPRENSIÓN LECTORA":skill==="write"?"ESCRITURA":"EXPRESIÓN ORAL"} · ${idx+1}/${practices[skill].length}</small><div class="practice-question">${item.q}</div>${action}<div id="practiceFeedback"></div>`;
-    document.querySelector("#practiceAudio")?.addEventListener("click",()=>playPronunciation(item.audio));document.querySelectorAll("[data-practice-answer]").forEach(b=>b.onclick=()=>completePractice(b.dataset.practiceAnswer===item.a,idx));document.querySelector("#practiceCheck")?.addEventListener("click",()=>completePractice(norm(document.querySelector("#practiceWrite").value)===norm(item.a),idx));document.querySelector("#practiceSpeak")?.addEventListener("click",()=>{playPronunciation(item.a);setTimeout(()=>completePractice(true,idx),1300)});
+  function renderPractice(){const root=document.querySelector("#practicePanel");if(!root)return;const item=practices[skill][practiceIndex%practices[skill].length],idx=practiceIndex%practices[skill].length;let action="";if(item.write)action=`<div class="practice-write-form"><input id="practiceWrite" placeholder="Escribe tu respuesta…"><button id="practiceCheck">Comprobar</button></div>`;else if(item.speak)action=`<button class="btn" id="practiceSpeak">🎙️ Iniciar práctica oral</button>`;else action=`${item.audio?`<button class="mini-btn" id="practiceAudio" data-audio-label-ready="Escuchar" data-audio-label-loading="Cargando" data-audio-label-playing="Pausar" data-audio-label-paused="Reiniciar" data-audio-label-error="No disponible"><span data-audio-icon aria-hidden="true">🔊</span> <span data-audio-label>Escuchar</span></button>`:""}<div class="practice-options">${item.o.map(x=>`<button data-practice-answer="${x}">${x}</button>`).join("")}</div>`;root.innerHTML=`<span class="practice-topic">${item.topic||"Fundamentos"}</span><small>${skill==="listen"?"COMPRENSIÓN AUDITIVA":skill==="read"?"COMPRENSIÓN LECTORA":skill==="write"?"ESCRITURA":"EXPRESIÓN ORAL"} · ${idx+1}/${practices[skill].length}</small><div class="practice-question">${item.q}</div>${action}<div id="practiceFeedback"></div>`;
+    document.querySelector("#practiceAudio")?.addEventListener("click",event=>playPronunciation(item.audio,event.currentTarget));document.querySelectorAll("[data-practice-answer]").forEach(b=>b.onclick=()=>completePractice(b.dataset.practiceAnswer===item.a,idx));document.querySelector("#practiceCheck")?.addEventListener("click",()=>completePractice(norm(document.querySelector("#practiceWrite").value)===norm(item.a),idx));document.querySelector("#practiceSpeak")?.addEventListener("click",()=>{playPronunciation(item.a);setTimeout(()=>completePractice(true,idx),1300)});
   }
   document.querySelectorAll("[data-practice]").forEach(b=>b.onclick=()=>{skill=b.dataset.practice;practiceIndex=0;retry=[];document.querySelectorAll("[data-practice]").forEach(x=>x.classList.toggle("active",x===b));renderPractice()});updatePracticeStats();renderPractice();
 
@@ -7316,9 +7337,9 @@ try{
   <script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-TUTOR-CLIENT-CATALOG-13"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-UI-2"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
-<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-8"></script>
-<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-13"></script>
+<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-9"></script>
+<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-14"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-1"></script>
-<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-1"></script>
+<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-2"></script>
 </body>
 </html>
