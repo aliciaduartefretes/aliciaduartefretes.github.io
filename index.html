@@ -472,7 +472,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   @media(max-width:760px){.pro-course-overview{padding:18px 15px}.pro-overview-top{grid-template-columns:1fr}.pro-kpis{min-width:0;grid-template-columns:repeat(3,1fr)}.pro-kpi{padding:9px 5px}.pro-kpi b{font-size:15px}.pro-outcomes{grid-template-columns:1fr}.general-module-head{align-items:flex-start}.module-pro-badge{font-size:9px}}
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-1">
-<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-INSTITUTIONAL-SPRINT-3">
+<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-4">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3"></head>
 <body aria-busy="true"><div id="nalviBoot" class="nalvi-boot" role="status" aria-live="polite" aria-label="Cargando NALVI"><div class="nalvi-boot-card"><strong>NALVI</strong><span class="nalvi-boot-mark" aria-hidden="true"><i></i><i></i><i></i></span><small id="nalviBootCopy">Preparando tu experiencia…</small></div></div>
 <header><nav class="shell"><div class="brand" aria-label="NALVI"><strong>NALVI</strong><small>Lenguas vivas</small></div><div class="header-tools"><label class="header-lang" aria-label="Idioma nativo"><span>◎</span><select id="headerLang"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label></div><div class="stats"><span class="pill">🔥 <b>1</b></span><span class="pill">💚 <b id="lives">5</b></span><span class="pill">⭐ <b id="xp">0</b> XP</span><button class="account-btn" id="accountBtn"><span id="accountIcon">👤</span><span class="account-name" id="accountName">Guardar progreso</span></button></div></nav></header>
@@ -1883,7 +1883,7 @@ document.querySelector("#teacherPane")?.insertAdjacentHTML("beforeend",`<div cla
 document.querySelector("#teacherName")?.insertAdjacentHTML("afterend",`<label for="teacherCourseAccess">Curso que podrá administrar</label><select id="teacherCourseAccess"><option value="">Panel de profesor sin curso especial</option><option value="marce">Curso personalizado con el Mbo'ehára Marce</option></select><small>Solo el profesor marcado con Curso Marce podrá matricular alumnos y administrar ese curso.</small>`);
 document.querySelector("#customCourse .module-card")?.insertAdjacentHTML("afterend",`<div class="module-card"><div class="module-head"><small>CONTENIDO INICIAL · GUARANÍ GENERAL</small><h3>👋 Maitei: saludos y cortesía</h3><p>Esta primera lección de prueba ya está incluida en el curso personalizado.</p></div><div class="vocab-grid"><div class="vocab"><div class="pic">👋</div><div><b class="pronounce-word">Maitei</b><small>Saludo / hola</small></div></div><div class="vocab"><div class="pic">🙂</div><div><b class="pronounce-word">Iporã</b><small>Bien / bonito</small></div></div><div class="vocab"><div class="pic">🙏</div><div><b class="pronounce-word">Aguyje</b><small>Gracias</small></div></div><div class="vocab"><div class="pic">👋</div><div><b class="pronounce-word">Jajoechata</b><small>Nos vemos</small></div></div></div><div class="callout"><b>Diálogo de práctica</b><br>¿Mba'éichapa reime? — Aime porã, ¿ha nde?</div><button class="btn" id="openCustomFirstLesson">Abrir la lección completa →</button></div>`);
 document.querySelector("#openCustomFirstLesson")?.closest(".module-card")?.insertAdjacentHTML("afterend",`<div class="module-card"><div class="module-head"><small>RUTA INICIAL DEL MBO'EHÁRA MARCE</small><h3>📚 Cuatro lecciones completas para comenzar</h3><p>Cada botón abre directamente la explicación, el vocabulario y los ejercicios interactivos.</p></div><div class="staff-list"><article><b>1 · 👋 Saludos y cortesía</b><small>Maitei, Mba'éichapa reime, Iporã, Aguyje y Jajoechata.</small><button class="mini-btn custom-program-lesson" data-custom-unit="0">Comenzar lección 1 →</button></article><article><b>2 · 🙋 Cómo presentarte</b><small>Nombre, procedencia, residencia y profesión.</small><button class="mini-btn custom-program-lesson" data-custom-unit="1">Comenzar lección 2 →</button></article><article><b>3 · 👥 Pronombres personales</b><small>Che, nde, ha'e, ñande, ore, peẽ y ha'ekuéra.</small><button class="mini-btn custom-program-lesson" data-custom-unit="2">Comenzar lección 3 →</button></article><article><b>4 · 🔤 Pronunciación y alfabeto</b><small>Sonidos propios, nasalidad, y, ñ, ñe'ẽ y ka'a.</small><button class="mini-btn custom-program-lesson" data-custom-unit="3">Comenzar lección 4 →</button></article></div></div>`);
-const $=s=>document.querySelector(s),views=["home","catalog","course","lesson","policeCourse","policeLesson","customCourse","sounds","institutional","videos","suggestions"];
+const $=s=>document.querySelector(s),views=["home","catalog","course","lesson","policeCourse","policeLesson","customCourse","sounds","institutional","videos","suggestions","institutionalExperience"];
 window.canAccessInstitutional=false;
 const AUDIO_FIX_VERSION="2026-08-01-embedded-27";
 function showToast(message){let box=$("#toast");if(!box)return;box.textContent=message;box.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>box.classList.remove("show"),2600)}
@@ -2459,7 +2459,9 @@ const openPoliceLocalized=()=>{useCourseLanguage(["es"],"es","Este curso está d
 const openMedicalLocalized=()=>{useCourseLanguage(["es","pt"],"es","Medicina está disponible en español y portugués.");show("medicalCourse",true);renderMedicalUnits();offerAuthOnce();window.scrollTo(0,0)};
 $("#startPoliceHome").onclick=openPoliceLocalized;$("#openPoliceCourse").onclick=openPoliceLocalized;
 function restoreLearningLocation(saved,fromHistory=false){
-  if(!saved||!views.includes(saved.view))saved={view:(location.hash||"#home").slice(1)};
+  const requestedView=(location.hash||"#home").slice(1);
+  if(!fromHistory&&views.includes(requestedView))saved={...(saved||{}),view:requestedView,scrollY:0};
+  else if(!saved||!views.includes(saved.view))saved={view:requestedView};
   let target=views.includes(saved.view)?saved.view:"home";
   if(["es","en","pt","fr","it","de"].includes(saved.lang)){lang=saved.lang;$("#lang").value=lang}
   unit=Math.max(0,Math.min(U.length-1,Number(saved.unit)||0));phase=["study","quiz","finished"].includes(saved.phase)?saved.phase:"study";step=Math.max(0,Math.min(3,Number(saved.step)||0));
@@ -3518,6 +3520,7 @@ onAuthStateChanged(auth,async user=>{
     de:{nav:["Start","Kurse","Übung","Wörterbuch","Verwaltung","Videos","Vorschläge"],home:["Weiterlernen","Allgemeines Guaraní","Von Anfang an","Lektion","von","Weiter →","Weitere Kurse entdecken","Spielen","Guaraní-3D-Welt","Schimpfwörter auf Guaraní","Ñe’ẽ vai","Guaraní für den Polizeieintritt","Vorbereitung","Guaraní für Medizin","Klinisch"],profile:"Privates Konto"}
   };
   const HOME_KEYS=["continue","general","fromZero",null,null,"continueButton","explore","kids","games","rude","rudeSub","police","prep","medical","clinical"];
+  const SURFACE_NAV_TARGETS=["home","catalog","practice","dictionary","institutional","videos","suggestions"];
 
   function safeRun(label,operation){
     try{return operation()}catch(error){console.error(`GCA60_${label}`,error);return undefined}
@@ -3531,7 +3534,7 @@ onAuthStateChanged(auth,async user=>{
 
   function paintSurface(code){
     const copy=SURFACE_TEXT[code]||SURFACE_TEXT.es;
-    document.querySelectorAll(".bottom-nav .nav-btn i").forEach((node,index)=>{if(copy.nav[index])node.textContent=copy.nav[index]});
+    SURFACE_NAV_TARGETS.forEach((go,index)=>document.querySelectorAll(`.bottom-nav .nav-btn[data-go="${go}"] i`).forEach(node=>{if(copy.nav[index])node.textContent=copy.nav[index]}));
     HOME_KEYS.forEach((key,index)=>{if(!key)return;document.querySelectorAll(`[data-home-text="${key}"]`).forEach(node=>{node.textContent=copy.home[index]})});
     const completed=Math.min(12,state?.done?.length||0),next=Math.min(12,completed+1);
     const status=document.querySelector("#homeLessonStatus");if(status)status.textContent=`${copy.home[3]} ${next} ${copy.home[4]} 12`;
@@ -7382,7 +7385,7 @@ try{
   <script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-TUTOR-CLIENT-CATALOG-13"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-UI-2"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
-<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-1"></script>
-<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-INSTITUTIONAL-SPRINT-3"></script>
+<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-2"></script>
+<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-4"></script>
 </body>
 </html>
