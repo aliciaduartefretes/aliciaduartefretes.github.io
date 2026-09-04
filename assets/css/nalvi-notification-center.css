@@ -1,0 +1,36 @@
+.nalvi-notification-shell{position:relative;display:inline-grid;place-items:center;flex:0 0 auto}
+.nalvi-notification-button{position:relative;width:44px;height:44px;min-height:44px;display:grid;place-items:center;border:1px solid #ded7ef;border-radius:15px;background:#fff;color:#3f3560;box-shadow:0 3px 10px rgba(57,43,95,.08);cursor:pointer}
+.nalvi-notification-button:hover,.nalvi-notification-button[aria-expanded="true"]{border-color:#a994de;background:#f3efff;color:#6547c7}
+.nalvi-notification-button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.nalvi-notification-button b{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;display:grid;place-items:center;border:2px solid #fff;border-radius:999px;padding:0 4px;background:#d94d65;color:#fff;font:900 9px/1 system-ui}
+.nalvi-notification-button b[hidden]{display:none}
+.nalvi-notification-panel{position:fixed;z-index:180;top:78px;right:max(12px,calc((100vw - 1120px)/2));width:min(370px,calc(100vw - 24px));max-height:min(620px,calc(100dvh - 104px));overflow:hidden;border:1px solid #ddd5ef;border-radius:20px;background:#fff;box-shadow:0 24px 65px rgba(40,29,70,.23)}
+.nalvi-notification-panel[hidden]{display:none}
+.nalvi-notification-panel>header{position:static;display:flex;align-items:center;justify-content:space-between;min-height:58px;padding:13px 15px;border-bottom:1px solid #eee9f5;background:linear-gradient(135deg,#f8f5ff,#f0fbf7);backdrop-filter:none}
+.nalvi-notification-panel h2{margin:0;color:#2e2840;font-size:17px}
+.nalvi-notification-panel>header button{width:34px;height:34px;min-height:34px;border:0;border-radius:50%;background:#fff;color:#625a72;font:700 22px/1 system-ui;cursor:pointer}
+.nalvi-notification-list{max-height:min(550px,calc(100dvh - 165px));overflow:auto;overscroll-behavior:contain}
+.nalvi-notification-item{position:relative;width:100%;display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;border:0;border-bottom:1px solid #f0ecf5;background:#fff;padding:13px 48px 13px 14px;color:#302a3e;text-align:left;font:inherit;cursor:pointer}
+.nalvi-notification-item:hover{background:#faf8ff}
+.nalvi-notification-item.unread{background:#f5f1ff}
+.nalvi-notification-item.unread:before{content:"";position:absolute;left:5px;top:50%;width:5px;height:5px;border-radius:50%;background:#6748c9;transform:translateY(-50%)}
+.nalvi-notification-item strong,.nalvi-notification-item small,.nalvi-notification-item em,.nalvi-notification-item time{display:block}
+.nalvi-notification-item strong{font-size:12px;line-height:1.4}
+.nalvi-notification-item small{margin-top:4px;color:#5e566f;font-size:11px;line-height:1.4}
+.nalvi-notification-item em{margin-top:4px;overflow:hidden;color:#7a7188;font-size:10px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}
+.nalvi-notification-item time{margin-top:5px;color:#8c8398;font-size:9px}
+.nalvi-notification-item>i{position:absolute;right:13px;top:50%;color:#6547c7;font-size:9px;font-style:normal;font-weight:900;transform:translateY(-50%)}
+.nalvi-notification-kind{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#eee9fa;color:#6547c7;font-size:15px;font-weight:900}
+.nalvi-notification-kind.like{background:#fce9ee;color:#ae3b59}
+.nalvi-notification-kind.follow{background:#e7f8f1;color:#147354}
+.nalvi-notification-empty{display:block;width:100%;margin:0;border:0;background:#fff;padding:34px 20px;color:#776e83;text-align:center;font:750 12px/1.5 system-ui}
+.nalvi-notification-empty.sign-in{color:#6547c7;cursor:pointer}
+.nalvi-community-post.notification-focus{animation:nalviNotificationFocus 1.8s ease}
+@keyframes nalviNotificationFocus{0%,100%{box-shadow:none}20%,70%{box-shadow:inset 4px 0 #6748c9;background:#f8f5ff}}
+@media(max-width:760px){
+  .stats .pill:nth-child(2){display:none!important}
+  .nalvi-notification-button{width:39px;height:44px;border-radius:15px}
+  .nalvi-notification-panel{top:70px;right:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 86px);border-radius:18px}
+  .nalvi-notification-list{max-height:calc(100dvh - 145px)}
+}
+@media(prefers-reduced-motion:reduce){.nalvi-community-post.notification-focus{animation:none;box-shadow:inset 4px 0 #6748c9}}

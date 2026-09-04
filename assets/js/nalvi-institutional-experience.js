@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-EXPERIENCE-11";
+  const VERSION="NALVI-COMMUNITY-EXPERIENCE-12";
   const COMMUNITY_WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const COMMUNITY_ICON='<svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="7" r="3"></circle><circle cx="5.5" cy="9" r="2.25"></circle><circle cx="18.5" cy="9" r="2.25"></circle><path d="M6.5 19v-1.4a5.5 5.5 0 0 1 11 0V19"></path><path d="M1.8 18v-.8a3.8 3.8 0 0 1 4.3-3.8M22.2 18v-.8a3.8 3.8 0 0 0-4.3-3.8"></path></svg>';
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -189,6 +189,7 @@
   function bind(root){
     if(!root.dataset.communityNavigationBound){
       root.dataset.communityNavigationBound="true";
+      root.addEventListener("keydown",event=>{if(event.target.closest?.("input,textarea,select,[contenteditable='true']"))event.stopPropagation()});
       root.addEventListener("click",event=>{
         const back=event.target.closest?.("#nalviCommunityBack");if(back){state.profileId="";state.profileEditing=false;state.profileDraftBio=null;render();return}
         const ownProfile=event.target.closest?.("#nalviCommunityProfile");if(ownProfile){if(!signedIn()){window.courseGoogleLogin?.();return}state.profileId=currentUid();state.profileEditing=false;render();return}
@@ -215,12 +216,16 @@
       try{const categories=communityService()?.CATEGORY_KEYS||["community"];await communityService()?.createRemotePost?.(body,categories[state.category]||"community",{imageBlob:state.postImageBlob,resourceTitle:state.draftResourceTitle,resourceUrl:state.draftResourceUrl});state.draftBody="";state.draftResourceTitle="";state.draftResourceUrl="";state.postImageBlob=null;replacePreview("postImagePreview","");render();setStatus(copy().published)}catch(error){setStatus(/COOLDOWN|DUPLICATE/.test(String(error?.message||error))?safetyCopy().slowDown:mediaError(error),true)}finally{button.disabled=false}
     });
   }
+  function openPost(postId){
+    state.profileId="";state.category=0;state.feed="forYou";open(true);render();
+    setTimeout(()=>{const targetId=String(postId||""),card=$$("[data-post-id]").find(item=>item.dataset.postId===targetId);if(!card)return;card.scrollIntoView({behavior:"smooth",block:"center"});card.classList.add("notification-focus");setTimeout(()=>card.classList.remove("notification-focus"),1800)},120);
+  }
   function open(push=true){try{if(typeof views!=="undefined"&&!views.includes("institutionalExperience"))views.push("institutionalExperience")}catch{}if(typeof show==="function")show("institutionalExperience",push);else $("#institutionalExperience")?.classList.remove("hide");setTimeout(()=>window.scrollTo({top:0,behavior:"auto"}),0)}
   function installNavigation(){const nav=$(".bottom-nav");if(!nav||nav.querySelector('[data-go="institutionalExperience"]'))return;const button=document.createElement("button");button.className="nav-btn";button.dataset.go="institutionalExperience";button.dataset.communityNav="true";button.setAttribute("aria-label",copy().nav);button.innerHTML=`<span class="nalvi-community-nav-icon" aria-hidden="true">${COMMUNITY_ICON}</span><i data-community-label="true">${escapeHtml(copy().nav)}</i>`;const institutional=nav.querySelector("[data-institution-entry]");institutional?.before(button);if(!institutional)nav.append(button);button.addEventListener("click",open)}
   function syncLanguage(){installNavigation();const button=$(".bottom-nav [data-go='institutionalExperience']"),label=button?.querySelector("i");if(label)label.textContent=copy().nav;if(button)button.setAttribute("aria-label",copy().nav);if(!$("#institutionalExperience")?.classList.contains("hide"))render()}
   function connectFeed(){state.unsubscribe?.();state.unsubscribe=communityService()?.subscribePosts?.(posts=>{state.posts=posts;if(!$("#institutionalExperience")?.classList.contains("hide"))render()},()=>setStatus(copy().error,true))||null}
   function init(){if(!$("#institutionalExperience"))document.querySelector("main")?.insertAdjacentHTML("beforeend",'<section id="institutionalExperience" class="hide nalvi-institutional" aria-label="Comunidad NALVI"></section>');try{if(typeof views!=="undefined"&&!views.includes("institutionalExperience"))views.push("institutionalExperience")}catch{}installNavigation();render();connectFeed();document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))setTimeout(syncLanguage,0)},true);window.addEventListener("nalvi:auth-known",()=>{connectFeed();if(!$("#institutionalExperience")?.classList.contains("hide"))render()});if(location.hash==="#institutionalExperience"){open(false);setTimeout(()=>{if(location.hash==="#institutionalExperience")open(false)},500)}document.documentElement.dataset.nalviCommunity=VERSION;window.dispatchEvent(new CustomEvent("nalvi:community-ready",{detail:{version:VERSION,communityWritesEnabled:COMMUNITY_WRITES_ENABLED}}))}
 
-  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,open,render};
+  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,open,openPost,render};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

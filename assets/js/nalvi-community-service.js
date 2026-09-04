@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-6";
+  const VERSION="NALVI-COMMUNITY-SERVICE-7";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning","resources"]);
   const POST_COOLDOWN_MS=15000;
@@ -60,6 +60,9 @@
       if(!date||Number.isNaN(date.getTime()))return "Ahora";
       return new Intl.DateTimeFormat(document.documentElement.lang||"es",{dateStyle:"medium"}).format(date);
     }catch{return "Ahora"}
+  }
+  function notificationTime(value){
+    try{const milliseconds=Number(value?.toMillis?.()||new Date(value).getTime());return Number.isFinite(milliseconds)?milliseconds:0}catch{return 0}
   }
   async function mediaUrl(firebase,path){
     if(!path||!firebase?.storage||typeof firebase.storageRef!=="function"||typeof firebase.getDownloadURL!=="function")return "";
@@ -135,6 +138,40 @@
     }).catch(error=>onError?.(error));
     return()=>{cancelled=true;remoteUnsubscribe?.();remoteUnsubscribe=null};
   }
+  function subscribeNotifications(onNotifications,onError){
+    if(typeof onNotifications!=="function")throw new TypeError("COMMUNITY_NOTIFICATION_SUBSCRIBER_REQUIRED");
+    if(!WRITES_ENABLED){onNotifications([]);return()=>{}}
+    let cancelled=false,generation=0,rootUnsubscribers=[],childUnsubscribers=[],buckets=new Map();
+    const emit=()=>{if(cancelled)return;const next=[...buckets.values()].flat().filter(item=>item.createdAt>0).sort((a,b)=>b.createdAt-a.createdAt).slice(0,60);onNotifications(clone(next))};
+    const stopChildren=()=>{childUnsubscribers.forEach(unsubscribe=>unsubscribe?.());childUnsubscribers=[];for(const key of [...buckets.keys()])if(key.startsWith("post:"))buckets.delete(key)};
+    const listen=(firebase,key,queryReference,project,currentGeneration)=>{
+      const unsubscribe=firebase.onSnapshot(queryReference,snapshot=>{
+        if(cancelled||currentGeneration!==generation)return;
+        buckets.set(key,snapshot.docs.map(item=>project(item)).filter(Boolean));emit();
+      },error=>onError?.(error));
+      childUnsubscribers.push(unsubscribe);
+    };
+    firebaseReady().then(firebase=>{
+      if(cancelled)return;const user=firebase.auth?.currentUser;if(!user||user.isAnonymous){onNotifications([]);return}
+      const profileRef=firebase.doc(firebase.db,"communityProfiles",user.uid),followersQuery=firebase.query(firebase.collection(profileRef,"followers"),firebase.orderBy("createdAt","desc"),firebase.limit(20));
+      rootUnsubscribers.push(firebase.onSnapshot(followersQuery,snapshot=>{
+        buckets.set("followers",snapshot.docs.filter(item=>item.id!==user.uid).map(item=>{const data=item.data()||{},profile=profilesById.get(item.id);return{id:`follow:${item.id}`,kind:"follow",actorId:item.id,actorName:safeName(profile?.displayName),postId:"",postBody:"",body:"",date:dateLabel(data.createdAt),createdAt:notificationTime(data.createdAt)}}));emit();
+      },error=>onError?.(error)));
+      const ownPosts=firebase.query(firebase.collection(firebase.db,"communityPosts"),firebase.where("authorId","==",user.uid),firebase.limit(12));
+      rootUnsubscribers.push(firebase.onSnapshot(ownPosts,snapshot=>{
+        generation+=1;const currentGeneration=generation;stopChildren();
+        snapshot.docs.forEach(postSnapshot=>{
+          const postData=postSnapshot.data()||{},postBody=normalizeBody(postData.body).slice(0,90),postRef=postSnapshot.ref;
+          const commentsQuery=firebase.query(firebase.collection(postRef,"comments"),firebase.orderBy("createdAt","desc"),firebase.limit(20));
+          const reactionsQuery=firebase.query(firebase.collection(postRef,"reactions"),firebase.orderBy("createdAt","desc"),firebase.limit(20));
+          listen(firebase,`post:${postSnapshot.id}:comments`,commentsQuery,item=>{const data=item.data()||{};if(data.authorId===user.uid)return null;return{id:`comment:${postSnapshot.id}:${item.id}`,kind:"comment",actorId:String(data.authorId||""),actorName:safeName(data.authorName),postId:postSnapshot.id,postBody,body:normalizeComment(data.body).slice(0,140),date:dateLabel(data.createdAt),createdAt:notificationTime(data.createdAt)}},currentGeneration);
+          listen(firebase,`post:${postSnapshot.id}:reactions`,reactionsQuery,item=>{if(item.id===user.uid)return null;const data=item.data()||{},profile=profilesById.get(item.id);return{id:`like:${postSnapshot.id}:${item.id}`,kind:"like",actorId:item.id,actorName:safeName(profile?.displayName),postId:postSnapshot.id,postBody,body:"",date:dateLabel(data.createdAt),createdAt:notificationTime(data.createdAt)}},currentGeneration);
+        });
+        emit();
+      },error=>onError?.(error)));
+    }).catch(error=>onError?.(error));
+    return()=>{cancelled=true;generation+=1;stopChildren();rootUnsubscribers.forEach(unsubscribe=>unsubscribe?.());rootUnsubscribers=[]};
+  }
   function validImage(blob){return !!blob&&typeof blob.size==="number"&&blob.size>0&&blob.size<=5*1024*1024&&["image/jpeg","image/png","image/webp"].includes(blob.type)}
   async function uploadImage(firebase,user,blob,kind){
     if(!validImage(blob))throw new TypeError("COMMUNITY_INVALID_IMAGE");
@@ -197,5 +234,5 @@
     await firebase.setDoc(viewRef,{createdAt:firebase.serverTimestamp()});return true;
   }
 
-  window.NALVI_COMMUNITY_SERVICE=Object.freeze({VERSION,WRITES_ENABLED,CATEGORY_KEYS,listPosts,getProfile,previewPost,subscribePosts,createRemotePost,deleteRemotePost,toggleReaction,createComment,toggleFollow,saveOwnProfile,recordView,resetDemo});
+  window.NALVI_COMMUNITY_SERVICE=Object.freeze({VERSION,WRITES_ENABLED,CATEGORY_KEYS,listPosts,getProfile,previewPost,subscribePosts,subscribeNotifications,createRemotePost,deleteRemotePost,toggleReaction,createComment,toggleFollow,saveOwnProfile,recordView,resetDemo});
 })();
