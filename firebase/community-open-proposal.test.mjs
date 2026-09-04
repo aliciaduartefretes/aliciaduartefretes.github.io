@@ -1,4 +1,5 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
+import assert from "node:assert/strict";
 import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -6,15 +7,20 @@ import { fileURLToPath } from "node:url";
 
 const here=dirname(fileURLToPath(import.meta.url));
 const proposedRules=readFileSync(join(here,"proposals/REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules"),"utf8");
+const activeRules=readFileSync(join(here,"firestore-PASO-6.rules"),"utf8");
+const communitySnippet=readFileSync(join(here,"proposals/community-open-authenticated.rules.snippet"),"utf8").trim().split("\n").map(line=>line?`    ${line}`:line).join("\n");
+const marker="    // Cualquier colección no declarada queda denegada.";
+assert.equal(proposedRules,activeRules.replace(marker,`${communitySnippet}\n\n${marker}`),"La propuesta debe conservar cada byte de las reglas actuales fuera del bloque Comunidad");
 const testEnv=await initializeTestEnvironment({projectId:"demo-nalvi-community-open",firestore:{rules:proposedRules}});
 
-const token=(name,email)=>({name,email,firebase:{sign_in_provider:"google.com"}});
+const token=(name,email,picture="")=>({name,email,picture,firebase:{sign_in_provider:"google.com"}});
 const postData=(authorId,authorName,body="Mba’éichapa reime?")=>({authorId,authorName,body,category:"community",pinned:false,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+const profileData=(userId,displayName,photoURL="")=>({userId,displayName,photoURL,bio:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
 
 try{
   const guest=testEnv.unauthenticatedContext().firestore();
   const anonymous=testEnv.authenticatedContext("anonymous",{name:"Invitado",firebase:{sign_in_provider:"anonymous"}}).firestore();
-  const alicia=testEnv.authenticatedContext("alicia",token("Alicia Duarte","alicia@example.com")).firestore();
+  const alicia=testEnv.authenticatedContext("alicia",token("Alicia Duarte","alicia@example.com","https://example.com/alicia.jpg")).firestore();
   const marcelo=testEnv.authenticatedContext("marcelo",token("Marcelo Benítez","marcelo@example.com")).firestore();
   const post=doc(alicia,"communityPosts","welcome");
 
@@ -22,6 +28,24 @@ try{
   await assertSucceeds(getDocs(collection(guest,"communityPosts")));
   await assertFails(setDoc(doc(guest,"communityPosts","guest-post"),postData("guest","Visitante")));
   await assertFails(setDoc(doc(anonymous,"communityPosts","anonymous-post"),postData("anonymous","Invitado")));
+
+  const aliciaProfile=doc(alicia,"communityProfiles","alicia");
+  const marceloProfile=doc(marcelo,"communityProfiles","marcelo");
+  await assertSucceeds(getDoc(doc(guest,"communityProfiles","alicia")));
+  await assertFails(setDoc(doc(anonymous,"communityProfiles","anonymous"),profileData("anonymous","Invitado")));
+  await assertSucceeds(setDoc(aliciaProfile,profileData("alicia","Alicia Duarte","https://example.com/alicia.jpg")));
+  await assertSucceeds(setDoc(marceloProfile,profileData("marcelo","Marcelo Benítez")));
+  await assertFails(setDoc(doc(alicia,"communityProfiles","spoofed"),profileData("spoofed","Alicia Duarte","https://example.com/alicia.jpg")));
+  await assertFails(setDoc(doc(alicia,"communityProfiles","wrong-photo"),profileData("alicia","Alicia Duarte","https://example.com/other.jpg")));
+  await assertSucceeds(updateDoc(aliciaProfile,{bio:"Docente de guaraní",updatedAt:serverTimestamp()}));
+  await assertFails(updateDoc(doc(marcelo,"communityProfiles","alicia"),{bio:"Perfil ajeno",updatedAt:serverTimestamp()}));
+
+  const follow=doc(marcelo,"communityProfiles","alicia","followers","marcelo");
+  await assertSucceeds(setDoc(follow,{createdAt:serverTimestamp()}));
+  await assertSucceeds(getDocs(collection(guest,"communityProfiles","alicia","followers")));
+  await assertFails(setDoc(doc(alicia,"communityProfiles","alicia","followers","alicia"),{createdAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(marcelo,"communityProfiles","alicia","followers","alicia"),{createdAt:serverTimestamp()}));
+  await assertSucceeds(deleteDoc(follow));
 
   await assertSucceeds(setDoc(post,postData("alicia","Alicia Duarte")));
   await assertSucceeds(getDoc(doc(marcelo,"communityPosts","welcome")));

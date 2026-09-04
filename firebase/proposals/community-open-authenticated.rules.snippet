@@ -1,4 +1,4 @@
-// PROPUESTA NO ACTIVA. Esta sección se inserta antes del cierre fail-closed.
+// COMUNIDAD NALVI. Esta sección se inserta antes del cierre fail-closed.
 // Cualquier visitante puede leer la Comunidad. Solo una cuenta real de NALVI
 // (no una sesión anónima) puede publicar, responder, reaccionar o registrar vista.
 
@@ -13,6 +13,12 @@ function communityName() {
     : '';
 }
 
+function communityPhoto() {
+  return isCommunityMember()
+    ? request.auth.token.get('picture', '')
+    : '';
+}
+
 function validCommunityCategory(value) {
   return value is string
     && value in ['announcements', 'questions', 'community', 'learning', 'resources'];
@@ -20,6 +26,64 @@ function validCommunityCategory(value) {
 
 function validCommunityText(value, maximum) {
   return value is string && value.size() >= 1 && value.size() <= maximum;
+}
+
+function validCommunityPhoto(value) {
+  return value is string
+    && value.size() <= 500
+    && value == communityPhoto();
+}
+
+match /communityProfiles/{userId} {
+  allow get, list: if true;
+
+  allow create: if isCommunityMember()
+    && userId == request.auth.uid
+    && request.resource.data.keys().hasOnly([
+      'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
+    ])
+    && request.resource.data.keys().hasAll([
+      'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
+    ])
+    && request.resource.data.userId == request.auth.uid
+    && validCommunityText(request.resource.data.displayName, 80)
+    && request.resource.data.displayName == communityName()
+    && validCommunityPhoto(request.resource.data.photoURL)
+    && request.resource.data.bio is string
+    && request.resource.data.bio.size() <= 160
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.updatedAt == request.time;
+
+  allow update: if isCommunityMember()
+    && userId == request.auth.uid
+    && resource.data.userId == request.auth.uid
+    && request.resource.data.userId == resource.data.userId
+    && request.resource.data.createdAt == resource.data.createdAt
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+      'displayName', 'photoURL', 'bio', 'updatedAt'
+    ])
+    && validCommunityText(request.resource.data.displayName, 80)
+    && request.resource.data.displayName == communityName()
+    && validCommunityPhoto(request.resource.data.photoURL)
+    && request.resource.data.bio is string
+    && request.resource.data.bio.size() <= 160
+    && request.resource.data.updatedAt == request.time;
+
+  allow delete: if isPlatformAdmin();
+
+  match /followers/{followerId} {
+    allow get, list: if true;
+    allow create: if isCommunityMember()
+      && followerId == request.auth.uid
+      && userId != request.auth.uid
+      && exists(/databases/$(database)/documents/communityProfiles/$(userId))
+      && request.resource.data.keys().hasOnly(['createdAt'])
+      && request.resource.data.keys().hasAll(['createdAt'])
+      && request.resource.data.createdAt == request.time;
+    allow update: if false;
+    allow delete: if isCommunityMember() && followerId == request.auth.uid;
+    allow delete: if isPlatformAdmin();
+  }
 }
 
 match /communityPosts/{postId} {

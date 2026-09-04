@@ -1,6 +1,8 @@
 # Activar Comunidad NALVI en Firebase
 
-Estas reglas permiten que cualquier visitante lea la Comunidad, pero exigen una cuenta real de Google/NALVI para publicar, responder, dar Me gusta o registrar una visualización.
+Estas reglas permiten que cualquier visitante lea la Comunidad, pero exigen una cuenta real de Google/NALVI para publicar, responder, dar Me gusta, seguir personas o registrar una visualización.
+
+IMPORTANTE: no utilizar el bloque abreviado enviado anteriormente en el chat. El archivo `REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules` es la única versión completa. Se genera insertando Comunidad dentro de las reglas vigentes y una prueba automática confirma que no cambia ningún otro carácter.
 
 ## Cómo publicarlas
 
@@ -19,6 +21,7 @@ Estas reglas permiten que cualquier visitante lea la Comunidad, pero exigen una 
 - Cada publicación y respuesta queda vinculada al UID y nombre verificado de la cuenta.
 - Una persona no puede editar ni borrar el contenido de otra.
 - Un usuario solo puede tener un Me gusta y una visualización por publicación.
+- Cada usuario administra su propio perfil y solo puede seguir desde su propia cuenta.
 - Los textos tienen límites de longitud.
 - Las demás colecciones de NALVI conservan sus reglas actuales.
 - Todo lo no declarado continúa bloqueado.
