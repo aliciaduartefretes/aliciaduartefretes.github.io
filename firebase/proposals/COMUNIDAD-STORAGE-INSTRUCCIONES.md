@@ -2,6 +2,8 @@
 
 Estas reglas habilitan únicamente las imágenes de perfil, portada y publicaciones de Comunidad. No habilitan archivos generales ni escrituras anónimas.
 
+**Bloqueo actual:** Firebase Storage todavía no está activado en el proyecto `guaraniconali`; la consola solicita actualizar el proyecto a Blaze. No publiques estas reglas ni cambies la facturación hasta tomar esa decisión por separado.
+
 ## Cómo publicarlas
 
 1. Abre [Firebase Console · Storage Rules](https://console.firebase.google.com/project/guaraniconali/storage/rules).
