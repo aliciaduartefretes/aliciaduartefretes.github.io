@@ -1,0 +1,22 @@
+.nalvi-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.nalvi-skip-link{position:fixed;z-index:10000;left:12px;top:10px;transform:translateY(-150%);padding:12px 16px;border-radius:12px;background:#171126;color:#fff;font-weight:950;text-decoration:none;transition:transform .15s ease}
+.nalvi-skip-link:focus{transform:none;outline:4px solid #ffd84f;outline-offset:2px}
+.nalvi-accessibility-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:7px 10px;border:2px solid #ddd4ef;border-radius:14px;background:#fff;color:#49358e;font:900 12px/1.1 Nunito,system-ui;cursor:pointer}
+.nalvi-accessibility-button span{font-size:20px}.nalvi-accessibility-button i{font-style:normal}
+.nalvi-accessibility-dialog{width:min(620px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:0;border:0;border-radius:24px;box-shadow:0 24px 70px rgba(25,18,48,.4)}
+.nalvi-accessibility-dialog::backdrop{background:rgba(20,15,35,.62);backdrop-filter:blur(3px)}
+.nalvi-accessibility-card{display:grid;gap:12px;padding:24px;background:#fff;color:#251e39}
+.nalvi-accessibility-card>header{position:static;display:flex;align-items:start;justify-content:space-between;gap:12px;background:none;border:0;backdrop-filter:none}
+.nalvi-accessibility-card header small{color:#654cb8;font-size:10px;font-weight:950;letter-spacing:.08em}.nalvi-accessibility-card h2{margin:5px 0 0;font-size:clamp(23px,4vw,32px)}
+.nalvi-accessibility-card header button{width:44px;height:44px;border:0;border-radius:13px;background:#f0ecf7;color:#2b2440;font-size:25px;cursor:pointer}
+.nalvi-accessibility-card>p{margin:0 0 4px;color:#675f74}
+.nalvi-accessibility-card>label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:15px;border:2px solid #e3dced;border-radius:17px;background:#fcfbff;cursor:pointer}
+.nalvi-accessibility-card input{width:24px;height:24px;margin:1px 0;accent-color:#5d43b5}.nalvi-accessibility-card b,.nalvi-accessibility-card small{display:block}.nalvi-accessibility-card small{margin-top:4px;color:#696174;line-height:1.4}
+.nalvi-accessibility-done{justify-self:end;min-width:130px;margin-top:4px}
+.nalvi-accessible-game-hint{margin:0 0 12px;padding:11px 13px;border:2px solid #2e775f;border-radius:13px;background:#effbf6;color:#173d31;font-weight:850}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:4px solid #176f5b!important;outline-offset:3px!important}
+html.nalvi-large-text{font-size:118%}html.nalvi-large-text :where(input,select,textarea,button){font-size:max(1rem,16px)}
+html.nalvi-high-contrast{filter:contrast(1.12)}html.nalvi-high-contrast body{background:#fff;color:#111}html.nalvi-high-contrast :where(.gesa-card,.study,.quiz,.unit,.dictionary-entry){border-color:#292238!important}html.nalvi-high-contrast :where(.btn,.mini-btn,.nav-btn){border:2px solid currentColor}
+html.nalvi-reduced-motion *,html.nalvi-reduced-motion *::before,html.nalvi-reduced-motion *::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+@media(prefers-reduced-motion:reduce){.nalvi-skip-link{transition:none}}
+@media(max-width:760px){.nalvi-accessibility-button{padding:5px 7px}.nalvi-accessibility-button i{display:none}.nalvi-accessibility-card{padding:18px}.nalvi-accessibility-dialog{border-radius:20px}}

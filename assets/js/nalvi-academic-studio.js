@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-3";
+  const VERSION="NALVI-ACADEMIC-STUDIO-4";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -16,6 +16,10 @@
   let studentClasses=[];
   let editing={wheel:"",assessment:""};
   let wheelRotation=0;
+  let wheelItems=[];
+  let wheelOriginalItems=[];
+  let wheelSpinning=false;
+  let lastJoinedClassCode="";
   let restoringIntent=false;
 
   function currentUser(){return firebase?.auth?.currentUser||window.GCA_FIREBASE_LIVE?.auth?.currentUser||null}
@@ -32,7 +36,7 @@
 
   function publicHubMarkup(){
     const user=currentUser(),action=!signedIn()?"Entrar con Google":canManage()?"Abrir mi panel":"Crear mi espacio docente";
-    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon">🏫</span><div><small>DOCENTES</small><h3>Crea y organiza tus clases</h3><p>Comparte un código, asigna actividades, usa la ruleta y revisa el avance de cada alumno.</p>${signedIn()&&!canManage()?`<label>Nombre de tu espacio<input id="nalviAcademicWorkspaceName" maxlength="160" value="Aula de ${esc(user?.displayName||"guaraní")}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status" aria-live="polite"></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon">👥</span><div><small>ESTUDIANTES</small><h3>Únete a una clase</h3><p>Escribe una sola vez el código que te dio tu profesor.</p><div class="nalvi-academic-pin-row class-code"><input id="nalviAcademicClassCode" maxlength="10" autocomplete="off" placeholder="GCA-ABC123" aria-label="Código de la clase"><button class="mini-btn" id="nalviAcademicJoinClass" type="button">Unirme</button></div><div class="gesa-form-status" id="nalviAcademicClassStatus" role="status" aria-live="polite"></div><div class="nalvi-academic-live-entry"><b>¿La actividad ya comenzó?</b><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="PIN de 6 números" aria-label="PIN de la actividad"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">Entrar en vivo</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status" aria-live="polite"></div></div></div></article></section><section class="nalvi-student-class-section" id="nalviStudentClassSection" hidden><div class="gesa-section-head"><div><h3>Mis clases</h3><p>Solo aparecen las clases a las que te uniste.</p></div></div><div class="nalvi-student-class-list" id="nalviStudentClassList"></div></section>`;
+    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon" aria-hidden="true">🏫</span><div><small>DOCENTES</small><h3>Crea y organiza tus clases</h3><p>Comparte un código, asigna actividades, usa la ruleta y revisa el avance de cada alumno.</p>${signedIn()&&!canManage()?`<label>Nombre de tu espacio<input id="nalviAcademicWorkspaceName" maxlength="160" value="Aula de ${esc(user?.displayName||"guaraní")}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status" aria-live="polite"></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon" aria-hidden="true">👥</span><div><small>ESTUDIANTES</small><h3>Entra a tu clase</h3><p>Usa el código de tu profesor. Después verás tus clases, tareas y progreso.</p><div class="nalvi-academic-pin-row class-code"><input id="nalviAcademicClassCode" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="GCA-ABC123" aria-label="Código de la clase"><button class="mini-btn" id="nalviAcademicJoinClass" type="button">Unirme</button></div><div class="gesa-form-status" id="nalviAcademicClassStatus" role="status" aria-live="polite"></div>${signedIn()?'<button class="nalvi-student-progress-link" id="nalviAcademicOpenLearning" type="button">Ver mis clases y mi progreso →</button>':""}<div class="nalvi-academic-live-entry"><b>¿La actividad ya comenzó?</b><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="PIN de 6 números" aria-label="PIN de la actividad"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">Entrar en vivo</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status" aria-live="polite"></div></div></div></article></section><section class="nalvi-student-class-section" id="nalviStudentClassSection" hidden><div class="gesa-section-head"><div><h3>Mis clases</h3><p>Clases, tareas y progreso vinculados a tu cuenta.</p></div><button class="mini-btn" id="nalviAcademicOpenProgress" type="button">Abrir mi aprendizaje</button></div><div class="nalvi-student-class-list" id="nalviStudentClassList"></div></section>`;
   }
 
   function installPublicHub(){
@@ -51,6 +55,10 @@
     $("#nalviAcademicStart")?.addEventListener("click",startAcademicSpace);
     $("#nalviAcademicJoinClass")?.addEventListener("click",joinClassByCode);
     $("#nalviAcademicJoinLive")?.addEventListener("click",joinLiveByPin);
+    $("#nalviAcademicOpenLearning")?.addEventListener("click",()=>window.show?.("progressHub",true));
+    $("#nalviAcademicOpenProgress")?.addEventListener("click",()=>window.show?.("progressHub",true));
+    const sharedCode=normalizeClassCode(new URLSearchParams(location.search).get("grupo")||"");
+    if(sharedCode)$("#nalviAcademicClassCode").value=sharedCode;
     $("#nalviAcademicClassCode")?.addEventListener("input",event=>{event.target.value=normalizeClassCode(event.target.value)});
     $("#nalviAcademicClassCode")?.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();joinClassByCode()}});
     $("#nalviAcademicLivePin")?.addEventListener("input",event=>{event.target.value=normalizeLivePin(event.target.value)});
@@ -80,11 +88,19 @@
     const button=$("#nalviAcademicJoinClass");if(button)button.disabled=true;setStatus("#nalviAcademicClassStatus","Buscando tu clase…");
     try{
       const gesa=await waitForGesa(),joined=await gesa.joinGroupByCode(code,currentUser());
-      if(!joined)throw new Error("invalid-class-code");
+      if(!joined&&lastJoinedClassCode!==code)throw new Error("invalid-class-code");
       clearIntent();setStatus("#nalviAcademicClassStatus","¡Listo! Ya estás dentro de la clase.");await loadStudentClasses();
       setTimeout(()=>$("#nalviStudentClassSection")?.scrollIntoView({behavior:"smooth",block:"start"}),100);
     }catch(error){console.error("NALVI_ACADEMIC_CLASS_JOIN",error);setStatus("#nalviAcademicClassStatus","No encontramos una clase activa con ese código.",true)}
     finally{if(button)button.disabled=false}
+  }
+
+  function handleGroupJoined(event){
+    const code=normalizeClassCode(event?.detail?.code||"");if(!code)return;
+    lastJoinedClassCode=code;const input=$("#nalviAcademicClassCode");if(input)input.value=code;
+    const intent=readIntent();if(intent?.kind==="joinClass"&&normalizeClassCode(intent.value)===code)clearIntent();
+    setStatus("#nalviAcademicClassStatus",`¡Listo! Te uniste a ${event.detail?.groupName||"la clase"}.`);
+    loadStudentClasses();
   }
 
   function joinLiveByPin(){
@@ -107,11 +123,11 @@
 
   function renderStudentClasses(){
     const section=$("#nalviStudentClassSection"),root=$("#nalviStudentClassList");if(!section||!root)return;section.hidden=!studentClasses.length;
-    root.innerHTML=studentClasses.map(item=>`<article class="nalvi-student-class"><span>📚</span><div><h4>${esc(item.groupName||"Clase de guaraní")}</h4><p>${esc(courseLabel(item.courseId))}${item.teacherName?` · ${esc(item.teacherName)}`:""}</p></div><button class="mini-btn" type="button" data-academic-class-open="${esc(item.groupId||"")}">Abrir</button></article>`).join("");
+    root.innerHTML=studentClasses.map(item=>`<article class="nalvi-student-class"><span aria-hidden="true">📚</span><div><h4>${esc(item.groupName||"Clase de guaraní")}</h4><p>${esc(courseLabel(item.courseId))}${item.teacherName?` · ${esc(item.teacherName)}`:""}</p>${item.inviteCode?`<code>${esc(item.inviteCode)}</code>`:""}</div><button class="mini-btn" type="button" data-academic-class-open="${esc(item.groupId||"")}">Abrir mi aprendizaje</button></article>`).join("");
     $$("[data-academic-class-open]",root).forEach(button=>button.addEventListener("click",()=>window.show?.("progressHub",true)));
   }
 
-  function toolsMarkup(){return `<section class="gesa-pane hide nalvi-academic-tools" data-gesa-pane="tools"><div class="gesa-section-head"><div><h3>Ruleta y preguntas</h3><p>Prepara actividades de texto para proyectar o compartir en clase.</p></div><button class="mini-btn" id="nalviOpenLiveFromTools" type="button">Crear actividad con PIN →</button></div><div class="nalvi-academic-tools-grid"><article class="gesa-card nalvi-wheel-card"><span class="gesa-status active">RULETA</span><h3>Ruleta editable</h3><p>Carga nombres, palabras, frases o preguntas, una por línea.</p><form class="gesa-form" id="nalviWheelForm"><label>Título<input name="title" maxlength="120" required value="Ruleta de la clase"></label><label>Opciones<textarea name="content" maxlength="8000" required placeholder="Mba’éichapa reime?&#10;Che réra…&#10;Moõgua nde?"></textarea></label><div class="gesa-inline-actions"><button class="mini-btn" type="submit">Guardar ruleta</button><button class="btn" id="nalviSpinWheel" type="button">Girar →</button></div><div class="gesa-form-status" id="nalviWheelStatus"></div></form><div class="nalvi-wheel-stage"><div class="nalvi-wheel" id="nalviWheel" aria-hidden="true"><span>Ñ</span></div><div class="nalvi-wheel-pointer">▼</div><strong id="nalviWheelResult">Agrega al menos dos opciones.</strong></div></article><article class="gesa-card"><span class="gesa-status active">PREGUNTAS</span><h3>Banco de preguntas</h3><p>Escribe una pregunta y su respuesta por línea, separadas por <b>|</b>.</p><form class="gesa-form" id="nalviAssessmentBuilder"><label>Título<input name="title" maxlength="120" required value="Preguntas de la clase"></label><label>Preguntas y respuestas<textarea name="content" maxlength="8000" required placeholder="¿Qué significa Maitei? | Saludo&#10;¿Cómo dices nos vemos? | Jajoechata"></textarea></label><button class="btn" type="submit">Guardar preguntas</button><div class="gesa-form-status" id="nalviAssessmentBuilderStatus"></div></form></article></div><div class="gesa-section-head"><div><h3>Actividades guardadas</h3><p>Puedes volver a abrirlas, editarlas o eliminarlas.</p></div><button class="mini-btn" id="nalviReloadActivities" type="button">↻ Actualizar</button></div><div class="gesa-list" id="nalviAcademicSaved"><div class="gesa-state">Todavía no hay actividades guardadas.</div></div></section>`}
+  function toolsMarkup(){return `<section class="gesa-pane hide nalvi-academic-tools" data-gesa-pane="tools"><div class="gesa-section-head"><div><h3>Ruleta y preguntas</h3><p>Prepara actividades de texto para proyectar o compartir en clase.</p></div><button class="mini-btn" id="nalviOpenLiveFromTools" type="button">Crear actividad con PIN →</button></div><div class="nalvi-academic-tools-grid"><article class="gesa-card nalvi-wheel-card"><span class="gesa-status active">RULETA</span><h3>Ruleta sin repeticiones</h3><p>Carga nombres, palabras, frases o preguntas, una por línea. Cada resultado sale una sola vez.</p><form class="gesa-form" id="nalviWheelForm"><label>Título<input name="title" maxlength="120" required value="Ruleta de la clase"></label><label>Opciones<textarea name="content" maxlength="8000" required placeholder="Mba’éichapa reime?&#10;Che réra…&#10;Moõgua nde?"></textarea></label><div class="gesa-inline-actions"><button class="mini-btn" type="submit">Guardar ruleta</button><button class="mini-btn" id="nalviResetWheel" type="button" disabled>Reiniciar opciones</button><button class="btn" id="nalviSpinWheel" type="button">Girar →</button></div><div class="gesa-form-status" id="nalviWheelStatus" role="status" aria-live="polite"></div></form><div class="nalvi-wheel-stage"><div class="nalvi-wheel" id="nalviWheel" role="img" aria-label="Ruleta vacía"><span class="nalvi-wheel-empty">Ñ</span></div><div class="nalvi-wheel-pointer" aria-hidden="true">▼</div><strong id="nalviWheelResult" role="status" aria-live="polite">Agrega al menos dos opciones.</strong><small id="nalviWheelRemaining">0 opciones disponibles</small></div></article><article class="gesa-card"><span class="gesa-status active">PREGUNTAS</span><h3>Banco de preguntas</h3><p>Escribe una pregunta y su respuesta por línea, separadas por <b>|</b>.</p><form class="gesa-form" id="nalviAssessmentBuilder"><label>Título<input name="title" maxlength="120" required value="Preguntas de la clase"></label><label>Preguntas y respuestas<textarea name="content" maxlength="8000" required placeholder="¿Qué significa Maitei? | Saludo&#10;¿Cómo dices nos vemos? | Jajoechata"></textarea></label><button class="btn" type="submit">Guardar preguntas</button><div class="gesa-form-status" id="nalviAssessmentBuilderStatus"></div></form></article></div><div class="gesa-section-head"><div><h3>Actividades guardadas</h3><p>Puedes volver a abrirlas, editarlas o eliminarlas.</p></div><button class="mini-btn" id="nalviReloadActivities" type="button">↻ Actualizar</button></div><div class="gesa-list" id="nalviAcademicSaved"><div class="gesa-state">Todavía no hay actividades guardadas.</div></div></section>`}
 
   function installTools(){
     const management=$("#institutional[data-gesa-installed='true']");if(!management||!canManage()||$("[data-gesa-tab='tools']",management))return;
@@ -121,26 +137,30 @@
     $("#nalviWheelForm",management)?.addEventListener("submit",event=>saveActivity(event,"wheel"));
     $("#nalviAssessmentBuilder",management)?.addEventListener("submit",event=>saveActivity(event,"assessment"));
     $("#nalviSpinWheel",management)?.addEventListener("click",spinWheel);
+    $("#nalviResetWheel",management)?.addEventListener("click",resetWheel);
+    $("#nalviWheelForm textarea[name='content']",management)?.addEventListener("input",event=>prepareWheel(event.target.value,true));
     $("#nalviReloadActivities",management)?.addEventListener("click",loadActivities);
     $("#nalviOpenLiveFromTools",management)?.addEventListener("click",()=>openTool("live"));
     $("#nalviAcademicSaved",management)?.addEventListener("click",handleSavedAction);
+    renderWheel();
   }
 
-  function dashboardMarkup(){return `<section class="nalvi-academic-quick-start" id="nalviAcademicQuickStart"><div class="gesa-section-head"><div><h3>¿Qué quieres hacer?</h3><p>Elige una opción. Puedes volver aquí cuando quieras.</p></div></div><div class="nalvi-academic-quick-grid"><button type="button" data-academic-quick="groups"><span>👥</span><b>Crear una clase</b><small>Comparte un código con tus alumnos.</small></button><button type="button" data-academic-quick="tools"><span>🎡</span><b>Abrir la ruleta</b><small>Carga nombres, palabras o preguntas.</small></button><button type="button" data-academic-quick="live"><span>🎯</span><b>Actividad con PIN</b><small>Inicia una práctica en vivo.</small></button><button type="button" data-academic-quick="summary"><span>📈</span><b>Ver el avance</b><small>Revisa el progreso de cada alumno.</small></button><button type="button" data-academic-quick="assignments"><span>📝</span><b>Asignar una tarea</b><small>Elige clase, lección y fecha.</small></button></div></section>`}
+  function dashboardMarkup(){const admin=window.GESA_CONTEXT?.role==="platform_admin";return `<section class="nalvi-academic-quick-start" id="nalviAcademicQuickStart"><div class="gesa-section-head"><div><h3>${admin?"Administración de NALVI":"¿Qué quieres hacer?"}</h3><p>${admin?"Acceso directo a alumnos, instituciones y herramientas docentes.":"Elige una opción. Puedes volver aquí cuando quieras."}</p></div></div><div class="nalvi-academic-quick-grid">${admin?'<button type="button" data-academic-quick="summary"><span aria-hidden="true">🛡️</span><b>Todos los alumnos</b><small>Busca y revisa alumnos inscritos.</small></button><button type="button" data-academic-quick="institution"><span aria-hidden="true">🏫</span><b>Instituciones</b><small>Administra responsables y profesores.</small></button>':'<button type="button" data-academic-quick="groups"><span aria-hidden="true">👥</span><b>Crear una clase</b><small>Comparte un código con tus alumnos.</small></button>'}<button type="button" data-academic-quick="tools"><span aria-hidden="true">🎡</span><b>Abrir la ruleta</b><small>Carga nombres, palabras o preguntas.</small></button><button type="button" data-academic-quick="live"><span aria-hidden="true">🎯</span><b>Actividad con PIN</b><small>Inicia una práctica en vivo.</small></button>${admin?'<button type="button" data-academic-quick="groups"><span aria-hidden="true">👥</span><b>Clases y alumnos</b><small>Gestiona códigos e inscripciones.</small></button>':'<button type="button" data-academic-quick="summary"><span aria-hidden="true">📈</span><b>Ver el avance</b><small>Revisa el progreso de cada alumno.</small></button>'}<button type="button" data-academic-quick="assignments"><span aria-hidden="true">📝</span><b>Asignar una tarea</b><small>Elige clase, lección y fecha.</small></button><button type="button" data-academic-student-view><span aria-hidden="true">🎒</span><b>Experiencia del alumno</b><small>Abre clases, tareas y progreso.</small></button></div></section>`}
 
   function installDashboard(){
     const management=$("#institutional[data-gesa-installed='true']");if(!management||!canManage())return;
+    const admin=window.GESA_CONTEXT?.role==="platform_admin";
     const hero=$(".staff-hero",management);
-    if(hero){const tag=$(".tag",hero),title=$("h2",hero),intro=$("p",hero);if(tag)tag.textContent="🏫 MI ESPACIO DOCENTE";if(title)title.textContent="Gestión académica";if(intro)intro.textContent="Tus clases, actividades y alumnos organizados de forma sencilla."}
+    if(hero){const tag=$(".tag",hero),title=$("h2",hero),intro=$("p",hero);if(tag)tag.textContent=admin?"🛡️ ADMINISTRACIÓN NALVI":"🏫 MI ESPACIO DOCENTE";if(title)title.textContent=admin?"Panel de administración":"Gestión académica";if(intro)intro.textContent=admin?"Consulta todos los alumnos inscritos y administra instituciones, clases y profesores.":"Tus clases, actividades y alumnos organizados de forma sencilla."}
     const toolbar=$(".gesa-management-toolbar",management);if(toolbar&&!$("#nalviAcademicQuickStart",management))toolbar.insertAdjacentHTML("afterend",dashboardMarkup());
     const security=$(".gesa-note.security",management);if(security)security.textContent="🔐 Cada clase y su progreso están protegidos por la cuenta y el código de acceso.";
-    const labels={summary:"🏠 Inicio",groups:"👥 Mis clases",assignments:"📝 Tareas",assessments:"📈 Progreso",live:"🎯 Actividad con PIN",certificates:"🏅 Certificados",institution:"🏫 Mi espacio",tools:"🎡 Ruleta"};
+    const labels={summary:admin?"🛡️ Todos los alumnos":"🏠 Inicio",groups:admin?"👥 Clases y alumnos":"👥 Mis clases",assignments:"📝 Tareas",assessments:"📈 Progreso",live:"🎯 Actividad con PIN",certificates:"🏅 Certificados",institution:admin?"🏫 Instituciones":"🏫 Mi espacio",tools:"🎡 Ruleta"};
     $$("[data-gesa-tab]",management).forEach(button=>{if(labels[button.dataset.gesaTab])button.textContent=labels[button.dataset.gesaTab]});
     const groupPane=$("[data-gesa-pane='groups']",management),groupHeading=$(".gesa-card h3",groupPane),groupIntro=$(".gesa-card p",groupPane),studentField=$("textarea[name='studentEmails']",groupPane)?.closest("label");
     if(groupHeading)groupHeading.textContent="Crear una clase";
     if(groupIntro)groupIntro.textContent="Ponle un nombre y comparte el código. No necesitas agregar alumnos uno por uno.";
     if(studentField?.firstChild)studentField.firstChild.textContent="Correos de alumnos (opcional)";
-    if(!management.dataset.nalviAcademicQuickBound){management.dataset.nalviAcademicQuickBound="true";management.addEventListener("click",event=>{const button=event.target.closest?.("[data-academic-quick]");if(!button)return;openTool(button.dataset.academicQuick);if(button.dataset.academicQuick==="groups")setTimeout(()=>$("#gesaGroupForm input[name='name']")?.focus(),0)})}
+    if(!management.dataset.nalviAcademicQuickBound){management.dataset.nalviAcademicQuickBound="true";management.addEventListener("click",event=>{const studentButton=event.target.closest?.("[data-academic-student-view]");if(studentButton){window.show?.("progressHub",true);return}const button=event.target.closest?.("[data-academic-quick]");if(!button)return;openTool(button.dataset.academicQuick);if(button.dataset.academicQuick==="groups")setTimeout(()=>$("#gesaGroupForm input[name='name']")?.focus(),0)})}
   }
 
   function openTool(name){
@@ -165,12 +185,41 @@
     if(type==="wheel"&&cleanLines(content).length<2){setStatus(status,"La ruleta necesita al menos dos opciones.",true);return}
     if(type==="assessment"&&cleanLines(content,40).some(line=>!line.includes("|"))){setStatus(status,"Cada línea debe tener: Pregunta | Respuesta",true);return}
     button.disabled=true;setStatus(status,"Guardando…");
-    try{const payload={institutionId:institutionId(),ownerUid:currentUser().uid,activityType:type,title:title.slice(0,120),content,updatedAt:firebase.serverTimestamp()},id=editing[type];if(id){await firebase.setDoc(firebase.doc(firebase.db,"academicActivities",id),payload,{merge:true});editing[type]=""}else await firebase.addDoc(firebase.collection(firebase.db,"academicActivities"),{...payload,createdAt:firebase.serverTimestamp()});form.reset();setStatus(status,"Actividad guardada.");await loadActivities()}catch(error){console.error("NALVI_ACADEMIC_SAVE",error);setStatus(status,"No se pudo guardar. Revisa la conexión.",true)}finally{button.disabled=false}
+    try{const payload={institutionId:institutionId(),ownerUid:currentUser().uid,activityType:type,title:title.slice(0,120),content,updatedAt:firebase.serverTimestamp()},id=editing[type];if(id){await firebase.setDoc(firebase.doc(firebase.db,"academicActivities",id),payload,{merge:true});editing[type]=""}else await firebase.addDoc(firebase.collection(firebase.db,"academicActivities"),{...payload,createdAt:firebase.serverTimestamp()});form.reset();if(type==="wheel"){wheelItems=[];wheelOriginalItems=[];renderWheel()}setStatus(status,"Actividad guardada.");await loadActivities()}catch(error){console.error("NALVI_ACADEMIC_SAVE",error);setStatus(status,"No se pudo guardar. Revisa la conexión.",true)}finally{button.disabled=false}
   }
 
-  function handleSavedAction(event){const id=event.target.dataset.academicEdit||event.target.dataset.academicDelete;if(!id)return;const item=savedActivities.find(row=>row.id===id);if(!item)return;if(event.target.dataset.academicEdit){const form=item.activityType==="wheel"?$("#nalviWheelForm"):$("#nalviAssessmentBuilder");if(!form)return;form.elements.title.value=item.title;form.elements.content.value=item.content;editing[item.activityType]=item.id;form.scrollIntoView({behavior:"smooth",block:"center"});form.elements.title.focus();return}if(!confirm(`¿Eliminar “${item.title}”?`))return;event.target.disabled=true;firebase.deleteDoc(firebase.doc(firebase.db,"academicActivities",id)).then(loadActivities).catch(error=>{console.error(error);event.target.disabled=false})}
+  function handleSavedAction(event){const id=event.target.dataset.academicEdit||event.target.dataset.academicDelete;if(!id)return;const item=savedActivities.find(row=>row.id===id);if(!item)return;if(event.target.dataset.academicEdit){const form=item.activityType==="wheel"?$("#nalviWheelForm"):$("#nalviAssessmentBuilder");if(!form)return;form.elements.title.value=item.title;form.elements.content.value=item.content;if(item.activityType==="wheel")prepareWheel(item.content,true);editing[item.activityType]=item.id;form.scrollIntoView({behavior:"smooth",block:"center"});form.elements.title.focus();return}if(!confirm(`¿Eliminar “${item.title}”?`))return;event.target.disabled=true;firebase.deleteDoc(firebase.doc(firebase.db,"academicActivities",id)).then(loadActivities).catch(error=>{console.error(error);event.target.disabled=false})}
 
-  function spinWheel(){const form=$("#nalviWheelForm"),items=cleanLines(form?.elements.content.value);if(items.length<2){setStatus("#nalviWheelStatus","La ruleta necesita al menos dos opciones.",true);return}const random=window.crypto?.getRandomValues?(window.crypto.getRandomValues(new Uint32Array(1))[0]/4294967296):Math.random(),index=Math.floor(random*items.length),wheel=$("#nalviWheel"),result=$("#nalviWheelResult");wheelRotation+=1440+(360-index*(360/items.length));if(wheel){wheel.style.setProperty("--wheel-segments",String(items.length));wheel.style.transform=`rotate(${wheelRotation}deg)`}if(result)result.textContent="Girando…";setTimeout(()=>{if(result)result.textContent=items[index]},1250)}
+  function randomUnit(){return window.crypto?.getRandomValues?window.crypto.getRandomValues(new Uint32Array(1))[0]/4294967296:Math.random()}
+  function drawWithoutReplacement(items,randomValue=randomUnit()){
+    const available=[...items];if(!available.length)return{selected:"",remaining:[],index:-1};
+    const safeRandom=Math.min(.999999999,Math.max(0,Number(randomValue)||0)),index=Math.floor(safeRandom*available.length),selected=available[index];
+    return{selected,index,remaining:available.filter((_,itemIndex)=>itemIndex!==index)};
+  }
+  function wheelBackground(count){
+    const colors=["#6949cc","#16866f","#e76578","#e4a92e","#3d79cf","#8a5bc8","#1d9aa6","#d75f9d"];
+    if(!count)return"linear-gradient(145deg,#6d56ba,#1a8a70)";
+    return`conic-gradient(${Array.from({length:count},(_,index)=>`${colors[index%colors.length]} ${index/count*100}% ${(index+1)/count*100}%`).join(",")})`;
+  }
+  function renderWheel(items=wheelItems){
+    const wheel=$("#nalviWheel"),remaining=$("#nalviWheelRemaining"),spin=$("#nalviSpinWheel");if(!wheel)return;
+    const count=items.length,labelLimit=Math.min(count,24);wheel.style.background=wheelBackground(count);wheel.style.setProperty("--wheel-label-size",count>16?"8px":count>10?"9px":"11px");
+    wheel.innerHTML=count?items.slice(0,labelLimit).map((item,index)=>{const angle=(index+.5)*360/count;return `<span class="nalvi-wheel-label" style="--wheel-angle:${angle}deg;--wheel-counter-angle:${-angle}deg"><b>${esc(item.slice(0,28))}</b></span>`}).join(""):'<span class="nalvi-wheel-empty">Ñ</span>';
+    wheel.setAttribute("aria-label",count?`Ruleta con ${count} opciones: ${items.join(", ")}`:"Ruleta vacía");
+    if(remaining)remaining.textContent=`${count} opción${count===1?"":"es"} disponible${count===1?"":"s"}`;
+    if(spin)spin.disabled=wheelSpinning||count<1;
+  }
+  function prepareWheel(value,rememberOriginal=false){wheelItems=cleanLines(value);if(rememberOriginal)wheelOriginalItems=[...wheelItems];const reset=$("#nalviResetWheel");if(reset)reset.disabled=!wheelOriginalItems.length||wheelItems.length===wheelOriginalItems.length;renderWheel()}
+  function resetWheel(){
+    if(wheelSpinning||!wheelOriginalItems.length)return;wheelItems=[...wheelOriginalItems];const form=$("#nalviWheelForm");if(form)form.elements.content.value=wheelItems.join("\n");const result=$("#nalviWheelResult");if(result)result.textContent="Opciones reiniciadas.";const reset=$("#nalviResetWheel");if(reset)reset.disabled=true;setStatus("#nalviWheelStatus","");renderWheel();
+  }
+  function spinWheel(){
+    if(wheelSpinning)return;const form=$("#nalviWheelForm"),typed=cleanLines(form?.elements.content.value);if(!wheelItems.length||typed.join("\n")!==wheelItems.join("\n"))prepareWheel(form?.elements.content.value,true);
+    if(!wheelItems.length){setStatus("#nalviWheelStatus","Agrega al menos una opción.",true);return}
+    const draw=drawWithoutReplacement(wheelItems),wheel=$("#nalviWheel"),result=$("#nalviWheelResult"),count=wheelItems.length,target=360-(draw.index+.5)*(360/count),base=Math.ceil(wheelRotation/360)*360;
+    wheelSpinning=true;wheelRotation=base+1440+target;if(wheel)wheel.style.transform=`rotate(${wheelRotation}deg)`;if(result)result.textContent="Girando…";setStatus("#nalviWheelStatus","");renderWheel();
+    setTimeout(()=>{wheelSpinning=false;wheelItems=draw.remaining;if(form)form.elements.content.value=wheelItems.join("\n");if(result)result.textContent=`Salió: ${draw.selected}`;const reset=$("#nalviResetWheel");if(reset)reset.disabled=false;renderWheel();setStatus("#nalviWheelStatus",wheelItems.length?`${draw.selected} fue retirado. Quedan ${wheelItems.length}.`:`${draw.selected} fue la última opción. Reinicia la ruleta para volver a jugar.`)},1250);
+  }
 
   async function restorePendingIntent(source){
     const intent=readIntent();if(!intent||restoringIntent||!signedIn())return;restoringIntent=true;
@@ -189,6 +238,7 @@
       firebase=await waitForFirebase();refresh();
       window.addEventListener("nalvi:auth-known",()=>setTimeout(()=>{refresh();restorePendingIntent("auth")},100));
       window.addEventListener("nalvi:role-known",()=>setTimeout(()=>{refresh();restorePendingIntent("role")},100));
+      window.addEventListener("nalvi:group-joined",handleGroupJoined);
       document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))setTimeout(refresh,0)},true);
       for(let attempt=0;attempt<40&&!$("#institutional[data-gesa-installed='true']");attempt++)await new Promise(resolve=>setTimeout(resolve,100));
       installTools();installDashboard();restorePendingIntent("role");
@@ -197,6 +247,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeLivePin};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeLivePin,drawWithoutReplacement,wheelBackground};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

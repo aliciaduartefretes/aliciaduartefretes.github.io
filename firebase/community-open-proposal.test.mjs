@@ -93,6 +93,11 @@ try{
   await assertSucceeds(setDoc(doc(alicia,"courseAccess","code__GCA-ABC123"),{type:"group_invite",code:"GCA-ABC123",groupId:"class-1",groupName:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",teacherId:"alicia",teacherEmail:"alicia@example.com",active:true,createdAt:serverTimestamp()}));
   await assertSucceeds(getDoc(doc(marcelo,"courseAccess","code__GCA-ABC123")));
   await assertSucceeds(setDoc(doc(marcelo,"enrollments","class-1__marcelo@example.com"),{groupId:"class-1",groupName:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",studentId:"marcelo",studentEmail:"marcelo@example.com",teacherId:"alicia",teacherEmail:"alicia@example.com",inviteCode:"GCA-ABC123",active:true,joinedByCode:true,updatedAt:serverTimestamp()}));
+  const teacherAddedEnrollment=doc(alicia,"enrollments","class-1__sofia@example.com");
+  await assertSucceeds(setDoc(classRef,{studentEmails:["marcelo@example.com","sofia@example.com"],updatedAt:serverTimestamp()},{merge:true}));
+  await assertSucceeds(setDoc(teacherAddedEnrollment,{groupId:"class-1",groupName:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",studentEmail:"sofia@example.com",teacherId:"alicia",teacherEmail:"alicia@example.com",active:true,addedBy:"alicia",updatedAt:serverTimestamp()}));
+  await assertSucceeds(setDoc(classRef,{studentEmails:["marcelo@example.com"],updatedAt:serverTimestamp()},{merge:true}));
+  await assertSucceeds(setDoc(teacherAddedEnrollment,{active:false,removedBy:"alicia",updatedAt:serverTimestamp()},{merge:true}));
   await assertSucceeds(getDocs(query(collection(marcelo,"enrollments"),where("studentEmail","==","marcelo@example.com"))));
   await assertFails(getDocs(query(collection(sofia,"enrollments"),where("studentEmail","==","marcelo@example.com"))));
   await assertSucceeds(getDoc(doc(marcelo,"groups","class-1")));

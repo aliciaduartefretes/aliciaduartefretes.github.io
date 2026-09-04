@@ -18,6 +18,8 @@
 .nalvi-student-class-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .nalvi-student-class{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;border:1px solid #e4deee;border-radius:17px;background:#faf9fd}
 .nalvi-student-class>span{font-size:25px}.nalvi-student-class h4{margin:0 0 4px}.nalvi-student-class p{margin:0;color:var(--muted,#6d667d);font-size:13px}
+.nalvi-student-class code{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:8px;background:#eee9fa;color:#4c378f;font-weight:900}
+.nalvi-student-progress-link{margin-top:12px;padding:0;border:0;background:transparent;color:#4e3998;font:900 13px/1.4 inherit;text-decoration:underline;cursor:pointer}
 .nalvi-academic-quick-start{margin:18px 0;padding:20px;border:2px solid var(--gesa-border,#e5dfed);border-radius:24px;background:linear-gradient(145deg,#fff,#f6f3ff)}
 .nalvi-academic-quick-start .gesa-section-head{margin-top:0}
 .nalvi-academic-quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
@@ -29,11 +31,25 @@
 .nalvi-academic-tools .gesa-card>h3{margin-top:10px}
 .nalvi-academic-tools .gesa-form{margin-top:15px}
 .nalvi-wheel-stage{position:relative;display:grid;place-items:center;gap:12px;margin-top:18px;padding:18px;border-radius:20px;background:linear-gradient(145deg,#f7f3ff,#edfaf5);overflow:hidden}
-.nalvi-wheel{--wheel-segments:6;position:relative;display:grid;place-items:center;width:min(230px,70vw);aspect-ratio:1;border:8px solid #fff;border-radius:50%;background:conic-gradient(#6949cc 0 16.6%,#1a8a70 16.6% 33.2%,#ef7180 33.2% 49.8%,#ffc95a 49.8% 66.4%,#4e83d6 66.4% 83%,#8c64d8 83%);box-shadow:0 11px 24px rgba(48,37,75,.18);color:#fff;font-size:48px;font-weight:950;transition:transform 1.2s cubic-bezier(.14,.72,.18,1)}
+.nalvi-wheel{--wheel-segments:6;--wheel-label-size:11px;position:relative;display:grid;place-items:center;width:min(270px,72vw);aspect-ratio:1;border:8px solid #fff;border-radius:50%;background:conic-gradient(#6949cc 0 16.6%,#1a8a70 16.6% 33.2%,#ef7180 33.2% 49.8%,#ffc95a 49.8% 66.4%,#4e83d6 66.4% 83%,#8c64d8 83%);box-shadow:0 11px 24px rgba(48,37,75,.18);color:#fff;font-size:48px;font-weight:950;transition:transform 1.2s cubic-bezier(.14,.72,.18,1);overflow:hidden}
 .nalvi-wheel:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border:7px solid #fff;border-radius:50%;background:#213d39;box-shadow:0 3px 10px rgba(0,0,0,.2)}
-.nalvi-wheel>span{position:relative;z-index:1}
+.nalvi-wheel-empty{position:relative;z-index:1}
+.nalvi-wheel-label{position:absolute;z-index:1;inset:0;display:flex;justify-content:center;padding-top:13px;transform:rotate(var(--wheel-angle));pointer-events:none}
+.nalvi-wheel-label b{display:block;width:92px;overflow:hidden;color:#fff;font-size:var(--wheel-label-size);line-height:1.05;text-align:center;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;transform:rotate(var(--wheel-counter-angle))}
 .nalvi-wheel-pointer{position:absolute;z-index:3;top:7px;color:#241d3b;font-size:28px;filter:drop-shadow(0 2px 0 #fff)}
 .nalvi-wheel-stage>strong{min-height:24px;color:#46358d;text-align:center}
+.nalvi-wheel-stage>small{color:#686078;font-weight:850}
+.gesa-group-card{display:block}
+.gesa-code-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 5px}
+.gesa-group-students{display:grid;gap:6px;margin:12px 0 0;padding:0;list-style:none}
+.gesa-group-students li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:11px;background:#f8f6fc;color:#514861;font-size:12px}
+.gesa-group-students li span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gesa-group-students li button{min-height:34px;padding:6px 9px;border:1px solid #dccfe8;border-radius:9px;background:#fff;color:#8d3551;font:900 11px/1 inherit;cursor:pointer}
+.gesa-empty-students{margin-top:10px!important;font-size:12px}
+.gesa-group-share{display:grid;justify-items:center;align-content:start;gap:7px}
+.gesa-qr-link{max-width:120px;color:#4e3998;font-size:11px;font-weight:900;line-height:1.3;text-align:center}
+#gesaGroupAccessDialog .gesa-dialog-card>p{margin:0;color:#675f74;line-height:1.5}
+#gesaGroupAccessDialog .gesa-form-status{min-height:22px}
 
 @media(max-width:760px){
   .nalvi-academic-entry,.nalvi-academic-tools-grid{grid-template-columns:minmax(0,1fr)}
@@ -52,4 +68,5 @@
   .nalvi-academic-quick-grid button{min-height:0}
   .nalvi-student-class{grid-template-columns:auto minmax(0,1fr)}
   .nalvi-student-class button{grid-column:1/-1;width:100%}
+  .gesa-group-share{justify-items:start}
 }

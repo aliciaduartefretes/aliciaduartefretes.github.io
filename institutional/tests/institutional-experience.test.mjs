@@ -10,6 +10,8 @@ const notificationScriptUrl=new URL("../../assets/js/nalvi-notification-center.j
 const notificationStyleUrl=new URL("../../assets/css/nalvi-notification-center.css",import.meta.url);
 const academicScriptUrl=new URL("../../assets/js/nalvi-academic-studio.js",import.meta.url);
 const academicStyleUrl=new URL("../../assets/css/nalvi-academic-studio.css",import.meta.url);
+const accessibilityScriptUrl=new URL("../../assets/js/nalvi-accessibility.js",import.meta.url);
+const accessibilityStyleUrl=new URL("../../assets/css/nalvi-accessibility.css",import.meta.url);
 const audioManifestUrl=new URL("../../assets/audio/guarani/ali-2026/manifest.json",import.meta.url);
 const indexUrl=new URL("../../index.html",import.meta.url);
 const firestoreRulesUrl=new URL("../../firebase/proposals/REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules",import.meta.url);
@@ -20,6 +22,8 @@ const notificationScript=await readFile(notificationScriptUrl,"utf8");
 const notificationStyle=await readFile(notificationStyleUrl,"utf8");
 const academicScript=await readFile(academicScriptUrl,"utf8");
 const academicStyle=await readFile(academicStyleUrl,"utf8");
+const accessibilityScript=await readFile(accessibilityScriptUrl,"utf8");
+const accessibilityStyle=await readFile(accessibilityStyleUrl,"utf8");
 const audioManifest=JSON.parse(await readFile(audioManifestUrl,"utf8"));
 const index=await readFile(indexUrl,"utf8");
 const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
@@ -236,10 +240,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-3"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Abrir la ruleta","Actividad con PIN","Ver el avance"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-3/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-2/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-4"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Abrir la ruleta","Actividad con PIN","Ver el avance","Panel de administración","Todos los alumnos","Experiencia del alumno"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-4/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-3/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.nalvi-academic-quick-grid/);
@@ -248,6 +252,42 @@ test("academic management is self-service and exposes classes, wheel, live PIN a
   assert.match(firestoreRules,/isOwnSelfInstitution/);
   assert.match(firestoreRules,/ownsSelfInstitution/);
   assert.match(firestoreRules,/memberId == request\.resource\.data\.get\('institutionId', ''\) \+ '__' \+ request\.auth\.uid/);
+});
+
+test("class links, QR and membership controls complete the teacher and student flow",()=>{
+  for(const marker of ["gesaGroupAccessDialog","gesaGroupAccessForm","Copiar código","data-group-remove-email","submitGroupAccess","openGroupAccessDialog"])assert.match(index,new RegExp(marker));
+  assert.match(index,/new URL\(location\.origin\+location\.pathname\)/);
+  assert.match(index,/url\.hash="institutions"/);
+  assert.match(index,/const deferredAcademicRoute=new URLSearchParams\(location\.search\)\.has\("grupo"\)\?"institutions"/);
+  assert.match(index,/if\(deferredAcademicRoute\)history\.replaceState/);
+  assert.match(index,/new CustomEvent\("nalvi:group-joined"/);
+  assert.match(index,/cleanUrl\.searchParams\.delete\("grupo"\)/);
+  assert.doesNotMatch(index,/prompt\(button\.dataset\.groupAdd/);
+  assert.match(academicScript,/lastJoinedClassCode!==code/);
+  assert.match(academicScript,/new URLSearchParams\(location\.search\)\.get\("grupo"\)/);
+  assert.match(academicScript,/Ver mis clases y mi progreso/);
+});
+
+test("wheel draws without replacement and renders option labels inside its sectors",()=>{
+  const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){}},Date,JSON,Error,TypeError,String,Math,Set,Promise,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
+  vm.runInContext(academicScript,context);
+  const draw=context.window.NALVI_ACADEMIC_STUDIO.drawWithoutReplacement(["A","B","C"],.5);
+  assert.equal(draw.selected,"B");
+  assert.deepEqual(Array.from(draw.remaining),["A","C"]);
+  assert.match(academicScript,/nalvi-wheel-label/);
+  assert.match(academicScript,/draw\.remaining/);
+  assert.match(academicScript,/fue retirado/);
+  assert.match(academicScript,/Reiniciar opciones/);
+  assert.match(academicStyle,/\.nalvi-wheel-label/);
+});
+
+test("accessibility controls provide keyboard, contrast, motion and non-3D game options",()=>{
+  for(const marker of ["NALVI-ACCESSIBILITY-1","accessibleGames","largeText","highContrast","reducedMotion","Saltar al contenido principal","Juegos accesibles","aria-live=\"polite\""])assert.match(accessibilityScript,new RegExp(marker));
+  assert.match(index,/NALVI_ACCESSIBLE_KIDS_LAUNCH/);
+  assert.match(index,/dataset\.nalviAccessibleGames==="true"/);
+  assert.match(index,/nalvi-accessibility\.js\?v=NALVI-ACCESSIBILITY-1/);
+  assert.match(index,/nalvi-accessibility\.css\?v=NALVI-ACCESSIBILITY-1/);
+  for(const marker of [":focus-visible","nalvi-high-contrast","nalvi-reduced-motion","nalvi-skip-link"])assert.match(accessibilityStyle,new RegExp(marker));
 });
 
 test("academic login intent returns to management instead of bouncing to home",()=>{
