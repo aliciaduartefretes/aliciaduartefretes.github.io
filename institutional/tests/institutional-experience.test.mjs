@@ -29,10 +29,10 @@ test("community keeps the three-person icon in header and bottom navigation",()=
   assert.match(style,/\.nalvi-community-nav-icon svg/);
 });
 
-test("community writes remain protected until the exact rules are restored",()=>{
+test("community writes are enabled only after the exact rules were restored",()=>{
   assert.match(script,/COMMUNITY_WRITES_ENABLED=window\.GCA_FEATURES\?\.communityWrites===true\|\|window\.NALVI_FEATURES\?\.communityWrites===true/);
   assert.match(service,/WRITES_ENABLED=window\.GCA_FEATURES\?\.communityWrites===true\|\|window\.NALVI_FEATURES\?\.communityWrites===true/);
-  assert.match(index,/communityWrites:false/);
+  assert.match(index,/communityWrites:true/);
   assert.match(service,/COMMUNITY_WRITES_DISABLED/);
   for(const operation of ["subscribePosts","createRemotePost","deleteRemotePost","toggleReaction","createComment","toggleFollow","saveOwnProfile","recordView"])assert.match(service,new RegExp(operation));
   assert.doesNotMatch(script+service,/localStorage|sessionStorage/);
@@ -119,7 +119,7 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
-  assert.match(index,/communityWrites:false/);
+  assert.match(index,/communityWrites:true/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-4/);
   assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-6/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-6/);
