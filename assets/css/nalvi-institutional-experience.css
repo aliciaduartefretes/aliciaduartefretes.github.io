@@ -13,6 +13,7 @@
   background:#f8f7fb;
 }
 .nalvi-institutional *,.nalvi-institutional *:before,.nalvi-institutional *:after{box-sizing:border-box}
+body:has(#institutionalExperience:not(.hide)) .reaction-sound-toggle{display:none!important}
 .nalvi-institutional-shell{width:min(1080px,100%);margin:auto;padding:0 clamp(12px,2.5vw,24px)}
 .nalvi-community-nav-icon{display:inline-grid;place-items:center;color:currentColor}
 .nalvi-community-nav-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -40,6 +41,17 @@
 .nalvi-community-composer textarea:focus{border:0!important;outline:0!important;box-shadow:none!important}
 .nalvi-community-compose-body:focus-within{border-radius:12px;box-shadow:0 0 0 3px rgba(101,71,199,.08)}
 .nalvi-community-composer textarea::placeholder{color:#91899f}
+.nalvi-community-resource-composer{display:grid;gap:6px;margin:5px 0 10px;padding:12px;border:1px solid #d9d1ed;border-radius:14px;background:linear-gradient(135deg,#f7f4ff,#f0fbf7)}
+.nalvi-community-resource-composer>strong{color:var(--institutional-purple-dark);font-size:14px}
+.nalvi-community-resource-composer>small{color:var(--institutional-muted);font-size:11px;line-height:1.4}
+.nalvi-community-resource-composer>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:7px}
+.nalvi-community-resource-composer input{min-width:0;border:1px solid var(--institutional-line);border-radius:10px;padding:9px 10px;background:#fff;color:var(--institutional-ink);font:inherit;font-size:12px}
+.nalvi-community-media-row{display:flex;align-items:center;gap:9px;min-height:38px;margin-top:5px}
+.nalvi-community-attach{display:inline-flex;align-items:center;min-height:34px;border-radius:999px;padding:7px 11px;background:var(--institutional-green-soft);color:var(--institutional-green);font-size:11px;font-weight:900;cursor:pointer}
+.nalvi-community-attach input,.nalvi-community-upload-card input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nalvi-community-post-preview{position:relative;display:block;width:58px;height:42px}
+.nalvi-community-post-preview img{width:100%;height:100%;border-radius:9px;object-fit:cover}
+.nalvi-community-post-preview button{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border:0;border-radius:50%;background:#2e2840;color:#fff;line-height:18px;cursor:pointer}
 .nalvi-community-composer-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:7px;padding-top:10px;border-top:1px solid #f0ecf4}
 .nalvi-community-composer-actions>small{max-width:380px;color:var(--institutional-muted);font-size:11px;line-height:1.35}
 .nalvi-community-primary{min-height:42px;border:0;border-radius:999px;padding:9px 17px;background:linear-gradient(135deg,var(--institutional-green),#245f92 55%,var(--institutional-purple));color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 5px 13px rgba(66,55,135,.16)}
@@ -59,6 +71,7 @@
 .nalvi-community-post:last-child{border-bottom:0}
 .nalvi-community-post:hover{background:#fdfcff}
 .nalvi-community-post.pinned{background:linear-gradient(135deg,#fff,#fbf9ff)}
+.nalvi-community-post.resource{background:linear-gradient(160deg,#fff,#fbfffd)}
 .nalvi-community-author{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .nalvi-community-author-link{min-width:0;display:grid;grid-template-columns:44px minmax(0,1fr);gap:11px;align-items:center;border:0;background:transparent;padding:0;color:inherit;text-align:left;font:inherit;cursor:pointer}
 .nalvi-community-author-link.compact{grid-template-columns:42px minmax(0,1fr)}
@@ -83,6 +96,11 @@
 .nalvi-community-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .nalvi-community-link{background:var(--institutional-green-soft);color:#126b50}
 .nalvi-community-body{margin:13px 0 5px;color:var(--institutional-ink);font-size:15px;line-height:1.62;white-space:pre-wrap}
+.nalvi-community-resource-head{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:13px}
+.nalvi-community-resource-head span{border-radius:999px;padding:5px 8px;background:var(--institutional-green-soft);color:var(--institutional-green);font-size:10px;font-weight:900}
+.nalvi-community-resource-head strong{font-size:15px}
+.nalvi-community-post-image{display:block;width:100%;max-height:520px;margin-top:12px;border-radius:16px;object-fit:cover;background:#f2eff7}
+.nalvi-community-resource-link{display:inline-flex;margin-top:12px;border-radius:999px;padding:8px 12px;background:var(--institutional-purple-soft);color:var(--institutional-purple-dark);font-size:12px;font-weight:900;text-decoration:none}
 .nalvi-community-comments{display:grid;gap:8px;margin-top:12px}
 .nalvi-community-comment{padding:10px 12px;border-radius:13px;background:#f7f5fb;color:#5e566f;font-size:13px;line-height:1.45}
 .nalvi-community-comment strong{color:var(--institutional-ink)}
@@ -106,7 +124,8 @@
 .nalvi-community-person:first-of-type{margin-top:8px}
 .nalvi-community-person>button:last-child{border:0;background:transparent;color:var(--institutional-purple);font:inherit;font-size:11px;font-weight:900;cursor:pointer}
 
-.nalvi-community-profile-cover{height:112px;background:linear-gradient(120deg,#123f36,#266f73 42%,#6547c7 78%,#dd7181)}
+.nalvi-community-profile-cover{height:150px;overflow:hidden;background:linear-gradient(120deg,#123f36,#266f73 42%,#6547c7 78%,#dd7181)}
+.nalvi-community-profile-cover img{display:block;width:100%;height:100%;object-fit:cover}
 .nalvi-community-profile-head{position:relative;padding:0 22px 20px;border-bottom:1px solid var(--institutional-line)}
 .nalvi-community-profile-avatar{height:45px}
 .nalvi-community-profile-avatar .nalvi-community-avatar{position:relative;top:-43px;width:86px;height:86px;border:4px solid #fff;font-size:24px;box-shadow:0 5px 15px rgba(33,29,50,.15)}
@@ -123,9 +142,18 @@
 .nalvi-community-profile-reward small{margin-top:2px;color:#745f2d;font-size:10px;line-height:1.35}
 .nalvi-community-profile-reward i{display:block;height:5px;margin-top:8px;overflow:hidden;border-radius:999px;background:#eadfbf}
 .nalvi-community-profile-reward i b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ddb542,#8b6ad8)}
-.nalvi-community-profile-editor{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;padding:15px 20px;border-bottom:1px solid var(--institutional-line);background:#faf8ff}
+.nalvi-community-profile-editor{display:grid;gap:14px;padding:16px 20px;border-bottom:1px solid var(--institutional-line);background:#faf8ff}
 .nalvi-community-profile-editor small{display:block;color:var(--institutional-muted);font-size:11px}
 .nalvi-community-profile-editor textarea{width:100%;min-height:68px;margin-top:8px;border:1px solid var(--institutional-line);border-radius:14px;padding:10px 12px;background:#fff;color:var(--institutional-ink);font:inherit;resize:vertical}
+.nalvi-community-profile-editor>button{justify-self:end}
+.nalvi-community-profile-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.nalvi-community-upload-card{display:grid;gap:7px;min-width:0;border:1px solid var(--institutional-line);border-radius:15px;padding:11px;background:#fff;cursor:pointer}
+.nalvi-community-upload-card>strong{color:var(--institutional-purple-dark);font-size:12px}
+.nalvi-community-upload-preview{display:block;width:100%;height:92px;overflow:hidden;border-radius:11px;background:#eeeaf7}
+.nalvi-community-upload-preview.avatar{width:92px;border-radius:50%}
+.nalvi-community-upload-preview img,.nalvi-community-upload-preview i{display:block;width:100%;height:100%;object-fit:cover}
+.nalvi-community-upload-preview i{background:linear-gradient(120deg,#15483d,#2b7979 45%,#6a4bcd)}
+.nalvi-community-upload-preview .nalvi-community-avatar{width:100%;height:100%;font-size:22px}
 .nalvi-community-profile-posts-title{padding:13px 20px;border-bottom:1px solid var(--institutional-line);font-size:13px;font-weight:950;text-transform:uppercase;letter-spacing:.05em}
 
 @media(max-width:900px){
@@ -144,6 +172,7 @@
   .nalvi-community-composer textarea{min-height:66px;font-size:17px}
   .nalvi-community-composer-actions{align-items:flex-end}
   .nalvi-community-composer-actions>small{max-width:52%}
+  .nalvi-community-resource-composer>div{grid-template-columns:1fr}
   .nalvi-community-categories{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px 12px}
   .nalvi-community-category{font-size:10.5px}
   .nalvi-community-category:last-child{grid-column:1/-1}
@@ -155,7 +184,7 @@
   .nalvi-community-sidebar{grid-template-columns:1fr;padding:0 0 20px;background:#f8f7fb}
   .nalvi-topic-card{display:none}
   .nalvi-community-profile-head{padding-inline:16px}
-  .nalvi-community-profile-editor{grid-template-columns:1fr;padding-inline:14px}
+  .nalvi-community-profile-editor{padding-inline:14px}
   .nalvi-community-profile-editor button{width:100%}
 }
 @media(max-width:420px){
@@ -166,4 +195,5 @@
   .nalvi-community-composer-actions>small{max-width:none}
   .nalvi-community-primary{padding-inline:14px}
   .nalvi-community-post-menu{max-width:calc(100vw - 36px)}
+  .nalvi-community-profile-media-grid{grid-template-columns:1fr}
 }

@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isCommunityMember() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isSafeCommunityImage() {
+      return request.resource != null
+        && request.resource.size > 0
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)')
+        && request.resource.metadata.ownerUid == request.auth.uid;
+    }
+
+    // Las imágenes de Comunidad son visibles junto con el feed público.
+    // Solo el dueño autenticado puede crear, reemplazar o borrar sus archivos.
+    match /communityMedia/{userId}/profile/{slot} {
+      allow read: if true;
+      allow create, update: if isCommunityMember()
+        && userId == request.auth.uid
+        && slot in ['avatar', 'cover']
+        && isSafeCommunityImage();
+      allow delete: if isCommunityMember() && userId == request.auth.uid;
+    }
+
+    match /communityMedia/{userId}/posts/{mediaId} {
+      allow read: if true;
+      allow create, update: if isCommunityMember()
+        && userId == request.auth.uid
+        && mediaId.size() >= 12
+        && mediaId.size() <= 80
+        && isSafeCommunityImage();
+      allow delete: if isCommunityMember() && userId == request.auth.uid;
+    }
+
+    // Ningún otro archivo obtiene permisos mediante esta propuesta.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

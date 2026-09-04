@@ -20,6 +20,7 @@
     "test:institutional": "node --test institutional/tests/*.test.mjs",
     "generate:community-rules": "node scripts/generate-community-firestore-rules.mjs",
     "test:community-rules": "firebase emulators:exec --only firestore --project demo-nalvi-community-open --config firebase/firebase.json \"node --test firebase/community-open-proposal.test.mjs\"",
+    "test:community-media-rules": "firebase emulators:exec --only storage --project demo-nalvi-community-media --config firebase/firebase.json \"node --test firebase/storage-community-media.test.mjs\"",
     "validate:pre-8c-audio": "node scripts/validate-pre8c-audio.mjs",
     "verify:pre-8c-qa": "node scripts/verify-pre-8c-qa.mjs"
   },

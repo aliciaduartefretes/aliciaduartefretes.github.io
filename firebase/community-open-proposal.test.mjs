@@ -38,6 +38,8 @@ try{
   await assertFails(setDoc(doc(alicia,"communityProfiles","spoofed"),profileData("spoofed","Alicia Duarte","https://example.com/alicia.jpg")));
   await assertFails(setDoc(doc(alicia,"communityProfiles","wrong-photo"),profileData("alicia","Alicia Duarte","https://example.com/other.jpg")));
   await assertSucceeds(updateDoc(aliciaProfile,{bio:"Docente de guaraní",updatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(aliciaProfile,{avatarPath:"communityMedia/alicia/profile/avatar",coverPath:"communityMedia/alicia/profile/cover",updatedAt:serverTimestamp()}));
+  await assertFails(updateDoc(aliciaProfile,{avatarPath:"communityMedia/marcelo/profile/avatar",updatedAt:serverTimestamp()}));
   await assertFails(updateDoc(doc(marcelo,"communityProfiles","alicia"),{bio:"Perfil ajeno",updatedAt:serverTimestamp()}));
 
   const follow=doc(marcelo,"communityProfiles","alicia","followers","marcelo");
@@ -48,6 +50,10 @@ try{
   await assertSucceeds(deleteDoc(follow));
 
   await assertSucceeds(setDoc(post,postData("alicia","Alicia Duarte")));
+  await assertSucceeds(setDoc(doc(alicia,"communityPosts","resource"),{...postData("alicia","Alicia Duarte","Material para practicar"),category:"resources",mediaPath:"communityMedia/alicia/posts/123456789abc",mediaType:"image",resourceTitle:"Guía",resourceUrl:"https://example.com/guia"}));
+  await assertFails(setDoc(doc(alicia,"communityPosts","wrong-media"),{...postData("alicia","Alicia Duarte"),mediaPath:"communityMedia/marcelo/posts/123456789abc",mediaType:"image"}));
+  await assertFails(setDoc(doc(alicia,"communityPosts","unsafe-link"),{...postData("alicia","Alicia Duarte"),category:"resources",resourceUrl:"javascript:alert(1)"}));
+  await assertFails(setDoc(doc(alicia,"communityPosts","misplaced-link"),{...postData("alicia","Alicia Duarte"),resourceTitle:"No corresponde",resourceUrl:"https://example.com"}));
   await assertSucceeds(getDoc(doc(marcelo,"communityPosts","welcome")));
   await assertFails(setDoc(doc(marcelo,"communityPosts","spoofed"),postData("marcelo","Otra persona")));
   await assertFails(setDoc(doc(marcelo,"communityPosts","announcement"),{...postData("marcelo","Marcelo Benítez"),category:"announcements"}));
