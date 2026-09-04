@@ -240,9 +240,9 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-4"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-5"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Abrir la ruleta","Actividad con PIN","Ver el avance","Panel de administración","Todos los alumnos","Experiencia del alumno"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-4/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-5/);
   assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-3/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
@@ -277,6 +277,7 @@ test("wheel draws without replacement and renders option labels inside its secto
   assert.match(academicScript,/nalvi-wheel-label/);
   assert.match(academicScript,/draw\.remaining/);
   assert.match(academicScript,/fue retirado/);
+  assert.match(academicScript,/count===1\?"opción":"opciones"/);
   assert.match(academicScript,/Reiniciar opciones/);
   assert.match(academicStyle,/\.nalvi-wheel-label/);
 });

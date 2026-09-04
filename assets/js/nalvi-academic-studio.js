@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-4";
+  const VERSION="NALVI-ACADEMIC-STUDIO-5";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -206,7 +206,7 @@
     const count=items.length,labelLimit=Math.min(count,24);wheel.style.background=wheelBackground(count);wheel.style.setProperty("--wheel-label-size",count>16?"8px":count>10?"9px":"11px");
     wheel.innerHTML=count?items.slice(0,labelLimit).map((item,index)=>{const angle=(index+.5)*360/count;return `<span class="nalvi-wheel-label" style="--wheel-angle:${angle}deg;--wheel-counter-angle:${-angle}deg"><b>${esc(item.slice(0,28))}</b></span>`}).join(""):'<span class="nalvi-wheel-empty">Ñ</span>';
     wheel.setAttribute("aria-label",count?`Ruleta con ${count} opciones: ${items.join(", ")}`:"Ruleta vacía");
-    if(remaining)remaining.textContent=`${count} opción${count===1?"":"es"} disponible${count===1?"":"s"}`;
+    if(remaining)remaining.textContent=`${count} ${count===1?"opción":"opciones"} disponible${count===1?"":"s"}`;
     if(spin)spin.disabled=wheelSpinning||count<1;
   }
   function prepareWheel(value,rememberOriginal=false){wheelItems=cleanLines(value);if(rememberOriginal)wheelOriginalItems=[...wheelItems];const reset=$("#nalviResetWheel");if(reset)reset.disabled=!wheelOriginalItems.length||wheelItems.length===wheelOriginalItems.length;renderWheel()}
