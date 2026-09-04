@@ -14,17 +14,17 @@ const index=await readFile(indexUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-6"/);
-  assert.match(script,/class="nalvi-community-bar"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-9"/);
   assert.match(script,/class="nalvi-community-layout"/);
+  assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
   for(const removed of ["Tu lugar para conversar y aprender","Aula","En vivo","Miembros","Gestión académica"])assert.doesNotMatch(script,new RegExp(removed));
 });
 
-test("community keeps the three-person icon in header and bottom navigation",()=>{
+test("community keeps the three-person icon only in bottom navigation",()=>{
   assert.match(script,/const COMMUNITY_ICON='<svg/);
-  assert.match(script,/nalvi-community-hero-icon/);
   assert.match(script,/nalvi-community-nav-icon/);
+  assert.doesNotMatch(script,/nalvi-community-hero-icon|nalvi-community-bar/);
   assert.match(script,/<circle cx="12" cy="7" r="3"><\/circle>/);
   assert.match(style,/\.nalvi-community-nav-icon svg/);
 });
@@ -77,22 +77,32 @@ test("enabled service writes only through authenticated Firestore operations",as
   assert.ok(writes.some(item=>item.kind==="delete"&&item.path.endsWith("communityPosts/post-1")));
 });
 
-test("feed supports likes, replies, views, sharing, own deletion and followers",()=>{
-  for(const marker of ["data-community-comment","data-community-like","data-community-share","data-community-delete","data-community-follow","recordView","contributionScore","rewardFor","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
+test("feed supports discovery, likes, replies, views, sharing, own deletion and followers",()=>{
+  for(const marker of ["data-community-feed","data-community-topic","data-community-comment","data-community-like","data-community-share","data-community-delete","data-community-follow","recordView","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
   assert.match(script,/currentUid\(\)===post\.authorId/);
+  assert.match(script,/state\.feed==="following"/);
   assert.match(service,/communityProfiles/);
 });
 
-test("profiles use the authenticated account photo and expose no email",()=>{
+test("profiles are navigable, show their posts and keep rewards out of the fixed sidebar",()=>{
   assert.match(script,/photoURL:user\(\)\?\.photoURL/);
   assert.match(script,/La foto proviene de tu cuenta de Google/);
+  assert.match(script,/data-community-profile/);
+  assert.match(script,/communityNavigationBound/);
+  assert.match(script,/event\.target\.closest\?\.\("\[data-community-profile\]"\)/);
+  assert.match(script,/function profilePanel\(\)/);
+  assert.match(script,/nalvi-community-profile-reward/);
+  assert.match(script,/contributionScore/);
+  const communityPanel=script.match(/function communityPanel\(\)[\s\S]*?function render\(\)/)?.[0]||"";
+  assert.doesNotMatch(communityPanel,/nalvi-reward-card/);
   assert.match(service,/safePhoto\(user\.photoURL\)/);
   assert.doesNotMatch(script,/email|correo/i);
 });
 
-test("social copy is available in all six UI languages",()=>{
+test("social copy is Guaraní-first with support in all six UI languages",()=>{
   for(const locale of ["es","en","pt","fr","it","de"])assert.match(script,new RegExp(`\\b${locale}:\\{nav:`));
-  for(const term of ["Recompensas","Personas populares","Mi perfil","seguidores","visualizaciones"])assert.match(script,new RegExp(term));
+  for(const term of ["Ñañe’ẽ guaraníme","Jahai guaraníme","Ehai guaraníme","Emoherakuã","Mbohovái","Opaite","Marandu","Porandu","Ñemoarandu","Pytyvõrã"])assert.match(script,new RegExp(term));
+  for(const term of ["Sugerencias para seguir","Mi perfil","seguidores","visualizaciones"])assert.match(script,new RegExp(term));
 });
 
 test("retired profanity course remains absent from every visible product surface",()=>{
@@ -111,9 +121,11 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 
 test("mobile-first styles keep the social feed compact and safe",()=>{
   assert.match(style,/env\(safe-area-inset-bottom\)/);
-  assert.match(style,/@media\(max-width:760px\)/);
+  assert.match(style,/@media\(max-width:820px\)/);
   assert.match(style,/@media\(max-width:560px\)/);
   assert.match(style,/\.nalvi-community-profile-editor/);
+  assert.match(style,/\.nalvi-community-profile-cover/);
+  assert.match(style,/\.nalvi-community-feed-tabs/);
   assert.match(style,/grid-template-columns:minmax\(0,1fr\)/);
 });
 
@@ -121,7 +133,7 @@ test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-4/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-6/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-6/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-9/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-9/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
 });
