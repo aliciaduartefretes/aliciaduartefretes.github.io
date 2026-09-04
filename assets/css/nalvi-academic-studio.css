@@ -11,6 +11,19 @@
 .nalvi-academic-entry-card input{width:100%;min-width:0;min-height:46px;border:2px solid #ddd5ed;border-radius:13px;padding:10px 12px;background:#fff;color:inherit;font:inherit}
 .nalvi-academic-pin-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .nalvi-academic-pin-row input{font-size:20px;font-weight:900;letter-spacing:.16em;text-align:center}
+.nalvi-academic-pin-row.class-code input{font-size:17px;letter-spacing:.08em}
+.nalvi-academic-live-entry{display:grid;gap:9px;margin-top:17px;padding-top:15px;border-top:1px solid #e4deee}
+.nalvi-academic-live-entry>b{color:#4f4661;font-size:13px}
+.nalvi-student-class-section{margin:22px 0;padding:20px;border:2px solid var(--gesa-border,#e5dfed);border-radius:24px;background:#fff}
+.nalvi-student-class-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.nalvi-student-class{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;border:1px solid #e4deee;border-radius:17px;background:#faf9fd}
+.nalvi-student-class>span{font-size:25px}.nalvi-student-class h4{margin:0 0 4px}.nalvi-student-class p{margin:0;color:var(--muted,#6d667d);font-size:13px}
+.nalvi-academic-quick-start{margin:18px 0;padding:20px;border:2px solid var(--gesa-border,#e5dfed);border-radius:24px;background:linear-gradient(145deg,#fff,#f6f3ff)}
+.nalvi-academic-quick-start .gesa-section-head{margin-top:0}
+.nalvi-academic-quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.nalvi-academic-quick-grid button{display:grid;grid-template-rows:auto auto 1fr;gap:7px;min-width:0;min-height:145px;padding:16px;border:1px solid #ded6ee;border-radius:18px;background:#fff;color:#2d2640;text-align:left;cursor:pointer;box-shadow:0 4px 0 #eeeaf6;transition:transform .16s ease,border-color .16s ease}
+.nalvi-academic-quick-grid button:hover,.nalvi-academic-quick-grid button:focus-visible{transform:translateY(-2px);border-color:#7655d6;outline:3px solid #7655d622}
+.nalvi-academic-quick-grid span{font-size:29px}.nalvi-academic-quick-grid b{font-size:15px;line-height:1.2}.nalvi-academic-quick-grid small{color:var(--muted,#6d667d);line-height:1.35}
 .nalvi-academic-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .nalvi-academic-tools .gesa-card{min-width:0}
 .nalvi-academic-tools .gesa-card>h3{margin-top:10px}
@@ -24,6 +37,8 @@
 
 @media(max-width:760px){
   .nalvi-academic-entry,.nalvi-academic-tools-grid{grid-template-columns:minmax(0,1fr)}
+  .nalvi-student-class-list{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .nalvi-academic-entry-card{grid-template-columns:48px minmax(0,1fr);padding:17px}
   .nalvi-academic-entry-icon{width:48px;height:48px;border-radius:15px;font-size:23px}
   .nalvi-academic-entry-card h3{font-size:19px}
@@ -32,4 +47,9 @@
   .nalvi-academic-entry-card{grid-template-columns:minmax(0,1fr)}
   .nalvi-academic-pin-row{grid-template-columns:minmax(0,1fr)}
   .nalvi-academic-pin-row button{width:100%}
+  .nalvi-academic-quick-start{padding:15px}
+  .nalvi-academic-quick-grid{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-quick-grid button{min-height:0}
+  .nalvi-student-class{grid-template-columns:auto minmax(0,1fr)}
+  .nalvi-student-class button{grid-column:1/-1;width:100%}
 }

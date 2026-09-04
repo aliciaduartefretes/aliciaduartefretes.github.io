@@ -235,17 +235,45 @@ test("index loads the protected service and new social experience",()=>{
   assert.doesNotMatch(index,/firebase-storage\.js|storageRef,uploadBytes|getDownloadURL,deleteObject/);
 });
 
-test("academic management is self-service and reuses the protected groups, tasks and live PIN",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-2"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-2/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-1/);
+test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-3"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Abrir la ruleta","Actividad con PIN","Ver el avance"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-3/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-2/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
+  assert.match(academicStyle,/\.nalvi-academic-quick-grid/);
+  assert.match(academicStyle,/@media\(max-width:430px\)/);
   assert.match(firestoreRules,/match \/academicActivities\/\{activityId\}/);
   assert.match(firestoreRules,/isOwnSelfInstitution/);
   assert.match(firestoreRules,/ownsSelfInstitution/);
   assert.match(firestoreRules,/memberId == request\.resource\.data\.get\('institutionId', ''\) \+ '__' \+ request\.auth\.uid/);
+});
+
+test("academic login intent returns to management instead of bouncing to home",()=>{
+  assert.match(academicScript,/nalviAcademicIntent\.v1/);
+  assert.match(academicScript,/requestLogin\("teacher"\)/);
+  assert.match(academicScript,/rememberIntent\("openDashboard"\)/);
+  assert.match(academicScript,/restorePendingIntent\("role"\)/);
+  assert.match(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="institutions"\}/);
+  assert.doesNotMatch(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="home"/);
+  assert.match(index,/if\(!window\.canAccessInstitutional&&location\.hash==="#institutional"\)show\("institutions",true\)/);
+});
+
+test("class and live codes normalize predictably and preserve separate flows",()=>{
+  const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){}},Date,JSON,Error,TypeError,String,Math,Set,Promise,setTimeout,clearTimeout,setInterval,clearInterval});
+  vm.runInContext(academicScript,context);
+  const api=context.window.NALVI_ACADEMIC_STUDIO;
+  assert.equal(api.normalizeClassCode(" gcaabc123 "),"GCA-ABC123");
+  assert.equal(api.normalizeClassCode("gca-xy12z9"),"GCA-XY12Z9");
+  assert.equal(api.normalizeLivePin("12 34-56x"),"123456");
+  assert.match(academicScript,/where\("studentEmail","==",email\)/);
+  assert.match(academicScript,/\^GCA-\[A-Z0-9\]\{6\}\$/);
+});
+
+test("academic studio stays text-only while uploads would require paid storage",()=>{
+  assert.doesNotMatch(academicScript,/type="file"|uploadBytes|getDownloadURL|firebase-storage|storageRef/);
+  assert.match(academicScript,/Prepara actividades de texto/);
 });
 
 test("listening practice expands to every authorized human recording without exposing internal metadata",()=>{

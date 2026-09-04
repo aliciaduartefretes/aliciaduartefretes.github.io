@@ -473,7 +473,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-1">
 <link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-14">
-<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-1">
+<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-2">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1"></head>
 <body aria-busy="true"><div id="nalviBoot" class="nalvi-boot" role="status" aria-live="polite" aria-label="Cargando NALVI"><div class="nalvi-boot-card"><strong>NALVI</strong><span class="nalvi-boot-mark" aria-hidden="true"><i></i><i></i><i></i></span><small id="nalviBootCopy">Preparando tu experiencia…</small></div></div>
@@ -1909,7 +1909,7 @@ $("#reactionSoundToggle").onclick=()=>{reactionSoundOn=!reactionSoundOn;localSto
 const LOCATION_KEY="guaraniAliLocationV3";
 function captureLearningLocation(view){return{view:view||views.find(x=>!$("#"+x)?.classList.contains("hide"))||"home",lang,unit,phase,step,policeUnit,policeStep,policePhase,medicalUnit,medicalStep,medicalPhase,kidWorld,kidMission,kidStep,kidMapSelected,scrollY:Math.round(window.scrollY||0)}}
 function rememberLearningLocation(view,replaceHistory=true){let place=captureLearningLocation(view);localStorage.setItem(LOCATION_KEY,JSON.stringify(place));if(replaceHistory)history.replaceState(place,"","#"+place.view);return place}
-function show(id,push=false){if(id==="institutional"&&!window.canAccessInstitutional){id="home";showToast("Esta área es privada para profesores autorizados.")}views.forEach(x=>{let el=$("#"+x);if(el)el.classList.toggle("hide",x!==id)});let navTarget=["course","lesson","policeCourse","policeLesson","medicalCourse","medicalLesson","kidsCourse","kidsGame"].includes(id)?"catalog":id;document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.go===navTarget));if(id==="sounds")renderSoundResults($("#soundSearch")?.value||"");if(id==="institutional")window.loadInstitutional?.();let place=captureLearningLocation(id);localStorage.setItem(LOCATION_KEY,JSON.stringify(place));if(push)history.pushState(place,"","#"+id);else history.replaceState(place,"","#"+id);setTimeout(()=>enhancePronunciations($("#"+id)||document),0)}
+function show(id,push=false){if(id==="institutional"&&!window.canAccessInstitutional){id="institutions"}views.forEach(x=>{let el=$("#"+x);if(el)el.classList.toggle("hide",x!==id)});let navTarget=["course","lesson","policeCourse","policeLesson","medicalCourse","medicalLesson","kidsCourse","kidsGame"].includes(id)?"catalog":id;document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.go===navTarget));if(id==="sounds")renderSoundResults($("#soundSearch")?.value||"");if(id==="institutional")window.loadInstitutional?.();let place=captureLearningLocation(id);localStorage.setItem(LOCATION_KEY,JSON.stringify(place));if(push)history.pushState(place,"","#"+id);else history.replaceState(place,"","#"+id);setTimeout(()=>enhancePronunciations($("#"+id)||document),0)}
 function save(){localStorage.setItem("guaraniAliPro",JSON.stringify(state));$("#xp").textContent=state.xp;$("#lives").textContent=state.lives;window.syncCourseProgress?.({...state,lang})}
 function title(i){return lang==="es"?U[i].title:translations[lang][i]}
 function desc(i){return lang==="es"?descriptions.es[i]:(DESCRIPTIONS_I18N[lang]||descriptions.en)[i]}
@@ -2613,7 +2613,7 @@ onAuthStateChanged(auth,async user=>{
  admin=isAdministrator(user);if(admin)grantImmediateAdministratorAccess(user);if(currentInstitutionRole==="admin"&&!admin)currentInstitutionRole="student";
  document.body.dataset.userRole=currentInstitutionRole;window.canAccessInstitutional=admin||currentInstitutionRole==="teacher";document.querySelectorAll(".staff-entry").forEach(element=>element.classList.toggle("visible",window.canAccessInstitutional));
  let adminTab=document.querySelector("#adminTab"),adminPane=document.querySelector("#adminPane"),notAdmin=!admin;adminTab?.classList.toggle("role-hidden",notAdmin);if(adminTab){adminTab.hidden=notAdmin;adminTab.style.display=notAdmin?"none":"";adminTab.setAttribute("aria-hidden",String(notAdmin))}if(adminPane){adminPane.hidden=notAdmin;adminPane.inert=notAdmin;adminPane.classList.toggle("hide",notAdmin);adminPane.style.display=notAdmin?"none":"";adminPane.setAttribute("aria-hidden",String(notAdmin))}
- if(!window.canAccessInstitutional&&location.hash==="#institutional")show("home",true);if(!user){await loadStudentClasses(thisAuthVersion);return}
+ if(!window.canAccessInstitutional&&location.hash==="#institutional")show("institutions",true);if(!user){await loadStudentClasses(thisAuthVersion);return}
  await loadStudentClasses(thisAuthVersion);if(!sameAccount())return;if(location.hash==="#institutional")window.loadInstitutional?.();
  try{let ref=doc(db,"users",user.uid),snap=await getDoc(ref);if(!sameAccount())return;if(snap.exists()){applyingCloud=true;window.applySyncedProgress?.(snap.data());applyingCloud=false}}catch(error){applyingCloud=false;if(!sameAccount())return;console.error("No se pudo leer el progreso",error)}
  try{if(sameAccount())await writeProgress(window.getCourseSnapshot?.()||{})}catch(error){console.error("No se pudo guardar el progreso",error)}
@@ -7340,6 +7340,6 @@ try{
 <script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-9"></script>
 <script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-14"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-1"></script>
-<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-2"></script>
+<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-3"></script>
 </body>
 </html>

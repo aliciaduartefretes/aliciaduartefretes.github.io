@@ -1,6 +1,6 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
 import assert from "node:assert/strict";
-import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +22,7 @@ try{
   const anonymous=testEnv.authenticatedContext("anonymous",{name:"Invitado",firebase:{sign_in_provider:"anonymous"}}).firestore();
   const alicia=testEnv.authenticatedContext("alicia",token("Alicia Duarte","alicia@example.com","https://example.com/alicia.jpg")).firestore();
   const marcelo=testEnv.authenticatedContext("marcelo",token("Marcelo Benítez","marcelo@example.com")).firestore();
+  const sofia=testEnv.authenticatedContext("sofia",token("Sofía Vera","sofia@example.com")).firestore();
   const post=doc(alicia,"communityPosts","welcome");
 
   await assertSucceeds(getDoc(doc(guest,"communityPosts","welcome")));
@@ -87,6 +88,20 @@ try{
   const selfMembership=doc(alicia,"institutionMembers","self__alicia__alicia");
   await assertSucceeds(setDoc(selfMembership,{institutionId:"self__alicia",uid:"alicia",claimedUid:"alicia",email:"alicia@example.com",name:"Alicia Duarte",role:"institution_manager",active:true,selfService:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(marcelo,"institutionMembers","self__alicia__marcelo"),{institutionId:"self__alicia",uid:"marcelo",claimedUid:"marcelo",email:"marcelo@example.com",name:"Marcelo",role:"institution_manager",active:true,selfService:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  const classRef=doc(alicia,"groups","class-1");
+  await assertSucceeds(setDoc(classRef,{name:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",teacherId:"alicia",teacherEmail:"alicia@example.com",teacherName:"Alicia Duarte",studentEmails:[],code:"GCA-ABC123",status:"active",archived:false,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(setDoc(doc(alicia,"courseAccess","code__GCA-ABC123"),{type:"group_invite",code:"GCA-ABC123",groupId:"class-1",groupName:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",teacherId:"alicia",teacherEmail:"alicia@example.com",active:true,createdAt:serverTimestamp()}));
+  await assertSucceeds(getDoc(doc(marcelo,"courseAccess","code__GCA-ABC123")));
+  await assertSucceeds(setDoc(doc(marcelo,"enrollments","class-1__marcelo@example.com"),{groupId:"class-1",groupName:"Guaraní inicial",courseId:"general",institutionId:"self__alicia",studentId:"marcelo",studentEmail:"marcelo@example.com",teacherId:"alicia",teacherEmail:"alicia@example.com",inviteCode:"GCA-ABC123",active:true,joinedByCode:true,updatedAt:serverTimestamp()}));
+  await assertSucceeds(getDocs(query(collection(marcelo,"enrollments"),where("studentEmail","==","marcelo@example.com"))));
+  await assertFails(getDocs(query(collection(sofia,"enrollments"),where("studentEmail","==","marcelo@example.com"))));
+  await assertSucceeds(getDoc(doc(marcelo,"groups","class-1")));
+  await assertFails(getDoc(doc(sofia,"groups","class-1")));
+  await assertFails(getDoc(doc(sofia,"enrollments","class-1__marcelo@example.com")));
+  const progress=doc(marcelo,"progress","marcelo__general");
+  await assertSucceeds(setDoc(progress,{type:"course",courseId:"general",studentId:"marcelo",studentEmail:"marcelo@example.com",institutionId:"self__alicia",groupId:"class-1",percent:25,attempts:3,accuracy:80,updatedAt:serverTimestamp()}));
+  await assertSucceeds(getDoc(doc(alicia,"progress","marcelo__general")));
+  await assertFails(getDoc(doc(sofia,"progress","marcelo__general")));
   const wheel=doc(alicia,"academicActivities","wheel-1");
   await assertSucceeds(setDoc(wheel,{institutionId:"self__alicia",ownerUid:"alicia",activityType:"wheel",title:"Ruleta de verbos",content:"Aha\nReho\nOho",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(marcelo,"academicActivities","foreign"),{institutionId:"self__alicia",ownerUid:"marcelo",activityType:"wheel",title:"Ruleta ajena",content:"A\nB",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
