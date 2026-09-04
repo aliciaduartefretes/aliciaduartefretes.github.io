@@ -1,13 +1,21 @@
-// PROPUESTA NO ACTIVA. No desplegar hasta completar la prueba de escritura real.
-// Insertar dentro de /databases/{database}/documents, inmediatamente antes del
-// catch-all `match /{document=**}` de firestore-PASO-6.rules.
-//
-// Comunidad abierta significa: cualquier cuenta autenticada de NALVI puede leer
-// y participar. Los visitantes sin sesión no pueden leer ni escribir.
+// PROPUESTA NO ACTIVA. Esta sección se inserta antes del cierre fail-closed.
+// Cualquier visitante puede leer la Comunidad. Solo una cuenta real de NALVI
+// (no una sesión anónima) puede publicar, responder, reaccionar o registrar vista.
+
+function isCommunityMember() {
+  return signedIn()
+    && request.auth.token.firebase.sign_in_provider != 'anonymous';
+}
+
+function communityName() {
+  return isCommunityMember()
+    ? request.auth.token.get('name', '')
+    : '';
+}
 
 function validCommunityCategory(value) {
   return value is string
-    && value in ['announcements', 'questions', 'community', 'resources'];
+    && value in ['announcements', 'questions', 'community', 'learning', 'resources'];
 }
 
 function validCommunityText(value, maximum) {
@@ -15,83 +23,100 @@ function validCommunityText(value, maximum) {
 }
 
 match /communityPosts/{postId} {
-  allow get, list: if signedIn();
+  allow get, list: if true;
 
-  allow create: if signedIn()
+  allow create: if isCommunityMember()
     && request.resource.data.keys().hasOnly([
-      'authorId', 'body', 'category', 'pinned', 'createdAt', 'updatedAt',
-      'courseId', 'lessonId', 'assignmentId', 'groupId'
+      'authorId', 'authorName', 'body', 'category', 'pinned', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.keys().hasAll([
-      'authorId', 'body', 'category', 'pinned', 'createdAt', 'updatedAt'
+      'authorId', 'authorName', 'body', 'category', 'pinned', 'createdAt', 'updatedAt'
     ])
     && request.resource.data.authorId == request.auth.uid
+    && validCommunityText(request.resource.data.authorName, 80)
+    && request.resource.data.authorName == communityName()
     && validCommunityText(request.resource.data.body, 700)
     && validCommunityCategory(request.resource.data.category)
+    && (
+      request.resource.data.category != 'announcements'
+      || isPlatformAdmin()
+    )
     && request.resource.data.pinned == false
     && request.resource.data.createdAt == request.time
-    && request.resource.data.updatedAt == request.time
-    && request.resource.data.get('courseId', '') is string
-    && request.resource.data.get('lessonId', '') is string
-    && request.resource.data.get('assignmentId', '') is string
-    && request.resource.data.get('groupId', '') is string;
+    && request.resource.data.updatedAt == request.time;
 
-  allow update: if signedIn()
+  allow update: if isCommunityMember()
     && resource.data.authorId == request.auth.uid
     && request.resource.data.authorId == resource.data.authorId
+    && request.resource.data.authorName == resource.data.authorName
     && request.resource.data.createdAt == resource.data.createdAt
     && request.resource.data.pinned == resource.data.pinned
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-      'body', 'category', 'updatedAt', 'courseId', 'lessonId',
-      'assignmentId', 'groupId'
+      'body', 'category', 'updatedAt'
     ])
     && validCommunityText(request.resource.data.body, 700)
     && validCommunityCategory(request.resource.data.category)
-    && request.resource.data.updatedAt == request.time
-    && request.resource.data.get('courseId', '') is string
-    && request.resource.data.get('lessonId', '') is string
-    && request.resource.data.get('assignmentId', '') is string
-    && request.resource.data.get('groupId', '') is string;
+    && request.resource.data.category != 'announcements'
+    && request.resource.data.updatedAt == request.time;
 
-  allow delete: if signedIn()
+  allow delete: if isCommunityMember()
     && resource.data.authorId == request.auth.uid;
+  allow delete: if isPlatformAdmin();
 
   match /comments/{commentId} {
-    allow get, list: if signedIn();
-    allow create: if signedIn()
+    allow get, list: if true;
+    allow create: if isCommunityMember()
       && request.resource.data.keys().hasOnly([
-        'authorId', 'body', 'parentCommentId', 'createdAt', 'updatedAt'
+        'authorId', 'authorName', 'body', 'parentCommentId', 'createdAt', 'updatedAt'
       ])
       && request.resource.data.keys().hasAll([
-        'authorId', 'body', 'createdAt', 'updatedAt'
+        'authorId', 'authorName', 'body', 'parentCommentId', 'createdAt', 'updatedAt'
       ])
       && request.resource.data.authorId == request.auth.uid
+      && validCommunityText(request.resource.data.authorName, 80)
+      && request.resource.data.authorName == communityName()
       && validCommunityText(request.resource.data.body, 500)
-      && request.resource.data.get('parentCommentId', '') is string
+      && request.resource.data.parentCommentId is string
+      && request.resource.data.parentCommentId.size() <= 120
       && request.resource.data.createdAt == request.time
       && request.resource.data.updatedAt == request.time;
-    allow update: if signedIn()
+    allow update: if isCommunityMember()
       && resource.data.authorId == request.auth.uid
       && request.resource.data.authorId == resource.data.authorId
+      && request.resource.data.authorName == resource.data.authorName
+      && request.resource.data.parentCommentId == resource.data.parentCommentId
       && request.resource.data.createdAt == resource.data.createdAt
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         'body', 'updatedAt'
       ])
       && validCommunityText(request.resource.data.body, 500)
       && request.resource.data.updatedAt == request.time;
-    allow delete: if signedIn()
+    allow delete: if isCommunityMember()
       && resource.data.authorId == request.auth.uid;
+    allow delete: if isPlatformAdmin();
   }
 
   match /reactions/{userId} {
-    allow get, list: if signedIn();
-    allow create, update: if signedIn()
+    allow get, list: if true;
+    allow create: if isCommunityMember()
       && userId == request.auth.uid
-      && request.resource.data.keys().hasOnly(['authorId', 'type', 'updatedAt'])
-      && request.resource.data.keys().hasAll(['authorId', 'type', 'updatedAt'])
-      && request.resource.data.authorId == request.auth.uid
-      && request.resource.data.type in ['like']
-      && request.resource.data.updatedAt == request.time;
-    allow delete: if signedIn() && userId == request.auth.uid;
+      && request.resource.data.keys().hasOnly(['type', 'createdAt'])
+      && request.resource.data.keys().hasAll(['type', 'createdAt'])
+      && request.resource.data.type == 'like'
+      && request.resource.data.createdAt == request.time;
+    allow update: if false;
+    allow delete: if isCommunityMember() && userId == request.auth.uid;
+    allow delete: if isPlatformAdmin();
+  }
+
+  match /views/{userId} {
+    allow get, list: if true;
+    allow create: if isCommunityMember()
+      && userId == request.auth.uid
+      && request.resource.data.keys().hasOnly(['createdAt'])
+      && request.resource.data.keys().hasAll(['createdAt'])
+      && request.resource.data.createdAt == request.time;
+    allow update: if false;
+    allow delete: if isPlatformAdmin();
   }
 }

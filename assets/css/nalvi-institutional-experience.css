@@ -55,6 +55,7 @@
 .nalvi-community-avatar-me{background:linear-gradient(135deg,#126b50,#26a67d)}
 .nalvi-community-author strong,.nalvi-community-author small{display:block}
 .nalvi-community-author small{margin-top:3px;color:var(--institutional-muted)}
+.nalvi-community-level{display:inline-flex;align-items:center;margin-top:5px;color:#74531a;font-size:11px;font-weight:900}
 .nalvi-community-badge,.nalvi-community-link{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900}
 .nalvi-community-badge{background:#fff0d6;color:#7b520e}
 .nalvi-community-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -67,7 +68,12 @@
 .nalvi-community-action{min-height:36px;border:0;border-radius:999px;background:transparent;padding:7px 10px;color:#696176;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
 .nalvi-community-action:hover{background:var(--institutional-purple-soft);color:var(--institutional-purple-dark)}
 .nalvi-community-action.active{background:#fce9ee;color:#a13b57}
+.nalvi-community-views{cursor:default}
 .nalvi-community-share{margin-left:auto;font-size:17px}
+.nalvi-community-comment-form{display:flex;gap:8px;margin-top:12px;padding:11px;border-radius:16px;background:#f7f5fb}
+.nalvi-community-comment-form input{min-width:0;flex:1;border:1px solid var(--institutional-line);border-radius:999px;padding:10px 13px;background:#fff;color:var(--institutional-ink);font:inherit}
+.nalvi-community-comment-form button{min-height:40px}
+.nalvi-community-empty{padding:36px 20px;text-align:center;color:var(--institutional-muted)}
 .nalvi-community-status{min-height:20px;margin-top:7px;color:#835b12;font-size:13px;font-weight:800}
 .nalvi-institutional-primary,.nalvi-institutional-secondary{min-height:44px;border-radius:999px;padding:10px 17px;font:inherit;font-weight:900;cursor:pointer}
 .nalvi-institutional-primary{border:0;background:var(--institutional-purple);color:#fff}
@@ -76,6 +82,12 @@
 .nalvi-community-sidebar{display:grid;gap:14px;position:sticky;top:160px}
 .nalvi-social-card,.nalvi-institutional-card{border:1px solid var(--institutional-line);border-radius:22px;background:#fff;padding:18px;box-shadow:0 7px 20px rgba(53,39,92,.06)}
 .nalvi-social-card h3,.nalvi-institutional-card h3,.nalvi-institutional-card h4{margin:0 0 8px}
+.nalvi-reward-card{overflow:hidden;background:linear-gradient(145deg,#fff9e8,#fff 62%)}
+.nalvi-reward-card p{margin:6px 0 14px;color:var(--institutional-muted);font-size:13px;line-height:1.5}
+.nalvi-reward-icon{display:grid;width:42px;height:42px;place-items:center;margin-bottom:10px;border-radius:14px;background:#fff0bd;font-size:23px}
+.nalvi-reward-leader{display:grid;grid-template-columns:42px minmax(0,1fr);gap:9px;align-items:center;padding-top:12px;border-top:1px solid #eee2bd}
+.nalvi-reward-leader strong,.nalvi-reward-leader small{display:block}
+.nalvi-reward-leader small{margin-top:3px;color:#74531a;font-size:11px}
 .nalvi-social-card>button{width:100%;display:grid;gap:3px;padding:12px 2px;border:0;border-top:1px solid #eee9f5;background:transparent;text-align:left;color:var(--institutional-ink);font:inherit;cursor:pointer}
 .nalvi-social-card>button:first-of-type{margin-top:10px}
 .nalvi-social-card>button small,.nalvi-social-card>button span{color:var(--institutional-muted);font-size:11px}
@@ -132,6 +144,7 @@
   .nalvi-community-actions{gap:2px}
   .nalvi-community-action{padding-inline:8px}
   .nalvi-community-action[data-community-reply] span{display:none}
+  .nalvi-community-comment-form{align-items:stretch;flex-direction:column}
   .nalvi-community-sidebar{grid-template-columns:1fr}
   .nalvi-community-composer-actions,.nalvi-institutional-section-head{align-items:stretch;flex-direction:column}
   .nalvi-institutional-kpis{grid-template-columns:1fr}

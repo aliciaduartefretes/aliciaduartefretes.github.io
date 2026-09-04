@@ -14,7 +14,7 @@ const index=await readFile(indexUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community experience keeps learning areas secondary to the social feed",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-4"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-5"/);
   assert.match(script,/const root=\$\("#institutionalExperience"\)/);
   assert.doesNotMatch(script,/#nalviInstitutionalExperience/);
   for(const label of ["Comunidad","Aula","En vivo","Miembros","Gestión"])assert.match(script,new RegExp(label));
@@ -38,11 +38,11 @@ test("community writes remain protected by the disabled production flag",()=>{
   assert.match(service,/WRITES_ENABLED=window\.GCA_FEATURES\?\.communityWrites===true\|\|window\.NALVI_FEATURES\?\.communityWrites===true/);
   assert.match(index,/communityWrites:false/);
   assert.match(service,/COMMUNITY_WRITES_DISABLED/);
-  assert.doesNotMatch(script+service,/\b(?:addDoc|setDoc|updateDoc|deleteDoc|firebase|firestore|fetch)\s*\(/i);
+  for(const operation of ["subscribePosts","createRemotePost","toggleReaction","createComment","recordView"])assert.match(service,new RegExp(operation));
   assert.doesNotMatch(script+service,/localStorage|sessionStorage/);
 });
 
-test("demo service previews locally and rejects remote publication",()=>{
+test("demo service previews locally and rejects remote publication",async()=>{
   const context=vm.createContext({window:{},Date,JSON,Error,TypeError,String,Math});
   vm.runInContext(service,context);
   const api=context.window.NALVI_COMMUNITY_SERVICE;
@@ -50,11 +50,12 @@ test("demo service previews locally and rejects remote publication",()=>{
   const preview=api.previewPost("  Un avance del grupo  ");
   assert.equal(preview.body,"Un avance del grupo");
   assert.equal(api.listPosts().length,before+1);
-  assert.throws(()=>api.createRemotePost(),/COMMUNITY_WRITES_DISABLED/);
+  await assert.rejects(api.createRemotePost("Un aporte"),/COMMUNITY_WRITES_DISABLED/);
+  await assert.rejects(api.createComment("post","Una respuesta"),/COMMUNITY_WRITES_DISABLED/);
 });
 
-test("social feed includes posts, replies, reactions, sharing, topics and learning links",()=>{
-  for(const marker of ["data-community-comment","data-community-reply","data-community-like","data-community-share","#Mba’éichapaReime","#VerbosEnPresente","Verbos en presente"])assert.match(script+service,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+test("social feed includes replies, likes, views, rewards, sharing and learning links",()=>{
+  for(const marker of ["data-community-comment","data-community-like","data-community-share","recordView","contributionScore","rewardFor","visualizaciones","#Mba’éichapaReime","#VerbosEnPresente","Verbos en presente"])assert.match(script+service,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
 });
 
 test("directory contains no emails or unnecessary personal data",()=>{
@@ -64,6 +65,12 @@ test("directory contains no emails or unnecessary personal data",()=>{
 
 test("community copy is available in all six UI languages",()=>{
   for(const locale of ["es","en","pt","fr","it","de"])assert.match(script,new RegExp(`\\b${locale}:\\{nav:`));
+  for(const locale of ["es","en","pt","fr","it","de"])assert.match(script,new RegExp(`\\b${locale}:\\{views:`));
+});
+
+test("retired profanity course is absent from every visible product surface",()=>{
+  assert.doesNotMatch(index,/id="(?:homeRude|rudeCourse|rudeLesson|rudeVideos|rudeList)"/);
+  assert.doesNotMatch(index,/Groserías en guaraní|GUARANÍ SIN FILTRO|Swear words in Guaraní|Palavrões em guarani|Gros mots en guarani|Parolacce in guaraní|Schimpfwörter auf Guaraní/);
 });
 
 test("legacy language repaint cannot relabel Community as Videos",()=>{
@@ -87,7 +94,8 @@ test("mobile-first styles include safe areas and compact layouts",()=>{
 test("index loads the protected service and experience with explicit flags",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:false/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-2/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-4/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-4/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-3/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-5/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-5/);
+  for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
 });

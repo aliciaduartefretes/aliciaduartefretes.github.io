@@ -18,6 +18,8 @@
     "test:activity-catalog": "node --test activity-catalog/tests/*.test.mjs",
     "test:answer-evaluator": "node --test assessment/tests/*.test.mjs",
     "test:institutional": "node --test institutional/tests/*.test.mjs",
+    "generate:community-rules": "node scripts/generate-community-firestore-rules.mjs",
+    "test:community-rules": "firebase emulators:exec --only firestore --project demo-nalvi-community-open --config firebase/firebase.json \"node --test firebase/community-open-proposal.test.mjs\"",
     "validate:pre-8c-audio": "node scripts/validate-pre8c-audio.mjs",
     "verify:pre-8c-qa": "node scripts/verify-pre-8c-qa.mjs"
   },

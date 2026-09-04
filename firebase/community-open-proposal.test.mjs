@@ -1,62 +1,56 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const activeRules = readFileSync(join(here, "firestore-PASO-6.rules"), "utf8");
-const proposal = readFileSync(join(here, "proposals/community-open-authenticated.rules.snippet"), "utf8");
-const catchAll = "    // Cualquier colección no declarada queda denegada.";
-const proposedRules = activeRules.replace(catchAll, `${proposal}\n\n${catchAll}`);
+const here=dirname(fileURLToPath(import.meta.url));
+const proposedRules=readFileSync(join(here,"proposals/REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules"),"utf8");
+const testEnv=await initializeTestEnvironment({projectId:"demo-nalvi-community-open",firestore:{rules:proposedRules}});
 
-if (proposedRules === activeRules) throw new Error("No se pudo montar la propuesta antes del cierre fail-closed");
+const token=(name,email)=>({name,email,firebase:{sign_in_provider:"google.com"}});
+const postData=(authorId,authorName,body="Mba’éichapa reime?")=>({authorId,authorName,body,category:"community",pinned:false,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
 
-const testEnv = await initializeTestEnvironment({
-  projectId: "demo-nalvi-community-open",
-  firestore: { rules: proposedRules }
-});
+try{
+  const guest=testEnv.unauthenticatedContext().firestore();
+  const anonymous=testEnv.authenticatedContext("anonymous",{name:"Invitado",firebase:{sign_in_provider:"anonymous"}}).firestore();
+  const alicia=testEnv.authenticatedContext("alicia",token("Alicia Duarte","alicia@example.com")).firestore();
+  const marcelo=testEnv.authenticatedContext("marcelo",token("Marcelo Benítez","marcelo@example.com")).firestore();
+  const post=doc(alicia,"communityPosts","welcome");
 
-try {
-  const guest = testEnv.unauthenticatedContext().firestore();
-  const alicia = testEnv.authenticatedContext("alicia", { email: "alicia@example.com" }).firestore();
-  const marcelo = testEnv.authenticatedContext("marcelo", { email: "marcelo@example.com" }).firestore();
-  const post = doc(alicia, "communityPosts", "welcome");
+  await assertSucceeds(getDoc(doc(guest,"communityPosts","welcome")));
+  await assertSucceeds(getDocs(collection(guest,"communityPosts")));
+  await assertFails(setDoc(doc(guest,"communityPosts","guest-post"),postData("guest","Visitante")));
+  await assertFails(setDoc(doc(anonymous,"communityPosts","anonymous-post"),postData("anonymous","Invitado")));
 
-  await assertFails(getDoc(doc(guest, "communityPosts", "welcome")));
-  await assertSucceeds(setDoc(post, {
-    authorId: "alicia",
-    body: "Mba’éichapa reime?",
-    category: "community",
-    pinned: false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  }));
-  await assertSucceeds(getDoc(doc(marcelo, "communityPosts", "welcome")));
-  await assertFails(updateDoc(doc(marcelo, "communityPosts", "welcome"), {
-    body: "Cambio de otra persona",
-    updatedAt: serverTimestamp()
-  }));
-  await assertFails(deleteDoc(doc(marcelo, "communityPosts", "welcome")));
-  await assertSucceeds(setDoc(doc(marcelo, "communityPosts", "welcome", "comments", "reply-1"), {
-    authorId: "marcelo",
-    body: "Aime porã, ¿ha nde?",
-    parentCommentId: "",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  }));
-  await assertFails(setDoc(doc(marcelo, "communityPosts", "welcome", "reactions", "alicia"), {
-    authorId: "alicia",
-    type: "like",
-    updatedAt: serverTimestamp()
-  }));
-  await assertSucceeds(setDoc(doc(marcelo, "communityPosts", "welcome", "reactions", "marcelo"), {
-    authorId: "marcelo",
-    type: "like",
-    updatedAt: serverTimestamp()
-  }));
+  await assertSucceeds(setDoc(post,postData("alicia","Alicia Duarte")));
+  await assertSucceeds(getDoc(doc(marcelo,"communityPosts","welcome")));
+  await assertFails(setDoc(doc(marcelo,"communityPosts","spoofed"),postData("marcelo","Otra persona")));
+  await assertFails(setDoc(doc(marcelo,"communityPosts","announcement"),{...postData("marcelo","Marcelo Benítez"),category:"announcements"}));
+  await assertFails(updateDoc(doc(marcelo,"communityPosts","welcome"),{body:"Cambio de otra persona",updatedAt:serverTimestamp()}));
+  await assertFails(deleteDoc(doc(marcelo,"communityPosts","welcome")));
+  await assertSucceeds(updateDoc(post,{body:"Conversación actualizada",category:"questions",updatedAt:serverTimestamp()}));
+
+  const reply=doc(marcelo,"communityPosts","welcome","comments","reply-1");
+  await assertSucceeds(setDoc(reply,{authorId:"marcelo",authorName:"Marcelo Benítez",body:"Aime porã, ¿ha nde?",parentCommentId:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(getDocs(collection(guest,"communityPosts","welcome","comments")));
+  await assertFails(setDoc(doc(alicia,"communityPosts","welcome","comments","spoofed"),{authorId:"alicia",authorName:"Marcelo Benítez",body:"Nombre falso",parentCommentId:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+
+  const reaction=doc(marcelo,"communityPosts","welcome","reactions","marcelo");
+  await assertSucceeds(setDoc(reaction,{type:"like",createdAt:serverTimestamp()}));
+  await assertSucceeds(getDocs(collection(guest,"communityPosts","welcome","reactions")));
+  await assertFails(setDoc(doc(marcelo,"communityPosts","welcome","reactions","alicia"),{type:"like",createdAt:serverTimestamp()}));
+  await assertFails(updateDoc(reaction,{createdAt:serverTimestamp()}));
+  await assertSucceeds(deleteDoc(reaction));
+
+  const view=doc(alicia,"communityPosts","welcome","views","alicia");
+  await assertSucceeds(setDoc(view,{createdAt:serverTimestamp()}));
+  await assertSucceeds(getDocs(collection(guest,"communityPosts","welcome","views")));
+  await assertFails(updateDoc(view,{createdAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(marcelo,"communityPosts","welcome","views","alicia"),{createdAt:serverTimestamp()}));
+
   await assertSucceeds(deleteDoc(post));
-  console.log("PASS comunidad abierta para cuentas autenticadas y escritura limitada al autor");
-} finally {
+  console.log("PASS comunidad pública, participación autenticada y métricas únicas protegidas");
+}finally{
   await testEnv.cleanup();
 }
