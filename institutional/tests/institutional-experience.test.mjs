@@ -260,6 +260,10 @@ test("academic login intent returns to management instead of bouncing to home",(
   assert.match(index,/if\(!window\.canAccessInstitutional&&location\.hash==="#institutional"\)show\("institutions",true\)/);
 });
 
+test("legacy academic loader delegates after the secure management shell is installed",()=>{
+  assert.match(index,/document\.querySelector\("#institutional\[data-gesa-installed='true'\]"\)\)return window\.GESA\?\.loadAcademic\?\.\(\)/);
+});
+
 test("class and live codes normalize predictably and preserve separate flows",()=>{
   const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){}},Date,JSON,Error,TypeError,String,Math,Set,Promise,setTimeout,clearTimeout,setInterval,clearInterval});
   vm.runInContext(academicScript,context);
