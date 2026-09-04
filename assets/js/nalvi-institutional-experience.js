@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-EXPERIENCE-9";
+  const VERSION="NALVI-COMMUNITY-EXPERIENCE-10";
   const COMMUNITY_WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const COMMUNITY_ICON='<svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="7" r="3"></circle><circle cx="5.5" cy="9" r="2.25"></circle><circle cx="18.5" cy="9" r="2.25"></circle><path d="M6.5 19v-1.4a5.5 5.5 0 0 1 11 0V19"></path><path d="M1.8 18v-.8a3.8 3.8 0 0 1 4.3-3.8M22.2 18v-.8a3.8 3.8 0 0 0-4.3-3.8"></path></svg>';
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -18,10 +18,20 @@
     de:{nav:"Community",headline:"Ñañe’ẽ guaraníme",headlineSub:"Sprechen und schreiben wir auf Guaraní.",feeds:["Für dich","Folge ich"],categories:["Opaite · Für dich","Marandu · Ankündigungen","Porandu · Fragen","Ñemoarandu · Lernen","Pytyvõrã · Ressourcen"],composer:"Ehai guaraníme…",composerHelp:"Schreibe auf Guaraní, Deutsch oder kombiniere beides.",publishNative:"Emoherakuã",publish:"Posten",signIn:"Zum Posten anmelden",pending:"Beiträge bleiben geschützt, während die Sicherheitsregeln aktualisiert werden.",pinned:"Angeheftet",like:"Gefällt mir",comment:"Kommentieren",share:"Teilen",remove:"Löschen",confirmRemove:"Diesen Beitrag löschen?",follow:"Folgen",following:"Gefolgt",followers:"Follower",suggestions:"Wem du folgen könntest",topics:"Heutige Themen",profile:"Mein Profil",profileTitle:"Profil",editProfile:"Profil bearbeiten",back:"Zurück",bio:"Erzähle der Community kurz etwas über dich",save:"Speichern",photoNote:"Das Foto stammt aus deinem Google-Konto.",reply:"Ehai nde mbohovái…",replyHelp:"Antworten",views:"Aufrufe",points:"Punkte",posts:"Beiträge",likes:"Likes",replies:"Antworten",reward:"Belohnung",rewardText:"Deine Beiträge und die Gespräche, die du anstößt, erhöhen dein Level.",levels:["Erster Beitrag","Aktive Stimme","Unterstützer/in","Vorbild"],published:"Veröffentlicht.",saved:"Profil gespeichert.",error:"Die Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.",empty:"Ñañepyrũ. Das Gespräch beginnt mit dir.",followingEmpty:"Von den Personen, denen du folgst, gibt es noch keine Beiträge.",profileEmpty:"Diese Person hat noch nichts veröffentlicht."}
   };
 
+  const SAFETY_COPY={
+    es:{menu:"Más acciones",hide:"Ocultar esta cuenta",hidden:"Esta cuenta quedó oculta durante esta sesión.",report:"Reportar",reportLead:"Reporte de una publicación de Comunidad NALVI",slowDown:"Esperá unos segundos antes de volver a publicar."},
+    en:{menu:"More actions",hide:"Hide this account",hidden:"This account is hidden for this session.",report:"Report",reportLead:"Report about a NALVI Community post",slowDown:"Wait a few seconds before posting again."},
+    pt:{menu:"Mais ações",hide:"Ocultar esta conta",hidden:"Esta conta foi ocultada nesta sessão.",report:"Denunciar",reportLead:"Denúncia de uma publicação da Comunidade NALVI",slowDown:"Aguarde alguns segundos antes de publicar novamente."},
+    fr:{menu:"Plus d’actions",hide:"Masquer ce compte",hidden:"Ce compte est masqué pour cette session.",report:"Signaler",reportLead:"Signalement d’une publication de la Communauté NALVI",slowDown:"Attendez quelques secondes avant de publier à nouveau."},
+    it:{menu:"Altre azioni",hide:"Nascondi questo account",hidden:"Questo account è nascosto per questa sessione.",report:"Segnala",reportLead:"Segnalazione di un post della Community NALVI",slowDown:"Attendi qualche secondo prima di pubblicare di nuovo."},
+    de:{menu:"Weitere Aktionen",hide:"Dieses Konto ausblenden",hidden:"Dieses Konto ist für diese Sitzung ausgeblendet.",report:"Melden",reportLead:"Meldung zu einem Beitrag der NALVI Community",slowDown:"Warte einige Sekunden, bevor du erneut postest."}
+  };
+
   const communityService=()=>window.NALVI_COMMUNITY_SERVICE;
-  const state={category:0,feed:"forYou",posts:communityService()?.listPosts?.()||[],commentingPostId:"",profileId:"",profileEditing:false,profileBioOverride:"",unsubscribe:null};
+  const state={category:0,feed:"forYou",posts:communityService()?.listPosts?.()||[],commentingPostId:"",menuPostId:"",profileId:"",profileEditing:false,profileBioOverride:"",hiddenAuthorIds:new Set(),unsubscribe:null};
   function locale(){const raw=$("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es";const value=String(raw).toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]}
+  function safetyCopy(){return SAFETY_COPY[locale()]}
   function user(){return window.GCA_FIREBASE_LIVE?.auth?.currentUser||null}
   function signedIn(){return !!user()&&!user().isAnonymous}
   function currentUid(){return signedIn()?user().uid:""}
@@ -32,7 +42,7 @@
     return `<span class="nalvi-community-avatar ${className}">${escapeHtml(person?.initials||initials(person?.author||person?.displayName))}</span>`;
   }
   function authorKey(subject){return typeof subject==="string"?subject:String(subject?.authorId||subject?.author||"")}
-  function contributionScore(subject){const key=authorKey(subject),ownPosts=state.posts.filter(item=>authorKey(item)===key),followers=Math.max(0,...ownPosts.map(item=>Number(item.followers)||0));return ownPosts.reduce((score,item)=>score+10+(Number(item.likes)||0)*2+(Number(item.comments)||0)*3,0)+followers*5}
+  function contributionScore(subject){const key=authorKey(subject),ownPosts=state.posts.filter(item=>authorKey(item)===key),followers=Math.max(0,...ownPosts.map(item=>Number(item.followers)||0)),participation=ownPosts.length?12+Math.min(Math.max(0,ownPosts.length-1),4)*2:0;return participation+ownPosts.reduce((score,item)=>score+(Number(item.likes)||0)*4+(Number(item.comments)||0)*6,0)+followers*5}
   function rewardFor(points){const labels=copy().levels;if(points>=200)return{label:labels[3],icon:"🏆",target:200};if(points>=100)return{label:labels[2],icon:"🌟",target:200};if(points>=35)return{label:labels[1],icon:"✨",target:100};return{label:labels[0],icon:"🌱",target:35}}
   function linksMarkup(post){return (Array.isArray(post.links)?post.links:[]).map(link=>`<span class="nalvi-community-link">${escapeHtml(link)}</span>`).join("")}
   function commentMarkup(post){const items=Array.isArray(post.commentItems)&&post.commentItems.length?post.commentItems:post.commentPreview?[post.commentPreview]:[];return items.map(item=>`<div class="nalvi-community-comment"><strong>${escapeHtml(item.author)}</strong> ${escapeHtml(item.text)}</div>`).join("")}
@@ -49,14 +59,15 @@
     return `<button type="button" class="nalvi-community-author-link${compact?" compact":""}" data-community-profile="${escapeHtml(id)}">${avatarMarkup(person)}<span><strong>${escapeHtml(person?.author||person?.displayName||"Miembro NALVI")}</strong>${compact?"":`<small>${escapeHtml(person?.handle||"")} ${person?.date?`· ${escapeHtml(person.date)}`:""}</small>`}</span></button>`;
   }
   function postMarkup(post){
-    const c=copy(),own=!!post.remote&&currentUid()===post.authorId,canFollow=!!post.remote&&signedIn()&&!own,commenting=state.commentingPostId===post.id;
-    const personActions=`<div class="nalvi-community-person-actions">${post.pinned?`<span class="nalvi-community-badge">📌 ${escapeHtml(c.pinned)}</span>`:""}${canFollow?`<button type="button" data-community-follow class="nalvi-community-follow${post.following?" active":""}">${escapeHtml(post.following?c.following:c.follow)}</button>`:""}${own?`<button type="button" data-community-delete class="nalvi-community-menu" aria-label="${escapeHtml(c.remove)}">•••</button>`:""}</div>`;
+    const c=copy(),s=safetyCopy(),own=!!post.remote&&currentUid()===post.authorId,canFollow=!!post.remote&&signedIn()&&!own,commenting=state.commentingPostId===post.id,menuOpen=state.menuPostId===post.id,canManage=!!post.remote&&signedIn();
+    const menu=canManage?`<div class="nalvi-community-menu-wrap"><button type="button" data-community-menu-toggle class="nalvi-community-menu" aria-label="${escapeHtml(s.menu)}" aria-expanded="${menuOpen}">•••</button>${menuOpen?`<div class="nalvi-community-post-menu" role="menu">${own?`<button type="button" data-community-delete role="menuitem">${escapeHtml(c.remove)}</button>`:`<button type="button" data-community-hide role="menuitem">${escapeHtml(s.hide)}</button><button type="button" data-community-report role="menuitem">${escapeHtml(s.report)}</button>`}</div>`:""}</div>`:"";
+    const personActions=`<div class="nalvi-community-person-actions">${post.pinned?`<span class="nalvi-community-badge">📌 ${escapeHtml(c.pinned)}</span>`:""}${canFollow?`<button type="button" data-community-follow class="nalvi-community-follow${post.following?" active":""}">${escapeHtml(post.following?c.following:c.follow)}</button>`:""}${menu}</div>`;
     const comments=commentMarkup(post);
     return `<article class="nalvi-community-post${post.pinned?" pinned":""}" data-post-id="${escapeHtml(post.id)}"><div class="nalvi-community-author">${profileButton(post)}${personActions}</div><p class="nalvi-community-body">${escapeHtml(post.body)}</p><div class="nalvi-community-links">${linksMarkup(post)}</div>${comments?`<div class="nalvi-community-comments">${comments}</div>`:""}<div class="nalvi-community-actions"><button class="nalvi-community-action${post.likedByCurrent?" active":""}" type="button" data-community-like aria-label="${escapeHtml(c.like)}">${post.likedByCurrent?"♥":"♡"} <span>${Number(post.likes)||0}</span></button><button class="nalvi-community-action" type="button" data-community-comment aria-label="${escapeHtml(c.comment)}">💬 <span>${Number(post.comments)||0}</span></button><span class="nalvi-community-action nalvi-community-views" aria-label="${escapeHtml(c.views)}">◉ <span>${Number(post.views)||0}</span></span><button class="nalvi-community-action nalvi-community-share" type="button" data-community-share aria-label="${escapeHtml(c.share)}">↗</button></div>${commenting?`<form class="nalvi-community-comment-form" data-community-comment-form><input maxlength="500" placeholder="${escapeHtml(c.reply)}" aria-label="${escapeHtml(c.reply)}"><button class="nalvi-community-primary nalvi-community-bilingual-action" type="submit"><span>Mbohovái</span><small>${escapeHtml(c.replyHelp)}</small></button></form>`:""}</article>`;
   }
   function visiblePosts(){
-    if(state.profileId)return state.posts.filter(post=>post.authorId===state.profileId);
-    let visible=state.feed==="following"?state.posts.filter(post=>post.following||post.authorId===currentUid()):state.posts;
+    if(state.profileId)return state.posts.filter(post=>post.authorId===state.profileId&&!state.hiddenAuthorIds.has(post.authorId));
+    let visible=(state.feed==="following"?state.posts.filter(post=>post.following||post.authorId===currentUid()):state.posts).filter(post=>!state.hiddenAuthorIds.has(post.authorId));
     if(state.category)visible=visible.filter(post=>post.category===state.category);
     return visible;
   }
@@ -78,16 +89,24 @@
     const active=await communityService()?.toggleFollow?.(userId);
     state.posts=state.posts.map(post=>post.authorId===userId?{...post,following:active,followers:Math.max(0,(Number(post.followers)||0)+(active?1:-1))}:post);render();
   }
+  function openReport(post){
+    if(!signedIn()){window.courseGoogleLogin?.();return}
+    if(typeof show!=="function"){setStatus(copy().error,true);return}
+    show("suggestions",true);setTimeout(()=>{const type=$("#ideaType"),idea=$("#idea"),name=$("#visitorName");if(type)type.value="Problema técnico";if(name&&!name.value)name.value=user()?.displayName||"";if(idea){idea.value=`${safetyCopy().reportLead}\nID: ${post.id}\nAutor: ${post.author}\nMotivo: `;idea.focus()}},0);
+  }
   function bindFeedActions(root){
-    $$('[data-community-like],[data-community-comment],[data-community-share],[data-community-follow],[data-community-delete]',root).forEach(button=>button.addEventListener("click",async()=>{
+    $$('[data-community-like],[data-community-comment],[data-community-share],[data-community-follow],[data-community-menu-toggle],[data-community-delete],[data-community-hide],[data-community-report]',root).forEach(button=>button.addEventListener("click",async()=>{
       const card=button.closest("[data-post-id]"),post=state.posts.find(item=>item.id===card?.dataset.postId),c=copy();
       if(button.hasAttribute("data-community-share")){const url=`${location.origin}${location.pathname}#institutionalExperience`;try{if(navigator.share)await navigator.share({title:"Comunidad NALVI",text:post?.body||"",url});else await navigator.clipboard?.writeText(url)}catch{}return}
+      if(button.hasAttribute("data-community-menu-toggle")){state.menuPostId=state.menuPostId===post?.id?"":post?.id||"";renderFeed();return}
+      if(button.hasAttribute("data-community-hide")){if(post?.authorId)state.hiddenAuthorIds.add(post.authorId);state.menuPostId="";state.profileId="";render();setStatus(safetyCopy().hidden);return}
+      if(button.hasAttribute("data-community-report")){state.menuPostId="";openReport(post);return}
       if(!requireInteractive(post))return;button.disabled=true;
       try{
         if(button.hasAttribute("data-community-like")){const active=await communityService()?.toggleReaction?.(post.id);post.likedByCurrent=active;post.likes=Math.max(0,(Number(post.likes)||0)+(active?1:-1));renderFeed()}
         else if(button.hasAttribute("data-community-comment")){state.commentingPostId=state.commentingPostId===post.id?"":post.id;renderFeed();setTimeout(()=>$('[data-community-comment-form] input',root)?.focus(),0)}
         else if(button.hasAttribute("data-community-follow"))await toggleFollow(post.authorId);
-        else if(button.hasAttribute("data-community-delete")&&confirm(c.confirmRemove)){await communityService()?.deleteRemotePost?.(post.id);setStatus(c.remove)}
+        else if(button.hasAttribute("data-community-delete")&&confirm(c.confirmRemove)){await communityService()?.deleteRemotePost?.(post.id);state.menuPostId="";setStatus(c.remove)}
       }catch{setStatus(c.error,true)}finally{button.disabled=false}
     }));
     $$('[data-community-comment-form]',root).forEach(form=>form.addEventListener("submit",async event=>{
@@ -106,7 +125,7 @@
     return `<div class="nalvi-community-layout"><main class="nalvi-community-stream"><div class="nalvi-community-profile-cover"></div><section class="nalvi-community-profile-head"><div class="nalvi-community-profile-avatar">${avatarMarkup(person)}</div><div class="nalvi-community-profile-actions"><button type="button" class="nalvi-community-back" id="nalviCommunityBack">← ${escapeHtml(c.back)}</button>${own?`<button type="button" class="nalvi-community-follow" id="nalviCommunityEditProfile">${escapeHtml(c.editProfile)}</button>`:signedIn()?`<button type="button" class="nalvi-community-follow${person.following?" active":""}" data-profile-follow="${escapeHtml(person.authorId)}">${escapeHtml(person.following?c.following:c.follow)}</button>`:""}</div><h2>${escapeHtml(person.author||person.displayName)}</h2><small>${escapeHtml(person.handle||"")}</small>${person.bio?`<p>${escapeHtml(person.bio)}</p>`:""}<div class="nalvi-community-profile-stats"><span><strong>${posts.length}</strong> ${escapeHtml(c.posts)}</span><span><strong>${Number(person.followers)||0}</strong> ${escapeHtml(c.followers)}</span><span><strong>${likes}</strong> ${escapeHtml(c.likes)}</span><span><strong>${replies}</strong> ${escapeHtml(c.replies)}</span></div><div class="nalvi-community-profile-reward"><span>${reward.icon}</span><div><strong>${escapeHtml(reward.label)}</strong><small>${points} ${escapeHtml(c.points)} · ${escapeHtml(c.rewardText)}</small><i><b style="width:${progress}%"></b></i></div></div><div class="nalvi-community-status" id="nalviCommunityStatus" role="status"></div></section>${profileEditor(person)}<div class="nalvi-community-profile-posts-title">${escapeHtml(c.posts)}</div><div class="nalvi-community-feed" id="nalviCommunityFeed"></div></main><aside class="nalvi-community-sidebar">${discoverySidebar()}</aside></div>`;
   }
   function peopleSuggestions(){
-    const c=copy(),seen=new Set(),people=state.posts.filter(post=>post.authorId&&post.authorId!==currentUid()&&!seen.has(post.authorId)&&seen.add(post.authorId)).sort((a,b)=>(Number(b.followers)||0)-(Number(a.followers)||0)).slice(0,4);if(!people.length)return "";
+    const c=copy(),seen=new Set(),people=state.posts.filter(post=>post.authorId&&post.authorId!==currentUid()&&!state.hiddenAuthorIds.has(post.authorId)&&!seen.has(post.authorId)&&seen.add(post.authorId)).sort((a,b)=>(Number(b.followers)||0)-(Number(a.followers)||0)).slice(0,4);if(!people.length)return "";
     return `<article class="nalvi-social-card nalvi-people-card"><h3>${escapeHtml(c.suggestions)}</h3>${people.map(person=>`<div class="nalvi-community-person">${profileButton(person,true)}${person.remote&&signedIn()?`<button type="button" data-suggested-follow="${escapeHtml(person.authorId)}">${escapeHtml(person.following?c.following:c.follow)}</button>`:""}</div>`).join("")}</article>`;
   }
   function topicsCard(){const c=copy();return `<article class="nalvi-social-card nalvi-topic-card"><h3>${escapeHtml(c.topics)}</h3><button type="button" data-community-topic="0"><strong>#Guaraní</strong><small>Ñañe’ẽ guaraníme</small></button><button type="button" data-community-topic="2"><strong>#Porandu</strong><small>${escapeHtml(c.categories[2])}</small></button><button type="button" data-community-topic="3"><strong>#Ñe’ẽtéva</strong><small>${escapeHtml(c.categories[3])}</small></button></article>`}
@@ -140,7 +159,7 @@
     $("#nalviCommunityPublish",root)?.addEventListener("click",async event=>{
       if(!signedIn()){window.courseGoogleLogin?.();return}const input=$("#nalviCommunityComposer",root),body=input?.value.trim();if(!body){input?.focus();return}
       if(!COMMUNITY_WRITES_ENABLED){setStatus(copy().pending,true);return}const button=event.currentTarget;button.disabled=true;setStatus("");
-      try{const categories=communityService()?.CATEGORY_KEYS||["community"];await communityService()?.createRemotePost?.(body,categories[state.category]||"community");input.value="";setStatus(copy().published)}catch{setStatus(copy().error,true)}finally{button.disabled=false}
+      try{const categories=communityService()?.CATEGORY_KEYS||["community"];await communityService()?.createRemotePost?.(body,categories[state.category]||"community");input.value="";setStatus(copy().published)}catch(error){setStatus(/COOLDOWN|DUPLICATE/.test(String(error?.message||error))?safetyCopy().slowDown:copy().error,true)}finally{button.disabled=false}
     });
   }
   function open(push=true){try{if(typeof views!=="undefined"&&!views.includes("institutionalExperience"))views.push("institutionalExperience")}catch{}if(typeof show==="function")show("institutionalExperience",push);else $("#institutionalExperience")?.classList.remove("hide");setTimeout(()=>window.scrollTo({top:0,behavior:"auto"}),0)}

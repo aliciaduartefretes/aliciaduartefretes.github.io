@@ -14,7 +14,7 @@ const index=await readFile(indexUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-9"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-10"/);
   assert.match(script,/class="nalvi-community-layout"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -69,19 +69,24 @@ test("enabled service writes only through authenticated Firestore operations",as
   vm.runInContext(service,context);
   const api=context.window.NALVI_COMMUNITY_SERVICE;
   assert.equal(await api.createRemotePost("Un aporte"),"post-1");
+  await assert.rejects(api.createRemotePost("Otro aporte"),/COMMUNITY_POST_COOLDOWN/);
   assert.equal(await api.toggleFollow("otra"),true);
   assert.equal(await api.saveOwnProfile("Docente de guaraní"),true);
   assert.equal(await api.deleteRemotePost("post-1"),true);
   assert.ok(writes.some(item=>item.kind==="add"&&item.path.endsWith("communityPosts")));
+  assert.ok(writes.some(item=>item.kind==="set"&&item.path.endsWith("communityProfiles/alicia")));
   assert.ok(writes.some(item=>item.kind==="set"&&item.path.endsWith("communityProfiles/otra/followers/alicia")));
   assert.ok(writes.some(item=>item.kind==="delete"&&item.path.endsWith("communityPosts/post-1")));
 });
 
 test("feed supports discovery, likes, replies, views, sharing, own deletion and followers",()=>{
-  for(const marker of ["data-community-feed","data-community-topic","data-community-comment","data-community-like","data-community-share","data-community-delete","data-community-follow","recordView","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
+  for(const marker of ["data-community-feed","data-community-topic","data-community-comment","data-community-like","data-community-share","data-community-delete","data-community-follow","data-community-hide","data-community-report","recordView","followers","confirmRemove"])assert.match(script+service,new RegExp(marker));
   assert.match(script,/currentUid\(\)===post\.authorId/);
   assert.match(script,/state\.feed==="following"/);
   assert.match(service,/communityProfiles/);
+  assert.match(service,/POST_COOLDOWN_MS=15000/);
+  assert.match(service,/COMMUNITY_DUPLICATE_POST/);
+  assert.match(script,/show\("suggestions",true\)/);
 });
 
 test("profiles are navigable, show their posts and keep rewards out of the fixed sidebar",()=>{
@@ -93,6 +98,8 @@ test("profiles are navigable, show their posts and keep rewards out of the fixed
   assert.match(script,/function profilePanel\(\)/);
   assert.match(script,/nalvi-community-profile-reward/);
   assert.match(script,/contributionScore/);
+  assert.match(script,/hiddenAuthorIds:new Set\(\)/);
+  assert.match(service,/if\(user&&!user\.isAnonymous\)await ensureOwnProfile\(firebase\)/);
   const communityPanel=script.match(/function communityPanel\(\)[\s\S]*?function render\(\)/)?.[0]||"";
   assert.doesNotMatch(communityPanel,/nalvi-reward-card/);
   assert.match(service,/safePhoto\(user\.photoURL\)/);
@@ -121,19 +128,23 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 
 test("mobile-first styles keep the social feed compact and safe",()=>{
   assert.match(style,/env\(safe-area-inset-bottom\)/);
-  assert.match(style,/@media\(max-width:820px\)/);
-  assert.match(style,/@media\(max-width:560px\)/);
+  assert.match(style,/@media\(max-width:900px\)/);
+  assert.match(style,/@media\(max-width:640px\)/);
+  assert.match(style,/@media\(max-width:420px\)/);
   assert.match(style,/\.nalvi-community-profile-editor/);
   assert.match(style,/\.nalvi-community-profile-cover/);
   assert.match(style,/\.nalvi-community-feed-tabs/);
+  assert.match(style,/overflow-x:clip/);
+  assert.match(style,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(style,/border:0!important;outline:0!important;box-shadow:none!important/);
   assert.match(style,/grid-template-columns:minmax\(0,1fr\)/);
 });
 
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-4/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-9/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-9/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-5/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-10/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-10/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
 });

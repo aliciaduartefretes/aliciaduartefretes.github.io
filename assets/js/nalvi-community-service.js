@@ -2,9 +2,11 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-4";
+  const VERSION="NALVI-COMMUNITY-SERVICE-5";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning","resources"]);
+  const POST_COOLDOWN_MS=15000;
+  const COMMENT_COOLDOWN_MS=5000;
   const initialPosts=[
     {id:"announcement",category:1,categoryKey:"announcements",initials:"NA",author:"Equipo NALVI",authorId:"nalvi",handle:"@nalvi",date:"Hoy",pinned:true,body:"¡Bienvenidos a Comunidad NALVI! Un lugar para preguntar, compartir y encontrarnos alrededor del guaraní.",links:["Comunidad"],likes:18,comments:4,views:126,followers:84,commentPreview:{author:"Ana P.",text:"Qué lindo contar con este punto de encuentro."}},
     {id:"question",category:2,categoryKey:"questions",initials:"MF",author:"María F.",authorId:"mariaf",handle:"@mariaf",date:"Hace 2 h",body:"¿Dónde puedo volver a practicar los verbos de la unidad?",links:["Verbos en presente"],likes:7,comments:3,views:54,followers:16,commentPreview:{author:"Ana P.",text:"Está dentro de Guaraní general, en la sección de verbos."}},
@@ -21,6 +23,8 @@
   const countResult=result=>result.status==="fulfilled"?Number(result.value.data().count)||0:0;
   let posts=initialPosts.map(post=>clone(post));
   let remoteUnsubscribe=null;
+  let lastPostAt=0;
+  let lastCommentAt=0;
   const viewedThisSession=new Set();
 
   function listPosts(){return clone(posts)}
@@ -121,8 +125,11 @@
     requireEnabled();const text=normalizeBody(body);if(!text)throw new TypeError("EMPTY_COMMUNITY_POST");
     const categoryKey=CATEGORY_KEYS.includes(category)&&category!=="announcements"?category:"community";
     const firebase=await firebaseReady(),user=currentUser(firebase),authorName=safeName(user.displayName);if(!authorName)throw new TypeError("COMMUNITY_DISPLAY_NAME_REQUIRED");
+    const now=Date.now();if(now-lastPostAt<POST_COOLDOWN_MS)throw new Error("COMMUNITY_POST_COOLDOWN");
+    if(posts.some(post=>post.authorId===user.uid&&normalizeBody(post.body).toLocaleLowerCase()===text.toLocaleLowerCase()))throw new Error("COMMUNITY_DUPLICATE_POST");
     await ensureOwnProfile(firebase);
     const reference=await firebase.addDoc(firebase.collection(firebase.db,"communityPosts"),{authorId:user.uid,authorName,body:text,category:categoryKey,pinned:false,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+    lastPostAt=Date.now();
     return reference.id;
   }
   async function deleteRemotePost(postId){requireEnabled();const firebase=await firebaseReady();currentUser(firebase);await firebase.deleteDoc(firebase.doc(firebase.db,"communityPosts",String(postId)));return true}
@@ -134,9 +141,11 @@
   async function createComment(postId,body,parentCommentId=""){
     requireEnabled();const text=normalizeComment(body);if(!text)throw new TypeError("EMPTY_COMMUNITY_COMMENT");
     const firebase=await firebaseReady(),user=currentUser(firebase),authorName=safeName(user.displayName);if(!authorName)throw new TypeError("COMMUNITY_DISPLAY_NAME_REQUIRED");
+    if(Date.now()-lastCommentAt<COMMENT_COOLDOWN_MS)throw new Error("COMMUNITY_COMMENT_COOLDOWN");
     await ensureOwnProfile(firebase);
     const postRef=firebase.doc(firebase.db,"communityPosts",String(postId));
     const reference=await firebase.addDoc(firebase.collection(postRef,"comments"),{authorId:user.uid,authorName,body:text,parentCommentId:String(parentCommentId||"").slice(0,120),createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+    lastCommentAt=Date.now();
     return reference.id;
   }
   async function toggleFollow(userId){
