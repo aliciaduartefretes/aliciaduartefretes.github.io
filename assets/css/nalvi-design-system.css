@@ -143,6 +143,28 @@ html:not([data-nalvi-boot="booting"]) #nalviBoot,
   line-height: 1.15;
 }
 
+/* Los metadatos de los cursos dinámicos también ocupan una fila completa.
+   Sin esta regla, el grid los comprimía dentro de la columna del icono. */
+#catalog .course-card .gca-life-card-meta {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  align-self: start;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 !important;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--life-accent, var(--nalvi-primary-500)) 20%, var(--nalvi-border));
+  border-radius: var(--nalvi-radius-pill);
+  background: color-mix(in srgb, var(--life-accent, var(--nalvi-primary-500)) 7%, var(--nalvi-surface-raised));
+  color: var(--life-accent, var(--nalvi-primary-700));
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
 #catalog .course-card .btn {
   grid-column: 1 / -1;
   grid-row: 5;
