@@ -824,6 +824,17 @@ service cloud.firestore {
         && exists(communityProfilePath(data.participantIds[1]));
     }
 
+    function validConversationReadReceiptUpdate() {
+      let nextReadAt = request.resource.data.get('readAtBy', {});
+      let previousReadAt = resource.data.get('readAtBy', {});
+      return nextReadAt is map
+        && previousReadAt is map
+        && nextReadAt.size() <= 2
+        && nextReadAt.keys().hasOnly(request.resource.data.participantIds)
+        && nextReadAt.diff(previousReadAt).affectedKeys().hasOnly([request.auth.uid])
+        && nextReadAt.get(request.auth.uid, null) == request.time;
+    }
+
     match /communityConversations/{conversationId} {
       allow get: if isConversationParticipant(resource.data);
       allow list: if isCommunityMember()
@@ -834,23 +845,30 @@ service cloud.firestore {
           'participantIds', 'lastMessage', 'lastSenderId', 'createdAt', 'updatedAt'
         ])
         && request.resource.data.keys().hasAll([
-          'participantIds', 'lastMessage', 'lastSenderId', 'createdAt', 'updatedAt'
+          'participantIds', 'lastMessage', 'lastSenderId', 'updatedAt'
         ])
         && validCommunityText(request.resource.data.lastMessage, 500)
         && request.resource.data.lastSenderId == request.auth.uid
-        && request.resource.data.createdAt == request.time
+        && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time)
         && request.resource.data.updatedAt == request.time;
 
       allow update: if isConversationParticipant(resource.data)
         && validConversationParticipants(request.resource.data)
         && request.resource.data.participantIds == resource.data.participantIds
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'lastMessage', 'lastSenderId', 'updatedAt'
-        ])
-        && validCommunityText(request.resource.data.lastMessage, 500)
-        && request.resource.data.lastSenderId == request.auth.uid
-        && request.resource.data.updatedAt == request.time;
+        && (
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'lastMessage', 'lastSenderId', 'updatedAt'
+            ])
+            && validCommunityText(request.resource.data.lastMessage, 500)
+            && request.resource.data.lastSenderId == request.auth.uid
+            && request.resource.data.updatedAt == request.time
+          )
+          || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAtBy'])
+            && validConversationReadReceiptUpdate()
+          )
+        );
 
       allow delete: if isPlatformAdmin();
 

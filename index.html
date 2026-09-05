@@ -472,7 +472,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   @media(max-width:760px){.pro-course-overview{padding:18px 15px}.pro-overview-top{grid-template-columns:1fr}.pro-kpis{min-width:0;grid-template-columns:repeat(3,1fr)}.pro-kpi{padding:9px 5px}.pro-kpi b{font-size:15px}.pro-outcomes{grid-template-columns:1fr}.general-module-head{align-items:flex-start}.module-pro-badge{font-size:9px}}
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-2">
-<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-15">
+<link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-16">
 <link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-4">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
@@ -2501,10 +2501,10 @@ if(deferredAcademicRoute)history.replaceState(history.state||{},"","#"+deferredA
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signInAnonymously,signOut,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,getDocs,getCountFromServer,collection,query,where,orderBy,limit,onSnapshot,serverTimestamp,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,deleteDoc,getDocs,getCountFromServer,collection,query,where,orderBy,limit,onSnapshot,serverTimestamp,writeBatch}from"https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBuxfSFX3X_2B50KB7LtF_Dr83rNYKwe0g",authDomain:"guaraniconali.firebaseapp.com",projectId:"guaraniconali",databaseURL:"https://guaraniconali-default-rtdb.firebaseio.com",storageBucket:"guaraniconali.firebasestorage.app",messagingSenderId:"797059955101",appId:"1:797059955101:web:fff3c84069e822cefb5774",measurementId:"G-9TZF24KWHW"};
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});let activeUser=null,syncTimer=null,applyingCloud=false,analytics=null,analyticsModule=null,authSessionVersion=0;
-window.GCA_FIREBASE_LIVE={app,auth,db,doc,setDoc,addDoc,deleteDoc,getDoc,getDocs,getCountFromServer,collection,query,where,orderBy,limit,onSnapshot,serverTimestamp,writeBatch,signInAnonymously};
+window.GCA_FIREBASE_LIVE={app,auth,db,doc,setDoc,updateDoc,addDoc,deleteDoc,getDoc,getDocs,getCountFromServer,collection,query,where,orderBy,limit,onSnapshot,serverTimestamp,writeBatch,signInAnonymously};
 window.dispatchEvent(new CustomEvent("gca:firebase-live-ready"));
 window.enableCourseAnalytics=async()=>{if(!analyticsModule)analyticsModule=await import("https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js");if(!analytics)analytics=analyticsModule.getAnalytics(app);analyticsModule.setAnalyticsCollectionEnabled(analytics,true);window.courseAnalytics=(name,params={})=>analyticsModule.logEvent(analytics,name,params);window.courseAnalytics("analytics_consent",{choice:"accepted"})};
 window.disableCourseAnalytics=()=>{if(analytics&&analyticsModule)analyticsModule.setAnalyticsCollectionEnabled(analytics,false);window.courseAnalytics=null};
@@ -7379,8 +7379,8 @@ try{
   <script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-TUTOR-CLIENT-CATALOG-13"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-UI-2"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
-<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-11"></script>
-<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-16"></script>
+<script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-12"></script>
+<script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-17"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-1"></script>
 <script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-6"></script>
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>

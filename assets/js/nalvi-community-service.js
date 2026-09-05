@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-11";
+  const VERSION="NALVI-COMMUNITY-SERVICE-12";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
@@ -30,6 +30,7 @@
   let lastPostAt=0;
   let lastCommentAt=0;
   const viewedThisSession=new Set();
+  const followStateCheckedIds=new Set();
 
   function listPosts(){return clone(posts)}
   function listProfiles(){return clone([...profilesById.values()])}
@@ -148,6 +149,16 @@
     }).catch(error=>onError?.(error));
     return()=>{cancelled=true;profileUnsubscribe?.();profileUnsubscribe=null};
   }
+  async function hydrateFollowStates(userIds){
+    if(!WRITES_ENABLED)return[];
+    const firebase=await firebaseReady(),user=currentUser(firebase),targets=[...new Set((Array.isArray(userIds)?userIds:[]).map(value=>String(value||"")).filter(userId=>userId&&userId!==user.uid))].slice(0,12),unknown=targets.filter(userId=>!followStateCheckedIds.has(userId));
+    const settled=await Promise.allSettled(unknown.map(async userId=>{
+      const reference=firebase.doc(firebase.db,"communityProfiles",userId,"followers",user.uid),snapshot=await firebase.getDoc(reference),following=snapshot.exists()===true,previous=profilesById.get(userId)||{userId};
+      profilesById.set(userId,{...previous,following});followStateCheckedIds.add(userId);return{userId,following};
+    }));
+    settled.forEach(result=>{if(result.status==="rejected")console.warn("NALVI_COMMUNITY_FOLLOW_STATE",result.reason)});
+    return targets.map(userId=>({userId,following:profilesById.get(userId)?.following===true}));
+  }
   async function seedRegisteredProfiles(firebase,existingProfileIds){
     const user=firebase.auth?.currentUser;if(directorySeedAttempted||!user||user.isAnonymous||window.GESA_CONTEXT?.role!=="platform_admin")return 0;
     directorySeedAttempted=true;
@@ -179,7 +190,7 @@
       if(cancelled)return;const user=firebase.auth?.currentUser;if(!user||user.isAnonymous){onConversations([]);return}
       const inbox=firebase.query(firebase.collection(firebase.db,"communityConversations"),firebase.where("participantIds","array-contains",user.uid),firebase.limit(40));
       conversationUnsubscribe=firebase.onSnapshot(inbox,snapshot=>{
-        const next=snapshot.docs.map(item=>{const data=item.data()||{},participantIds=Array.isArray(data.participantIds)?data.participantIds.map(String):[];return{id:item.id,participantIds,otherUserId:participantIds.find(id=>id!==user.uid)||"",lastMessage:normalizeComment(data.lastMessage),lastSenderId:String(data.lastSenderId||""),updatedAt:conversationTime(data.updatedAt)}}).filter(item=>item.otherUserId).sort((a,b)=>b.updatedAt-a.updatedAt);
+        const next=snapshot.docs.map(item=>{const data=item.data()||{},participantIds=Array.isArray(data.participantIds)?data.participantIds.map(String):[],readAtBy=data.readAtBy&&typeof data.readAtBy==="object"?Object.fromEntries(participantIds.map(userId=>[userId,conversationTime(data.readAtBy[userId])]).filter(([,value])=>value>0)):{};return{id:item.id,participantIds,otherUserId:participantIds.find(id=>id!==user.uid)||"",lastMessage:normalizeComment(data.lastMessage),lastSenderId:String(data.lastSenderId||""),updatedAt:conversationTime(data.updatedAt),readAtBy}}).filter(item=>item.otherUserId).sort((a,b)=>b.updatedAt-a.updatedAt);
         onConversations(clone(next));
       },error=>onError?.(error));
     }).catch(error=>onError?.(error));
@@ -206,11 +217,14 @@
     if(!conversationId)throw new TypeError("COMMUNITY_INVALID_RECIPIENT");
     await ensureOwnProfile(firebase);
     const targetProfile=await firebase.getDoc(firebase.doc(firebase.db,"communityProfiles",targetId));if(!targetProfile.exists())throw new TypeError("COMMUNITY_PROFILE_NOT_FOUND");
-    const conversationRef=firebase.doc(firebase.db,"communityConversations",conversationId),conversationSnapshot=await firebase.getDoc(conversationRef),messageRef=firebase.doc(firebase.collection(conversationRef,"messages")),batch=firebase.writeBatch(firebase.db),timestamp=firebase.serverTimestamp(),summary={lastMessage:text,lastSenderId:user.uid,updatedAt:timestamp};
-    if(conversationSnapshot.exists())batch.set(conversationRef,summary,{merge:true});
-    else batch.set(conversationRef,{participantIds:[user.uid,targetId].sort(),createdAt:timestamp,...summary});
+    const conversationRef=firebase.doc(firebase.db,"communityConversations",conversationId),messageRef=firebase.doc(firebase.collection(conversationRef,"messages")),batch=firebase.writeBatch(firebase.db),timestamp=firebase.serverTimestamp(),summary={participantIds:[user.uid,targetId].sort(),lastMessage:text,lastSenderId:user.uid,updatedAt:timestamp};
+    batch.set(conversationRef,summary,{merge:true});
     batch.set(messageRef,{authorId:user.uid,body:text,createdAt:timestamp});
     await batch.commit();return conversationId;
+  }
+  async function markConversationRead(conversationId){
+    requireEnabled();const firebase=await firebaseReady(),user=currentUser(firebase),id=String(conversationId||"");if(!id)throw new TypeError("COMMUNITY_INVALID_CONVERSATION");
+    await firebase.updateDoc(firebase.doc(firebase.db,"communityConversations",id),{[`readAtBy.${user.uid}`]:firebase.serverTimestamp()});return true;
   }
   function subscribeNotifications(onNotifications,onError){
     if(typeof onNotifications!=="function")throw new TypeError("COMMUNITY_NOTIFICATION_SUBSCRIBER_REQUIRED");
@@ -277,8 +291,9 @@
     await ensureOwnProfile(firebase);
     const target=firebase.doc(firebase.db,"communityProfiles",targetId),targetSnapshot=await firebase.getDoc(target);if(!targetSnapshot.exists())throw new TypeError("COMMUNITY_PROFILE_NOT_FOUND");
     const reference=firebase.doc(target,"followers",user.uid),snapshot=await firebase.getDoc(reference);
-    if(snapshot.exists()){await firebase.deleteDoc(reference);return false}
-    await firebase.setDoc(reference,{createdAt:firebase.serverTimestamp()});return true;
+    const active=!snapshot.exists();
+    if(active)await firebase.setDoc(reference,{createdAt:firebase.serverTimestamp()});else await firebase.deleteDoc(reference);
+    profilesById.set(targetId,{...(profilesById.get(targetId)||{userId:targetId}),following:active});followStateCheckedIds.add(targetId);return active;
   }
   async function saveOwnProfile(displayName,bio){
     requireEnabled();const firebase=await firebaseReady(),user=currentUser(firebase),name=safeName(displayName);if(name.length<2)throw new TypeError("COMMUNITY_DISPLAY_NAME_REQUIRED");
@@ -294,5 +309,5 @@
     await firebase.setDoc(viewRef,{createdAt:firebase.serverTimestamp()});return true;
   }
 
-  window.NALVI_COMMUNITY_SERVICE=Object.freeze({VERSION,WRITES_ENABLED,CATEGORY_KEYS,listPosts,listProfiles,getProfile,previewPost,subscribePosts,subscribeProfiles,subscribeConversations,subscribeMessages,conversationIdFor,sendDirectMessage,subscribeNotifications,createRemotePost,deleteRemotePost,toggleReaction,createComment,toggleFollow,saveOwnProfile,recordView,resetDemo});
+  window.NALVI_COMMUNITY_SERVICE=Object.freeze({VERSION,WRITES_ENABLED,CATEGORY_KEYS,listPosts,listProfiles,getProfile,previewPost,subscribePosts,hydrateFollowStates,subscribeProfiles,subscribeConversations,subscribeMessages,conversationIdFor,sendDirectMessage,markConversationRead,subscribeNotifications,createRemotePost,deleteRemotePost,toggleReaction,createComment,toggleFollow,saveOwnProfile,recordView,resetDemo});
 })();
