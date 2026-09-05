@@ -25,7 +25,7 @@
 #institutional.nalvi-academic-dashboard .staff-hero .tag{display:none}
 #institutional.nalvi-academic-dashboard .staff-hero h2{margin:0;font-size:clamp(25px,3vw,34px)}
 #institutional.nalvi-academic-dashboard .staff-hero p{margin:5px 0 0;color:#70687d}
-#institutional.nalvi-academic-dashboard .shell.gesa-management>.gesa-management-toolbar{margin:10px 0 16px;padding:0 4px}
+#institutional.nalvi-academic-dashboard .shell.gesa-management>.gesa-management-toolbar{display:none}
 #institutional.nalvi-academic-dashboard #gesaRoleBadge,#institutional.nalvi-academic-dashboard #gesaPublicInstitutions,#institutional.nalvi-academic-dashboard .gesa-note.security{display:none!important}
 .nalvi-academic-workspace{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start;transition:grid-template-columns .18s ease}
 .nalvi-academic-workspace>.gesa-tabs.nalvi-academic-nav{grid-column:1;grid-row:1;position:sticky;top:92px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 120px);overflow:auto;margin:0;padding:8px;border:1px solid #e5dfef;border-radius:18px;background:#fff;box-shadow:0 8px 22px rgba(52,39,83,.06)}
@@ -37,6 +37,7 @@
 .gesa-tab.active .nalvi-academic-nav-icon{background:#ded4fa}
 .nalvi-academic-nav-copy{display:block;min-width:0}.nalvi-academic-nav-copy b{display:block;font-size:13px;line-height:1.2}.nalvi-academic-nav-copy small{display:none}
 .nalvi-academic-menu-toggle{display:grid;grid-template-columns:36px minmax(0,1fr);align-items:center;gap:10px;min-height:45px;margin-bottom:5px;padding:7px 10px;border:0;border-bottom:1px solid #eee9f5;background:transparent;color:#655b74;font:850 12px/1.2 inherit;text-align:left;cursor:pointer}.nalvi-academic-menu-toggle b{display:grid;place-items:center;width:36px;height:32px;font-size:19px}.nalvi-academic-menu-toggle:focus-visible{border-radius:10px;outline:3px solid #7655d633}
+.nalvi-academic-refresh{width:100%;margin-top:auto;border:0!important;background:#f8f6fb!important;color:#655b74!important;box-shadow:none!important}
 #institutional.nalvi-nav-collapsed .nalvi-academic-workspace{grid-template-columns:74px minmax(0,1fr)}
 #institutional.nalvi-nav-collapsed .nalvi-academic-nav-copy,#institutional.nalvi-nav-collapsed .nalvi-academic-menu-toggle span{display:none}
 #institutional.nalvi-nav-collapsed .gesa-tabs.nalvi-academic-nav .gesa-tab,#institutional.nalvi-nav-collapsed .nalvi-academic-menu-toggle{grid-template-columns:1fr;justify-items:center;padding:7px}
