@@ -1,6 +1,6 @@
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
 import assert from "node:assert/strict";
-import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -62,6 +62,25 @@ try{
   await assertFails(setDoc(doc(alicia,"communityProfiles","alicia","followers","alicia"),{createdAt:serverTimestamp()}));
   await assertFails(setDoc(doc(marcelo,"communityProfiles","alicia","followers","alicia"),{createdAt:serverTimestamp()}));
   await assertSucceeds(deleteDoc(follow));
+
+  const conversation=doc(alicia,"communityConversations","dm__alicia__marcelo");
+  const firstMessage=doc(alicia,"communityConversations","dm__alicia__marcelo","messages","message-1");
+  const firstBatch=writeBatch(alicia);
+  firstBatch.set(conversation,{participantIds:["alicia","marcelo"],lastMessage:"Mba’éichapa reime?",lastSenderId:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  firstBatch.set(firstMessage,{authorId:"alicia",body:"Mba’éichapa reime?",createdAt:serverTimestamp()});
+  await assertSucceeds(firstBatch.commit());
+  await assertSucceeds(getDoc(doc(marcelo,"communityConversations","dm__alicia__marcelo")));
+  await assertSucceeds(getDocs(query(collection(alicia,"communityConversations"),where("participantIds","array-contains","alicia"))));
+  await assertFails(getDoc(doc(sofia,"communityConversations","dm__alicia__marcelo")));
+  await assertSucceeds(getDocs(collection(marcelo,"communityConversations","dm__alicia__marcelo","messages")));
+  await assertFails(getDocs(collection(sofia,"communityConversations","dm__alicia__marcelo","messages")));
+  await assertFails(setDoc(doc(sofia,"communityConversations","dm__alicia__marcelo","messages","spoofed"),{authorId:"sofia",body:"Mensaje ajeno",createdAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(alicia,"communityConversations","leaky"),{participantIds:["alicia","marcelo"],participantEmails:["alicia@example.com"],lastMessage:"Dato privado",lastSenderId:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  const responseBatch=writeBatch(marcelo),response=doc(marcelo,"communityConversations","dm__alicia__marcelo","messages","message-2");
+  responseBatch.update(doc(marcelo,"communityConversations","dm__alicia__marcelo"),{lastMessage:"Aime porã, ¿ha nde?",lastSenderId:"marcelo",updatedAt:serverTimestamp()});
+  responseBatch.set(response,{authorId:"marcelo",body:"Aime porã, ¿ha nde?",createdAt:serverTimestamp()});
+  await assertSucceeds(responseBatch.commit());
+  await assertFails(updateDoc(doc(sofia,"communityConversations","dm__alicia__marcelo"),{lastMessage:"Interferencia",lastSenderId:"sofia",updatedAt:serverTimestamp()}));
 
   await assertSucceeds(setDoc(post,postData("alicia","Alicia Ñe’ẽ")));
   await assertFails(setDoc(doc(alicia,"communityPosts","resource"),{...postData("alicia","Alicia Ñe’ẽ","Material para practicar"),category:"resources"}));

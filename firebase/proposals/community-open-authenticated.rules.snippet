@@ -101,6 +101,77 @@ match /communityProfiles/{userId} {
   }
 }
 
+function isConversationParticipant(data) {
+  return isCommunityMember()
+    && data.get('participantIds', []) is list
+    && data.get('participantIds', []).size() == 2
+    && request.auth.uid in data.get('participantIds', []);
+}
+
+function validConversationParticipants(data) {
+  return isConversationParticipant(data)
+    && data.participantIds[0] is string
+    && data.participantIds[1] is string
+    && data.participantIds[0] != data.participantIds[1]
+    && exists(communityProfilePath(data.participantIds[0]))
+    && exists(communityProfilePath(data.participantIds[1]));
+}
+
+match /communityConversations/{conversationId} {
+  allow get: if isConversationParticipant(resource.data);
+  allow list: if isCommunityMember()
+    && request.auth.uid in resource.data.participantIds;
+
+  allow create: if validConversationParticipants(request.resource.data)
+    && request.resource.data.keys().hasOnly([
+      'participantIds', 'lastMessage', 'lastSenderId', 'createdAt', 'updatedAt'
+    ])
+    && request.resource.data.keys().hasAll([
+      'participantIds', 'lastMessage', 'lastSenderId', 'createdAt', 'updatedAt'
+    ])
+    && validCommunityText(request.resource.data.lastMessage, 500)
+    && request.resource.data.lastSenderId == request.auth.uid
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.updatedAt == request.time;
+
+  allow update: if isConversationParticipant(resource.data)
+    && validConversationParticipants(request.resource.data)
+    && request.resource.data.participantIds == resource.data.participantIds
+    && request.resource.data.createdAt == resource.data.createdAt
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+      'lastMessage', 'lastSenderId', 'updatedAt'
+    ])
+    && validCommunityText(request.resource.data.lastMessage, 500)
+    && request.resource.data.lastSenderId == request.auth.uid
+    && request.resource.data.updatedAt == request.time;
+
+  allow delete: if isPlatformAdmin();
+
+  match /messages/{messageId} {
+    allow get, list: if isConversationParticipant(
+      get(/databases/$(database)/documents/communityConversations/$(conversationId)).data
+    );
+
+    allow create: if isCommunityMember()
+      && isConversationParticipant(
+        getAfter(/databases/$(database)/documents/communityConversations/$(conversationId)).data
+      )
+      && request.resource.data.keys().hasOnly(['authorId', 'body', 'createdAt'])
+      && request.resource.data.keys().hasAll(['authorId', 'body', 'createdAt'])
+      && request.resource.data.authorId == request.auth.uid
+      && validCommunityText(request.resource.data.body, 500)
+      && request.resource.data.createdAt == request.time;
+
+    allow update: if false;
+    allow delete: if isCommunityMember()
+      && resource.data.authorId == request.auth.uid
+      && isConversationParticipant(
+        get(/databases/$(database)/documents/communityConversations/$(conversationId)).data
+      );
+    allow delete: if isPlatformAdmin();
+  }
+}
+
 match /communityPosts/{postId} {
   allow get, list: if true;
 
