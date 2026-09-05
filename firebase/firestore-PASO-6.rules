@@ -160,6 +160,21 @@ service cloud.firestore {
       return /databases/$(database)/documents/courseAccess/$('code__' + code);
     }
 
+    function institutionJoinPath(code) {
+      return /databases/$(database)/documents/institutionJoinCodes/$('code__' + code);
+    }
+
+    function hasValidInstitutionJoinCode(code, institutionId) {
+      return signedIn()
+        && code is string
+        && code.matches('^GCI-[A-Z0-9]{6}$')
+        && exists(institutionJoinPath(code))
+        && get(institutionJoinPath(code)).data.get('type', '') == 'institution_teacher_invite'
+        && get(institutionJoinPath(code)).data.get('code', '') == code
+        && get(institutionJoinPath(code)).data.get('institutionId', '') == institutionId
+        && get(institutionJoinPath(code)).data.get('active', false) == true;
+    }
+
     function isEnrolledIn(groupId) {
       return signedIn()
         && email() != ''
@@ -351,6 +366,52 @@ service cloud.firestore {
       allow delete: if isPlatformAdmin();
     }
 
+    match /institutionJoinCodes/{joinCodeId} {
+      allow get: if signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow list: if isPlatformAdmin()
+        || isInstitutionManager(resource.data.get('institutionId', ''));
+
+      allow create: if signedIn()
+        && joinCodeId == 'code__' + request.resource.data.get('code', '')
+        && request.resource.data.keys().hasOnly([
+          'type', 'code', 'institutionId', 'institutionName', 'active',
+          'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.get('type', '') == 'institution_teacher_invite'
+        && request.resource.data.get('code', '') is string
+        && request.resource.data.get('code', '').matches('^GCI-[A-Z0-9]{6}$')
+        && request.resource.data.get('institutionId', '') is string
+        && request.resource.data.get('institutionId', '') != ''
+        && request.resource.data.get('institutionName', '') is string
+        && request.resource.data.get('institutionName', '').size() >= 2
+        && request.resource.data.get('institutionName', '').size() <= 160
+        && request.resource.data.get('active', false) == true
+        && request.resource.data.get('createdBy', '') == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && exists(/databases/$(database)/documents/institutions/$(request.resource.data.get('institutionId', '')))
+        && get(/databases/$(database)/documents/institutions/$(request.resource.data.get('institutionId', ''))).data.get('active', false) == true
+        && get(/databases/$(database)/documents/institutions/$(request.resource.data.get('institutionId', ''))).data.get('selfService', false) != true
+        && isInstitutionManager(request.resource.data.get('institutionId', ''));
+
+      allow update: if isInstitutionManager(resource.data.get('institutionId', ''))
+        && request.resource.data.get('type', '') == resource.data.get('type', '')
+        && request.resource.data.get('code', '') == resource.data.get('code', '')
+        && request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+        && request.resource.data.get('institutionName', '') == resource.data.get('institutionName', '')
+        && request.resource.data.get('createdBy', '') == resource.data.get('createdBy', '')
+        && request.resource.data.get('createdAt', request.time) == resource.data.get('createdAt', request.time)
+        && request.resource.data.get('updatedBy', '') == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'active', 'updatedAt', 'updatedBy'
+        ]);
+
+      allow delete: if isPlatformAdmin()
+        || isInstitutionManager(resource.data.get('institutionId', ''));
+    }
+
     match /institutionMembers/{memberId} {
       allow get, list: if isPlatformAdmin()
         || sameEmail(resource.data.get('email', ''))
@@ -374,6 +435,29 @@ service cloud.firestore {
           && hasInviteMembership(request.resource.data.get('institutionId', ''))
           && get(inviteMembershipPath(request.resource.data.get('institutionId', ''))).data.get('role', '')
             == request.resource.data.get('role', '')
+        )
+        || (
+          signedIn()
+          && memberId == request.resource.data.get('institutionId', '') + '__' + request.auth.uid
+          && request.resource.data.keys().hasOnly([
+            'institutionId', 'uid', 'claimedUid', 'email', 'name', 'role',
+            'active', 'joinedByCode', 'joinCode', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.get('uid', '') == request.auth.uid
+          && request.resource.data.get('claimedUid', '') == request.auth.uid
+          && sameEmail(request.resource.data.get('email', ''))
+          && request.resource.data.get('name', '') is string
+          && request.resource.data.get('name', '').size() >= 2
+          && request.resource.data.get('name', '').size() <= 120
+          && request.resource.data.get('role', '') == 'teacher'
+          && request.resource.data.get('active', false) == true
+          && request.resource.data.get('joinedByCode', false) == true
+          && hasValidInstitutionJoinCode(
+            request.resource.data.get('joinCode', ''),
+            request.resource.data.get('institutionId', '')
+          )
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
         )
         || (
           isOwnSelfInstitution(request.resource.data.get('institutionId', ''))

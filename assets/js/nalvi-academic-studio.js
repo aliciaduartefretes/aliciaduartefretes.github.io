@@ -2,13 +2,15 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-8";
+  const VERSION="NALVI-ACADEMIC-STUDIO-9";
   const INTENT_KEY="nalviAcademicIntent.v1";
+  const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
   const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]);
   const cleanLines=(value,maximum=60)=>[...new Set(String(value||"").split(/\r?\n/).map(line=>line.trim()).filter(Boolean))].slice(0,maximum);
   const normalizeClassCode=value=>String(value||"").trim().toUpperCase().replace(/\s+/g,"").replace(/^GCA(?=[A-Z0-9]{6}$)/,"GCA-").slice(0,10);
+  const normalizeInstitutionCode=value=>String(value||"").trim().toUpperCase().replace(/\s+/g,"").replace(/^GCI(?=[A-Z0-9]{6}$)/,"GCI-").slice(0,10);
   const normalizeLivePin=value=>String(value||"").replace(/\D/g,"").slice(0,6);
   const courseLabel=value=>({general:"Guaraní general",police:"Guaraní para Policía",medicine:"Guaraní para Medicina",kids:"Jugar"})[value]||"Guaraní";
   const COPY={
@@ -71,8 +73,17 @@
     it:{tab:["🔊","Audio","Cerca e ascolta"],title:"Biblioteca audio",body:"Cerca una parola in guaraní e ascolta la pronuncia.",search:"Cerca una parola",searchPlaceholder:"Es.: maitei, jagua, aguyje",loading:"Caricamento audio…",prompt:"Scrivi per cercare o scegli una parola.",empty:"Nessun audio corrisponde alla ricerca.",play:"Ascolta {term}",menu:"Menu docente",collapse:"Nascondi menu",expand:"Mostra menu",workspaceTitle:"La mia classe",workspaceIntro:"Classi, studenti e attività.",startTitle:"Inizia creando una classe",startBody:"Assegna un nome e condividi il codice con gli studenti.",createClass:"Crea una classe",today:"La tua classe oggi",classesOne:"1 classe attiva",classesMany:"{count} classi attive",studentsOne:"1 studente iscritto",studentsMany:"{count} studenti iscritti",tasksOne:"1 compito assegnato",tasksMany:"{count} compiti assegnati",studentsTitle:"Studenti",studentsBody:"Cerca per nome o e-mail e controlla i progressi.",export:"Esporta dati"},
     de:{tab:["🔊","Audio","Suchen und anhören"],title:"Audiobibliothek",body:"Suche ein Wort auf Guaraní und höre seine Aussprache.",search:"Wort suchen",searchPlaceholder:"Zum Beispiel: maitei, jagua, aguyje",loading:"Audios werden geladen…",prompt:"Suche oder wähle ein Wort.",empty:"Für diese Suche wurde kein Audio gefunden.",play:"{term} anhören",menu:"Lehrkraft-Menü",collapse:"Menü ausblenden",expand:"Menü anzeigen",workspaceTitle:"Mein Klassenraum",workspaceIntro:"Klassen, Lernende und Aktivitäten.",startTitle:"Erstelle zuerst eine Klasse",startBody:"Gib ihr einen Namen und teile den Code mit den Lernenden.",createClass:"Klasse erstellen",today:"Dein Klassenraum heute",classesOne:"1 aktive Klasse",classesMany:"{count} aktive Klassen",studentsOne:"1 eingeschriebene Person",studentsMany:"{count} eingeschriebene Personen",tasksOne:"1 zugewiesene Aufgabe",tasksMany:"{count} zugewiesene Aufgaben",studentsTitle:"Lernende",studentsBody:"Nach Name oder E-Mail suchen und Fortschritt prüfen.",export:"Daten exportieren"}
   };
+  const INSTITUTION_COPY={
+    es:{joinTitle:"¿Trabajas para una institución?",joinBody:"Escribe el código que te entregó su administrador. Tu cuenta quedará vinculada como docente.",joinLabel:"Código de institución",joinButton:"Unirme como docente",joinFormat:"Escribe un código como GCI-ABC123.",joinSearching:"Validando el código…",joinSuccess:"Listo. Abriendo el espacio de {name}…",joinExisting:"Ya perteneces a {name}. Abriendo ese espacio…",joinInactive:"Tu membresía está inactiva. Pide al administrador que la reactive.",joinError:"No encontramos una institución activa con ese código.",codeTitle:"Código para docentes",codeBody:"Comparte este código solo con profesores de la institución. Puedes renovarlo cuando quieras.",codeInstitution:"Institución",codeEmpty:"Todavía no hay un código activo.",codeCreate:"Crear código",codeRotate:"Renovar código",codeCopy:"Copiar código",codeLoading:"Buscando código…",codeSaved:"Código listo para compartir.",codeCopied:"Código institucional copiado.",codeError:"No se pudo actualizar el código.",workspace:"Espacio de trabajo",personal:"Mi espacio particular"},
+    en:{joinTitle:"Do you work for an institution?",joinBody:"Enter the code provided by its administrator. Your account will be linked as a teacher.",joinLabel:"Institution code",joinButton:"Join as a teacher",joinFormat:"Enter a code such as GCI-ABC123.",joinSearching:"Checking the code…",joinSuccess:"Done. Opening {name}…",joinExisting:"You already belong to {name}. Opening that workspace…",joinInactive:"Your membership is inactive. Ask the administrator to reactivate it.",joinError:"We could not find an active institution with that code.",codeTitle:"Teacher access code",codeBody:"Share this code only with teachers at the institution. You can renew it at any time.",codeInstitution:"Institution",codeEmpty:"There is no active code yet.",codeCreate:"Create code",codeRotate:"Renew code",codeCopy:"Copy code",codeLoading:"Loading code…",codeSaved:"Code ready to share.",codeCopied:"Institution code copied.",codeError:"The code could not be updated.",workspace:"Workspace",personal:"My independent workspace"},
+    pt:{joinTitle:"Você trabalha para uma instituição?",joinBody:"Digite o código fornecido pelo administrador. Sua conta será vinculada como professor.",joinLabel:"Código da instituição",joinButton:"Entrar como professor",joinFormat:"Digite um código como GCI-ABC123.",joinSearching:"Validando o código…",joinSuccess:"Pronto. Abrindo o espaço de {name}…",joinExisting:"Você já pertence a {name}. Abrindo esse espaço…",joinInactive:"Sua associação está inativa. Peça ao administrador para reativá-la.",joinError:"Não encontramos uma instituição ativa com esse código.",codeTitle:"Código para professores",codeBody:"Compartilhe este código somente com professores da instituição. Você pode renová-lo quando quiser.",codeInstitution:"Instituição",codeEmpty:"Ainda não há um código ativo.",codeCreate:"Criar código",codeRotate:"Renovar código",codeCopy:"Copiar código",codeLoading:"Buscando código…",codeSaved:"Código pronto para compartilhar.",codeCopied:"Código institucional copiado.",codeError:"Não foi possível atualizar o código.",workspace:"Espaço de trabalho",personal:"Meu espaço particular"},
+    fr:{joinTitle:"Vous travaillez pour une institution ?",joinBody:"Saisissez le code fourni par son responsable. Votre compte sera associé en tant qu’enseignant.",joinLabel:"Code de l’institution",joinButton:"Rejoindre comme enseignant",joinFormat:"Saisissez un code comme GCI-ABC123.",joinSearching:"Vérification du code…",joinSuccess:"Terminé. Ouverture de l’espace {name}…",joinExisting:"Vous appartenez déjà à {name}. Ouverture de cet espace…",joinInactive:"Votre adhésion est inactive. Demandez au responsable de la réactiver.",joinError:"Aucune institution active ne correspond à ce code.",codeTitle:"Code pour les enseignants",codeBody:"Partagez ce code uniquement avec les enseignants de l’institution. Vous pouvez le renouveler à tout moment.",codeInstitution:"Institution",codeEmpty:"Il n’y a pas encore de code actif.",codeCreate:"Créer un code",codeRotate:"Renouveler le code",codeCopy:"Copier le code",codeLoading:"Chargement du code…",codeSaved:"Le code est prêt à être partagé.",codeCopied:"Code de l’institution copié.",codeError:"Impossible de mettre le code à jour.",workspace:"Espace de travail",personal:"Mon espace indépendant"},
+    it:{joinTitle:"Lavori per un’istituzione?",joinBody:"Inserisci il codice fornito dall’amministratore. Il tuo account sarà collegato come docente.",joinLabel:"Codice dell’istituzione",joinButton:"Entra come docente",joinFormat:"Inserisci un codice come GCI-ABC123.",joinSearching:"Verifica del codice…",joinSuccess:"Fatto. Apertura dello spazio {name}…",joinExisting:"Fai già parte di {name}. Apertura dello spazio…",joinInactive:"La tua iscrizione non è attiva. Chiedi all’amministratore di riattivarla.",joinError:"Non abbiamo trovato un’istituzione attiva con questo codice.",codeTitle:"Codice per i docenti",codeBody:"Condividi questo codice solo con i docenti dell’istituzione. Puoi rinnovarlo quando vuoi.",codeInstitution:"Istituzione",codeEmpty:"Non c’è ancora un codice attivo.",codeCreate:"Crea codice",codeRotate:"Rinnova codice",codeCopy:"Copia codice",codeLoading:"Caricamento del codice…",codeSaved:"Codice pronto per essere condiviso.",codeCopied:"Codice dell’istituzione copiato.",codeError:"Impossibile aggiornare il codice.",workspace:"Spazio di lavoro",personal:"Il mio spazio indipendente"},
+    de:{joinTitle:"Arbeitest du für eine Institution?",joinBody:"Gib den Code der Verwaltung ein. Dein Konto wird als Lehrkraft verknüpft.",joinLabel:"Institutionscode",joinButton:"Als Lehrkraft beitreten",joinFormat:"Gib einen Code wie GCI-ABC123 ein.",joinSearching:"Code wird geprüft…",joinSuccess:"Fertig. {name} wird geöffnet…",joinExisting:"Du gehörst bereits zu {name}. Dieser Bereich wird geöffnet…",joinInactive:"Deine Mitgliedschaft ist inaktiv. Bitte die Verwaltung um Reaktivierung.",joinError:"Zu diesem Code wurde keine aktive Institution gefunden.",codeTitle:"Zugangscode für Lehrkräfte",codeBody:"Teile diesen Code nur mit Lehrkräften der Institution. Du kannst ihn jederzeit erneuern.",codeInstitution:"Institution",codeEmpty:"Noch kein aktiver Code vorhanden.",codeCreate:"Code erstellen",codeRotate:"Code erneuern",codeCopy:"Code kopieren",codeLoading:"Code wird geladen…",codeSaved:"Der Code kann jetzt geteilt werden.",codeCopied:"Institutionscode kopiert.",codeError:"Der Code konnte nicht aktualisiert werden.",workspace:"Arbeitsbereich",personal:"Mein eigener Bereich"}
+  };
   function locale(){const value=String($("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es").toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]||COPY.es}
+  function institutionCopy(){return INSTITUTION_COPY[locale()]||INSTITUTION_COPY.es}
   function libraryCopy(){return{...(LIBRARY_COPY[locale()]||LIBRARY_COPY.es),...(RESOURCE_COPY[locale()]||RESOURCE_COPY.es)}}
   function formatCopy(value,replacements={}){return String(value||"").replace(/\{(\w+)\}/g,(_,key)=>String(replacements[key]??""))}
   let firebase=null;
@@ -86,6 +97,7 @@
   let pendingQuestionDraft=null;
   let teacherAudioItems=[];
   let lastJoinedClassCode="";
+  let activeInstitutionCode="";
   let restoringIntent=false;
 
   function currentUser(){return firebase?.auth?.currentUser||window.GCA_FIREBASE_LIVE?.auth?.currentUser||null}
@@ -98,12 +110,13 @@
   function rememberIntent(kind,value=""){try{sessionStorage.setItem(INTENT_KEY,JSON.stringify({kind,value,createdAt:Date.now()}))}catch{}}
   function readIntent(){try{const value=JSON.parse(sessionStorage.getItem(INTENT_KEY)||"null");if(!value||Date.now()-Number(value.createdAt||0)>15*60*1000)return null;return value}catch{return null}}
   function clearIntent(){try{sessionStorage.removeItem(INTENT_KEY)}catch{}}
+  function selectInstitution(value){try{localStorage.setItem(ACTIVE_INSTITUTION_KEY,String(value||""))}catch{}}
   function requestLogin(kind,value=""){rememberIntent(kind,value);window.show?.("institutions",true);window.courseGoogleLogin?.()}
 
   function publicHubMarkup(){
-    const user=currentUser(),c=copy(),action=!signedIn()?c.signIn:canManage()?c.openPanel:c.createSpace;
+    const user=currentUser(),c=copy(),i=institutionCopy(),action=!signedIn()?c.signIn:canManage()?c.openPanel:c.createSpace;
     const workspaceName=user?.displayName?`${c.defaultWorkspace} · ${user.displayName}`:c.defaultWorkspace;
-    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon" aria-hidden="true">🏫</span><div><small>${esc(c.teacherTag)}</small><h3>${esc(c.teacherTitle)}</h3><p>${esc(c.teacherBody)}</p>${signedIn()&&!canManage()?`<label>${esc(c.workspaceLabel)}<input id="nalviAcademicWorkspaceName" maxlength="160" value="${esc(workspaceName)}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status" aria-live="polite"></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon" aria-hidden="true">👥</span><div><small>${esc(c.studentTag)}</small><h3>${esc(c.studentTitle)}</h3><p>${esc(c.studentBody)}</p><div class="nalvi-academic-pin-row class-code"><input id="nalviAcademicClassCode" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="GCA-ABC123" aria-label="${esc(c.classCode)}"><button class="mini-btn" id="nalviAcademicJoinClass" type="button">${esc(c.join)}</button></div><div class="gesa-form-status" id="nalviAcademicClassStatus" role="status" aria-live="polite"></div>${signedIn()?`<button class="nalvi-student-progress-link" id="nalviAcademicOpenLearning" type="button">${esc(c.viewLearning)}</button>`:""}<div class="nalvi-academic-live-entry"><b>${esc(c.liveStarted)}</b><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${esc(c.livePin)}" aria-label="${esc(c.livePin)}"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">${esc(c.enterLive)}</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status" aria-live="polite"></div></div></div></article></section><section class="nalvi-student-class-section" id="nalviStudentClassSection" hidden><div class="gesa-section-head"><div><h3>${esc(c.myClasses)}</h3><p>${esc(c.myClassesBody)}</p></div><button class="mini-btn" id="nalviAcademicOpenProgress" type="button">${esc(c.openLearning)}</button></div><div class="nalvi-student-class-list" id="nalviStudentClassList"></div></section>`;
+    return `<section class="nalvi-academic-entry" id="nalviAcademicEntry"><article class="nalvi-academic-entry-card teacher"><span class="nalvi-academic-entry-icon" aria-hidden="true">🏫</span><div><small>${esc(c.teacherTag)}</small><h3>${esc(c.teacherTitle)}</h3><p>${esc(c.teacherBody)}</p>${signedIn()&&!canManage()?`<label>${esc(c.workspaceLabel)}<input id="nalviAcademicWorkspaceName" maxlength="160" value="${esc(workspaceName)}"></label>`:""}<button class="btn" id="nalviAcademicStart" type="button">${esc(action)} →</button><div class="gesa-form-status" id="nalviAcademicStartStatus" role="status" aria-live="polite"></div><div class="nalvi-institution-join"><b>${esc(i.joinTitle)}</b><p>${esc(i.joinBody)}</p><label>${esc(i.joinLabel)}<div class="nalvi-academic-pin-row institution-code"><input id="nalviAcademicInstitutionCode" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="GCI-ABC123" aria-label="${esc(i.joinLabel)}"><button class="mini-btn" id="nalviAcademicJoinInstitution" type="button">${esc(i.joinButton)}</button></div></label><div class="gesa-form-status" id="nalviAcademicInstitutionStatus" role="status" aria-live="polite"></div></div></div></article><article class="nalvi-academic-entry-card student"><span class="nalvi-academic-entry-icon" aria-hidden="true">👥</span><div><small>${esc(c.studentTag)}</small><h3>${esc(c.studentTitle)}</h3><p>${esc(c.studentBody)}</p><div class="nalvi-academic-pin-row class-code"><input id="nalviAcademicClassCode" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="GCA-ABC123" aria-label="${esc(c.classCode)}"><button class="mini-btn" id="nalviAcademicJoinClass" type="button">${esc(c.join)}</button></div><div class="gesa-form-status" id="nalviAcademicClassStatus" role="status" aria-live="polite"></div>${signedIn()?`<button class="nalvi-student-progress-link" id="nalviAcademicOpenLearning" type="button">${esc(c.viewLearning)}</button>`:""}<div class="nalvi-academic-live-entry"><b>${esc(c.liveStarted)}</b><div class="nalvi-academic-pin-row"><input id="nalviAcademicLivePin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="${esc(c.livePin)}" aria-label="${esc(c.livePin)}"><button class="mini-btn" id="nalviAcademicJoinLive" type="button">${esc(c.enterLive)}</button></div><div class="gesa-form-status" id="nalviAcademicJoinStatus" role="status" aria-live="polite"></div></div></div></article></section><section class="nalvi-student-class-section" id="nalviStudentClassSection" hidden><div class="gesa-section-head"><div><h3>${esc(c.myClasses)}</h3><p>${esc(c.myClassesBody)}</p></div><button class="mini-btn" id="nalviAcademicOpenProgress" type="button">${esc(c.openLearning)}</button></div><div class="nalvi-student-class-list" id="nalviStudentClassList"></div></section>`;
   }
 
   function installPublicHub(){
@@ -121,6 +134,7 @@
     $$("#institutions .shell > .gesa-grid").forEach(grid=>grid.hidden=true);
     $("#nalviAcademicEntry")?.remove();$("#nalviStudentClassSection")?.remove();hero?.insertAdjacentHTML("afterend",publicHubMarkup());
     $("#nalviAcademicStart")?.addEventListener("click",startAcademicSpace);
+    $("#nalviAcademicJoinInstitution")?.addEventListener("click",joinInstitutionByCode);
     $("#nalviAcademicJoinClass")?.addEventListener("click",joinClassByCode);
     $("#nalviAcademicJoinLive")?.addEventListener("click",joinLiveByPin);
     $("#nalviAcademicOpenLearning")?.addEventListener("click",()=>window.show?.("progressHub",true));
@@ -129,6 +143,8 @@
     if(sharedCode)$("#nalviAcademicClassCode").value=sharedCode;
     $("#nalviAcademicClassCode")?.addEventListener("input",event=>{event.target.value=normalizeClassCode(event.target.value)});
     $("#nalviAcademicClassCode")?.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();joinClassByCode()}});
+    $("#nalviAcademicInstitutionCode")?.addEventListener("input",event=>{event.target.value=normalizeInstitutionCode(event.target.value)});
+    $("#nalviAcademicInstitutionCode")?.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();joinInstitutionByCode()}});
     $("#nalviAcademicLivePin")?.addEventListener("input",event=>{event.target.value=normalizeLivePin(event.target.value)});
     $("#nalviAcademicLivePin")?.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();joinLiveByPin()}});
     loadStudentClasses();
@@ -145,8 +161,29 @@
       if(!institutionSnapshot.exists())await firebase.setDoc(institutionRef,{name:name.slice(0,160),country:"",active:true,status:"active",ownerUid:user.uid,selfService:true,createdBy:user.uid,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
       const membershipSnapshot=await firebase.getDoc(membershipRef);
       if(!membershipSnapshot.exists())await firebase.setDoc(membershipRef,{institutionId:id,uid:user.uid,claimedUid:user.uid,email:String(user.email||"").trim().toLowerCase(),name:String(user.displayName||name).slice(0,120),role:"institution_manager",active:true,selfService:true,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
-      rememberIntent("openDashboard");setStatus("#nalviAcademicStartStatus","Listo. Abriendo tu panel…");setTimeout(()=>location.reload(),350);
+      selectInstitution(id);rememberIntent("openDashboard");setStatus("#nalviAcademicStartStatus","Listo. Abriendo tu panel…");setTimeout(()=>location.reload(),350);
     }catch(error){console.error("NALVI_ACADEMIC_SETUP",error);setStatus("#nalviAcademicStartStatus","No se pudo crear. Revisa la conexión y vuelve a intentarlo.",true);button.disabled=false}
+  }
+
+  async function joinInstitutionByCode(){
+    const i=institutionCopy(),code=normalizeInstitutionCode($("#nalviAcademicInstitutionCode")?.value||readIntent()?.value||"");
+    if(!/^GCI-[A-Z0-9]{6}$/.test(code)){setStatus("#nalviAcademicInstitutionStatus",i.joinFormat,true);return}
+    if(!signedIn()){requestLogin("joinInstitution",code);return}
+    const button=$("#nalviAcademicJoinInstitution");if(button)button.disabled=true;setStatus("#nalviAcademicInstitutionStatus",i.joinSearching);
+    try{
+      const inviteSnapshot=await firebase.getDoc(firebase.doc(firebase.db,"institutionJoinCodes",`code__${code}`));
+      if(!inviteSnapshot.exists())throw new Error("institution-code-not-found");
+      const invite=inviteSnapshot.data(),institution=String(invite.institutionId||""),name=String(invite.institutionName||"la institución");
+      if(invite.type!=="institution_teacher_invite"||invite.active!==true||invite.code!==code||!institution||institution.startsWith("self__"))throw new Error("institution-code-invalid");
+      const user=currentUser(),membershipRef=firebase.doc(firebase.db,"institutionMembers",`${institution}__${user.uid}`),membershipSnapshot=await firebase.getDoc(membershipRef);
+      if(membershipSnapshot.exists()){
+        if(membershipSnapshot.data().active===false){setStatus("#nalviAcademicInstitutionStatus",i.joinInactive,true);return}
+        selectInstitution(institution);clearIntent();setStatus("#nalviAcademicInstitutionStatus",formatCopy(i.joinExisting,{name}));setTimeout(()=>location.reload(),450);return;
+      }
+      await firebase.setDoc(membershipRef,{institutionId:institution,uid:user.uid,claimedUid:user.uid,email:String(user.email||"").trim().toLowerCase(),name:String(user.displayName||user.email||"Docente").slice(0,120),role:"teacher",active:true,joinedByCode:true,joinCode:code,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+      selectInstitution(institution);clearIntent();setStatus("#nalviAcademicInstitutionStatus",formatCopy(i.joinSuccess,{name}));setTimeout(()=>location.reload(),450);
+    }catch(error){console.error("NALVI_INSTITUTION_JOIN",error);setStatus("#nalviAcademicInstitutionStatus",i.joinError,true)}
+    finally{if(button)button.disabled=false}
   }
 
   async function joinClassByCode(){
@@ -339,6 +376,80 @@
     let collapsed=false;try{collapsed=localStorage.getItem("nalviAcademicMenuCollapsed")==="1"}catch{}toggleAcademicMenu(management,collapsed);
   }
 
+  function installWorkspaceSwitcher(management){
+    $("#nalviAcademicWorkspaceSwitcher",management)?.remove();
+    if(window.GESA_CONTEXT?.role==="platform_admin")return;
+    const memberships=[...new Map((window.GESA_CONTEXT?.memberships||[]).filter(item=>item?.active!==false&&item?.institutionId).map(item=>[item.institutionId,item])).values()];
+    if(memberships.length<2)return;
+    const i=institutionCopy(),active=institutionId(),hero=$(".staff-hero",management);if(!hero)return;
+    hero.insertAdjacentHTML("beforeend",`<label class="nalvi-workspace-switcher" id="nalviAcademicWorkspaceSwitcher"><span>${esc(i.workspace)}</span><select>${memberships.map(item=>`<option value="${esc(item.institutionId)}" ${item.institutionId===active?"selected":""}>${esc(item.institutionId.startsWith("self__")?i.personal:item.institutionName||item.name||item.institutionId)}</option>`).join("")}</select></label>`);
+    $("select",$("#nalviAcademicWorkspaceSwitcher",management))?.addEventListener("change",event=>{const id=String(event.target.value||"");if(!memberships.some(item=>item.institutionId===id))return;selectInstitution(id);location.reload()});
+  }
+
+  function institutionCodeTarget(){
+    if(window.GESA_CONTEXT?.role!=="platform_admin")return institutionId();
+    return String($("#nalviInstitutionCodeInstitution")?.value||$("#gesaMemberInstitution")?.value||"");
+  }
+
+  function syncInstitutionCodeOptions(){
+    const target=$("#nalviInstitutionCodeInstitution"),source=$("#gesaMemberInstitution");if(!target||!source)return;
+    const selected=target.value||source.value;target.innerHTML=[...source.options].map(option=>`<option value="${esc(option.value)}" ${option.value===selected?"selected":""}>${esc(option.textContent)}</option>`).join("");
+  }
+
+  async function queryInstitutionCodes(id){
+    if(!id)return[];
+    const snapshot=await firebase.getDocs(firebase.query(firebase.collection(firebase.db,"institutionJoinCodes"),firebase.where("institutionId","==",id)));
+    return snapshot.docs.map(item=>({id:item.id,...item.data()}));
+  }
+
+  function showInstitutionCode(code=""){
+    const i=institutionCopy(),value=$("#nalviInstitutionCodeValue"),copyButton=$("#nalviCopyInstitutionCode"),createButton=$("#nalviRotateInstitutionCode");activeInstitutionCode=normalizeInstitutionCode(code);
+    if(value)value.textContent=activeInstitutionCode||i.codeEmpty;
+    if(copyButton)copyButton.disabled=!activeInstitutionCode;
+    if(createButton)createButton.textContent=activeInstitutionCode?i.codeRotate:i.codeCreate;
+  }
+
+  async function loadInstitutionCode(){
+    const id=institutionCodeTarget(),i=institutionCopy();showInstitutionCode("");if(!id)return;
+    setStatus("#nalviInstitutionCodeStatus",i.codeLoading);
+    try{const codes=await queryInstitutionCodes(id),active=codes.filter(item=>item.active===true&&item.type==="institution_teacher_invite").sort((a,b)=>String(b.id).localeCompare(String(a.id)))[0];showInstitutionCode(active?.code||"");setStatus("#nalviInstitutionCodeStatus","")}
+    catch(error){console.error("NALVI_INSTITUTION_CODE_LOAD",error);setStatus("#nalviInstitutionCodeStatus",i.codeError,true)}
+  }
+
+  function freshInstitutionCode(){
+    const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",values=window.crypto?.getRandomValues?window.crypto.getRandomValues(new Uint32Array(6)):Array.from({length:6},()=>Math.floor(Math.random()*alphabet.length));
+    return`GCI-${[...values].map(value=>alphabet[Number(value)%alphabet.length]).join("")}`;
+  }
+
+  async function rotateInstitutionCode(){
+    const id=institutionCodeTarget(),i=institutionCopy(),button=$("#nalviRotateInstitutionCode");if(!id||id.startsWith("self__")){setStatus("#nalviInstitutionCodeStatus",i.codeError,true);return}
+    button.disabled=true;setStatus("#nalviInstitutionCodeStatus",i.codeLoading);
+    try{
+      const existing=await queryInstitutionCodes(id),code=freshInstitutionCode(),select=$("#nalviInstitutionCodeInstitution"),membership=(window.GESA_CONTEXT?.memberships||[]).find(item=>item.institutionId===id),institutionName=String(select?.selectedOptions?.[0]?.textContent||membership?.institutionName||"Institución").slice(0,160),batch=firebase.writeBatch(firebase.db);
+      existing.filter(item=>item.active===true).forEach(item=>batch.update(firebase.doc(firebase.db,"institutionJoinCodes",item.id),{active:false,updatedAt:firebase.serverTimestamp(),updatedBy:currentUser().uid}));
+      batch.set(firebase.doc(firebase.db,"institutionJoinCodes",`code__${code}`),{type:"institution_teacher_invite",code,institutionId:id,institutionName,active:true,createdBy:currentUser().uid,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+      await batch.commit();showInstitutionCode(code);setStatus("#nalviInstitutionCodeStatus",i.codeSaved);
+    }catch(error){console.error("NALVI_INSTITUTION_CODE_ROTATE",error);setStatus("#nalviInstitutionCodeStatus",i.codeError,true)}
+    finally{button.disabled=false}
+  }
+
+  async function copyInstitutionCode(){
+    if(!activeInstitutionCode)return;const i=institutionCopy();
+    try{await navigator.clipboard.writeText(activeInstitutionCode)}catch{const area=document.createElement("textarea");area.value=activeInstitutionCode;area.readOnly=true;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove()}
+    setStatus("#nalviInstitutionCodeStatus",i.codeCopied);
+  }
+
+  function installInstitutionTools(management){
+    $("#gesaMemberInstitution",management)?._nalviInstitutionCodeObserver?.disconnect();
+    $("#nalviInstitutionCodeCard",management)?.remove();
+    const ctx=window.GESA_CONTEXT||{},pane=$("[data-gesa-pane='institution']",management),grid=$(".gesa-grid",pane),i=institutionCopy();
+    if(!grid||!ctx.canAdministerInstitution||(ctx.role!=="platform_admin"&&institutionId().startsWith("self__")))return;
+    const selector=ctx.role==="platform_admin"?`<label>${esc(i.codeInstitution)}<select id="nalviInstitutionCodeInstitution"></select></label>`:"";
+    grid.insertAdjacentHTML("afterbegin",`<article class="gesa-card nalvi-institution-code-card" id="nalviInstitutionCodeCard"><span class="tag">DOCENTES</span><h3>${esc(i.codeTitle)}</h3><p>${esc(i.codeBody)}</p><div class="gesa-form">${selector}<div class="nalvi-institution-code-row"><strong id="nalviInstitutionCodeValue">${esc(i.codeEmpty)}</strong><button class="mini-btn" id="nalviCopyInstitutionCode" type="button" disabled>${esc(i.codeCopy)}</button></div><button class="btn" id="nalviRotateInstitutionCode" type="button">${esc(i.codeCreate)}</button><div class="gesa-form-status" id="nalviInstitutionCodeStatus" role="status" aria-live="polite"></div></div></article>`);
+    syncInstitutionCodeOptions();const source=$("#gesaMemberInstitution",management);if(source&&ctx.role==="platform_admin"){const observer=new MutationObserver(()=>{syncInstitutionCodeOptions();loadInstitutionCode()});observer.observe(source,{childList:true});source._nalviInstitutionCodeObserver=observer;$("#nalviInstitutionCodeInstitution")?.addEventListener("change",loadInstitutionCode)}
+    $("#nalviRotateInstitutionCode")?.addEventListener("click",rotateInstitutionCode);$("#nalviCopyInstitutionCode")?.addEventListener("click",copyInstitutionCode);loadInstitutionCode();
+  }
+
   function metricText(count,one,many){return count===1?one:formatCopy(many,{count})}
 
   function refreshTeacherSummary(){
@@ -365,7 +476,7 @@
     $("#nalviAcademicQuickStart",management)?.remove();
     const security=$(".gesa-note.security",management);if(security)security.textContent=`🔐 ${c.security}`;
     decorateAcademicNavigation(management,admin);
-    installWorkspaceLayout(management);installTeacherSummary(management);
+    installWorkspaceLayout(management);installWorkspaceSwitcher(management);installTeacherSummary(management);installInstitutionTools(management);
     const groupPane=$("[data-gesa-pane='groups']",management),groupHeading=$(".gesa-card h3",groupPane),groupIntro=$(".gesa-card p",groupPane),studentField=$("textarea[name='studentEmails']",groupPane)?.closest("label");
     if(groupHeading)groupHeading.textContent=c.createClass;
     if(groupIntro)groupIntro.textContent=c.createClassBody;
@@ -443,6 +554,7 @@
     try{
       window.show?.("institutions",true);
       if(intent.kind==="joinClass"){const input=$("#nalviAcademicClassCode");if(input)input.value=normalizeClassCode(intent.value);await joinClassByCode()}
+      else if(intent.kind==="joinInstitution"){const input=$("#nalviAcademicInstitutionCode");if(input)input.value=normalizeInstitutionCode(intent.value);await joinInstitutionByCode()}
       else if(intent.kind==="joinLive"){const input=$("#nalviAcademicLivePin");if(input)input.value=normalizeLivePin(intent.value);joinLiveByPin()}
       else if(intent.kind==="openDashboard"&&canManage()){clearIntent();window.show?.("institutional",true)}
       else if(intent.kind==="teacher"&&source==="role"){if(canManage()){clearIntent();window.show?.("institutional",true)}else await startAcademicSpace()}
@@ -464,6 +576,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

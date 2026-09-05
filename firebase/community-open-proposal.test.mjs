@@ -32,6 +32,8 @@ try{
     await setDoc(doc(database,"users","rene"),{uid:"rene",displayName:"René Murillo",email:"rene@example.com",xp:900});
     await setDoc(doc(database,"users","rene-wrong-name"),{uid:"rene-wrong-name",displayName:"René Murillo",email:"private@example.com"});
     await setDoc(doc(database,"users","rene-private"),{uid:"rene-private",displayName:"René Murillo",email:"private@example.com"});
+    await setDoc(doc(database,"institutions","ateneo"),{name:"Ateneo de Lengua Guaraní",country:"Paraguay",active:true,status:"active",createdBy:"platform",createdAt:new Date(),updatedAt:new Date()});
+    await setDoc(doc(database,"institutionMembers","ateneo__alicia"),{institutionId:"ateneo",uid:"alicia",claimedUid:"alicia",email:"alicia@example.com",name:"Alicia Duarte",role:"institution_manager",active:true,createdAt:new Date(),updatedAt:new Date()});
   });
 
   await assertSucceeds(getDoc(doc(guest,"communityPosts","welcome")));
@@ -115,6 +117,23 @@ try{
   await assertFails(setDoc(doc(marcelo,"communityPosts","welcome","views","alicia"),{createdAt:serverTimestamp()}));
 
   await assertSucceeds(deleteDoc(post));
+
+  const institutionJoinCode=doc(alicia,"institutionJoinCodes","code__GCI-ABC123");
+  await assertSucceeds(setDoc(institutionJoinCode,{type:"institution_teacher_invite",code:"GCI-ABC123",institutionId:"ateneo",institutionName:"Ateneo de Lengua Guaraní",active:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(getDoc(doc(marcelo,"institutionJoinCodes","code__GCI-ABC123")));
+  await assertFails(getDoc(doc(guest,"institutionJoinCodes","code__GCI-ABC123")));
+  await assertFails(getDoc(doc(anonymous,"institutionJoinCodes","code__GCI-ABC123")));
+  await assertFails(getDocs(query(collection(marcelo,"institutionJoinCodes"),where("institutionId","==","ateneo"))));
+  await assertFails(setDoc(doc(marcelo,"institutionJoinCodes","code__GCI-SPOOF1"),{type:"institution_teacher_invite",code:"GCI-SPOOF1",institutionId:"ateneo",institutionName:"Ateneo de Lengua Guaraní",active:true,createdBy:"marcelo",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+
+  const joinedTeacher=doc(marcelo,"institutionMembers","ateneo__marcelo");
+  await assertSucceeds(setDoc(joinedTeacher,{institutionId:"ateneo",uid:"marcelo",claimedUid:"marcelo",email:"marcelo@example.com",name:"Marcelo Benítez",role:"teacher",active:true,joinedByCode:true,joinCode:"GCI-ABC123",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(sofia,"institutionMembers","ateneo__sofia-manager"),{institutionId:"ateneo",uid:"sofia",claimedUid:"sofia",email:"sofia@example.com",name:"Sofía Vera",role:"institution_manager",active:true,joinedByCode:true,joinCode:"GCI-ABC123",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(sofia,"institutionMembers","ateneo__marcelo-spoof"),{institutionId:"ateneo",uid:"marcelo",claimedUid:"marcelo",email:"sofia@example.com",name:"Sofía Vera",role:"teacher",active:true,joinedByCode:true,joinCode:"GCI-ABC123",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(sofia,"institutionMembers","ateneo__sofia"),{institutionId:"ateneo",uid:"sofia",claimedUid:"sofia",email:"sofia@example.com",name:"Sofía Vera",role:"teacher",active:true,joinedByCode:true,joinCode:"GCI-NOPE99",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(setDoc(doc(marcelo,"groups","ateneo-class"),{name:"Clase institucional",courseId:"general",institutionId:"ateneo",teacherId:"marcelo",teacherEmail:"marcelo@example.com",teacherName:"Marcelo Benítez",studentEmails:[],code:"GCA-INS001",status:"active",archived:false,createdBy:"marcelo",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(institutionJoinCode,{active:false,updatedAt:serverTimestamp(),updatedBy:"alicia"}));
+  await assertFails(setDoc(doc(sofia,"institutionMembers","ateneo__sofia"),{institutionId:"ateneo",uid:"sofia",claimedUid:"sofia",email:"sofia@example.com",name:"Sofía Vera",role:"teacher",active:true,joinedByCode:true,joinCode:"GCI-ABC123",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
 
   const selfInstitution=doc(alicia,"institutions","self__alicia");
   await assertSucceeds(setDoc(selfInstitution,{name:"Aula de Alicia",country:"",active:true,status:"active",ownerUid:"alicia",selfService:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
