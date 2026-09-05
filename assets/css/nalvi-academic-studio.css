@@ -20,21 +20,34 @@
 .nalvi-student-class>span{font-size:25px}.nalvi-student-class h4{margin:0 0 4px}.nalvi-student-class p{margin:0;color:var(--muted,#6d667d);font-size:13px}
 .nalvi-student-class code{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:8px;background:#eee9fa;color:#4c378f;font-weight:900}
 .nalvi-student-progress-link{margin-top:12px;padding:0;border:0;background:transparent;color:#4e3998;font:900 13px/1.4 inherit;text-decoration:underline;cursor:pointer}
-.gesa-tabs.nalvi-academic-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;overflow:visible;margin:18px 0 22px;padding:0}
-.gesa-tabs.nalvi-academic-nav .gesa-tab{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:10px;width:100%;min-width:0;min-height:82px;padding:13px;border:1px solid #ded6ee;border-radius:18px;background:#fff;color:#2d2640;text-align:left;white-space:normal;box-shadow:0 4px 0 #eeeaf6;transition:transform .16s ease,border-color .16s ease,background .16s ease}
-.gesa-tabs.nalvi-academic-nav .gesa-tab:hover,.gesa-tabs.nalvi-academic-nav .gesa-tab:focus-visible{transform:translateY(-2px);border-color:#7655d6;outline:3px solid #7655d622}
-.gesa-tabs.nalvi-academic-nav .gesa-tab.active{border-color:#5e3fbd;background:linear-gradient(145deg,#5c3eb8,#7758d5);color:#fff;box-shadow:0 4px 0 #3f2a86}
-.nalvi-academic-nav-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#f0ecfb;font-size:20px}
-.gesa-tab.active .nalvi-academic-nav-icon{background:rgba(255,255,255,.17)}
-.nalvi-academic-nav-copy{display:block;min-width:0}.nalvi-academic-nav-copy b,.nalvi-academic-nav-copy small{display:block}.nalvi-academic-nav-copy b{font-size:13px;line-height:1.2}.nalvi-academic-nav-copy small{margin-top:4px;color:#746c7f;font-size:10px;font-weight:750;line-height:1.25}.gesa-tab.active .nalvi-academic-nav-copy small{color:#eee9ff}
+#institutional.nalvi-academic-dashboard .shell.gesa-management{max-width:1320px}
+#institutional.nalvi-academic-dashboard .staff-hero{min-height:0;padding:18px 22px;border:1px solid #e5dfef;border-radius:20px;background:#fff;box-shadow:none}
+#institutional.nalvi-academic-dashboard .staff-hero .tag{display:none}
+#institutional.nalvi-academic-dashboard .staff-hero h2{margin:0;font-size:clamp(25px,3vw,34px)}
+#institutional.nalvi-academic-dashboard .staff-hero p{margin:5px 0 0;color:#70687d}
+#institutional.nalvi-academic-dashboard .shell.gesa-management>.gesa-management-toolbar{margin:10px 0 16px;padding:0 4px}
+#institutional.nalvi-academic-dashboard #gesaRoleBadge,#institutional.nalvi-academic-dashboard #gesaPublicInstitutions,#institutional.nalvi-academic-dashboard .gesa-note.security{display:none!important}
+.nalvi-academic-workspace{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start;transition:grid-template-columns .18s ease}
+.nalvi-academic-workspace>.gesa-tabs.nalvi-academic-nav{grid-column:1;grid-row:1;position:sticky;top:92px;display:flex;flex-direction:column;gap:4px;max-height:calc(100vh - 120px);overflow:auto;margin:0;padding:8px;border:1px solid #e5dfef;border-radius:18px;background:#fff;box-shadow:0 8px 22px rgba(52,39,83,.06)}
+.nalvi-academic-workspace>#gesaAcademicState,.nalvi-academic-workspace>.gesa-pane{grid-column:2;grid-row:1;min-width:0;margin:0}
+.gesa-tabs.nalvi-academic-nav .gesa-tab{display:grid;grid-template-columns:36px minmax(0,1fr);align-items:center;gap:10px;width:100%;min-width:0;min-height:50px;padding:8px 10px;border:0;border-left:3px solid transparent;border-radius:12px;background:transparent;color:#342c47;text-align:left;white-space:normal;box-shadow:none;transition:background .16s ease,color .16s ease,border-color .16s ease}
+.gesa-tabs.nalvi-academic-nav .gesa-tab:hover,.gesa-tabs.nalvi-academic-nav .gesa-tab:focus-visible{transform:none;border-color:#7655d6;background:#f7f4ff;outline:2px solid #7655d622}
+.gesa-tabs.nalvi-academic-nav .gesa-tab.active{border-color:#5e3fbd;background:#f0ebff;color:#4b3299;box-shadow:none}
+.nalvi-academic-nav-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#f0ecfb;font-size:18px}
+.gesa-tab.active .nalvi-academic-nav-icon{background:#ded4fa}
+.nalvi-academic-nav-copy{display:block;min-width:0}.nalvi-academic-nav-copy b{display:block;font-size:13px;line-height:1.2}.nalvi-academic-nav-copy small{display:none}
+.nalvi-academic-menu-toggle{display:grid;grid-template-columns:36px minmax(0,1fr);align-items:center;gap:10px;min-height:45px;margin-bottom:5px;padding:7px 10px;border:0;border-bottom:1px solid #eee9f5;background:transparent;color:#655b74;font:850 12px/1.2 inherit;text-align:left;cursor:pointer}.nalvi-academic-menu-toggle b{display:grid;place-items:center;width:36px;height:32px;font-size:19px}.nalvi-academic-menu-toggle:focus-visible{border-radius:10px;outline:3px solid #7655d633}
+#institutional.nalvi-nav-collapsed .nalvi-academic-workspace{grid-template-columns:74px minmax(0,1fr)}
+#institutional.nalvi-nav-collapsed .nalvi-academic-nav-copy,#institutional.nalvi-nav-collapsed .nalvi-academic-menu-toggle span{display:none}
+#institutional.nalvi-nav-collapsed .gesa-tabs.nalvi-academic-nav .gesa-tab,#institutional.nalvi-nav-collapsed .nalvi-academic-menu-toggle{grid-template-columns:1fr;justify-items:center;padding:7px}
+.nalvi-teacher-summary{margin-bottom:22px}.nalvi-teacher-first-step{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:15px;align-items:center;padding:22px;border:1px solid #ded5ee;border-radius:20px;background:linear-gradient(135deg,#f6f2ff,#f0faf7)}.nalvi-teacher-first-step>span{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:#fff;font-size:25px}.nalvi-teacher-first-step small{color:#5d43b5;font-size:10px;font-weight:950;text-transform:uppercase}.nalvi-teacher-first-step h3{margin:4px 0 5px}.nalvi-teacher-first-step p{margin:0;color:#70687d}.nalvi-summary-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.nalvi-summary-heading h3{margin:0}.nalvi-summary-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.nalvi-summary-metrics button{display:flex;align-items:center;gap:10px;min-height:70px;padding:15px;border:1px solid #e1daec;border-radius:16px;background:#fff;color:#342c47;font:inherit;text-align:left;cursor:pointer}.nalvi-summary-metrics button:hover,.nalvi-summary-metrics button:focus-visible{border-color:#7655d6;background:#f8f6ff;outline:2px solid #7655d622}.nalvi-summary-metrics span{font-size:22px}.nalvi-summary-metrics b{font-size:14px;line-height:1.3}
+#gesaAcademicKpis[hidden]{display:none!important}.nalvi-student-data{margin-top:24px}.nalvi-student-data>.gesa-section-head{margin-bottom:12px}.nalvi-student-data>.gesa-management-toolbar{margin:0 0 12px}.nalvi-export-menu{position:relative}.nalvi-export-menu>summary{min-height:43px;padding:11px 15px;border:1px solid #ded6ea;border-radius:12px;background:#fff;color:#514861;font-weight:900;cursor:pointer;list-style:none}.nalvi-export-menu>summary::-webkit-details-marker{display:none}.nalvi-export-menu[open]>.gesa-inline-actions{position:absolute;z-index:5;right:0;top:50px;min-width:210px;padding:10px;border:1px solid #e2daec;border-radius:14px;background:#fff;box-shadow:0 12px 28px rgba(47,35,79,.16)}
 .nalvi-academic-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .nalvi-academic-tools .gesa-card{min-width:0}
 .nalvi-academic-tools .gesa-card>h3{margin-top:10px}
 .nalvi-academic-tools .gesa-form{margin-top:15px}
-.nalvi-teacher-library-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:15px}
-.nalvi-teacher-library .gesa-card{min-width:0}.nalvi-teacher-library .gesa-card>h3{margin:10px 0 6px}.nalvi-teacher-library .gesa-card>p{margin:0;color:var(--muted,#6d667d);line-height:1.5}
-.nalvi-library-resources{display:grid;gap:10px;margin-top:17px}.nalvi-library-resource{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center;padding:13px;border:1px solid #e3ddec;border-radius:16px;background:#fbfafe}.nalvi-library-resource>span{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#eee9fb;font-size:21px}.nalvi-library-resource h4{margin:0 0 3px;font-size:14px}.nalvi-library-resource p{margin:0;color:#746c7f;font-size:12px;line-height:1.4}.nalvi-library-resource .mini-btn{white-space:nowrap}
-.nalvi-material-creator .gesa-form{margin-top:15px}.nalvi-material-preview{margin-top:15px;padding:15px;border:1px solid #dcd3ec;border-radius:17px;background:#f8f5ff}.nalvi-material-preview h4{margin:0 0 10px}.nalvi-material-preview ol{display:grid;gap:8px;margin:0 0 13px;padding-left:24px}.nalvi-material-preview li{padding-left:3px;color:#4f4661}.nalvi-material-preview li b,.nalvi-material-preview li span{display:block}.nalvi-material-preview li span{margin-top:2px;color:#746c7f;font-size:12px}
+.nalvi-teacher-library .gesa-card{min-width:0}.nalvi-audio-library{max-width:880px}.nalvi-audio-library-search{display:grid;gap:7px;color:#514861;font-size:12px;font-weight:900}.nalvi-audio-library-search input{width:100%;min-height:48px;padding:11px 14px;border:2px solid #ddd5ed;border-radius:14px;background:#fff;color:inherit;font:inherit}.nalvi-audio-library-search input:focus{border-color:#6748c5;outline:3px solid #6748c51d}.nalvi-audio-library-status{margin:13px 0;color:#70687d;font-size:13px}.nalvi-audio-library-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.nalvi-audio-library-item{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px 13px;border:1px solid #e4deed;border-radius:14px;background:#fbfafd}.nalvi-audio-library-item b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nalvi-teacher-audio-play{display:grid;place-items:center;flex:0 0 auto;width:40px;height:40px;border:1px solid #d8ceec;border-radius:50%;background:#fff;color:#4e3998;font-size:18px;cursor:pointer}.nalvi-teacher-audio-play:hover,.nalvi-teacher-audio-play:focus-visible{border-color:#6447be;background:#f0ebff;outline:2px solid #7655d622}.nalvi-teacher-audio-play.is-playing{background:#5e3fbd;color:#fff}.nalvi-teacher-audio-play.is-error{color:#9d304f}.nalvi-teacher-audio-play:disabled{cursor:wait;opacity:.65}
+.nalvi-material-creator{margin-bottom:15px}.nalvi-material-creator .gesa-form{margin-top:15px}.nalvi-material-preview{margin-top:15px;padding:15px;border:1px solid #dcd3ec;border-radius:17px;background:#f8f5ff}.nalvi-material-preview h4{margin:0 0 10px}.nalvi-material-preview ol{display:grid;gap:8px;margin:0 0 13px;padding-left:24px}.nalvi-material-preview li{padding-left:3px;color:#4f4661}.nalvi-material-preview li b,.nalvi-material-preview li span{display:block}.nalvi-material-preview li span{margin-top:2px;color:#746c7f;font-size:12px}
 .nalvi-wheel-stage{position:relative;display:grid;place-items:center;gap:12px;margin-top:18px;padding:18px;border-radius:20px;background:linear-gradient(145deg,#f7f3ff,#edfaf5);overflow:hidden}
 .nalvi-wheel{--wheel-segments:6;--wheel-label-size:11px;position:relative;display:grid;place-items:center;width:min(270px,72vw);aspect-ratio:1;border:8px solid #fff;border-radius:50%;background:conic-gradient(#6949cc 0 16.6%,#1a8a70 16.6% 33.2%,#ef7180 33.2% 49.8%,#ffc95a 49.8% 66.4%,#4e83d6 66.4% 83%,#8c64d8 83%);box-shadow:0 11px 24px rgba(48,37,75,.18);color:#fff;font-size:48px;font-weight:950;transition:transform 1.2s cubic-bezier(.14,.72,.18,1);overflow:hidden}
 .nalvi-wheel:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border:7px solid #fff;border-radius:50%;background:#213d39;box-shadow:0 3px 10px rgba(0,0,0,.2)}
@@ -56,23 +69,35 @@
 #gesaGroupAccessDialog .gesa-dialog-card>p{margin:0;color:#675f74;line-height:1.5}
 #gesaGroupAccessDialog .gesa-form-status{min-height:22px}
 
+@media(max-width:900px){
+  .nalvi-academic-workspace,#institutional.nalvi-nav-collapsed .nalvi-academic-workspace{grid-template-columns:minmax(0,1fr);gap:14px}
+  .nalvi-academic-workspace>.gesa-tabs.nalvi-academic-nav{grid-column:1;grid-row:1;position:sticky;top:78px;z-index:6;display:flex;flex-direction:row;max-height:none;overflow-x:auto;overflow-y:hidden;padding:7px;scrollbar-width:thin}
+  .nalvi-academic-workspace>#gesaAcademicState,.nalvi-academic-workspace>.gesa-pane{grid-column:1;grid-row:2}
+  .nalvi-academic-menu-toggle{display:none}
+  .gesa-tabs.nalvi-academic-nav .gesa-tab,#institutional.nalvi-nav-collapsed .gesa-tabs.nalvi-academic-nav .gesa-tab{display:grid;grid-template-columns:30px auto;flex:0 0 auto;justify-items:stretch;width:auto;min-width:max-content;min-height:46px;padding:7px 12px;border:0;border-bottom:3px solid transparent;text-align:left}
+  #institutional.nalvi-nav-collapsed .nalvi-academic-nav-copy{display:block}
+  .nalvi-academic-nav-icon{width:30px;height:30px;border-radius:9px;font-size:16px}
+}
 @media(max-width:760px){
-  .nalvi-academic-entry,.nalvi-academic-tools-grid,.nalvi-teacher-library-grid{grid-template-columns:minmax(0,1fr)}
+  .nalvi-academic-entry,.nalvi-academic-tools-grid{grid-template-columns:minmax(0,1fr)}
   .nalvi-student-class-list{grid-template-columns:minmax(0,1fr)}
-  .gesa-tabs.nalvi-academic-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
   .nalvi-academic-entry-card{grid-template-columns:48px minmax(0,1fr);padding:17px}
   .nalvi-academic-entry-icon{width:48px;height:48px;border-radius:15px;font-size:23px}
   .nalvi-academic-entry-card h3{font-size:19px}
+  .nalvi-teacher-first-step{grid-template-columns:46px minmax(0,1fr);padding:17px}
+  .nalvi-teacher-first-step>span{width:46px;height:46px}
+  .nalvi-teacher-first-step .btn{grid-column:1/-1;width:100%}
+  .nalvi-summary-metrics,.nalvi-audio-library-results{grid-template-columns:minmax(0,1fr)}
+  .nalvi-student-data>.gesa-section-head{display:block}
 }
 @media(max-width:430px){
   .nalvi-academic-entry-card{grid-template-columns:minmax(0,1fr)}
   .nalvi-academic-pin-row{grid-template-columns:minmax(0,1fr)}
   .nalvi-academic-pin-row button{width:100%}
-  .gesa-tabs.nalvi-academic-nav{grid-template-columns:minmax(0,1fr)}
-  .gesa-tabs.nalvi-academic-nav .gesa-tab{min-height:68px}
   .nalvi-student-class{grid-template-columns:auto minmax(0,1fr)}
   .nalvi-student-class button{grid-column:1/-1;width:100%}
   .gesa-group-share{justify-items:start}
-  .nalvi-library-resource{grid-template-columns:42px minmax(0,1fr)}
-  .nalvi-library-resource .mini-btn{grid-column:1/-1;width:100%}
+  .nalvi-summary-heading{align-items:flex-start;flex-direction:column}
+  .nalvi-summary-heading .mini-btn{width:100%}
+  .nalvi-export-menu[open]>.gesa-inline-actions{left:0;right:auto}
 }

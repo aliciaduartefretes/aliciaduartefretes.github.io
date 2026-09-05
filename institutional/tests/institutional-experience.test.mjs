@@ -359,10 +359,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-7"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca docente","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-7/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-5/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-8"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de audio","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-8/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-6/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -413,7 +413,10 @@ test("academic surfaces localize and use one strategic navigation in all six UI 
   for(const locale of ["es","en","pt","fr","it","de"])assert.match(academicScript,new RegExp(`\\b${locale}:\\{`));
   for(const phrase of ["Academic management","Gestão acadêmica","Gestion académique","Gestione accademica","Akademische Verwaltung"])assert.match(academicScript,new RegExp(phrase));
   for(const marker of ["decorateAcademicNavigation","nalvi-academic-nav-copy","toolsTitle","teacherPanelTitle","createClassBody"])assert.match(academicScript,new RegExp(marker));
-  assert.match(academicStyle,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(academicStyle,/\.nalvi-academic-workspace\{display:grid;grid-template-columns:230px minmax\(0,1fr\)/);
+  assert.match(academicStyle,/\.nalvi-academic-workspace>\.gesa-tabs\.nalvi-academic-nav/);
+  assert.match(academicStyle,/#institutional\.nalvi-nav-collapsed/);
+  assert.match(academicScript,/nalviAcademicMenuCollapsed/);
 });
 
 test("teacher library turns reviewed source material into a question draft without changing answers",()=>{
@@ -423,10 +426,22 @@ test("teacher library turns reviewed source material into a question draft witho
   assert.equal(draft.content,"¿Qué significa «Maitei»? | Saludo\n¿Moõgua nde? | ¿De dónde eres?");
   assert.deepEqual(Array.from(draft.items,item=>[item.question,item.answer]),[["¿Qué significa «Maitei»?","Saludo"],["¿Moõgua nde?","¿De dónde eres?"]]);
   assert.deepEqual(Array.from(draft.rejected),["Línea sin respuesta"]);
-  assert.match(academicScript,/resource\("🔊",c\.dictionary,c\.dictionaryBody,"dictionary"\)/);
-  assert.match(academicScript,/99 grabaciones humanas autorizadas/);
+  assert.match(academicScript,/window\.NALVI_RECORDED_AUDIO/);
+  assert.match(academicScript,/nalviTeacherAudioSearch/);
+  assert.match(academicScript,/data-teacher-audio-id/);
+  assert.match(academicScript,/audioAuthorized===true&&item\?\.humanRecorded===true/);
+  assert.match(academicScript,/Biblioteca de audio/);
+  assert.doesNotMatch(academicScript,/data-library-go/);
   assert.doesNotMatch(academicScript,/fetch\([^)]*nalviMaterial|openai|generativeLanguage/i);
-  assert.match(academicStyle,/\.nalvi-teacher-library-grid/);
+  assert.match(academicStyle,/\.nalvi-audio-library-results/);
+  assert.match(academicStyle,/\.nalvi-teacher-audio-play\.is-playing/);
+});
+
+test("teacher overview hides raw counters and explains the next useful action",()=>{
+  for(const marker of ["nalviTeacherSummary","Comienza por crear una clase","Tu aula hoy","nalviStudentData","Exportar datos"])assert.match(academicScript,new RegExp(marker));
+  assert.match(academicStyle,/#gesaAcademicKpis\[hidden\]\{display:none!important\}/);
+  assert.match(academicStyle,/\.nalvi-teacher-first-step/);
+  assert.match(academicStyle,/@media\(max-width:900px\)/);
 });
 
 test("home secondary course cards keep useful descriptions without unit-count clutter",()=>{
