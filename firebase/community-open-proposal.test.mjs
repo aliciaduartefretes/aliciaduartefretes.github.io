@@ -66,7 +66,7 @@ try{
   const conversation=doc(alicia,"communityConversations","dm__alicia__marcelo");
   const firstMessage=doc(alicia,"communityConversations","dm__alicia__marcelo","messages","message-1");
   const firstBatch=writeBatch(alicia);
-  firstBatch.set(conversation,{participantIds:["alicia","marcelo"],lastMessage:"Mba’éichapa reime?",lastSenderId:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  firstBatch.set(conversation,{participantIds:["alicia","marcelo"],lastMessage:"Mba’éichapa reime?",lastSenderId:"alicia",updatedAt:serverTimestamp()},{merge:true});
   firstBatch.set(firstMessage,{authorId:"alicia",body:"Mba’éichapa reime?",createdAt:serverTimestamp()});
   await assertSucceeds(firstBatch.commit());
   await assertSucceeds(getDoc(doc(marcelo,"communityConversations","dm__alicia__marcelo")));
@@ -76,6 +76,9 @@ try{
   await assertFails(getDocs(collection(sofia,"communityConversations","dm__alicia__marcelo","messages")));
   await assertFails(setDoc(doc(sofia,"communityConversations","dm__alicia__marcelo","messages","spoofed"),{authorId:"sofia",body:"Mensaje ajeno",createdAt:serverTimestamp()}));
   await assertFails(setDoc(doc(alicia,"communityConversations","leaky"),{participantIds:["alicia","marcelo"],participantEmails:["alicia@example.com"],lastMessage:"Dato privado",lastSenderId:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(doc(marcelo,"communityConversations","dm__alicia__marcelo"),{"readAtBy.marcelo":serverTimestamp()}));
+  await assertFails(updateDoc(doc(alicia,"communityConversations","dm__alicia__marcelo"),{"readAtBy.marcelo":serverTimestamp()}));
+  await assertFails(updateDoc(doc(sofia,"communityConversations","dm__alicia__marcelo"),{"readAtBy.sofia":serverTimestamp()}));
   const responseBatch=writeBatch(marcelo),response=doc(marcelo,"communityConversations","dm__alicia__marcelo","messages","message-2");
   responseBatch.update(doc(marcelo,"communityConversations","dm__alicia__marcelo"),{lastMessage:"Aime porã, ¿ha nde?",lastSenderId:"marcelo",updatedAt:serverTimestamp()});
   responseBatch.set(response,{authorId:"marcelo",body:"Aime porã, ¿ha nde?",createdAt:serverTimestamp()});

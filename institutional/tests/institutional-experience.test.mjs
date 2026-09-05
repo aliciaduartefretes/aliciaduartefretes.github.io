@@ -30,7 +30,7 @@ const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-16"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-17"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -168,13 +168,29 @@ test("profile synchronization is batched and does not rebuild the complete commu
   assert.doesNotMatch(connectBlock,/subscribeProfiles\?\.\(profiles=>\{state\.profiles=profiles;if\([^)]*\)render\(\)/);
 });
 
+test("visible follow state is restored lazily and cached without reading the whole directory",async()=>{
+  const reads=[],reference=path=>({path});
+  const firebase={
+    auth:{currentUser:{uid:"alicia",displayName:"Alicia",isAnonymous:false}},db:reference("db"),
+    doc:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
+    getDoc:async ref=>{reads.push(ref.path);return{exists:()=>ref.path.endsWith("communityProfiles/rene/followers/alicia"),data:()=>({})}}
+  };
+  const context=vm.createContext({window:{GCA_FEATURES:{communityWrites:true},GCA_FIREBASE_LIVE:firebase},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Promise,setTimeout,clearTimeout,Intl,console,document:{documentElement:{lang:"es"}}});
+  vm.runInContext(service,context);const api=context.window.NALVI_COMMUNITY_SERVICE;
+  assert.deepEqual(JSON.parse(JSON.stringify(await api.hydrateFollowStates(["rene","marcelo","rene"]))),[{userId:"rene",following:true},{userId:"marcelo",following:false}]);
+  assert.equal(reads.length,2);
+  await api.hydrateFollowStates(["rene","marcelo"]);
+  assert.equal(reads.length,2);
+  assert.match(script,/refreshVisibleFollowStates/);
+});
+
 test("direct messages use a private deterministic conversation and an atomic write",async()=>{
-  const batches=[],writes=[],reference=path=>({path});
+  const batches=[],writes=[],reads=[],reference=path=>({path});
   const firebase={
     auth:{currentUser:{uid:"alicia",displayName:"Alicia Duarte",photoURL:"",isAnonymous:false}},db:reference("db"),
     doc:(base,...parts)=>reference(parts.length?`${base.path}/${parts.join("/")}`:`${base.path}/auto-message`),
     collection:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
-    getDoc:async ref=>({exists:()=>ref.path.endsWith("communityProfiles/alicia")||ref.path.endsWith("communityProfiles/rene"),data:()=>ref.path.endsWith("communityProfiles/alicia")?{displayName:"Alicia Duarte",bio:""}:{displayName:"René Murillo"},ref}),
+    getDoc:async ref=>{reads.push(ref.path);return{exists:()=>ref.path.endsWith("communityProfiles/alicia")||ref.path.endsWith("communityProfiles/rene"),data:()=>ref.path.endsWith("communityProfiles/alicia")?{displayName:"Alicia Duarte",bio:""}:{displayName:"René Murillo"},ref}},
     setDoc:async(ref,data,options)=>writes.push({path:ref.path,data,options}),
     writeBatch:()=>{const pending=[];const batch={set:(ref,data,options)=>pending.push({path:ref.path,data,options}),commit:async()=>batches.push(pending)};return batch},
     serverTimestamp:()=>"timestamp"
@@ -186,19 +202,28 @@ test("direct messages use a private deterministic conversation and an atomic wri
   assert.equal(await api.sendDirectMessage("rene","Mba’éichapa reime?"),"dm__alicia__rene");
   assert.equal(batches.length,1);
   assert.equal(batches[0].length,2);
-  assert.ok(batches[0].some(item=>item.path==="db/communityConversations/dm__alicia__rene"&&item.data.lastSenderId==="alicia"));
+  assert.ok(batches[0].some(item=>item.path==="db/communityConversations/dm__alicia__rene"&&item.data.lastSenderId==="alicia"&&item.options?.merge===true));
+  assert.deepEqual([...batches[0].find(item=>item.path==="db/communityConversations/dm__alicia__rene").data.participantIds],["alicia","rene"]);
   assert.ok(batches[0].some(item=>item.path.endsWith("/messages/auto-message")&&item.data.body==="Mba’éichapa reime?"));
+  assert.equal(reads.some(path=>path.includes("communityConversations")),false);
   assert.doesNotMatch(JSON.stringify(batches),/email|xp|progress/);
 });
 
 test("community exposes a responsive private messaging inbox from user profiles",()=>{
-  for(const marker of ["nalviCommunityMessages","data-community-message-user","nalvi-message-modal","nalviMessageForm","subscribeConversations","subscribeMessages","sendDirectMessage","conversationIdFor"])assert.match(script+service,new RegExp(marker));
+  for(const marker of ["nalviCommunityMessages","data-community-message-user","nalvi-message-modal","nalviMessageForm","subscribeConversations","subscribeMessages","sendDirectMessage","conversationIdFor","markConversationRead","readAtBy","nalvi-message-receipt"])assert.match(script+service+style,new RegExp(marker));
   for(const marker of ["nalvi-message-window","nalvi-message-layout","nalvi-message-bubble","100dvh"])assert.match(style,new RegExp(marker));
   for(const locale of ["en","pt","fr","it","de"])assert.match(script,new RegExp(`${locale}:\\{[^\\n]*messagesHelp:`));
   assert.match(firestoreRules,/match \/communityConversations\/\{conversationId\}/);
   assert.match(firestoreRules,/isConversationParticipant/);
   assert.match(firestoreRules,/getAfter\(\/databases\/\$\(database\)\/documents\/communityConversations\/\$\(conversationId\)\)/);
   assert.doesNotMatch(script+service,/recipientEmail|participantEmails|emailAddress/);
+});
+
+test("Para ti and Siguiendo stay visible outside the retractable discovery panel",()=>{
+  const panel=script.match(/function communityPanel\(\)[\s\S]*?function setStatus/)?.[0]||"";
+  const discovery=script.match(/function discoveryMarkup\(\)[\s\S]*?function composerMarkup/)?.[0]||"";
+  assert.match(panel,/\$\{feedTabsMarkup\(\)\}\$\{discoveryMarkup\(\)\}/);
+  assert.doesNotMatch(discovery,/nalvi-community-feed-tabs/);
 });
 
 test("social copy is Guaraní-first with support in all six UI languages",()=>{
@@ -247,7 +272,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell exposes relevant read-only Community notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-11"/);
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-12"/);
   assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-1"/);
   for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","nalviCommunityNotificationsSeen.v1","openPost"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
@@ -308,9 +333,9 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-11/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-16/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-15/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-12/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-16/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-1/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
