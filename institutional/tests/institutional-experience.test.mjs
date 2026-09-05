@@ -470,6 +470,11 @@ test("academic login intent returns to management instead of bouncing to home",(
   assert.match(index,/if\(!window\.canAccessInstitutional&&location\.hash==="#institutional"\)show\("institutions",true\)/);
 });
 
+test("anonymous sessions never build Firestore document paths from an empty email",()=>{
+  assert.match(index,/else if\(user&&!user\.isAnonymous&&normalizeEmail\(user\.email\)\)/);
+  assert.match(index,/if\(!email\)\{studentClasses=\[\];studentTasks=\[\];renderStudentClasses\(\);return\}/);
+});
+
 test("legacy academic loader delegates after the secure management shell is installed",()=>{
   assert.match(index,/document\.querySelector\("#institutional\[data-gesa-installed='true'\]"\)\)return window\.GESA\?\.loadAcademic\?\.\(\)/);
 });
