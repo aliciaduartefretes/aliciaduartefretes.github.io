@@ -30,7 +30,7 @@ const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-14"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-15"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -124,8 +124,37 @@ test("profiles are searchable, editable and keep rewards inside the profile",()=
   assert.match(service,/safeName\(current\.displayName\)\|\|safeName\(user\.displayName\)/);
   assert.match(script,/stored\?\.displayName\|\|post\?\.author\|\|account\?\.displayName/);
   assert.match(service,/safePhoto\(user\.photoURL\)/);
+  assert.match(script,/function searchableName\(value\)/);
+  assert.match(script,/normalize\("NFD"\)\.replace\(\/\[\\u0300-\\u036f\]\//);
   assert.doesNotMatch(script,/type="file"|nalviCommunityAvatarInput|nalviCommunityCoverInput/);
   assert.doesNotMatch(script,/type="email"|name="email"/);
+});
+
+test("community directory includes every public profile and safely seeds registered users",async()=>{
+  const subscriptionBlock=service.match(/function subscribeProfiles[\s\S]*?function subscribeNotifications/)?.[0]||"";
+  assert.doesNotMatch(subscriptionBlock,/firebase\.limit\(/);
+  const writes=[],reference=path=>({path});
+  const firebase={
+    auth:{currentUser:{uid:"admin",displayName:"Alicia",isAnonymous:false}},db:reference("db"),
+    collection:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
+    doc:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
+    onSnapshot:(ref,onNext)=>{onNext({docs:[{id:"known",data:()=>({displayName:"Perfil existente",photoURL:"",bio:""})}]});return()=>{}},
+    getDocs:async ref=>ref.path.endsWith("/users")?{docs:[
+      {id:"known",data:()=>({displayName:"Perfil existente",email:"private@example.com"})},
+      {id:"rene",data:()=>({displayName:"René Murillo",email:"rene@example.com",xp:900})}
+    ]}:{docs:[]},
+    setDoc:async(ref,data)=>writes.push({path:ref.path,data}),
+    serverTimestamp:()=>"timestamp"
+  };
+  const context=vm.createContext({window:{GCA_FEATURES:{communityWrites:true},GCA_FIREBASE_LIVE:firebase,GESA_CONTEXT:{role:"platform_admin"}},Date,JSON,Error,TypeError,String,Math,Set,Promise,Intl,console,document:{documentElement:{lang:"es"}},setTimeout,clearTimeout});
+  vm.runInContext(service,context);
+  let profiles=[];context.window.NALVI_COMMUNITY_SERVICE.subscribeProfiles(value=>{profiles=value});
+  await new Promise(resolve=>setTimeout(resolve,0));
+  assert.equal(profiles.length,1);
+  assert.equal(writes.length,1);
+  assert.equal(writes[0].path,"db/communityProfiles/rene");
+  assert.deepEqual({...writes[0].data},{userId:"rene",displayName:"René Murillo",photoURL:"",bio:"",createdAt:"timestamp",updatedAt:"timestamp"});
+  assert.doesNotMatch(JSON.stringify(writes[0].data),/private@example|rene@example|xp/);
 });
 
 test("social copy is Guaraní-first with support in all six UI languages",()=>{
@@ -152,6 +181,11 @@ test("proposed Firebase rules are text-only and validate public names against pr
   assert.match(firestoreRules,/communityProfilePath\(request\.auth\.uid\)/);
   assert.match(firestoreRules,/authorName == get\(communityProfilePath\(request\.auth\.uid\)\)\.data\.displayName/);
   assert.match(firestoreRules,/request\.resource\.data\.diff\(resource\.data\)\.affectedKeys\(\)\.hasOnly\(\[\s*'displayName', 'photoURL', 'bio', 'updatedAt'/);
+  assert.match(firestoreRules,/allow create: if isPlatformAdmin\(\)[\s\S]*exists\(userProfilePath\(userId\)\)/);
+  assert.match(firestoreRules,/request\.resource\.data\.displayName\s*== get\(userProfilePath\(userId\)\)\.data\.get\('displayName', ''\)/);
+  const communityProfileRules=firestoreRules.match(/match \/communityProfiles\/\{userId\}[\s\S]*?match \/communityPosts\/\{postId\}/)?.[0]||"";
+  const adminSeedRule=communityProfileRules.match(/allow create: if isPlatformAdmin\(\)[\s\S]*?request\.resource\.data\.updatedAt == request\.time;/)?.[0]||"";
+  assert.doesNotMatch(adminSeedRule,/'email'|'xp'|'done'/);
 });
 
 test("retired profanity course remains absent from every visible product surface",()=>{
@@ -169,7 +203,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell exposes relevant read-only Community notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-9"/);
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-10"/);
   assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-1"/);
   for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","nalviCommunityNotificationsSeen.v1","openPost"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
@@ -230,8 +264,8 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-9/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-14/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-10/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-15/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-14/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-1/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);

@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-9";
+  const VERSION="NALVI-COMMUNITY-SERVICE-10";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
@@ -24,6 +24,7 @@
   let profilesById=new Map();
   let remoteUnsubscribe=null;
   let profileUnsubscribe=null;
+  let directorySeedAttempted=false;
   let lastPostAt=0;
   let lastCommentAt=0;
   const viewedThisSession=new Set();
@@ -136,13 +137,23 @@
     let cancelled=false;
     firebaseReady().then(firebase=>{
       if(cancelled)return;
-      const directory=firebase.query(firebase.collection(firebase.db,"communityProfiles"),firebase.limit(40));
+      const directory=firebase.collection(firebase.db,"communityProfiles");
       profileUnsubscribe=firebase.onSnapshot(directory,snapshot=>{
         const next=snapshot.docs.map(item=>{const data=item.data()||{},previous=profilesById.get(item.id)||{};return{...previous,userId:item.id,displayName:safeName(data.displayName)||"Miembro NALVI",photoURL:safePhoto(data.photoURL),bio:normalizeBio(data.bio)}});
         next.forEach(profile=>profilesById.set(profile.userId,profile));onProfiles(listProfiles());
+        seedRegisteredProfiles(firebase,new Set(snapshot.docs.map(item=>item.id))).catch(error=>console.warn("NALVI_COMMUNITY_DIRECTORY_SYNC",error));
       },error=>onError?.(error));
     }).catch(error=>onError?.(error));
     return()=>{cancelled=true;profileUnsubscribe?.();profileUnsubscribe=null};
+  }
+  async function seedRegisteredProfiles(firebase,existingProfileIds){
+    const user=firebase.auth?.currentUser;if(directorySeedAttempted||!user||user.isAnonymous||window.GESA_CONTEXT?.role!=="platform_admin")return 0;
+    directorySeedAttempted=true;
+    try{
+      const snapshot=await firebase.getDocs(firebase.collection(firebase.db,"users")),missing=snapshot.docs.map(item=>({userId:item.id,data:item.data()||{}})).filter(item=>!existingProfileIds.has(item.userId)&&safeName(item.data.displayName).length>=2);
+      const results=await Promise.allSettled(missing.map(item=>firebase.setDoc(firebase.doc(firebase.db,"communityProfiles",item.userId),{userId:item.userId,displayName:safeName(item.data.displayName),photoURL:"",bio:"",createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()})));
+      return results.filter(result=>result.status==="fulfilled").length;
+    }catch(error){directorySeedAttempted=false;throw error}
   }
   function subscribeNotifications(onNotifications,onError){
     if(typeof onNotifications!=="function")throw new TypeError("COMMUNITY_NOTIFICATION_SUBSCRIBER_REQUIRED");

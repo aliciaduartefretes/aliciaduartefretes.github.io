@@ -51,6 +51,25 @@ match /communityProfiles/{userId} {
     && request.resource.data.createdAt == request.time
     && request.resource.data.updatedAt == request.time;
 
+  // El administrador puede crear solamente la ficha pública mínima de una
+  // cuenta registrada. No puede copiar correo, progreso ni datos privados.
+  allow create: if isPlatformAdmin()
+    && exists(userProfilePath(userId))
+    && request.resource.data.keys().hasOnly([
+      'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
+    ])
+    && request.resource.data.keys().hasAll([
+      'userId', 'displayName', 'photoURL', 'bio', 'createdAt', 'updatedAt'
+    ])
+    && request.resource.data.userId == userId
+    && validCommunityText(request.resource.data.displayName, 80)
+    && request.resource.data.displayName
+      == get(userProfilePath(userId)).data.get('displayName', '')
+    && request.resource.data.photoURL == ''
+    && request.resource.data.bio == ''
+    && request.resource.data.createdAt == request.time
+    && request.resource.data.updatedAt == request.time;
+
   allow update: if isCommunityMember()
     && userId == request.auth.uid
     && resource.data.userId == request.auth.uid

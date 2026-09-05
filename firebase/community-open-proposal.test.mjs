@@ -23,7 +23,16 @@ try{
   const alicia=testEnv.authenticatedContext("alicia",token("Alicia Duarte","alicia@example.com","https://example.com/alicia.jpg")).firestore();
   const marcelo=testEnv.authenticatedContext("marcelo",token("Marcelo Benítez","marcelo@example.com")).firestore();
   const sofia=testEnv.authenticatedContext("sofia",token("Sofía Vera","sofia@example.com")).firestore();
+  const platform=testEnv.authenticatedContext("platform",token("Administración","admin@example.com")).firestore();
   const post=doc(alicia,"communityPosts","welcome");
+
+  await testEnv.withSecurityRulesDisabled(async context=>{
+    const database=context.firestore();
+    await setDoc(doc(database,"staff","admin@example.com"),{role:"admin",active:true});
+    await setDoc(doc(database,"users","rene"),{uid:"rene",displayName:"René Murillo",email:"rene@example.com",xp:900});
+    await setDoc(doc(database,"users","rene-wrong-name"),{uid:"rene-wrong-name",displayName:"René Murillo",email:"private@example.com"});
+    await setDoc(doc(database,"users","rene-private"),{uid:"rene-private",displayName:"René Murillo",email:"private@example.com"});
+  });
 
   await assertSucceeds(getDoc(doc(guest,"communityPosts","welcome")));
   await assertSucceeds(getDocs(collection(guest,"communityPosts")));
@@ -38,6 +47,10 @@ try{
   await assertSucceeds(setDoc(marceloProfile,profileData("marcelo","Marcelo Benítez")));
   await assertFails(setDoc(doc(alicia,"communityProfiles","spoofed"),profileData("spoofed","Alicia Duarte","https://example.com/alicia.jpg")));
   await assertFails(setDoc(doc(alicia,"communityProfiles","wrong-photo"),profileData("alicia","Alicia Duarte","https://example.com/other.jpg")));
+  await assertSucceeds(setDoc(doc(platform,"communityProfiles","rene"),profileData("rene","René Murillo")));
+  await assertFails(setDoc(doc(platform,"communityProfiles","rene-wrong-name"),profileData("rene-wrong-name","Otro nombre")));
+  await assertFails(setDoc(doc(platform,"communityProfiles","rene-private"),{...profileData("rene-private","René Murillo"),email:"rene@example.com"}));
+  await assertFails(setDoc(doc(marcelo,"communityProfiles","rene-other"),profileData("rene-other","René Murillo")));
   await assertSucceeds(updateDoc(aliciaProfile,{bio:"Docente de guaraní",updatedAt:serverTimestamp()}));
   await assertSucceeds(updateDoc(aliciaProfile,{displayName:"Alicia Ñe’ẽ",updatedAt:serverTimestamp()}));
   await assertFails(updateDoc(aliciaProfile,{email:"otra@example.com",updatedAt:serverTimestamp()}));
