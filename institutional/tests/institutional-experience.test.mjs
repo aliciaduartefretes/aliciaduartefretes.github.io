@@ -30,7 +30,7 @@ const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-17"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-18"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -272,9 +272,9 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell exposes relevant read-only Community notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-12"/);
-  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-1"/);
-  for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","nalviCommunityNotificationsSeen.v1","openPost"])assert.match(notificationScript,new RegExp(marker));
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-13"/);
+  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-2"/);
+  for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","message","nalviCommunityNotificationsSeen.v1","openPost","openMessages"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
   assert.match(notificationScript,/aria-haspopup="dialog"/);
   assert.match(notificationStyle,/\.nalvi-notification-panel\{position:fixed/);
@@ -282,7 +282,7 @@ test("global bell exposes relevant read-only Community notifications",()=>{
   assert.doesNotMatch(service,/notification(?:s)?\s*[,)]\s*payload|addDoc\([^\n]*notification/i);
 });
 
-test("notification subscription excludes self interactions and merges comments, likes and follows",async()=>{
+test("notification subscription excludes self interactions and merges comments, likes, follows and unread messages",async()=>{
   const notifications=[];
   const timestamp=value=>({toMillis:()=>value,toDate:()=>new Date(value)});
   const reference=path=>({path});
@@ -293,6 +293,11 @@ test("notification subscription excludes self interactions and merges comments, 
     query:(base,...constraints)=>({...base,constraints}),where:(field,operator,value)=>({kind:"where",field,operator,value}),orderBy:(field,direction)=>({kind:"orderBy",field,direction}),limit:value=>({kind:"limit",value}),
     onSnapshot:(query,onNext)=>{
       if(query.path==="db/communityProfiles/alicia/followers")onNext({docs:[snapshot("maria",{createdAt:timestamp(1000)},query.path)]});
+      else if(query.path==="db/communityConversations")onNext({docs:[
+        snapshot("dm__alicia__rene",{participantIds:["alicia","rene"],lastMessage:"Mba’éichapa reime?",lastSenderId:"rene",updatedAt:timestamp(4000),readAtBy:{alicia:timestamp(3500)}},`${query.path}/dm__alicia__rene`),
+        snapshot("dm__alicia__jorge",{participantIds:["alicia","jorge"],lastMessage:"Aguyje",lastSenderId:"alicia",updatedAt:timestamp(4500),readAtBy:{}},`${query.path}/dm__alicia__jorge`),
+        snapshot("dm__alicia__maria",{participantIds:["alicia","maria"],lastMessage:"Iporã",lastSenderId:"maria",updatedAt:timestamp(4200),readAtBy:{alicia:timestamp(4300)}},`${query.path}/dm__alicia__maria`)
+      ]});
       else if(query.path==="db/communityPosts")onNext({docs:[snapshot("post-1",{authorId:"alicia",body:"Che aikuaa",createdAt:timestamp(900)},"db/communityPosts/post-1")]});
       else if(query.path.endsWith("/comments"))onNext({docs:[snapshot("comment-1",{authorId:"maria",authorName:"María",body:"Iporã",createdAt:timestamp(3000)},`${query.path}/comment-1`),snapshot("self",{authorId:"alicia",authorName:"Alicia",body:"Aguyje",createdAt:timestamp(3100)},`${query.path}/self`)]});
       else if(query.path.endsWith("/reactions"))onNext({docs:[snapshot("jorge",{type:"like",createdAt:timestamp(2000)},`${query.path}/jorge`),snapshot("alicia",{type:"like",createdAt:timestamp(2100)},`${query.path}/alicia`)]});
@@ -304,10 +309,21 @@ test("notification subscription excludes self interactions and merges comments, 
   const unsubscribe=context.window.NALVI_COMMUNITY_SERVICE.subscribeNotifications(items=>notifications.push(items));
   await new Promise(resolve=>setTimeout(resolve,0));
   const latest=notifications.at(-1)||[];
-  assert.deepEqual([...latest.map(item=>item.kind)].sort(),["comment","follow","like"]);
+  assert.deepEqual([...latest.map(item=>item.kind)].sort(),["comment","follow","like","message"]);
   assert.ok(latest.every(item=>item.actorId!=="alicia"));
-  assert.deepEqual(latest.map(item=>item.createdAt),[3000,2000,1000]);
+  assert.deepEqual(latest.map(item=>item.createdAt),[4000,3000,2000,1000]);
+  assert.equal(latest[0].actorId,"rene");
+  assert.equal(latest[0].body,"Mba’éichapa reime?");
   unsubscribe();
+});
+
+test("account menu keeps sign out visible without promoting account deletion",()=>{
+  const menu=index.match(/<div class="account-menu hide" id="accountMenu">[\s\S]*?<\/div>/)?.[0]||"";
+  assert.match(menu,/id="logoutBtn">Cerrar sesión<\/button>/);
+  assert.doesNotMatch(menu,/eliminar-cuenta|Solicitar eliminación/);
+  assert.doesNotMatch(index,/Request account deletion|Solicitar exclusão|Demander la suppression|Richiedi eliminazione|Kontolöschung beantragen/);
+  assert.match(stableRuntime,/const logout=document\.querySelector\("#logoutBtn"\);if\(logout\)logout\.textContent=copy\.account\[1\]/);
+  assert.doesNotMatch(stableRuntime,/#accountMenu \.mini-btn[^\n]*forEach/);
 });
 
 test("composer keeps normal keyboard input while the game overlay is closed",()=>{
@@ -333,10 +349,10 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-12/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-13/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-18/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-16/);
-  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-1/);
+  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-2/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
   assert.doesNotMatch(index,/firebase-storage\.js|storageRef,uploadBytes|getDownloadURL,deleteObject/);

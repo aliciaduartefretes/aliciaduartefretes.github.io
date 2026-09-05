@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-EXPERIENCE-17";
+  const VERSION="NALVI-COMMUNITY-EXPERIENCE-18";
   const COMMUNITY_WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const COMMUNITY_ICON='<svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="7" r="3"></circle><circle cx="5.5" cy="9" r="2.25"></circle><circle cx="18.5" cy="9" r="2.25"></circle><path d="M6.5 19v-1.4a5.5 5.5 0 0 1 11 0V19"></path><path d="M1.8 18v-.8a3.8 3.8 0 0 1 4.3-3.8M22.2 18v-.8a3.8 3.8 0 0 0-4.3-3.8"></path></svg>';
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -117,6 +117,7 @@
     if(!signedIn()){window.courseGoogleLogin?.();return}
     state.messagesOpen=true;if(recipientId)selectConversation(service()?.conversationIdFor?.(currentUid(),recipientId)||"",recipientId);render();connectConversations();
   }
+  function openMessagesFromNotification(recipientId=""){open(true);openMessages(recipientId)}
   function closeMessages(){state.messagesOpen=false;state.messageDraft="";state.unsubscribeConversations?.();state.unsubscribeConversations=null;state.unsubscribeMessages?.();state.unsubscribeMessages=null;state.activeMessageSubscriptionId="";render()}
   function openReport(post){if(!signedIn()){window.courseGoogleLogin?.();return}if(typeof show!=="function"){setStatus(copy().error,true);return}show("suggestions",true);setTimeout(()=>{const type=$("#ideaType"),idea=$("#idea"),name=$("#visitorName");if(type)type.value="Problema técnico";if(name&&!name.value)name.value=profilePerson(currentUid())?.displayName||user()?.displayName||"";if(idea){idea.value=`${safetyCopy().reportLead}\nID: ${post.id}\nAutor: ${post.author}\nMotivo: `;idea.focus()}},0)}
   function bindFeedActions(root){
@@ -153,6 +154,6 @@
   function connect(){state.unsubscribePosts?.();state.unsubscribeProfiles?.();state.unsubscribePosts=service()?.subscribePosts?.(posts=>{state.posts=posts;if(!$("#institutionalExperience")?.classList.contains("hide"))render()},()=>setStatus(copy().error,true))||null;state.unsubscribeProfiles=service()?.subscribeProfiles?.(profiles=>{const fingerprint=profileFingerprint(profiles);if(fingerprint===state.profilesFingerprint)return;state.profilesFingerprint=fingerprint;state.profiles=profiles;scheduleProfileRefresh()},()=>setStatus(copy().error,true))||null}
   function init(){if(!$("#institutionalExperience"))document.querySelector("main")?.insertAdjacentHTML("beforeend",'<section id="institutionalExperience" class="hide nalvi-institutional" aria-label="Comunidad NALVI"></section>');try{if(typeof views!=="undefined"&&!views.includes("institutionalExperience"))views.push("institutionalExperience")}catch{}installNavigation();render();connect();document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))setTimeout(syncLanguage,0)},true);window.addEventListener("nalvi:auth-known",()=>{connect();if(!$("#institutionalExperience")?.classList.contains("hide"))render()});if(location.hash==="#institutionalExperience"){open(false);setTimeout(()=>{if(location.hash==="#institutionalExperience")open(false)},500)}document.documentElement.dataset.nalviCommunity=VERSION;window.dispatchEvent(new CustomEvent("nalvi:community-ready",{detail:{version:VERSION,communityWritesEnabled:COMMUNITY_WRITES_ENABLED}}))}
 
-  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,open,openPost,render};
+  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,open,openPost,openMessages:openMessagesFromNotification,render};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

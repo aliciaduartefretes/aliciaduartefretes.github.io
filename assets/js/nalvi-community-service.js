@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-12";
+  const VERSION="NALVI-COMMUNITY-SERVICE-13";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
@@ -244,6 +244,16 @@
       const profileRef=firebase.doc(firebase.db,"communityProfiles",user.uid),followersQuery=firebase.query(firebase.collection(profileRef,"followers"),firebase.orderBy("createdAt","desc"),firebase.limit(20));
       rootUnsubscribers.push(firebase.onSnapshot(followersQuery,snapshot=>{
         buckets.set("followers",snapshot.docs.filter(item=>item.id!==user.uid).map(item=>{const data=item.data()||{},profile=profilesById.get(item.id);return{id:`follow:${item.id}`,kind:"follow",actorId:item.id,actorName:safeName(profile?.displayName),postId:"",postBody:"",body:"",date:dateLabel(data.createdAt),createdAt:notificationTime(data.createdAt)}}));emit();
+      },error=>onError?.(error)));
+      const conversationsQuery=firebase.query(firebase.collection(firebase.db,"communityConversations"),firebase.where("participantIds","array-contains",user.uid),firebase.limit(30));
+      rootUnsubscribers.push(firebase.onSnapshot(conversationsQuery,snapshot=>{
+        buckets.set("messages",snapshot.docs.map(item=>{
+          const data=item.data()||{},createdAt=notificationTime(data.updatedAt),readAt=notificationTime(data.readAtBy?.[user.uid]);
+          if(!createdAt||data.lastSenderId===user.uid||readAt>=createdAt)return null;
+          const actorId=String(data.lastSenderId||data.participantIds?.find(id=>id!==user.uid)||"");if(!actorId)return null;
+          const profile=profilesById.get(actorId);
+          return{id:`message:${item.id}:${createdAt}`,kind:"message",actorId,actorName:safeName(profile?.displayName),conversationId:item.id,postId:"",postBody:"",body:normalizeComment(data.lastMessage).slice(0,140),date:dateLabel(data.updatedAt),createdAt};
+        }).filter(Boolean));emit();
       },error=>onError?.(error)));
       const ownPosts=firebase.query(firebase.collection(firebase.db,"communityPosts"),firebase.where("authorId","==",user.uid),firebase.limit(12));
       rootUnsubscribers.push(firebase.onSnapshot(ownPosts,snapshot=>{
