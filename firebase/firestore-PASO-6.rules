@@ -172,7 +172,11 @@ service cloud.firestore {
         && get(institutionJoinPath(code)).data.get('type', '') == 'institution_teacher_invite'
         && get(institutionJoinPath(code)).data.get('code', '') == code
         && get(institutionJoinPath(code)).data.get('institutionId', '') == institutionId
-        && get(institutionJoinPath(code)).data.get('active', false) == true;
+        && get(institutionJoinPath(code)).data.get('active', false) == true
+        && exists(/databases/$(database)/documents/institutions/$(institutionId))
+        && get(/databases/$(database)/documents/institutions/$(institutionId)).data.get('active', false) == true
+        && get(/databases/$(database)/documents/institutions/$(institutionId)).data.get('status', '') != 'suspended'
+        && get(/databases/$(database)/documents/institutions/$(institutionId)).data.get('selfService', false) != true;
     }
 
     function isEnrolledIn(groupId) {
