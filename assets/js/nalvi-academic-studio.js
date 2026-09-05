@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-6";
+  const VERSION="NALVI-ACADEMIC-STUDIO-7";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -55,8 +55,17 @@
       tabs:{summary:["🏠","Übersicht","Lernende und Fortschritt"],adminSummary:["🛡️","Alle Lernenden","Einschreibungen prüfen"],groups:["👥","Klassen","Codes und Lernende"],assignments:["📝","Aufgaben","Lektionen zuweisen"],assessments:["📈","Fortschritt","Ergebnisse und Tests"],live:["🎯","PIN-Aktivität","Live-Übung"],tools:["🎡","Glücksrad und Fragen","Werkzeuge für den Unterricht"],certificates:["🏅","Zertifikate","Anträge und Ausstellung"],institution:["🏫","Mein Bereich","Lehrkräfte und Verwaltung"],adminInstitution:["🏫","Institutionen","Verantwortliche und Lehrkräfte"],leads:["📨","Anfragen","Institutionelle Kontakte"]}
     }
   };
+  const LIBRARY_COPY={
+    es:{tab:["📚","Biblioteca docente","Contenido y creador"],title:"Biblioteca docente",body:"Usa el contenido de NALVI o prepara una actividad con tu propio material.",nalviTitle:"Contenido NALVI",nalviBody:"Cursos, diccionario con audio y práctica auditiva listos para consultar en clase.",catalog:"Cursos y lecciones",catalogBody:"Guaraní general y rutas especializadas organizadas por objetivos.",dictionary:"Diccionario con audio",dictionaryBody:"Vocabulario consultable con pronunciaciones humanas disponibles.",listening:"Práctica auditiva",listeningBody:"Actividades construidas con las 99 grabaciones humanas autorizadas.",open:"Abrir",creatorTag:"CREADOR DOCENTE",creatorTitle:"De tu contenido a una actividad",creatorBody:"Pega una idea por línea usando “término = explicación” o “pregunta | respuesta”. NALVI conserva tus respuestas y crea un borrador para que lo revises.",materialTitle:"Título del material",materialTitleDefault:"Actividad de mi clase",materialContent:"Contenido",materialPlaceholder:"Maitei = Saludo\n¿Mba’éichapa reime? | ¿Cómo estás?",generate:"Crear borrador",format:"Agrega al menos una línea como “término = explicación” o “pregunta | respuesta”.",generated:"Borrador listo: {count} preguntas. Revísalo antes de guardarlo.",ignored:" {count} líneas necesitan el formato indicado.",preview:"Vista previa",useDraft:"Revisar en el banco de preguntas →",draftReady:"Borrador creado desde tu material. Revísalo antes de guardarlo.",questionTemplate:"¿Qué significa «{term}»?"},
+    en:{tab:["📚","Teacher library","Content and creator"],title:"Teacher library",body:"Use NALVI content or prepare an activity with your own material.",nalviTitle:"NALVI content",nalviBody:"Courses, the audio dictionary, and listening practice ready for class.",catalog:"Courses and lessons",catalogBody:"General Guaraní and specialized pathways organized by objective.",dictionary:"Audio dictionary",dictionaryBody:"Searchable vocabulary with available human pronunciations.",listening:"Listening practice",listeningBody:"Activities built from 99 authorized human recordings.",open:"Open",creatorTag:"TEACHER CREATOR",creatorTitle:"Turn your content into an activity",creatorBody:"Paste one idea per line using “term = explanation” or “question | answer”. NALVI keeps your answers and creates a draft for your review.",materialTitle:"Material title",materialTitleDefault:"My class activity",materialContent:"Content",materialPlaceholder:"Maitei = Greeting\nWhat does Mba’éichapa reime mean? | How are you?",generate:"Create draft",format:"Add at least one line as “term = explanation” or “question | answer”.",generated:"Draft ready: {count} questions. Review it before saving.",ignored:" {count} lines need the indicated format.",preview:"Preview",useDraft:"Review in the question bank →",draftReady:"Draft created from your material. Review it before saving.",questionTemplate:"What does “{term}” mean?"},
+    pt:{tab:["📚","Biblioteca docente","Conteúdo e criador"],title:"Biblioteca docente",body:"Use o conteúdo da NALVI ou prepare uma atividade com seu próprio material.",nalviTitle:"Conteúdo NALVI",nalviBody:"Cursos, dicionário com áudio e prática auditiva prontos para a aula.",catalog:"Cursos e lições",catalogBody:"Guarani geral e trilhas especializadas organizadas por objetivos.",dictionary:"Dicionário com áudio",dictionaryBody:"Vocabulário pesquisável com pronúncias humanas disponíveis.",listening:"Prática auditiva",listeningBody:"Atividades criadas com 99 gravações humanas autorizadas.",open:"Abrir",creatorTag:"CRIADOR DOCENTE",creatorTitle:"Do seu conteúdo para uma atividade",creatorBody:"Cole uma ideia por linha usando “termo = explicação” ou “pergunta | resposta”. A NALVI mantém suas respostas e cria um rascunho para sua revisão.",materialTitle:"Título do material",materialTitleDefault:"Atividade da minha turma",materialContent:"Conteúdo",materialPlaceholder:"Maitei = Saudação\nO que significa Mba’éichapa reime? | Como você está?",generate:"Criar rascunho",format:"Adicione pelo menos uma linha como “termo = explicação” ou “pergunta | resposta”.",generated:"Rascunho pronto: {count} perguntas. Revise antes de salvar.",ignored:" {count} linhas precisam do formato indicado.",preview:"Prévia",useDraft:"Revisar no banco de perguntas →",draftReady:"Rascunho criado a partir do seu material. Revise antes de salvar.",questionTemplate:"O que significa “{term}”?"},
+    fr:{tab:["📚","Bibliothèque enseignant","Contenu et créateur"],title:"Bibliothèque enseignant",body:"Utilisez le contenu NALVI ou préparez une activité avec votre propre matériel.",nalviTitle:"Contenu NALVI",nalviBody:"Cours, dictionnaire audio et pratique d’écoute prêts pour la classe.",catalog:"Cours et leçons",catalogBody:"Guarani général et parcours spécialisés organisés par objectifs.",dictionary:"Dictionnaire audio",dictionaryBody:"Vocabulaire consultable avec des prononciations humaines disponibles.",listening:"Pratique d’écoute",listeningBody:"Activités créées à partir de 99 enregistrements humains autorisés.",open:"Ouvrir",creatorTag:"CRÉATEUR ENSEIGNANT",creatorTitle:"Transformez votre contenu en activité",creatorBody:"Collez une idée par ligne au format « terme = explication » ou « question | réponse ». NALVI conserve vos réponses et crée un brouillon à vérifier.",materialTitle:"Titre du matériel",materialTitleDefault:"Activité de ma classe",materialContent:"Contenu",materialPlaceholder:"Maitei = Salutation\nQue signifie Mba’éichapa reime ? | Comment vas-tu ?",generate:"Créer le brouillon",format:"Ajoutez au moins une ligne au format « terme = explication » ou « question | réponse ».",generated:"Brouillon prêt : {count} questions. Vérifiez-le avant de l’enregistrer.",ignored:" {count} lignes doivent respecter le format indiqué.",preview:"Aperçu",useDraft:"Vérifier dans la banque de questions →",draftReady:"Brouillon créé à partir de votre matériel. Vérifiez-le avant de l’enregistrer.",questionTemplate:"Que signifie « {term} » ?"},
+    it:{tab:["📚","Biblioteca docente","Contenuti e creatore"],title:"Biblioteca docente",body:"Usa i contenuti NALVI o prepara un’attività con il tuo materiale.",nalviTitle:"Contenuti NALVI",nalviBody:"Corsi, dizionario audio e pratica d’ascolto pronti per la classe.",catalog:"Corsi e lezioni",catalogBody:"Guaraní generale e percorsi specializzati organizzati per obiettivi.",dictionary:"Dizionario audio",dictionaryBody:"Vocabolario consultabile con pronunce umane disponibili.",listening:"Pratica d’ascolto",listeningBody:"Attività create con 99 registrazioni umane autorizzate.",open:"Apri",creatorTag:"CREATORE DOCENTE",creatorTitle:"Dal tuo contenuto a un’attività",creatorBody:"Incolla un’idea per riga usando “termine = spiegazione” o “domanda | risposta”. NALVI conserva le tue risposte e crea una bozza da verificare.",materialTitle:"Titolo del materiale",materialTitleDefault:"Attività della mia classe",materialContent:"Contenuto",materialPlaceholder:"Maitei = Saluto\nCosa significa Mba’éichapa reime? | Come stai?",generate:"Crea bozza",format:"Aggiungi almeno una riga come “termine = spiegazione” o “domanda | risposta”.",generated:"Bozza pronta: {count} domande. Verificala prima di salvarla.",ignored:" {count} righe richiedono il formato indicato.",preview:"Anteprima",useDraft:"Verifica nella banca delle domande →",draftReady:"Bozza creata dal tuo materiale. Verificala prima di salvarla.",questionTemplate:"Cosa significa “{term}”?"},
+    de:{tab:["📚","Lehrbibliothek","Inhalte und Ersteller"],title:"Lehrbibliothek",body:"Nutze NALVI-Inhalte oder erstelle eine Aktivität mit deinem eigenen Material.",nalviTitle:"NALVI-Inhalte",nalviBody:"Kurse, Audiowörterbuch und Hörübungen für den Unterricht.",catalog:"Kurse und Lektionen",catalogBody:"Allgemeines Guaraní und spezialisierte Lernwege nach Zielen.",dictionary:"Audiowörterbuch",dictionaryBody:"Durchsuchbarer Wortschatz mit verfügbaren menschlichen Aufnahmen.",listening:"Hörübungen",listeningBody:"Aktivitäten aus 99 autorisierten menschlichen Aufnahmen.",open:"Öffnen",creatorTag:"LEHRKRAFT-ERSTELLER",creatorTitle:"Vom eigenen Inhalt zur Aktivität",creatorBody:"Füge pro Zeile eine Idee als „Begriff = Erklärung“ oder „Frage | Antwort“ ein. NALVI übernimmt deine Antworten und erstellt einen Entwurf zur Prüfung.",materialTitle:"Titel des Materials",materialTitleDefault:"Aktivität meiner Klasse",materialContent:"Inhalt",materialPlaceholder:"Maitei = Begrüßung\nWas bedeutet Mba’éichapa reime? | Wie geht es dir?",generate:"Entwurf erstellen",format:"Füge mindestens eine Zeile als „Begriff = Erklärung“ oder „Frage | Antwort“ hinzu.",generated:"Entwurf fertig: {count} Fragen. Prüfe ihn vor dem Speichern.",ignored:" {count} Zeilen benötigen das angegebene Format.",preview:"Vorschau",useDraft:"In der Fragensammlung prüfen →",draftReady:"Entwurf aus deinem Material erstellt. Prüfe ihn vor dem Speichern.",questionTemplate:"Was bedeutet „{term}“?"}
+  };
   function locale(){const value=String($("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es").toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]||COPY.es}
+  function libraryCopy(){return LIBRARY_COPY[locale()]||LIBRARY_COPY.es}
   function formatCopy(value,replacements={}){return String(value||"").replace(/\{(\w+)\}/g,(_,key)=>String(replacements[key]??""))}
   let firebase=null;
   let savedActivities=[];
@@ -66,6 +75,7 @@
   let wheelItems=[];
   let wheelOriginalItems=[];
   let wheelSpinning=false;
+  let pendingQuestionDraft=null;
   let lastJoinedClassCode="";
   let restoringIntent=false;
 
@@ -177,6 +187,56 @@
     $$("[data-academic-class-open]",root).forEach(button=>button.addEventListener("click",()=>window.show?.("progressHub",true)));
   }
 
+  function buildQuestionDraft(value,questionTemplate="¿Qué significa «{term}»?"){
+    const items=[],rejected=[];
+    cleanLines(value,40).forEach(line=>{
+      const pipe=line.indexOf("|");
+      if(pipe>0&&pipe<line.length-1){
+        const question=line.slice(0,pipe).trim(),answer=line.slice(pipe+1).trim();
+        if(question&&answer)items.push({question,answer,source:line});else rejected.push(line);
+        return;
+      }
+      const separators=[line.indexOf("="),line.indexOf(":")].filter(index=>index>0&&index<line.length-1).sort((a,b)=>a-b),separator=separators[0];
+      if(separator===undefined){rejected.push(line);return}
+      const term=line.slice(0,separator).trim(),answer=line.slice(separator+1).trim();
+      if(!term||!answer){rejected.push(line);return}
+      items.push({question:formatCopy(questionTemplate,{term}),answer,source:line});
+    });
+    return{items,rejected,content:items.map(item=>`${item.question} | ${item.answer}`).join("\n")};
+  }
+
+  function libraryMarkup(){
+    const c=libraryCopy();
+    const resource=(icon,title,body,route)=>`<article class="nalvi-library-resource"><span aria-hidden="true">${icon}</span><div><h4>${esc(title)}</h4><p>${esc(body)}</p></div><button class="mini-btn" type="button" data-library-go="${route}">${esc(c.open)} →</button></article>`;
+    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="library"><div class="gesa-section-head"><div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p></div></div><div class="nalvi-teacher-library-grid"><article class="gesa-card nalvi-library-catalog"><span class="gesa-status active">${esc(c.nalviTitle)}</span><h3>${esc(c.nalviTitle)}</h3><p>${esc(c.nalviBody)}</p><div class="nalvi-library-resources">${resource("📚",c.catalog,c.catalogBody,"catalog")}${resource("🔊",c.dictionary,c.dictionaryBody,"dictionary")}${resource("🎧",c.listening,c.listeningBody,"practice")}</div></article><article class="gesa-card nalvi-material-creator"><span class="gesa-status active">${esc(c.creatorTag)}</span><h3>${esc(c.creatorTitle)}</h3><p>${esc(c.creatorBody)}</p><form class="gesa-form" id="nalviMaterialCreator"><label>${esc(c.materialTitle)}<input name="title" maxlength="120" required value="${esc(c.materialTitleDefault)}"></label><label>${esc(c.materialContent)}<textarea name="content" maxlength="8000" required placeholder="${esc(c.materialPlaceholder)}"></textarea></label><button class="btn" type="submit">${esc(c.generate)}</button><div class="gesa-form-status" id="nalviMaterialStatus" role="status" aria-live="polite"></div></form><div class="nalvi-material-preview" id="nalviMaterialPreview" hidden><h4>${esc(c.preview)}</h4><ol></ol><button class="mini-btn" id="nalviUseQuestionDraft" type="button">${esc(c.useDraft)}</button></div></article></div></section>`;
+  }
+
+  function generateQuestionDraft(event){
+    event.preventDefault();const form=event.currentTarget,c=libraryCopy(),fd=new FormData(form),title=String(fd.get("title")||"").trim(),draft=buildQuestionDraft(fd.get("content"),c.questionTemplate),preview=$("#nalviMaterialPreview"),list=$("ol",preview);
+    pendingQuestionDraft=draft.items.length?{title:(title||c.materialTitleDefault).slice(0,120),content:draft.content,items:draft.items}:null;
+    if(!pendingQuestionDraft){if(preview)preview.hidden=true;setStatus("#nalviMaterialStatus",c.format,true);return}
+    if(list)list.innerHTML=draft.items.map(item=>`<li><b>${esc(item.question)}</b><span>${esc(item.answer)}</span></li>`).join("");
+    if(preview)preview.hidden=false;
+    setStatus("#nalviMaterialStatus",`${formatCopy(c.generated,{count:draft.items.length})}${draft.rejected.length?formatCopy(c.ignored,{count:draft.rejected.length}):""}`);
+  }
+
+  function useQuestionDraft(){
+    if(!pendingQuestionDraft)return;const c=libraryCopy();openTool("tools");const form=$("#nalviAssessmentBuilder");if(!form)return;
+    form.elements.title.value=pendingQuestionDraft.title;form.elements.content.value=pendingQuestionDraft.content;editing.assessment="";setStatus("#nalviAssessmentBuilderStatus",c.draftReady);form.scrollIntoView({behavior:"smooth",block:"center"});form.elements.title.focus();
+  }
+
+  function installLibraryActions(management){
+    $("#nalviMaterialCreator",management)?.addEventListener("submit",generateQuestionDraft);
+    $("#nalviUseQuestionDraft",management)?.addEventListener("click",useQuestionDraft);
+    $$(`[data-library-go]`,management).forEach(button=>button.addEventListener("click",()=>window.show?.(button.dataset.libraryGo,true)));
+  }
+
+  function localizeLibrary(management){
+    const pane=$("[data-gesa-pane='library']",management);if(!pane)return;
+    const replacement=document.createElement("template");replacement.innerHTML=libraryMarkup();const localized=replacement.content.firstElementChild;if(!localized)return;
+    pane.replaceWith(localized);installLibraryActions(management);
+  }
+
   function toolsMarkup(){
     const c=copy();
     return `<section class="gesa-pane hide nalvi-academic-tools" data-gesa-pane="tools"><div class="gesa-section-head"><div><h3>${esc(c.toolsTitle)}</h3><p>${esc(c.toolsBody)}</p></div><button class="mini-btn" id="nalviOpenLiveFromTools" type="button">${esc(c.createLive)}</button></div><div class="nalvi-academic-tools-grid"><article class="gesa-card nalvi-wheel-card"><span class="gesa-status active">${esc(c.wheelTag)}</span><h3>${esc(c.wheelTitle)}</h3><p>${esc(c.wheelBody)}</p><form class="gesa-form" id="nalviWheelForm"><label>${esc(c.title)}<input name="title" maxlength="120" required value="${esc(c.wheelDefault)}"></label><label>${esc(c.options)}<textarea name="content" maxlength="8000" required placeholder="Mba’éichapa reime?&#10;Che réra…&#10;Moõgua nde?"></textarea></label><div class="gesa-inline-actions"><button class="mini-btn" type="submit">${esc(c.saveWheel)}</button><button class="mini-btn" id="nalviResetWheel" type="button" disabled>${esc(c.reset)}</button><button class="btn" id="nalviSpinWheel" type="button">${esc(c.spin)}</button></div><div class="gesa-form-status" id="nalviWheelStatus" role="status" aria-live="polite"></div></form><div class="nalvi-wheel-stage"><div class="nalvi-wheel" id="nalviWheel" role="img" aria-label="${esc(c.emptyWheel)}"><span class="nalvi-wheel-empty">Ñ</span></div><div class="nalvi-wheel-pointer" aria-hidden="true">▼</div><strong id="nalviWheelResult" role="status" aria-live="polite">${esc(c.addTwo)}</strong><small id="nalviWheelRemaining">0</small></div></article><article class="gesa-card"><span class="gesa-status active">${esc(c.questionsTag)}</span><h3>${esc(c.questionsTitle)}</h3><p>${esc(c.questionsBody)}</p><form class="gesa-form" id="nalviAssessmentBuilder"><label>${esc(c.title)}<input name="title" maxlength="120" required value="${esc(c.questionsDefault)}"></label><label>${esc(c.questionsInput)}<textarea name="content" maxlength="8000" required placeholder="¿Qué significa Maitei? | Saludo&#10;¿Cómo dices nos vemos? | Jajoechata"></textarea></label><button class="btn" type="submit">${esc(c.saveQuestions)}</button><div class="gesa-form-status" id="nalviAssessmentBuilderStatus"></div></form></article></div><div class="gesa-section-head"><div><h3>${esc(c.savedTitle)}</h3><p>${esc(c.savedBody)}</p></div><button class="mini-btn" id="nalviReloadActivities" type="button">↻ ${esc(c.reload)}</button></div><div class="gesa-list" id="nalviAcademicSaved"><div class="gesa-state">${esc(c.noSaved)}</div></div></section>`
@@ -199,9 +259,10 @@
 
   function installTools(){
     const management=$("#institutional[data-gesa-installed='true']");if(!management||!canManage())return;
-    if($("[data-gesa-tab='tools']",management)){localizeTools(management);return}
-    const liveTab=$("[data-gesa-tab='live']",management);liveTab?.insertAdjacentHTML("afterend",`<button class="gesa-tab" data-gesa-tab="tools">🎡 ${esc(copy().toolsTab)}</button>`);
-    const certificates=$("[data-gesa-pane='certificates']",management);certificates?.insertAdjacentHTML("beforebegin",toolsMarkup());
+    if($("[data-gesa-tab='tools']",management)){localizeTools(management);localizeLibrary(management);return}
+    const liveTab=$("[data-gesa-tab='live']",management),library=libraryCopy();liveTab?.insertAdjacentHTML("beforebegin",`<button class="gesa-tab" data-gesa-tab="library">📚 ${esc(library.tab[1])}</button>`);liveTab?.insertAdjacentHTML("afterend",`<button class="gesa-tab" data-gesa-tab="tools">🎡 ${esc(copy().toolsTab)}</button>`);
+    const certificates=$("[data-gesa-pane='certificates']",management);certificates?.insertAdjacentHTML("beforebegin",libraryMarkup()+toolsMarkup());
+    $("[data-gesa-tab='library']",management)?.addEventListener("click",()=>openTool("library"));
     $("[data-gesa-tab='tools']",management)?.addEventListener("click",()=>openTool("tools"));
     $("#nalviWheelForm",management)?.addEventListener("submit",event=>saveActivity(event,"wheel"));
     $("#nalviAssessmentBuilder",management)?.addEventListener("submit",event=>saveActivity(event,"assessment"));
@@ -211,6 +272,7 @@
     $("#nalviReloadActivities",management)?.addEventListener("click",loadActivities);
     $("#nalviOpenLiveFromTools",management)?.addEventListener("click",()=>openTool("live"));
     $("#nalviAcademicSaved",management)?.addEventListener("click",handleSavedAction);
+    installLibraryActions(management);
     localizeTools(management);
     renderWheel();
   }
@@ -219,7 +281,7 @@
     const c=copy(),tabs=$(".gesa-tabs",management);if(!tabs)return;
     tabs.classList.add("nalvi-academic-nav");
     $$("[data-gesa-tab]",tabs).forEach(button=>{
-      const name=button.dataset.gesaTab,key=name==="summary"&&admin?"adminSummary":name==="institution"&&admin?"adminInstitution":name,entry=c.tabs[key];if(!entry)return;
+      const name=button.dataset.gesaTab,key=name==="summary"&&admin?"adminSummary":name==="institution"&&admin?"adminInstitution":name,entry=key==="library"?libraryCopy().tab:c.tabs[key];if(!entry)return;
       button.innerHTML=`<span class="nalvi-academic-nav-icon" aria-hidden="true">${entry[0]}</span><span class="nalvi-academic-nav-copy"><b>${esc(entry[1])}</b><small>${esc(entry[2])}</small></span>`;
       button.setAttribute("aria-label",entry[1]);
     });
@@ -331,6 +393,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

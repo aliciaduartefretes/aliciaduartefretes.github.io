@@ -473,7 +473,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-2">
 <link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-16">
-<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-4">
+<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-5">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
 <link rel="stylesheet" href="assets/css/nalvi-accessibility.css?v=NALVI-ACCESSIBILITY-1"></head>
@@ -4052,7 +4052,7 @@ window.__GCA63LegacyLife=function(){
     const carousel=document.querySelector("#home .course-carousel");
     if(carousel&&!document.querySelector(".gca64-life-mini")){
       carousel.insertAdjacentHTML("beforeend",courses.map(function(course,index){
-        return '<button class="mini-course gca-life-mini gca64-life-mini '+theme(course)+'" type="button" data-life-open="'+index+'" aria-label="Abrir '+escapeHtml(course.title)+'"><span class="art-icon"><span class="course-emoji">'+course.icon+'</span></span><strong>'+escapeHtml(course.title)+'</strong><small>'+course.units.length+' unidades · '+escapeHtml(course.short)+'</small><i class="gca-life-mini-arrow" aria-hidden="true">→</i></button>';
+        return '<button class="mini-course gca-life-mini gca64-life-mini '+theme(course)+'" type="button" data-life-open="'+index+'" aria-label="Abrir '+escapeHtml(course.title)+'"><span class="art-icon"><span class="course-emoji">'+course.icon+'</span></span><strong>'+escapeHtml(course.title)+'</strong><small>'+escapeHtml(course.short)+'</small><i class="gca-life-mini-arrow" aria-hidden="true">→</i></button>';
       }).join(""));
     }
     const grid=document.querySelector("#catalog .course-grid");
@@ -4546,7 +4546,7 @@ window.__GCA63LegacyLife=function(){
       card.setAttribute("lang","es");
       const meta=card.querySelector("small");if(!meta)return;
       if(!meta.dataset.gca66Base)meta.dataset.gca66Base=meta.textContent;
-      meta.textContent=meta.dataset.gca66Base+" · "+copy.spanishOnly;
+      meta.textContent=meta.dataset.gca66Base;
     });
   }
   function repaint(code){paintGeneral(code);paintRecentCourseAvailability(code)}
@@ -7381,7 +7381,7 @@ try{
 <script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-13"></script>
 <script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-18"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-2"></script>
-<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-6"></script>
+<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-7"></script>
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>
 </body>
 </html>

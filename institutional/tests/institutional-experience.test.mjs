@@ -359,10 +359,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-6"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-6/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-4/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-7"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca docente","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-7/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-5/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -414,6 +414,26 @@ test("academic surfaces localize and use one strategic navigation in all six UI 
   for(const phrase of ["Academic management","Gestão acadêmica","Gestion académique","Gestione accademica","Akademische Verwaltung"])assert.match(academicScript,new RegExp(phrase));
   for(const marker of ["decorateAcademicNavigation","nalvi-academic-nav-copy","toolsTitle","teacherPanelTitle","createClassBody"])assert.match(academicScript,new RegExp(marker));
   assert.match(academicStyle,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+});
+
+test("teacher library turns reviewed source material into a question draft without changing answers",()=>{
+  const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){}},Date,JSON,Error,TypeError,String,Math,Set,Promise,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
+  vm.runInContext(academicScript,context);
+  const draft=context.window.NALVI_ACADEMIC_STUDIO.buildQuestionDraft("Maitei = Saludo\n¿Moõgua nde? | ¿De dónde eres?\nLínea sin respuesta","¿Qué significa «{term}»?");
+  assert.equal(draft.content,"¿Qué significa «Maitei»? | Saludo\n¿Moõgua nde? | ¿De dónde eres?");
+  assert.deepEqual(Array.from(draft.items,item=>[item.question,item.answer]),[["¿Qué significa «Maitei»?","Saludo"],["¿Moõgua nde?","¿De dónde eres?"]]);
+  assert.deepEqual(Array.from(draft.rejected),["Línea sin respuesta"]);
+  assert.match(academicScript,/resource\("🔊",c\.dictionary,c\.dictionaryBody,"dictionary"\)/);
+  assert.match(academicScript,/99 grabaciones humanas autorizadas/);
+  assert.doesNotMatch(academicScript,/fetch\([^)]*nalviMaterial|openai|generativeLanguage/i);
+  assert.match(academicStyle,/\.nalvi-teacher-library-grid/);
+});
+
+test("home secondary course cards keep useful descriptions without unit-count clutter",()=>{
+  assert.match(index,/gca64-life-mini/);
+  assert.doesNotMatch(index,/course\.units\.length\+' unidades · '\+escapeHtml\(course\.short\)/);
+  assert.match(index,/<small>'\+escapeHtml\(course\.short\)\+'<\/small>/);
+  assert.match(index,/document\.querySelectorAll\("\.gca64-life-mini"\)[\s\S]*?meta\.textContent=meta\.dataset\.gca66Base;/);
 });
 
 test("accessibility controls provide keyboard, contrast, motion and non-3D game options",()=>{
