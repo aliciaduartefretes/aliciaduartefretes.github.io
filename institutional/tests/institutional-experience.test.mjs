@@ -240,13 +240,14 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-5"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Abrir la ruleta","Actividad con PIN","Ver el avance","Panel de administración","Todos los alumnos","Experiencia del alumno"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-5/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-3/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-6"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-6/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-4/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
-  assert.match(academicStyle,/\.nalvi-academic-quick-grid/);
+  assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
+  assert.doesNotMatch(academicScript,/function dashboardMarkup|data-academic-quick/);
   assert.match(academicStyle,/@media\(max-width:430px\)/);
   assert.match(firestoreRules,/match \/academicActivities\/\{activityId\}/);
   assert.match(firestoreRules,/isOwnSelfInstitution/);
@@ -275,11 +276,25 @@ test("wheel draws without replacement and renders option labels inside its secto
   assert.equal(draw.selected,"B");
   assert.deepEqual(Array.from(draw.remaining),["A","C"]);
   assert.match(academicScript,/nalvi-wheel-label/);
+  const layouts=[0,1,2].map(index=>context.window.NALVI_ACADEMIC_STUDIO.wheelLabelLayout(3,index,120));
+  assert.equal(new Set(layouts.map(item=>`${item.x},${item.y}`)).size,3);
+  assert.deepEqual(layouts.map(item=>item.counter),[-120,-120,-120]);
+  assert.ok(layouts.every(item=>item.width>=90&&item.font>=11));
   assert.match(academicScript,/draw\.remaining/);
   assert.match(academicScript,/fue retirado/);
-  assert.match(academicScript,/count===1\?"opción":"opciones"/);
+  assert.match(academicScript,/function remainingText\(count\)/);
+  assert.match(academicScript,/option available/);
   assert.match(academicScript,/Reiniciar opciones/);
   assert.match(academicStyle,/\.nalvi-wheel-label/);
+  assert.match(academicStyle,/left:var\(--wheel-label-x\)/);
+  assert.match(academicStyle,/top:var\(--wheel-label-y\)/);
+});
+
+test("academic surfaces localize and use one strategic navigation in all six UI languages",()=>{
+  for(const locale of ["es","en","pt","fr","it","de"])assert.match(academicScript,new RegExp(`\\b${locale}:\\{`));
+  for(const phrase of ["Academic management","Gestão acadêmica","Gestion académique","Gestione accademica","Akademische Verwaltung"])assert.match(academicScript,new RegExp(phrase));
+  for(const marker of ["decorateAcademicNavigation","nalvi-academic-nav-copy","toolsTitle","teacherPanelTitle","createClassBody"])assert.match(academicScript,new RegExp(marker));
+  assert.match(academicStyle,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
 });
 
 test("accessibility controls provide keyboard, contrast, motion and non-3D game options",()=>{
