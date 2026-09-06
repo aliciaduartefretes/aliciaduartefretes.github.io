@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-9";
+  const VERSION="NALVI-ACADEMIC-STUDIO-10";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -73,6 +73,17 @@
     it:{tab:["🔊","Audio","Cerca e ascolta"],title:"Biblioteca audio",body:"Cerca una parola in guaraní e ascolta la pronuncia.",search:"Cerca una parola",searchPlaceholder:"Es.: maitei, jagua, aguyje",loading:"Caricamento audio…",prompt:"Scrivi per cercare o scegli una parola.",empty:"Nessun audio corrisponde alla ricerca.",play:"Ascolta {term}",menu:"Menu docente",collapse:"Nascondi menu",expand:"Mostra menu",workspaceTitle:"La mia classe",workspaceIntro:"Classi, studenti e attività.",startTitle:"Inizia creando una classe",startBody:"Assegna un nome e condividi il codice con gli studenti.",createClass:"Crea una classe",today:"La tua classe oggi",classesOne:"1 classe attiva",classesMany:"{count} classi attive",studentsOne:"1 studente iscritto",studentsMany:"{count} studenti iscritti",tasksOne:"1 compito assegnato",tasksMany:"{count} compiti assegnati",studentsTitle:"Studenti",studentsBody:"Cerca per nome o e-mail e controlla i progressi.",export:"Esporta dati"},
     de:{tab:["🔊","Audio","Suchen und anhören"],title:"Audiobibliothek",body:"Suche ein Wort auf Guaraní und höre seine Aussprache.",search:"Wort suchen",searchPlaceholder:"Zum Beispiel: maitei, jagua, aguyje",loading:"Audios werden geladen…",prompt:"Suche oder wähle ein Wort.",empty:"Für diese Suche wurde kein Audio gefunden.",play:"{term} anhören",menu:"Lehrkraft-Menü",collapse:"Menü ausblenden",expand:"Menü anzeigen",workspaceTitle:"Mein Klassenraum",workspaceIntro:"Klassen, Lernende und Aktivitäten.",startTitle:"Erstelle zuerst eine Klasse",startBody:"Gib ihr einen Namen und teile den Code mit den Lernenden.",createClass:"Klasse erstellen",today:"Dein Klassenraum heute",classesOne:"1 aktive Klasse",classesMany:"{count} aktive Klassen",studentsOne:"1 eingeschriebene Person",studentsMany:"{count} eingeschriebene Personen",tasksOne:"1 zugewiesene Aufgabe",tasksMany:"{count} zugewiesene Aufgaben",studentsTitle:"Lernende",studentsBody:"Nach Name oder E-Mail suchen und Fortschritt prüfen.",export:"Daten exportieren"}
   };
+  const VIDEO_LIBRARY_COPY={
+    es:{tab:["📚","Biblioteca","Videos y audios"],title:"Biblioteca",body:"Recursos audiovisuales listos para acompañar tus clases.",videoTitle:"Biblioteca de videos",videoBody:"Explicaciones breves para presentar o reforzar un tema en clase.",videoKind:"EXPLICACIÓN",watch:"Reproducir",close:"Cerrar video",playerTitle:"Reproductor: {title}",audioTitle:"Biblioteca de audios",audioBody:"Busca una palabra en guaraní y escucha su pronunciación."},
+    en:{tab:["📚","Library","Videos and audio"],title:"Library",body:"Audiovisual resources ready to support your classes.",videoTitle:"Video library",videoBody:"Short explanations to introduce or reinforce a topic in class.",videoKind:"EXPLANATION",watch:"Play",close:"Close video",playerTitle:"Player: {title}",audioTitle:"Audio library",audioBody:"Search for a word in Guaraní and listen to its pronunciation."},
+    pt:{tab:["📚","Biblioteca","Vídeos e áudios"],title:"Biblioteca",body:"Recursos audiovisuais prontos para apoiar suas aulas.",videoTitle:"Biblioteca de vídeos",videoBody:"Explicações breves para apresentar ou reforçar um tema em aula.",videoKind:"EXPLICAÇÃO",watch:"Reproduzir",close:"Fechar vídeo",playerTitle:"Reprodutor: {title}",audioTitle:"Biblioteca de áudios",audioBody:"Busque uma palavra em guarani e ouça sua pronúncia."},
+    fr:{tab:["📚","Bibliothèque","Vidéos et audios"],title:"Bibliothèque",body:"Des ressources audiovisuelles prêtes à accompagner vos cours.",videoTitle:"Bibliothèque de vidéos",videoBody:"De brèves explications pour présenter ou renforcer un thème en classe.",videoKind:"EXPLICATION",watch:"Lire",close:"Fermer la vidéo",playerTitle:"Lecteur : {title}",audioTitle:"Bibliothèque audio",audioBody:"Recherchez un mot en guarani et écoutez sa prononciation."},
+    it:{tab:["📚","Biblioteca","Video e audio"],title:"Biblioteca",body:"Risorse audiovisive pronte per accompagnare le lezioni.",videoTitle:"Biblioteca video",videoBody:"Brevi spiegazioni per presentare o rafforzare un argomento in classe.",videoKind:"SPIEGAZIONE",watch:"Riproduci",close:"Chiudi video",playerTitle:"Lettore: {title}",audioTitle:"Biblioteca audio",audioBody:"Cerca una parola in guaraní e ascolta la pronuncia."},
+    de:{tab:["📚","Bibliothek","Videos und Audio"],title:"Bibliothek",body:"Audiovisuelle Materialien zur direkten Verwendung im Unterricht.",videoTitle:"Videobibliothek",videoBody:"Kurze Erklärungen, um ein Thema im Unterricht einzuführen oder zu vertiefen.",videoKind:"ERKLÄRUNG",watch:"Abspielen",close:"Video schließen",playerTitle:"Player: {title}",audioTitle:"Audiobibliothek",audioBody:"Suche ein Wort auf Guaraní und höre seine Aussprache."}
+  };
+  const TEACHER_VIDEO_LIBRARY=Object.freeze([
+    Object.freeze({id:"vKbkIim_nE0",title:"Abecedario guaraní",thumbnail:"https://i.ytimg.com/vi/vKbkIim_nE0/hqdefault.jpg"})
+  ]);
   const INSTITUTION_COPY={
     es:{joinTitle:"¿Trabajas para una institución?",joinBody:"Escribe el código que te entregó su administrador. Tu cuenta quedará vinculada como docente.",joinLabel:"Código de institución",joinButton:"Unirme como docente",joinFormat:"Escribe un código como GCI-ABC123.",joinSearching:"Validando el código…",joinSuccess:"Listo. Abriendo el espacio de {name}…",joinExisting:"Ya perteneces a {name}. Abriendo ese espacio…",joinInactive:"Tu membresía está inactiva. Pide al administrador que la reactive.",joinError:"No encontramos una institución activa con ese código.",codeTitle:"Código para docentes",codeBody:"Comparte este código solo con profesores de la institución. Puedes renovarlo cuando quieras.",codeInstitution:"Institución",codeEmpty:"Todavía no hay un código activo.",codeCreate:"Crear código",codeRotate:"Renovar código",codeCopy:"Copiar código",codeLoading:"Buscando código…",codeSaved:"Código listo para compartir.",codeCopied:"Código institucional copiado.",codeError:"No se pudo actualizar el código.",workspace:"Espacio de trabajo",personal:"Mi espacio particular"},
     en:{joinTitle:"Do you work for an institution?",joinBody:"Enter the code provided by its administrator. Your account will be linked as a teacher.",joinLabel:"Institution code",joinButton:"Join as a teacher",joinFormat:"Enter a code such as GCI-ABC123.",joinSearching:"Checking the code…",joinSuccess:"Done. Opening {name}…",joinExisting:"You already belong to {name}. Opening that workspace…",joinInactive:"Your membership is inactive. Ask the administrator to reactivate it.",joinError:"We could not find an active institution with that code.",codeTitle:"Teacher access code",codeBody:"Share this code only with teachers at the institution. You can renew it at any time.",codeInstitution:"Institution",codeEmpty:"There is no active code yet.",codeCreate:"Create code",codeRotate:"Renew code",codeCopy:"Copy code",codeLoading:"Loading code…",codeSaved:"Code ready to share.",codeCopied:"Institution code copied.",codeError:"The code could not be updated.",workspace:"Workspace",personal:"My independent workspace"},
@@ -84,7 +95,7 @@
   function locale(){const value=String($("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es").toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]||COPY.es}
   function institutionCopy(){return INSTITUTION_COPY[locale()]||INSTITUTION_COPY.es}
-  function libraryCopy(){return{...(LIBRARY_COPY[locale()]||LIBRARY_COPY.es),...(RESOURCE_COPY[locale()]||RESOURCE_COPY.es)}}
+  function libraryCopy(){return{...(RESOURCE_COPY[locale()]||RESOURCE_COPY.es),...(LIBRARY_COPY[locale()]||LIBRARY_COPY.es),...(VIDEO_LIBRARY_COPY[locale()]||VIDEO_LIBRARY_COPY.es)}}
   function formatCopy(value,replacements={}){return String(value||"").replace(/\{(\w+)\}/g,(_,key)=>String(replacements[key]??""))}
   let firebase=null;
   let savedActivities=[];
@@ -96,6 +107,7 @@
   let wheelSpinning=false;
   let pendingQuestionDraft=null;
   let teacherAudioItems=[];
+  let lastVideoTrigger=null;
   let lastJoinedClassCode="";
   let activeInstitutionCode="";
   let restoringIntent=false;
@@ -253,7 +265,8 @@
 
   function libraryMarkup(){
     const c=libraryCopy();
-    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="library"><div class="gesa-section-head"><div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p></div></div><article class="gesa-card nalvi-audio-library"><label class="nalvi-audio-library-search">${esc(c.search)}<input id="nalviTeacherAudioSearch" type="search" autocomplete="off" placeholder="${esc(c.searchPlaceholder)}"></label><p class="nalvi-audio-library-status" id="nalviTeacherAudioStatus" role="status" aria-live="polite">${esc(c.loading)}</p><div class="nalvi-audio-library-results" id="nalviTeacherAudioResults"></div></article></section>`;
+    const videos=TEACHER_VIDEO_LIBRARY.map(video=>`<article class="nalvi-video-library-item"><button type="button" data-teacher-video-id="${esc(video.id)}" aria-label="${esc(`${c.watch}: ${video.title}`)}"><span class="nalvi-video-library-cover"><img src="${esc(video.thumbnail)}" alt="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"><i aria-hidden="true">▶</i></span><span class="nalvi-video-library-copy"><small>${esc(c.videoKind)}</small><b lang="es">${esc(video.title)}</b><span>${esc(c.watch)} →</span></span></button></article>`).join("");
+    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="library" role="tabpanel" aria-hidden="true"><div class="gesa-section-head"><div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p></div></div><div class="nalvi-library-stack"><section class="nalvi-library-section" aria-labelledby="nalviVideoLibraryTitle"><div class="nalvi-library-heading"><h4 id="nalviVideoLibraryTitle">${esc(c.videoTitle)}</h4><p>${esc(c.videoBody)}</p></div><div class="nalvi-video-library-results" id="nalviTeacherVideoResults">${videos}</div></section><section class="nalvi-library-section" aria-labelledby="nalviAudioLibraryTitle"><div class="nalvi-library-heading"><h4 id="nalviAudioLibraryTitle">${esc(c.audioTitle)}</h4><p>${esc(c.audioBody)}</p></div><article class="gesa-card nalvi-audio-library"><label class="nalvi-audio-library-search">${esc(c.search)}<input id="nalviTeacherAudioSearch" type="search" autocomplete="off" placeholder="${esc(c.searchPlaceholder)}"></label><p class="nalvi-audio-library-status" id="nalviTeacherAudioStatus" role="status" aria-live="polite">${esc(c.loading)}</p><div class="nalvi-audio-library-results" id="nalviTeacherAudioResults"></div></article></section></div><dialog class="nalvi-video-dialog" id="nalviTeacherVideoDialog" aria-labelledby="nalviTeacherVideoTitle"><div class="nalvi-video-dialog-card"><header><h4 id="nalviTeacherVideoTitle"></h4><button type="button" data-teacher-video-close aria-label="${esc(c.close)}">×</button></header><div class="nalvi-video-player"><iframe title="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></div></dialog></section>`;
   }
 
   function materialCreatorMarkup(){
@@ -281,6 +294,23 @@
     try{const registry=window.NALVI_RECORDED_AUDIO,ready=registry?.ready?.then?await registry.ready:null;if(!ready?.ok||typeof registry.list!=="function")throw new Error("audio-library-unavailable");teacherAudioItems=registry.list().filter(item=>item?.audioAuthorized===true&&item?.humanRecorded===true&&item?.audioText).sort((a,b)=>a.audioText.localeCompare(b.audioText,"gn"));renderTeacherAudioLibrary($("#nalviTeacherAudioSearch")?.value||"")}catch{teacherAudioItems=[];status.textContent=c.empty}
   }
 
+  function teacherVideoEmbedUrl(videoId){
+    if(!/^[A-Za-z0-9_-]{11}$/.test(String(videoId||"")))return"";
+    return`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`;
+  }
+
+  function closeTeacherVideo(){
+    const dialog=$("#nalviTeacherVideoDialog"),frame=dialog?$("iframe",dialog):null;if(frame){frame.removeAttribute("src");frame.title=""}if(!dialog)return;
+    if(dialog.open&&typeof dialog.close==="function")dialog.close();else dialog.removeAttribute("open");
+    const trigger=lastVideoTrigger;lastVideoTrigger=null;trigger?.focus?.();
+  }
+
+  function openTeacherVideo(videoId,trigger){
+    const video=TEACHER_VIDEO_LIBRARY.find(item=>item.id===videoId),dialog=$("#nalviTeacherVideoDialog"),frame=dialog?$("iframe",dialog):null,title=dialog?$("#nalviTeacherVideoTitle",dialog):null,url=teacherVideoEmbedUrl(video?.id);if(!video||!dialog||!frame||!title||!url)return;
+    lastVideoTrigger=trigger||null;title.textContent=video.title;frame.title=formatCopy(libraryCopy().playerTitle,{title:video.title});frame.src=url;
+    if(typeof dialog.showModal==="function")dialog.showModal();else dialog.setAttribute("open","");
+  }
+
   function generateQuestionDraft(event){
     event.preventDefault();const form=event.currentTarget,c=libraryCopy(),fd=new FormData(form),title=String(fd.get("title")||"").trim(),draft=buildQuestionDraft(fd.get("content"),c.questionTemplate),preview=$("#nalviMaterialPreview"),list=$("ol",preview);
     pendingQuestionDraft=draft.items.length?{title:(title||c.materialTitleDefault).slice(0,120),content:draft.content,items:draft.items}:null;
@@ -296,17 +326,21 @@
   }
 
   function installLibraryActions(management){
-    const form=$("#nalviMaterialCreator",management),draft=$("#nalviUseQuestionDraft",management),search=$("#nalviTeacherAudioSearch",management),results=$("#nalviTeacherAudioResults",management);
+    const form=$("#nalviMaterialCreator",management),draft=$("#nalviUseQuestionDraft",management),search=$("#nalviTeacherAudioSearch",management),results=$("#nalviTeacherAudioResults",management),videos=$("#nalviTeacherVideoResults",management),dialog=$("#nalviTeacherVideoDialog",management);
     if(form&&!form.dataset.nalviBound){form.dataset.nalviBound="true";form.addEventListener("submit",generateQuestionDraft)}
     if(draft&&!draft.dataset.nalviBound){draft.dataset.nalviBound="true";draft.addEventListener("click",useQuestionDraft)}
     if(search&&!search.dataset.nalviBound){search.dataset.nalviBound="true";search.addEventListener("input",event=>{window.NALVI_RECORDED_AUDIO?.stop?.();renderTeacherAudioLibrary(event.target.value)})}
     if(results&&!results.dataset.nalviBound){results.dataset.nalviBound="true";results.addEventListener("click",event=>{const button=event.target.closest?.("[data-teacher-audio-id]");if(button)window.NALVI_RECORDED_AUDIO?.play?.(button.dataset.teacherAudioId,button)})}
+    if(videos&&!videos.dataset.nalviBound){videos.dataset.nalviBound="true";videos.addEventListener("click",event=>{const button=event.target.closest?.("[data-teacher-video-id]");if(button)openTeacherVideo(button.dataset.teacherVideoId,button)})}
+    if(dialog&&!dialog.dataset.nalviBound){dialog.dataset.nalviBound="true";dialog.addEventListener("click",event=>{if(event.target===dialog||event.target.closest?.("[data-teacher-video-close]"))closeTeacherVideo()});dialog.addEventListener("close",()=>{const frame=$("iframe",dialog);if(frame){frame.removeAttribute("src");frame.title=""}})}
     loadTeacherAudioLibrary();
   }
 
   function localizeLibrary(management){
     const pane=$("[data-gesa-pane='library']",management);if(!pane)return;
+    const wasVisible=!pane.classList.contains("hide");
     const replacement=document.createElement("template");replacement.innerHTML=libraryMarkup();const localized=replacement.content.firstElementChild;if(!localized)return;
+    if(wasVisible){localized.classList.remove("hide");localized.setAttribute("aria-hidden","false")}
     pane.replaceWith(localized);installLibraryActions(management);
   }
 
@@ -485,8 +519,8 @@
 
   function openTool(name){
     const management=$("#institutional[data-gesa-installed='true']");if(!management)return;
-    $$("[data-gesa-tab]",management).forEach(button=>button.classList.toggle("active",button.dataset.gesaTab===name));
-    $$("[data-gesa-pane]",management).forEach(pane=>pane.classList.toggle("hide",pane.dataset.gesaPane!==name));
+    $$("[data-gesa-tab]",management).forEach(button=>{const active=button.dataset.gesaTab===name;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active));button.tabIndex=active?0:-1});
+    $$("[data-gesa-pane]",management).forEach(pane=>{const active=pane.dataset.gesaPane===name;pane.classList.toggle("hide",!active);pane.setAttribute("aria-hidden",String(!active))});
     if(name==="tools")loadActivities();
     setTimeout(()=>$("[data-gesa-pane='"+name+"']",management)?.scrollIntoView({behavior:"smooth",block:"start"}),0);
   }
@@ -576,6 +610,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft,teacherVideoEmbedUrl};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
