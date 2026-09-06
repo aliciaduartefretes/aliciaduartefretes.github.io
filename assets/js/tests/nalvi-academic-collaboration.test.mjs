@@ -55,8 +55,15 @@ test("rechaza campos inventados y más de cincuenta tarjetas",()=>{
 test("acepta el orden real uno a N y rechaza órdenes desplazados",()=>{
   const reviewed=organizerTemplate({review:{required:true,items:[{order:1,reasons:["Requiere revisión docente."]}]}});
   assert.equal(buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template:reviewed,timestamp}).template.review.items[0].order,1);
-  assert.throws(()=>buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template:organizerTemplate({review:{required:true,items:[{order:2,reasons:["Orden incorrecto."]}]}}),timestamp}),/TEMPLATE_REVIEW_ORDER_INVALID/);
+  assert.equal(buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template:organizerTemplate({review:{required:true,items:[{order:2,reasons:["Revisión focal."]}]}}),timestamp}).template.review.items[0].order,2);
+  assert.throws(()=>buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template:organizerTemplate({review:{required:true,items:[{order:2,reasons:["Segunda."]},{order:1,reasons:["Primera."]}]}}),timestamp}),/TEMPLATE_REVIEW_ORDER_INVALID/);
   assert.throws(()=>buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template:organizerTemplate({cards:[{...organizerTemplate().cards[0],order:0}]}),timestamp}),/CARD_0_ORDER_INVALID/);
+});
+
+test("acepta revisión focal cuando solo una tarjeta posterior necesita corrección",()=>{
+  const template=organizerTemplate();
+  template.review.items=[{order:2,reasons:["ANSWER_NOT_IN_OPTIONS"]}];
+  assert.doesNotThrow(()=>buildTeacherTaskTemplate({institutionId:"inst-a",ownerUid:"teacher-a",template,timestamp:"now"}));
 });
 
 test("una asignación conserva versión, fingerprint y snapshot exacto",()=>{

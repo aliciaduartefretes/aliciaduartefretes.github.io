@@ -75,7 +75,8 @@ function exactReview(review,cardCount){
     if(!item||Object.getPrototypeOf(item)!==Object.prototype||Object.keys(item).some(key=>!["order","reasons"].includes(key))||!Array.isArray(item.reasons)||item.reasons.length>10)throw new TypeError(`REVIEW_ITEM_${index}_INVALID`);
     return{order:integer(item.order,{field:`REVIEW_ITEM_${index}_ORDER`,min:1,max:Math.max(1,cardCount)}),reasons:item.reasons.map((reason,reasonIndex)=>exactText(reason,{field:`REVIEW_ITEM_${index}_REASON_${reasonIndex}`,min:1,max:200}))};
   });
-  if(items.some((item,index)=>item.order!==index+1))throw new TypeError("TEMPLATE_REVIEW_ORDER_INVALID");
+  const orders=items.map(item=>item.order);
+  if(new Set(orders).size!==orders.length||orders.some((order,index)=>index>0&&order<=orders[index-1]))throw new TypeError("TEMPLATE_REVIEW_ORDER_INVALID");
   return{required:true,items};
 }
 
