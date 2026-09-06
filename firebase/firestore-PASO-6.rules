@@ -8,6 +8,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function signedInNonAnonymous() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function matchesAuthenticatedName(value, fallback) {
+      return value is string
+        && value.size() >= 2
+        && value.size() <= 120
+        && (
+          (
+            request.auth.token.get('name', '') is string
+            && request.auth.token.get('name', '').size() >= 2
+            && request.auth.token.get('name', '').size() <= 120
+            && value == request.auth.token.get('name', '')
+          )
+          || (
+            request.auth.token.get('name', '').size() < 2
+            && value == fallback
+          )
+        );
+    }
+
     function email() {
       return signedIn()
         ? request.auth.token.get('email', '').lower()
@@ -189,6 +212,20 @@ service cloud.firestore {
         && sameEmail(get(enrollmentPath(groupId, email())).data.get('studentEmail', ''));
     }
 
+    function hasActiveAcademicEnrollment(groupId, institutionId) {
+      return signedInNonAnonymous()
+        && email() != ''
+        && groupId is string
+        && groupId != ''
+        && institutionId is string
+        && institutionId != ''
+        && exists(enrollmentPath(groupId, email()))
+        && get(enrollmentPath(groupId, email())).data.get('active', false) == true
+        && get(enrollmentPath(groupId, email())).data.get('groupId', '') == groupId
+        && get(enrollmentPath(groupId, email())).data.get('institutionId', '') == institutionId
+        && sameEmail(get(enrollmentPath(groupId, email())).data.get('studentEmail', ''));
+    }
+
     function readsOwnUser(userId) {
       return signedIn() && request.auth.uid == userId;
     }
@@ -213,6 +250,181 @@ service cloud.firestore {
 
     function institutionPath(institutionId) {
       return /databases/$(database)/documents/institutions/$(institutionId);
+    }
+
+    function groupPath(groupId) {
+      return /databases/$(database)/documents/groups/$(groupId);
+    }
+
+    function isOrganizationInstitution(institutionId) {
+      return signedInNonAnonymous()
+        && institutionId is string
+        && institutionId != ''
+        && exists(institutionPath(institutionId))
+        && get(institutionPath(institutionId)).data.get('active', false) == true
+        && get(institutionPath(institutionId)).data.get('status', '') != 'suspended'
+        && get(institutionPath(institutionId)).data.get('selfService', false) != true;
+    }
+
+    function hasActiveAcademicRole(institutionId, roles) {
+      return signedInNonAnonymous()
+        && institutionId is string
+        && institutionId != ''
+        && exists(uidMembershipPath(institutionId))
+        && get(uidMembershipPath(institutionId)).data.get('active', false) == true
+        && get(uidMembershipPath(institutionId)).data.get('role', '') in roles;
+    }
+
+    function isAcademicTeacher(institutionId) {
+      return isPlatformAdmin()
+        || hasActiveAcademicRole(
+          institutionId,
+          ['institution_manager', 'teacher']
+        );
+    }
+
+    function isAcademicManager(institutionId) {
+      return isPlatformAdmin()
+        || hasActiveAcademicRole(institutionId, ['institution_manager']);
+    }
+
+    function isInstitutionStudent(institutionId) {
+      return hasActiveAcademicRole(institutionId, ['student']);
+    }
+
+    function canManageAcademicGroup(groupId, institutionId) {
+      return signedInNonAnonymous()
+        && groupId is string
+        && groupId != ''
+        && exists(groupPath(groupId))
+        && get(groupPath(groupId)).data.get('institutionId', '') == institutionId
+        && (
+          isPlatformAdmin()
+          || isAcademicManager(institutionId)
+          || (
+            isAcademicTeacher(institutionId)
+            && (
+              get(groupPath(groupId)).data.get('teacherId', '') == request.auth.uid
+              || get(groupPath(groupId)).data.get('teacherUid', '') == request.auth.uid
+              || get(groupPath(groupId)).data.get('ownerTeacherUid', '') == request.auth.uid
+              || sameEmail(get(groupPath(groupId)).data.get('teacherEmail', ''))
+              || sameEmail(get(groupPath(groupId)).data.get('ownerTeacherEmail', ''))
+              || (
+                get(groupPath(groupId)).data.get('coTeacherEmails', []) is list
+                && email() in get(groupPath(groupId)).data.get('coTeacherEmails', [])
+              )
+            )
+          )
+        );
+    }
+
+    function academicPostPath(postId) {
+      return /databases/$(database)/documents/academicPosts/$(postId);
+    }
+
+    function teacherTaskTemplatePath(templateId) {
+      return /databases/$(database)/documents/teacherTaskTemplates/$(templateId);
+    }
+
+    function teacherTaskAssignmentPath(assignmentId) {
+      return /databases/$(database)/documents/teacherTaskAssignments/$(assignmentId);
+    }
+
+    function validOwnTaskSubmission(submissionId, data) {
+      return signedInNonAnonymous()
+        && data.get('assignmentId', '') is string
+        && data.get('assignmentId', '') != ''
+        && submissionId == data.get('assignmentId', '') + '__' + request.auth.uid
+        && data.get('studentId', '') == request.auth.uid
+        && matchesAuthenticatedName(data.get('studentName', ''), 'Estudiante')
+        && exists(teacherTaskAssignmentPath(data.get('assignmentId', '')))
+        && get(teacherTaskAssignmentPath(data.get('assignmentId', ''))).data.get('institutionId', '')
+          == data.get('institutionId', '')
+        && get(teacherTaskAssignmentPath(data.get('assignmentId', ''))).data.get('groupId', '')
+          == data.get('groupId', '')
+        && hasActiveAcademicEnrollment(
+          data.get('groupId', ''),
+          data.get('institutionId', '')
+        );
+    }
+
+    function canReadTeacherTaskTemplate(data) {
+      return signedInNonAnonymous()
+        && (
+          isPlatformAdmin()
+          || data.get('ownerUid', '') == request.auth.uid
+          || isAcademicManager(data.get('institutionId', ''))
+        );
+    }
+
+    function validOwnAcademicAuthorship(data) {
+      return signedInNonAnonymous()
+        && data.get('authorId', '') == request.auth.uid
+        && matchesAuthenticatedName(data.get('authorName', ''), 'Usuario NALVI');
+    }
+
+    function validAcademicPostScope(data) {
+      return data.get('institutionId', '') is string
+        && data.get('institutionId', '') != ''
+        && data.get('audience', '') in ['class', 'institution']
+        && (
+          (
+            data.get('audience', '') == 'class'
+            && canManageAcademicGroup(
+              data.get('groupId', ''),
+              data.get('institutionId', '')
+            )
+          )
+          || (
+            data.get('audience', '') == 'institution'
+            && data.get('groupId', '') == ''
+            && isOrganizationInstitution(data.get('institutionId', ''))
+            && isAcademicTeacher(data.get('institutionId', ''))
+          )
+        );
+    }
+
+    function canReadAcademicPost(data) {
+      return signedInNonAnonymous()
+        && (
+          isPlatformAdmin()
+          || (
+            data.get('audience', '') == 'institution'
+            && isOrganizationInstitution(data.get('institutionId', ''))
+            && (
+              isAcademicTeacher(data.get('institutionId', ''))
+              || isInstitutionStudent(data.get('institutionId', ''))
+            )
+          )
+          || (
+            data.get('audience', '') == 'class'
+            && exists(groupPath(data.get('groupId', '')))
+            && get(groupPath(data.get('groupId', ''))).data.get('institutionId', '')
+              == data.get('institutionId', '')
+            && (
+              canManageAcademicGroup(
+                data.get('groupId', ''),
+                data.get('institutionId', '')
+              )
+              || hasActiveAcademicEnrollment(
+                data.get('groupId', ''),
+                data.get('institutionId', '')
+              )
+            )
+          )
+        );
+    }
+
+    function canModerateAcademicPost(postId) {
+      return exists(academicPostPath(postId))
+        && canReadAcademicPost(get(academicPostPath(postId)).data)
+        && (
+          isPlatformAdmin()
+          || get(academicPostPath(postId)).data.get('authorId', '') == request.auth.uid
+          || isAcademicManager(
+            get(academicPostPath(postId)).data.get('institutionId', '')
+          )
+        );
     }
 
     function userProfilePath(userId) {
@@ -331,15 +543,14 @@ service cloud.firestore {
         || isInstitutionMember(institutionId)
         || isOwnSelfInstitution(institutionId);
       allow create: if (
-          signedIn()
-          && email() != ''
-          && request.auth.token.firebase.sign_in_provider != 'anonymous'
+          isPlatformAdmin()
           && institutionId.matches('^org__[A-Z0-9]{12}$')
           && request.resource.data.keys().hasOnly([
             'name', 'country', 'active', 'status', 'ownerUid',
             'organization', 'selfService', 'createdBy', 'createdAt', 'updatedAt'
           ])
-          && request.resource.data.get('ownerUid', '') == request.auth.uid
+          && request.resource.data.get('ownerUid', '') is string
+          && request.resource.data.get('ownerUid', '') != ''
           && request.resource.data.get('createdBy', '') == request.auth.uid
           && request.resource.data.get('organization', false) == true
           && request.resource.data.get('selfService', true) == false
@@ -352,11 +563,6 @@ service cloud.firestore {
           && request.resource.data.get('country', '').size() <= 80
           && request.resource.data.createdAt == request.time
           && request.resource.data.updatedAt == request.time
-        )
-        || (
-          isPlatformAdmin()
-          && request.resource.data.get('active', false) == true
-          && request.resource.data.get('status', '') == 'active'
         )
         || (
           isOwnSelfInstitution(institutionId)
@@ -538,7 +744,13 @@ service cloud.firestore {
     }
 
     match /institutionalLeads/{leadId} {
-      allow create: if request.resource.data.keys().hasOnly([
+      allow get: if isPlatformAdmin()
+        || sameEmail(resource.data.get('email', ''));
+      allow list, update, delete: if isPlatformAdmin();
+
+      allow create: if signedInNonAnonymous()
+        && sameEmail(request.resource.data.get('email', ''))
+        && request.resource.data.keys().hasOnly([
           'name', 'email', 'organization', 'role', 'studentCount',
           'country', 'message', 'status', 'source', 'createdAt'
         ])
@@ -564,8 +776,6 @@ service cloud.firestore {
         && request.resource.data.status == 'new'
         && request.resource.data.source == 'GCA-GESA-01'
         && request.resource.data.createdAt == request.time;
-
-      allow get, list, update, delete: if isPlatformAdmin();
     }
 
     match /groups/{groupId} {
@@ -735,6 +945,392 @@ service cloud.firestore {
           || isInstitutionManager(resource.data.get('institutionId', ''))
           || isPlatformAdmin()
         );
+    }
+
+    match /teacherTaskTemplates/{templateId} {
+      allow get, list: if canReadTeacherTaskTemplate(resource.data);
+
+      allow create: if signedInNonAnonymous()
+        && isAcademicTeacher(request.resource.data.get('institutionId', ''))
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'ownerUid', 'template', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.get('ownerUid', '') == request.auth.uid
+        && request.resource.data.get('template', {}) is map
+        && request.resource.data.get('template', {}).keys().hasOnly([
+          'schemaVersion', 'templateId', 'version', 'previousVersion',
+          'ownerUserId', 'title', 'status', 'reusable', 'canPublish',
+          'canAssign', 'masteryEligible', 'contentPolicy',
+          'sourceFingerprint', 'review', 'cards'
+        ])
+        && request.resource.data.get('template', {}).get('schemaVersion', '')
+          == 'NALVI-TEACHER-TASK-TEMPLATE-1'
+        && request.resource.data.get('template', {}).get('templateId', '') is string
+        && request.resource.data.get('template', {}).get('templateId', '') != ''
+        && request.resource.data.get('template', {}).get('version', 0) is int
+        && request.resource.data.get('template', {}).get('version', 0) >= 1
+        && request.resource.data.get('template', {}).get('ownerUserId', '') == request.auth.uid
+        && request.resource.data.get('template', {}).get('title', '') is string
+        && request.resource.data.get('template', {}).get('title', '').size() >= 2
+        && request.resource.data.get('template', {}).get('title', '').size() <= 160
+        && request.resource.data.get('template', {}).get('status', '') in [
+          'draft', 'needs_manual_review'
+        ]
+        && request.resource.data.get('template', {}).get('reusable', false) == true
+        && request.resource.data.get('template', {}).get('canPublish', true) == false
+        && request.resource.data.get('template', {}).get('canAssign', true) == false
+        && request.resource.data.get('template', {}).get('masteryEligible', true) == false
+        && request.resource.data.get('template', {}).get('contentPolicy', '')
+          == 'exact-teacher-content-only'
+        && request.resource.data.get('template', {}).get('sourceFingerprint', '') is string
+        && request.resource.data.get('template', {}).get('sourceFingerprint', '').size() == 64
+        && request.resource.data.get('template', {}).get('review', {}) is map
+        && request.resource.data.get('template', {}).get('review', {}).get('required', false) == true
+        && request.resource.data.get('template', {}).get('review', {}).get('items', []) is list
+        && request.resource.data.get('template', {}).get('review', {}).get('items', []).size() <= 50
+        && request.resource.data.get('template', {}).get('cards', []) is list
+        && request.resource.data.get('template', {}).get('cards', []).size() >= 1
+        && request.resource.data.get('template', {}).get('cards', []).size() <= 50
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if canReadTeacherTaskTemplate(resource.data)
+        && request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+        && request.resource.data.get('ownerUid', '') == resource.data.get('ownerUid', '')
+        && request.resource.data.get('createdAt', request.time)
+          == resource.data.get('createdAt', request.time)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'template', 'updatedAt'
+        ])
+        && request.resource.data.get('template', {}) is map
+        && request.resource.data.get('template', {}).get('schemaVersion', '')
+          == resource.data.get('template', {}).get('schemaVersion', '')
+        && request.resource.data.get('template', {}).get('templateId', '')
+          == resource.data.get('template', {}).get('templateId', '')
+        && request.resource.data.get('template', {}).get('version', 0)
+          == resource.data.get('template', {}).get('version', 0)
+        && request.resource.data.get('template', {}).get('previousVersion', 0)
+          == resource.data.get('template', {}).get('previousVersion', 0)
+        && request.resource.data.get('template', {}).get('ownerUserId', '')
+          == resource.data.get('template', {}).get('ownerUserId', '')
+        && request.resource.data.get('template', {}).get('title', '')
+          == resource.data.get('template', {}).get('title', '')
+        && request.resource.data.get('template', {}).get('reusable', false) == true
+        && request.resource.data.get('template', {}).get('masteryEligible', true) == false
+        && request.resource.data.get('template', {}).get('contentPolicy', '')
+          == resource.data.get('template', {}).get('contentPolicy', '')
+        && request.resource.data.get('template', {}).get('sourceFingerprint', '')
+          == resource.data.get('template', {}).get('sourceFingerprint', '')
+        && request.resource.data.get('template', {}).get('review', {})
+          == resource.data.get('template', {}).get('review', {})
+        && request.resource.data.get('template', {}).get('cards', [])
+          == resource.data.get('template', {}).get('cards', [])
+        && request.resource.data.get('template', {}).diff(
+          resource.data.get('template', {})
+        ).affectedKeys().hasOnly(['status', 'canPublish', 'canAssign'])
+        && request.resource.data.get('template', {}).get('status', '') in [
+          'approved', 'archived'
+        ]
+        && (
+          (
+            request.resource.data.get('template', {}).get('status', '') == 'approved'
+            && request.resource.data.get('template', {}).get('canPublish', false) == true
+            && request.resource.data.get('template', {}).get('canAssign', false) == true
+          )
+          || (
+            request.resource.data.get('template', {}).get('status', '') == 'archived'
+            && request.resource.data.get('template', {}).get('canPublish', true) == false
+            && request.resource.data.get('template', {}).get('canAssign', true) == false
+          )
+        )
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if canReadTeacherTaskTemplate(resource.data);
+    }
+
+    match /teacherTaskAssignments/{assignmentId} {
+      allow get, list: if signedInNonAnonymous()
+        && (
+          isPlatformAdmin()
+          || canManageAcademicGroup(
+            resource.data.get('groupId', ''),
+            resource.data.get('institutionId', '')
+          )
+          || hasActiveAcademicEnrollment(
+            resource.data.get('groupId', ''),
+            resource.data.get('institutionId', '')
+          )
+        );
+
+      allow create: if signedInNonAnonymous()
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'groupId', 'templateDocumentId',
+          'templateId', 'templateVersion', 'sourceFingerprint', 'cardsSnapshot',
+          'assignedByUid', 'title', 'instructions', 'status',
+          'assignedAt', 'dueAt'
+        ])
+        && canManageAcademicGroup(
+          request.resource.data.get('groupId', ''),
+          request.resource.data.get('institutionId', '')
+        )
+        && request.resource.data.get('assignedByUid', '') == request.auth.uid
+        && request.resource.data.get('templateDocumentId', '') is string
+        && request.resource.data.get('templateDocumentId', '') != ''
+        && request.resource.data.get('templateId', '') is string
+        && request.resource.data.get('templateId', '') != ''
+        && exists(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', '')))
+        && get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('institutionId', '')
+          == request.resource.data.get('institutionId', '')
+        && canReadTeacherTaskTemplate(
+          get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data
+        )
+        && get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('status', '')
+          == 'approved'
+        && get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('canAssign', false)
+          == true
+        && request.resource.data.get('templateId', '')
+          == get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('templateId', '')
+        && request.resource.data.get('templateVersion', 0)
+          == get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('version', 0)
+        && request.resource.data.get('sourceFingerprint', '')
+          == get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('sourceFingerprint', '')
+        && request.resource.data.get('cardsSnapshot', [])
+          == get(teacherTaskTemplatePath(request.resource.data.get('templateDocumentId', ''))).data.get('template', {}).get('cards', [])
+        && request.resource.data.get('title', '') is string
+        && request.resource.data.get('title', '').size() >= 2
+        && request.resource.data.get('title', '').size() <= 160
+        && request.resource.data.get('instructions', '') is string
+        && request.resource.data.get('instructions', '').size() <= 1200
+        && request.resource.data.get('status', '') == 'assigned'
+        && request.resource.data.assignedAt == request.time
+        && (
+          request.resource.data.get('dueAt', null) == null
+          || request.resource.data.get('dueAt', null) is timestamp
+        );
+
+      allow update: if false;
+      allow delete: if signedInNonAnonymous()
+        && canManageAcademicGroup(
+          resource.data.get('groupId', ''),
+          resource.data.get('institutionId', '')
+        );
+    }
+
+    match /teacherTaskSubmissions/{submissionId} {
+      allow get, list: if signedInNonAnonymous()
+        && (
+          isPlatformAdmin()
+          || resource.data.get('studentId', '') == request.auth.uid
+          || canManageAcademicGroup(
+            resource.data.get('groupId', ''),
+            resource.data.get('institutionId', '')
+          )
+        );
+
+      allow create, update: if validOwnTaskSubmission(
+          submissionId,
+          request.resource.data
+        )
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'groupId', 'assignmentId', 'studentId',
+          'studentName', 'status', 'correctCount', 'totalCount',
+          'answers', 'updatedAt', 'completedAt'
+        ])
+        && request.resource.data.get('status', '') in ['in_progress', 'completed']
+        && request.resource.data.get('correctCount', -1) is int
+        && request.resource.data.get('correctCount', -1) >= 0
+        && request.resource.data.get('totalCount', -1) is int
+        && request.resource.data.get('totalCount', -1) >= 0
+        && request.resource.data.get('totalCount', -1) <= 50
+        && request.resource.data.get('correctCount', -1)
+          <= request.resource.data.get('totalCount', -1)
+        && request.resource.data.get('answers', []) is list
+        && request.resource.data.get('answers', []).size()
+          == request.resource.data.get('totalCount', -1)
+        && request.resource.data.updatedAt == request.time
+        && (
+          (
+            request.resource.data.get('status', '') == 'in_progress'
+            && request.resource.data.get('completedAt', null) == null
+          )
+          || (
+            request.resource.data.get('status', '') == 'completed'
+            && request.resource.data.completedAt == request.time
+          )
+        )
+        && (
+          resource == null
+          || (
+            request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+            && request.resource.data.get('groupId', '') == resource.data.get('groupId', '')
+            && request.resource.data.get('assignmentId', '') == resource.data.get('assignmentId', '')
+            && request.resource.data.get('studentId', '') == resource.data.get('studentId', '')
+            && request.resource.data.get('studentName', '') == resource.data.get('studentName', '')
+          )
+        );
+
+      allow delete: if isPlatformAdmin()
+        || canManageAcademicGroup(
+          resource.data.get('groupId', ''),
+          resource.data.get('institutionId', '')
+        );
+    }
+
+    match /academicTeacherChannels/{institutionId} {
+      allow get, list: if isOrganizationInstitution(institutionId)
+        && isAcademicTeacher(institutionId);
+
+      allow create: if isOrganizationInstitution(institutionId)
+        && isAcademicTeacher(institutionId)
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'channelType', 'createdBy', 'createdAt'
+        ])
+        && request.resource.data.get('institutionId', '') == institutionId
+        && request.resource.data.get('channelType', '') == 'institution_teachers'
+        && request.resource.data.get('createdBy', '') == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if false;
+      allow delete: if isPlatformAdmin()
+        || isAcademicManager(institutionId);
+
+      match /messages/{messageId} {
+        allow get, list: if isOrganizationInstitution(institutionId)
+          && isAcademicTeacher(institutionId);
+
+        allow create: if isOrganizationInstitution(institutionId)
+          && isAcademicTeacher(institutionId)
+          && request.resource.data.keys().hasOnly([
+            'institutionId', 'authorId', 'authorName', 'body',
+            'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.get('institutionId', '') == institutionId
+          && validOwnAcademicAuthorship(request.resource.data)
+          && request.resource.data.get('body', '') is string
+          && request.resource.data.get('body', '').size() >= 1
+          && request.resource.data.get('body', '').size() <= 1200
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+
+        allow update: if isOrganizationInstitution(institutionId)
+          && isAcademicTeacher(institutionId)
+          && resource.data.get('authorId', '') == request.auth.uid
+          && request.resource.data.get('institutionId', '') == institutionId
+          && request.resource.data.get('authorId', '') == resource.data.get('authorId', '')
+          && request.resource.data.get('authorName', '') == resource.data.get('authorName', '')
+          && request.resource.data.get('createdAt', request.time)
+            == resource.data.get('createdAt', request.time)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'body', 'updatedAt'
+          ])
+          && request.resource.data.get('body', '') is string
+          && request.resource.data.get('body', '').size() >= 1
+          && request.resource.data.get('body', '').size() <= 1200
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if isOrganizationInstitution(institutionId)
+          && isAcademicTeacher(institutionId)
+          && (
+            resource.data.get('authorId', '') == request.auth.uid
+            || isAcademicManager(institutionId)
+            || isPlatformAdmin()
+          );
+      }
+    }
+
+    match /academicPosts/{postId} {
+      allow get, list: if canReadAcademicPost(resource.data);
+
+      allow create: if validOwnAcademicAuthorship(request.resource.data)
+        && validAcademicPostScope(request.resource.data)
+        && request.resource.data.keys().hasOnly([
+          'institutionId', 'groupId', 'audience', 'postType',
+          'authorId', 'authorName', 'title', 'body', 'status',
+          'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.get('postType', '') in ['question', 'activity']
+        && request.resource.data.get('title', '') is string
+        && request.resource.data.get('title', '').size() <= 160
+        && request.resource.data.get('body', '') is string
+        && request.resource.data.get('body', '').size() >= 1
+        && request.resource.data.get('body', '').size() <= 4000
+        && request.resource.data.get('status', '') == 'published'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if signedInNonAnonymous()
+        && resource.data.get('authorId', '') == request.auth.uid
+        && validAcademicPostScope(resource.data)
+        && request.resource.data.get('institutionId', '') == resource.data.get('institutionId', '')
+        && request.resource.data.get('groupId', '') == resource.data.get('groupId', '')
+        && request.resource.data.get('audience', '') == resource.data.get('audience', '')
+        && request.resource.data.get('postType', '') == resource.data.get('postType', '')
+        && request.resource.data.get('authorId', '') == resource.data.get('authorId', '')
+        && request.resource.data.get('authorName', '') == resource.data.get('authorName', '')
+        && request.resource.data.get('status', '') == resource.data.get('status', '')
+        && request.resource.data.get('createdAt', request.time)
+          == resource.data.get('createdAt', request.time)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'title', 'body', 'updatedAt'
+        ])
+        && request.resource.data.get('title', '') is string
+        && request.resource.data.get('title', '').size() <= 160
+        && request.resource.data.get('body', '') is string
+        && request.resource.data.get('body', '').size() >= 1
+        && request.resource.data.get('body', '').size() <= 4000
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if signedInNonAnonymous()
+        && canReadAcademicPost(resource.data)
+        && (
+          resource.data.get('authorId', '') == request.auth.uid
+          || isAcademicManager(resource.data.get('institutionId', ''))
+          || isPlatformAdmin()
+        );
+
+      match /replies/{replyId} {
+        allow get, list: if exists(academicPostPath(postId))
+          && canReadAcademicPost(get(academicPostPath(postId)).data);
+
+        allow create: if exists(academicPostPath(postId))
+          && canReadAcademicPost(get(academicPostPath(postId)).data)
+          && validOwnAcademicAuthorship(request.resource.data)
+          && request.resource.data.keys().hasOnly([
+            'authorId', 'authorName', 'body', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.get('body', '') is string
+          && request.resource.data.get('body', '').size() >= 1
+          && request.resource.data.get('body', '').size() <= 1000
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+
+        allow update: if exists(academicPostPath(postId))
+          && canReadAcademicPost(get(academicPostPath(postId)).data)
+          && resource.data.get('authorId', '') == request.auth.uid
+          && request.resource.data.get('authorId', '') == resource.data.get('authorId', '')
+          && request.resource.data.get('authorName', '') == resource.data.get('authorName', '')
+          && request.resource.data.get('createdAt', request.time)
+            == resource.data.get('createdAt', request.time)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'body', 'updatedAt'
+          ])
+          && request.resource.data.get('body', '') is string
+          && request.resource.data.get('body', '').size() >= 1
+          && request.resource.data.get('body', '').size() <= 1000
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if signedInNonAnonymous()
+          && exists(academicPostPath(postId))
+          && canReadAcademicPost(get(academicPostPath(postId)).data)
+          && (
+            resource.data.get('authorId', '') == request.auth.uid
+            || isPlatformAdmin()
+            || get(academicPostPath(postId)).data.get('authorId', '') == request.auth.uid
+            || isAcademicManager(
+              get(academicPostPath(postId)).data.get('institutionId', '')
+            )
+          );
+      }
     }
 
     match /certificateRequests/{requestId} {
