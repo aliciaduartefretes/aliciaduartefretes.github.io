@@ -30,11 +30,32 @@ const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-18"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-19"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
   for(const removed of ["Tu lugar para conversar y aprender","Aula","En vivo","Miembros","Gestión académica"])assert.doesNotMatch(script,new RegExp(removed));
+});
+
+test("comment replies stay grouped beneath the comment they answer",()=>{
+  const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){},querySelector(){return null},querySelectorAll(){return[]},documentElement:{lang:"es"}},Date,JSON,Error,TypeError,String,Math,Map,Set,Array});
+  vm.runInContext(script,context);
+  const grouped=context.window.NALVI_INSTITUTIONAL_EXPERIENCE.groupCommentThreads([
+    {id:"comment-marcelo",author:"Marcelo",text:"Aguyje",parentCommentId:""},
+    {id:"comment-rene",author:"René",text:"Iporã",parentCommentId:""},
+    {id:"reply-alicia",author:"Alicia",text:"Mba’éichapa reime?",parentCommentId:"comment-marcelo"}
+  ]);
+  assert.equal(grouped.length,2);
+  assert.equal(grouped[0].root.id,"comment-marcelo");
+  assert.equal(grouped[0].replies.length,1);
+  assert.equal(grouped[0].replies[0].id,"reply-alicia");
+  assert.equal(grouped[0].replies[0].parentAuthor,"Marcelo");
+  assert.equal(grouped[1].root.id,"comment-rene");
+  assert.match(script,/nalvi-community-comment-replies/);
+  assert.match(style,/\.nalvi-community-comment-replies/);
+  assert.match(script,/nalvi-community-comment-context/);
+  assert.match(script,/contextAuthor=isReply\?item\.parentAuthor:post\.author/);
+  assert.match(service,/post\.comments=Math\.max\(post\.comments,post\.commentItems\.length\)/);
 });
 
 test("community keeps the three-person icon only in bottom navigation",()=>{
@@ -272,7 +293,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell exposes relevant read-only Community notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-13"/);
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-14"/);
   assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-2"/);
   for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","message","nalviCommunityNotificationsSeen.v1","openPost","openMessages"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
@@ -349,9 +370,9 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-13/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-18/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-16/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-14/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-19/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-2/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));

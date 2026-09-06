@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-13";
+  const VERSION="NALVI-COMMUNITY-SERVICE-14";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
@@ -105,7 +105,7 @@
     ];
     const [likes,comments,views,commentList,reaction]=await Promise.allSettled(tasks);
     post.likes=countResult(likes);post.comments=countResult(comments);post.views=countResult(views);
-    if(commentList.status==="fulfilled")post.commentItems=commentList.value.docs.map(item=>{const data=item.data()||{};return{id:item.id,authorId:String(data.authorId||""),author:safeName(data.authorName)||"Miembro NALVI",text:normalizeComment(data.body),parentCommentId:String(data.parentCommentId||"")}}).reverse();
+    if(commentList.status==="fulfilled"){post.commentItems=commentList.value.docs.map(item=>{const data=item.data()||{};return{id:item.id,authorId:String(data.authorId||""),author:safeName(data.authorName)||"Miembro NALVI",text:normalizeComment(data.body),parentCommentId:String(data.parentCommentId||"")}}).reverse();post.comments=Math.max(post.comments,post.commentItems.length)}
     post.commentPreview=post.commentItems.at(-1)||null;
     post.likedByCurrent=reaction.status==="fulfilled"&&reaction.value?.exists?.()===true;
     return post;

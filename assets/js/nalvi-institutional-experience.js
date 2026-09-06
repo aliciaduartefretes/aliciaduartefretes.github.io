@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-EXPERIENCE-18";
+  const VERSION="NALVI-COMMUNITY-EXPERIENCE-19";
   const COMMUNITY_WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const COMMUNITY_ICON='<svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="7" r="3"></circle><circle cx="5.5" cy="9" r="2.25"></circle><circle cx="18.5" cy="9" r="2.25"></circle><path d="M6.5 19v-1.4a5.5 5.5 0 0 1 11 0V19"></path><path d="M1.8 18v-.8a3.8 3.8 0 0 1 4.3-3.8M22.2 18v-.8a3.8 3.8 0 0 0-4.3-3.8"></path></svg>';
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -44,7 +44,38 @@
   }
   function profileButton(person,compact=false){const id=String(person?.authorId||person?.userId||"");return`<button type="button" class="nalvi-community-author-link${compact?" compact":""}" data-community-profile="${escapeHtml(id)}">${avatarMarkup(person)}<span><strong>${escapeHtml(person?.author||person?.displayName||"Miembro NALVI")}</strong>${compact?"":`<small>${escapeHtml(person?.handle||handle(person?.author))}${person?.date?` · ${escapeHtml(person.date)}`:""}</small>`}</span></button>`}
   function commentFormMarkup(parentCommentId="",author=""){const c=copy(),label=author?`${c.replyTo} ${author}`:c.reply;return`<form class="nalvi-community-comment-form" data-community-comment-form data-parent-comment-id="${escapeHtml(parentCommentId)}"><input maxlength="500" placeholder="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><button class="nalvi-community-primary nalvi-community-bilingual-action" type="submit"><span>Mbohovái</span><small>${escapeHtml(c.replyHelp)}</small></button></form>`}
-  function commentMarkup(post){const c=copy(),items=Array.isArray(post.commentItems)&&post.commentItems.length?post.commentItems:post.commentPreview?[post.commentPreview]:[];return items.map(item=>{const replying=state.commentingPostId===post.id&&state.replyingToCommentId===item.id;return`<div class="nalvi-community-comment${item.parentCommentId?" is-reply":""}" data-comment-id="${escapeHtml(item.id||"")}"><div class="nalvi-community-comment-row"><span><strong>${escapeHtml(item.author)}</strong> ${escapeHtml(item.text)}</span>${item.id?`<button type="button" data-community-reply-comment="${escapeHtml(item.id)}" aria-label="${escapeHtml(`${c.replyTo} ${item.author}`)}">↳ ${escapeHtml(c.replyHelp)}</button>`:""}</div>${replying?commentFormMarkup(item.id,item.author):""}</div>`}).join("")}
+  function groupCommentThreads(items){
+    const ordered=(Array.isArray(items)?items:[]).filter(item=>item&&typeof item==="object"),byId=new Map();
+    ordered.forEach(item=>{const id=String(item.id||"");if(id&&!byId.has(id))byId.set(id,item)});
+    const rootIdFor=item=>{
+      const ownId=String(item.id||"");let parentId=String(item.parentCommentId||"");
+      if(!parentId||!byId.has(parentId)||parentId===ownId)return ownId;
+      const visited=new Set(ownId?[ownId]:[]);
+      while(parentId&&byId.has(parentId)){
+        if(visited.has(parentId))return"";
+        visited.add(parentId);
+        const parent=byId.get(parentId),nextId=String(parent?.parentCommentId||"");
+        if(!nextId||!byId.has(nextId))return String(parent?.id||"");
+        parentId=nextId;
+      }
+      return"";
+    };
+    const threads=[],byRoot=new Map();
+    ordered.forEach(item=>{
+      const id=String(item.id||""),rootId=rootIdFor(item),isReply=!!String(item.parentCommentId||"")&&!!rootId&&rootId!==id;
+      if(isReply)return;
+      const thread={root:item,replies:[]};threads.push(thread);if(id)byRoot.set(id,thread);
+    });
+    ordered.forEach(item=>{
+      const id=String(item.id||""),parentId=String(item.parentCommentId||""),rootId=rootIdFor(item);
+      if(!parentId||!rootId||rootId===id)return;
+      const thread=byRoot.get(rootId),parent=byId.get(parentId);
+      if(thread)thread.replies.push({...item,parentAuthor:String(parent?.author||"")});
+    });
+    return threads;
+  }
+  function commentItemMarkup(post,item,isReply=false){const c=copy(),replying=state.commentingPostId===post.id&&state.replyingToCommentId===item.id,contextAuthor=isReply?item.parentAuthor:post.author,parentContext=contextAuthor?`<small class="nalvi-community-comment-context">↳ ${escapeHtml(c.replyTo)} <strong>${escapeHtml(contextAuthor)}</strong></small>`:"";return`<div class="nalvi-community-comment${isReply?" is-reply":""}" data-comment-id="${escapeHtml(item.id||"")}">${parentContext}<div class="nalvi-community-comment-row"><span><strong>${escapeHtml(item.author)}</strong> ${escapeHtml(item.text)}</span>${item.id?`<button type="button" data-community-reply-comment="${escapeHtml(item.id)}" aria-label="${escapeHtml(`${c.replyTo} ${item.author}`)}">↳ ${escapeHtml(c.replyHelp)}</button>`:""}</div>${replying?commentFormMarkup(item.id,item.author):""}</div>`}
+  function commentMarkup(post){const items=Array.isArray(post.commentItems)&&post.commentItems.length?post.commentItems:post.commentPreview?[post.commentPreview]:[];return groupCommentThreads(items).map(thread=>`<section class="nalvi-community-comment-thread">${commentItemMarkup(post,thread.root)}${thread.replies.length?`<div class="nalvi-community-comment-replies" aria-label="${escapeHtml(copy().replies)}">${thread.replies.map(item=>commentItemMarkup(post,item,true)).join("")}</div>`:""}</section>`).join("")}
   function postMarkup(post){
     const c=copy(),s=safetyCopy(),own=!!post.remote&&currentUid()===post.authorId,canFollow=!!post.remote&&signedIn()&&!own,commenting=state.commentingPostId===post.id&&!state.replyingToCommentId,menuOpen=state.menuPostId===post.id,canManage=!!post.remote&&signedIn();
     const menu=canManage?`<div class="nalvi-community-menu-wrap"><button type="button" data-community-menu-toggle class="nalvi-community-menu" aria-label="${escapeHtml(s.menu)}" aria-expanded="${menuOpen}">•••</button>${menuOpen?`<div class="nalvi-community-post-menu" role="menu">${own?`<button type="button" data-community-delete role="menuitem">${escapeHtml(c.remove)}</button>`:`<button type="button" data-community-hide role="menuitem">${escapeHtml(s.hide)}</button><button type="button" data-community-report role="menuitem">${escapeHtml(s.report)}</button>`}</div>`:""}</div>`:"";
@@ -154,6 +185,6 @@
   function connect(){state.unsubscribePosts?.();state.unsubscribeProfiles?.();state.unsubscribePosts=service()?.subscribePosts?.(posts=>{state.posts=posts;if(!$("#institutionalExperience")?.classList.contains("hide"))render()},()=>setStatus(copy().error,true))||null;state.unsubscribeProfiles=service()?.subscribeProfiles?.(profiles=>{const fingerprint=profileFingerprint(profiles);if(fingerprint===state.profilesFingerprint)return;state.profilesFingerprint=fingerprint;state.profiles=profiles;scheduleProfileRefresh()},()=>setStatus(copy().error,true))||null}
   function init(){if(!$("#institutionalExperience"))document.querySelector("main")?.insertAdjacentHTML("beforeend",'<section id="institutionalExperience" class="hide nalvi-institutional" aria-label="Comunidad NALVI"></section>');try{if(typeof views!=="undefined"&&!views.includes("institutionalExperience"))views.push("institutionalExperience")}catch{}installNavigation();render();connect();document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))setTimeout(syncLanguage,0)},true);window.addEventListener("nalvi:auth-known",()=>{connect();if(!$("#institutionalExperience")?.classList.contains("hide"))render()});if(location.hash==="#institutionalExperience"){open(false);setTimeout(()=>{if(location.hash==="#institutionalExperience")open(false)},500)}document.documentElement.dataset.nalviCommunity=VERSION;window.dispatchEvent(new CustomEvent("nalvi:community-ready",{detail:{version:VERSION,communityWritesEnabled:COMMUNITY_WRITES_ENABLED}}))}
 
-  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,open,openPost,openMessages:openMessagesFromNotification,render};
+  window.NALVI_INSTITUTIONAL_EXPERIENCE={VERSION,COMMUNITY_WRITES_ENABLED,COPY,groupCommentThreads,open,openPost,openMessages:openMessagesFromNotification,render};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
