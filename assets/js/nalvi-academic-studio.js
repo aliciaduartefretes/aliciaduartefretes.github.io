@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-10";
+  const VERSION="NALVI-ACADEMIC-STUDIO-11";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -74,12 +74,12 @@
     de:{tab:["🔊","Audio","Suchen und anhören"],title:"Audiobibliothek",body:"Suche ein Wort auf Guaraní und höre seine Aussprache.",search:"Wort suchen",searchPlaceholder:"Zum Beispiel: maitei, jagua, aguyje",loading:"Audios werden geladen…",prompt:"Suche oder wähle ein Wort.",empty:"Für diese Suche wurde kein Audio gefunden.",play:"{term} anhören",menu:"Lehrkraft-Menü",collapse:"Menü ausblenden",expand:"Menü anzeigen",workspaceTitle:"Mein Klassenraum",workspaceIntro:"Klassen, Lernende und Aktivitäten.",startTitle:"Erstelle zuerst eine Klasse",startBody:"Gib ihr einen Namen und teile den Code mit den Lernenden.",createClass:"Klasse erstellen",today:"Dein Klassenraum heute",classesOne:"1 aktive Klasse",classesMany:"{count} aktive Klassen",studentsOne:"1 eingeschriebene Person",studentsMany:"{count} eingeschriebene Personen",tasksOne:"1 zugewiesene Aufgabe",tasksMany:"{count} zugewiesene Aufgaben",studentsTitle:"Lernende",studentsBody:"Nach Name oder E-Mail suchen und Fortschritt prüfen.",export:"Daten exportieren"}
   };
   const VIDEO_LIBRARY_COPY={
-    es:{tab:["📚","Biblioteca","Videos y audios"],title:"Biblioteca",body:"Recursos audiovisuales listos para acompañar tus clases.",videoTitle:"Biblioteca de videos",videoBody:"Explicaciones breves para presentar o reforzar un tema en clase.",videoKind:"EXPLICACIÓN",watch:"Reproducir",close:"Cerrar video",playerTitle:"Reproductor: {title}",audioTitle:"Biblioteca de audios",audioBody:"Busca una palabra en guaraní y escucha su pronunciación."},
-    en:{tab:["📚","Library","Videos and audio"],title:"Library",body:"Audiovisual resources ready to support your classes.",videoTitle:"Video library",videoBody:"Short explanations to introduce or reinforce a topic in class.",videoKind:"EXPLANATION",watch:"Play",close:"Close video",playerTitle:"Player: {title}",audioTitle:"Audio library",audioBody:"Search for a word in Guaraní and listen to its pronunciation."},
-    pt:{tab:["📚","Biblioteca","Vídeos e áudios"],title:"Biblioteca",body:"Recursos audiovisuais prontos para apoiar suas aulas.",videoTitle:"Biblioteca de vídeos",videoBody:"Explicações breves para apresentar ou reforçar um tema em aula.",videoKind:"EXPLICAÇÃO",watch:"Reproduzir",close:"Fechar vídeo",playerTitle:"Reprodutor: {title}",audioTitle:"Biblioteca de áudios",audioBody:"Busque uma palavra em guarani e ouça sua pronúncia."},
-    fr:{tab:["📚","Bibliothèque","Vidéos et audios"],title:"Bibliothèque",body:"Des ressources audiovisuelles prêtes à accompagner vos cours.",videoTitle:"Bibliothèque de vidéos",videoBody:"De brèves explications pour présenter ou renforcer un thème en classe.",videoKind:"EXPLICATION",watch:"Lire",close:"Fermer la vidéo",playerTitle:"Lecteur : {title}",audioTitle:"Bibliothèque audio",audioBody:"Recherchez un mot en guarani et écoutez sa prononciation."},
-    it:{tab:["📚","Biblioteca","Video e audio"],title:"Biblioteca",body:"Risorse audiovisive pronte per accompagnare le lezioni.",videoTitle:"Biblioteca video",videoBody:"Brevi spiegazioni per presentare o rafforzare un argomento in classe.",videoKind:"SPIEGAZIONE",watch:"Riproduci",close:"Chiudi video",playerTitle:"Lettore: {title}",audioTitle:"Biblioteca audio",audioBody:"Cerca una parola in guaraní e ascolta la pronuncia."},
-    de:{tab:["📚","Bibliothek","Videos und Audio"],title:"Bibliothek",body:"Audiovisuelle Materialien zur direkten Verwendung im Unterricht.",videoTitle:"Videobibliothek",videoBody:"Kurze Erklärungen, um ein Thema im Unterricht einzuführen oder zu vertiefen.",videoKind:"ERKLÄRUNG",watch:"Abspielen",close:"Video schließen",playerTitle:"Player: {title}",audioTitle:"Audiobibliothek",audioBody:"Suche ein Wort auf Guaraní und höre seine Aussprache."}
+    es:{videoTab:["🎬","Biblioteca de videos","Buscar y reproducir"],audioTab:["🔊","Biblioteca de audios","Buscar y escuchar"],videoTitle:"Biblioteca de videos",videoBody:"Explicaciones breves para presentar o reforzar un tema en clase.",videoSearch:"Buscar un video",videoSearchPlaceholder:"Ej.: abecedario guaraní",videoPrompt:"Elige un video para reproducir.",videoEmpty:"No encontramos un video para esa búsqueda.",videoKind:"EXPLICACIÓN",watch:"Reproducir",close:"Cerrar video",playerTitle:"Reproductor: {title}",audioTitle:"Biblioteca de audios",audioBody:"Busca una palabra en guaraní y escucha su pronunciación."},
+    en:{videoTab:["🎬","Video library","Search and play"],audioTab:["🔊","Audio library","Search and listen"],videoTitle:"Video library",videoBody:"Short explanations to introduce or reinforce a topic in class.",videoSearch:"Search videos",videoSearchPlaceholder:"For example: Guaraní alphabet",videoPrompt:"Choose a video to play.",videoEmpty:"We could not find a video for that search.",videoKind:"EXPLANATION",watch:"Play",close:"Close video",playerTitle:"Player: {title}",audioTitle:"Audio library",audioBody:"Search for a word in Guaraní and listen to its pronunciation."},
+    pt:{videoTab:["🎬","Biblioteca de vídeos","Buscar e reproduzir"],audioTab:["🔊","Biblioteca de áudios","Buscar e ouvir"],videoTitle:"Biblioteca de vídeos",videoBody:"Explicações breves para apresentar ou reforçar um tema em aula.",videoSearch:"Buscar um vídeo",videoSearchPlaceholder:"Ex.: alfabeto guarani",videoPrompt:"Escolha um vídeo para reproduzir.",videoEmpty:"Não encontramos um vídeo para essa busca.",videoKind:"EXPLICAÇÃO",watch:"Reproduzir",close:"Fechar vídeo",playerTitle:"Reprodutor: {title}",audioTitle:"Biblioteca de áudios",audioBody:"Busque uma palavra em guarani e ouça sua pronúncia."},
+    fr:{videoTab:["🎬","Bibliothèque de vidéos","Rechercher et lire"],audioTab:["🔊","Bibliothèque audio","Rechercher et écouter"],videoTitle:"Bibliothèque de vidéos",videoBody:"De brèves explications pour présenter ou renforcer un thème en classe.",videoSearch:"Rechercher une vidéo",videoSearchPlaceholder:"Ex. : alphabet guarani",videoPrompt:"Choisissez une vidéo à lire.",videoEmpty:"Aucune vidéo ne correspond à cette recherche.",videoKind:"EXPLICATION",watch:"Lire",close:"Fermer la vidéo",playerTitle:"Lecteur : {title}",audioTitle:"Bibliothèque audio",audioBody:"Recherchez un mot en guarani et écoutez sa prononciation."},
+    it:{videoTab:["🎬","Biblioteca video","Cerca e riproduci"],audioTab:["🔊","Biblioteca audio","Cerca e ascolta"],videoTitle:"Biblioteca video",videoBody:"Brevi spiegazioni per presentare o rafforzare un argomento in classe.",videoSearch:"Cerca un video",videoSearchPlaceholder:"Es.: alfabeto guaraní",videoPrompt:"Scegli un video da riprodurre.",videoEmpty:"Nessun video corrisponde alla ricerca.",videoKind:"SPIEGAZIONE",watch:"Riproduci",close:"Chiudi video",playerTitle:"Lettore: {title}",audioTitle:"Biblioteca audio",audioBody:"Cerca una parola in guaraní e ascolta la pronuncia."},
+    de:{videoTab:["🎬","Videobibliothek","Suchen und abspielen"],audioTab:["🔊","Audiobibliothek","Suchen und anhören"],videoTitle:"Videobibliothek",videoBody:"Kurze Erklärungen, um ein Thema im Unterricht einzuführen oder zu vertiefen.",videoSearch:"Video suchen",videoSearchPlaceholder:"Zum Beispiel: Guaraní-Alphabet",videoPrompt:"Wähle ein Video zum Abspielen.",videoEmpty:"Für diese Suche wurde kein Video gefunden.",videoKind:"ERKLÄRUNG",watch:"Abspielen",close:"Video schließen",playerTitle:"Player: {title}",audioTitle:"Audiobibliothek",audioBody:"Suche ein Wort auf Guaraní und höre seine Aussprache."}
   };
   const TEACHER_VIDEO_LIBRARY=Object.freeze([
     Object.freeze({id:"vKbkIim_nE0",title:"Abecedario guaraní",thumbnail:"https://i.ytimg.com/vi/vKbkIim_nE0/hqdefault.jpg"})
@@ -263,18 +263,36 @@
     return{items,rejected,content:items.map(item=>`${item.question} | ${item.answer}`).join("\n")};
   }
 
-  function libraryMarkup(){
+  function videoLibraryItemsMarkup(items=TEACHER_VIDEO_LIBRARY){
     const c=libraryCopy();
-    const videos=TEACHER_VIDEO_LIBRARY.map(video=>`<article class="nalvi-video-library-item"><button type="button" data-teacher-video-id="${esc(video.id)}" aria-label="${esc(`${c.watch}: ${video.title}`)}"><span class="nalvi-video-library-cover"><img src="${esc(video.thumbnail)}" alt="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"><i aria-hidden="true">▶</i></span><span class="nalvi-video-library-copy"><small>${esc(c.videoKind)}</small><b lang="es">${esc(video.title)}</b><span>${esc(c.watch)} →</span></span></button></article>`).join("");
-    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="library" role="tabpanel" aria-hidden="true"><div class="gesa-section-head"><div><h3>${esc(c.title)}</h3><p>${esc(c.body)}</p></div></div><div class="nalvi-library-stack"><section class="nalvi-library-section" aria-labelledby="nalviVideoLibraryTitle"><div class="nalvi-library-heading"><h4 id="nalviVideoLibraryTitle">${esc(c.videoTitle)}</h4><p>${esc(c.videoBody)}</p></div><div class="nalvi-video-library-results" id="nalviTeacherVideoResults">${videos}</div></section><section class="nalvi-library-section" aria-labelledby="nalviAudioLibraryTitle"><div class="nalvi-library-heading"><h4 id="nalviAudioLibraryTitle">${esc(c.audioTitle)}</h4><p>${esc(c.audioBody)}</p></div><article class="gesa-card nalvi-audio-library"><label class="nalvi-audio-library-search">${esc(c.search)}<input id="nalviTeacherAudioSearch" type="search" autocomplete="off" placeholder="${esc(c.searchPlaceholder)}"></label><p class="nalvi-audio-library-status" id="nalviTeacherAudioStatus" role="status" aria-live="polite">${esc(c.loading)}</p><div class="nalvi-audio-library-results" id="nalviTeacherAudioResults"></div></article></section></div><dialog class="nalvi-video-dialog" id="nalviTeacherVideoDialog" aria-labelledby="nalviTeacherVideoTitle"><div class="nalvi-video-dialog-card"><header><h4 id="nalviTeacherVideoTitle"></h4><button type="button" data-teacher-video-close aria-label="${esc(c.close)}">×</button></header><div class="nalvi-video-player"><iframe title="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></div></dialog></section>`;
+    return items.map(video=>`<article class="nalvi-video-library-item"><button type="button" data-teacher-video-id="${esc(video.id)}" aria-label="${esc(`${c.watch}: ${video.title}`)}"><span class="nalvi-video-library-cover"><img src="${esc(video.thumbnail)}" alt="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"><i aria-hidden="true">▶</i></span><span class="nalvi-video-library-copy"><small>${esc(c.videoKind)}</small><b lang="es">${esc(video.title)}</b><span>${esc(c.watch)} →</span></span></button></article>`).join("");
   }
+
+  function videoLibraryMarkup(){
+    const c=libraryCopy();
+    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="video-library" role="tabpanel" aria-hidden="true"><div class="gesa-section-head"><div><h3>${esc(c.videoTitle)}</h3><p>${esc(c.videoBody)}</p></div></div><label class="nalvi-video-library-search">${esc(c.videoSearch)}<input id="nalviTeacherVideoSearch" type="search" autocomplete="off" placeholder="${esc(c.videoSearchPlaceholder)}"></label><p class="nalvi-video-library-status" id="nalviTeacherVideoStatus" role="status" aria-live="polite">${esc(c.videoPrompt)}</p><div class="nalvi-video-library-results" id="nalviTeacherVideoResults">${videoLibraryItemsMarkup()}</div><dialog class="nalvi-video-dialog" id="nalviTeacherVideoDialog" aria-labelledby="nalviTeacherVideoTitle"><div class="nalvi-video-dialog-card"><header><h4 id="nalviTeacherVideoTitle"></h4><button type="button" data-teacher-video-close aria-label="${esc(c.close)}">×</button></header><div class="nalvi-video-player"><iframe title="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></div></dialog></section>`;
+  }
+
+  function audioLibraryMarkup(){
+    const c=libraryCopy();
+    return `<section class="gesa-pane hide nalvi-teacher-library" data-gesa-pane="audio-library" role="tabpanel" aria-hidden="true"><div class="gesa-section-head"><div><h3>${esc(c.audioTitle)}</h3><p>${esc(c.audioBody)}</p></div></div><article class="gesa-card nalvi-audio-library"><label class="nalvi-audio-library-search">${esc(c.search)}<input id="nalviTeacherAudioSearch" type="search" autocomplete="off" placeholder="${esc(c.searchPlaceholder)}"></label><p class="nalvi-audio-library-status" id="nalviTeacherAudioStatus" role="status" aria-live="polite">${esc(c.loading)}</p><div class="nalvi-audio-library-results" id="nalviTeacherAudioResults"></div></article></section>`;
+  }
+
+  function libraryMarkup(){return videoLibraryMarkup()+audioLibraryMarkup()}
 
   function materialCreatorMarkup(){
     const c=libraryCopy();
     return `<article class="gesa-card nalvi-material-creator" data-material-locale="${locale()}"><span class="gesa-status active">${esc(c.creatorTag)}</span><h3>${esc(c.creatorTitle)}</h3><p>${esc(c.creatorBody)}</p><form class="gesa-form" id="nalviMaterialCreator"><label>${esc(c.materialTitle)}<input name="title" maxlength="120" required value="${esc(c.materialTitleDefault)}"></label><label>${esc(c.materialContent)}<textarea name="content" maxlength="8000" required placeholder="${esc(c.materialPlaceholder)}"></textarea></label><button class="btn" type="submit">${esc(c.generate)}</button><div class="gesa-form-status" id="nalviMaterialStatus" role="status" aria-live="polite"></div></form><div class="nalvi-material-preview" id="nalviMaterialPreview" hidden><h4>${esc(c.preview)}</h4><ol></ol><button class="mini-btn" id="nalviUseQuestionDraft" type="button">${esc(c.useDraft)}</button></div></article>`;
   }
 
-  function normalizeAudioSearch(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es").trim()}
+  function normalizeLibrarySearch(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es").trim()}
+
+  function renderTeacherVideoLibrary(value=""){
+    const root=$("#nalviTeacherVideoResults"),status=$("#nalviTeacherVideoStatus"),c=libraryCopy();if(!root||!status)return;
+    const query=normalizeLibrarySearch(value),matches=TEACHER_VIDEO_LIBRARY.filter(item=>normalizeLibrarySearch(item.title).includes(query));
+    status.textContent=query&&!matches.length?c.videoEmpty:c.videoPrompt;
+    root.innerHTML=videoLibraryItemsMarkup(matches);
+  }
 
   function audioLibraryButton(recording){
     const c=libraryCopy(),states={es:["Cargando audio","Pausar audio","Reiniciar audio","Audio no disponible"],en:["Loading audio","Pause audio","Restart audio","Audio unavailable"],pt:["Carregando áudio","Pausar áudio","Reiniciar áudio","Áudio indisponível"],fr:["Chargement de l’audio","Mettre en pause","Recommencer","Audio indisponible"],it:["Caricamento audio","Metti in pausa","Riavvia audio","Audio non disponibile"],de:["Audio wird geladen","Audio pausieren","Audio neu starten","Audio nicht verfügbar"]}[locale()]||["Cargando audio","Pausar audio","Reiniciar audio","Audio no disponible"],ready=formatCopy(c.play,{term:recording.audioText});
@@ -283,7 +301,7 @@
 
   function renderTeacherAudioLibrary(value=""){
     const root=$("#nalviTeacherAudioResults"),status=$("#nalviTeacherAudioStatus"),c=libraryCopy();if(!root||!status)return;
-    const query=normalizeAudioSearch(value),matches=teacherAudioItems.filter(item=>normalizeAudioSearch(item.audioText).includes(query)),visible=(query?matches:teacherAudioItems).slice(0,24);
+    const query=normalizeLibrarySearch(value),matches=teacherAudioItems.filter(item=>normalizeLibrarySearch(item.audioText).includes(query)),visible=(query?matches:teacherAudioItems).slice(0,24);
     status.textContent=query&&!matches.length?c.empty:c.prompt;
     root.innerHTML=visible.map(item=>`<article class="nalvi-audio-library-item"><b lang="gn">${esc(item.audioText)}</b>${audioLibraryButton(item)}</article>`).join("");
   }
@@ -326,10 +344,11 @@
   }
 
   function installLibraryActions(management){
-    const form=$("#nalviMaterialCreator",management),draft=$("#nalviUseQuestionDraft",management),search=$("#nalviTeacherAudioSearch",management),results=$("#nalviTeacherAudioResults",management),videos=$("#nalviTeacherVideoResults",management),dialog=$("#nalviTeacherVideoDialog",management);
+    const form=$("#nalviMaterialCreator",management),draft=$("#nalviUseQuestionDraft",management),search=$("#nalviTeacherAudioSearch",management),videoSearch=$("#nalviTeacherVideoSearch",management),results=$("#nalviTeacherAudioResults",management),videos=$("#nalviTeacherVideoResults",management),dialog=$("#nalviTeacherVideoDialog",management);
     if(form&&!form.dataset.nalviBound){form.dataset.nalviBound="true";form.addEventListener("submit",generateQuestionDraft)}
     if(draft&&!draft.dataset.nalviBound){draft.dataset.nalviBound="true";draft.addEventListener("click",useQuestionDraft)}
     if(search&&!search.dataset.nalviBound){search.dataset.nalviBound="true";search.addEventListener("input",event=>{window.NALVI_RECORDED_AUDIO?.stop?.();renderTeacherAudioLibrary(event.target.value)})}
+    if(videoSearch&&!videoSearch.dataset.nalviBound){videoSearch.dataset.nalviBound="true";videoSearch.addEventListener("input",event=>renderTeacherVideoLibrary(event.target.value))}
     if(results&&!results.dataset.nalviBound){results.dataset.nalviBound="true";results.addEventListener("click",event=>{const button=event.target.closest?.("[data-teacher-audio-id]");if(button)window.NALVI_RECORDED_AUDIO?.play?.(button.dataset.teacherAudioId,button)})}
     if(videos&&!videos.dataset.nalviBound){videos.dataset.nalviBound="true";videos.addEventListener("click",event=>{const button=event.target.closest?.("[data-teacher-video-id]");if(button)openTeacherVideo(button.dataset.teacherVideoId,button)})}
     if(dialog&&!dialog.dataset.nalviBound){dialog.dataset.nalviBound="true";dialog.addEventListener("click",event=>{if(event.target===dialog||event.target.closest?.("[data-teacher-video-close]"))closeTeacherVideo()});dialog.addEventListener("close",()=>{const frame=$("iframe",dialog);if(frame){frame.removeAttribute("src");frame.title=""}})}
@@ -337,11 +356,13 @@
   }
 
   function localizeLibrary(management){
-    const pane=$("[data-gesa-pane='library']",management);if(!pane)return;
-    const wasVisible=!pane.classList.contains("hide");
-    const replacement=document.createElement("template");replacement.innerHTML=libraryMarkup();const localized=replacement.content.firstElementChild;if(!localized)return;
-    if(wasVisible){localized.classList.remove("hide");localized.setAttribute("aria-hidden","false")}
-    pane.replaceWith(localized);installLibraryActions(management);
+    [["video-library",videoLibraryMarkup],["audio-library",audioLibraryMarkup]].forEach(([name,markup])=>{
+      const pane=$(`[data-gesa-pane='${name}']`,management);if(!pane)return;
+      const wasVisible=!pane.classList.contains("hide"),replacement=document.createElement("template");replacement.innerHTML=markup();const localized=replacement.content.firstElementChild;if(!localized)return;
+      if(wasVisible){localized.classList.remove("hide");localized.setAttribute("aria-hidden","false")}
+      pane.replaceWith(localized);
+    });
+    installLibraryActions(management);
   }
 
   function toolsMarkup(){
@@ -368,9 +389,10 @@
   function installTools(){
     const management=$("#institutional[data-gesa-installed='true']");if(!management||!canManage())return;
     if($("[data-gesa-tab='tools']",management)){localizeTools(management);localizeLibrary(management);return}
-    const liveTab=$("[data-gesa-tab='live']",management),library=libraryCopy();liveTab?.insertAdjacentHTML("beforebegin",`<button class="gesa-tab" data-gesa-tab="library">📚 ${esc(library.tab[1])}</button>`);liveTab?.insertAdjacentHTML("afterend",`<button class="gesa-tab" data-gesa-tab="tools">🎡 ${esc(copy().toolsTab)}</button>`);
+    const liveTab=$("[data-gesa-tab='live']",management),library=libraryCopy();liveTab?.insertAdjacentHTML("beforebegin",`<button class="gesa-tab" data-gesa-tab="video-library">🎬 ${esc(library.videoTab[1])}</button><button class="gesa-tab" data-gesa-tab="audio-library">🔊 ${esc(library.audioTab[1])}</button>`);liveTab?.insertAdjacentHTML("afterend",`<button class="gesa-tab" data-gesa-tab="tools">🎡 ${esc(copy().toolsTab)}</button>`);
     const certificates=$("[data-gesa-pane='certificates']",management);certificates?.insertAdjacentHTML("beforebegin",libraryMarkup()+toolsMarkup());
-    $("[data-gesa-tab='library']",management)?.addEventListener("click",()=>openTool("library"));
+    $("[data-gesa-tab='video-library']",management)?.addEventListener("click",()=>openTool("video-library"));
+    $("[data-gesa-tab='audio-library']",management)?.addEventListener("click",()=>openTool("audio-library"));
     $("[data-gesa-tab='tools']",management)?.addEventListener("click",()=>openTool("tools"));
     $("#nalviWheelForm",management)?.addEventListener("submit",event=>saveActivity(event,"wheel"));
     $("#nalviAssessmentBuilder",management)?.addEventListener("submit",event=>saveActivity(event,"assessment"));
@@ -389,7 +411,7 @@
     const c=copy(),tabs=$(".gesa-tabs",management);if(!tabs)return;
     tabs.classList.add("nalvi-academic-nav");
     $$("[data-gesa-tab]",tabs).forEach(button=>{
-      const name=button.dataset.gesaTab,key=name==="summary"&&admin?"adminSummary":name==="institution"&&admin?"adminInstitution":name,activityLabels={es:"Crear actividades",en:"Create activities",pt:"Criar atividades",fr:"Créer des activités",it:"Crea attività",de:"Aktivitäten erstellen"},entry=key==="library"?libraryCopy().tab:key==="tools"?["✏️",activityLabels[locale()]||activityLabels.es,c.tabs.tools?.[2]||""]:c.tabs[key];if(!entry)return;
+      const name=button.dataset.gesaTab,key=name==="summary"&&admin?"adminSummary":name==="institution"&&admin?"adminInstitution":name,activityLabels={es:"Crear actividades",en:"Create activities",pt:"Criar atividades",fr:"Créer des activités",it:"Crea attività",de:"Aktivitäten erstellen"},resource=libraryCopy(),entry=key==="video-library"?resource.videoTab:key==="audio-library"?resource.audioTab:key==="tools"?["✏️",activityLabels[locale()]||activityLabels.es,c.tabs.tools?.[2]||""]:c.tabs[key];if(!entry)return;
       button.innerHTML=`<span class="nalvi-academic-nav-icon" aria-hidden="true">${entry[0]}</span><span class="nalvi-academic-nav-copy"><b>${esc(entry[1])}</b><small>${esc(entry[2])}</small></span>`;
       button.setAttribute("aria-label",entry[1]);
     });

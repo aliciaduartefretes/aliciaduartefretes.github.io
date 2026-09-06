@@ -380,10 +380,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-10"/);
-  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-10/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-8/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-11"/);
+  for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-11/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-9/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -461,10 +461,11 @@ test("teacher library turns reviewed source material into a question draft witho
   assert.deepEqual(Array.from(draft.rejected),["Línea sin respuesta"]);
   assert.match(academicScript,/window\.NALVI_RECORDED_AUDIO/);
   assert.match(academicScript,/nalviTeacherAudioSearch/);
+  assert.match(academicScript,/nalviTeacherVideoSearch/);
   assert.match(academicScript,/data-teacher-audio-id/);
   assert.match(academicScript,/audioAuthorized===true&&item\?\.humanRecorded===true/);
   assert.match(academicScript,/Biblioteca de audio/);
-  for(const marker of ["Biblioteca de videos","Biblioteca de audios","Abecedario guaraní","vKbkIim_nE0","youtube-nocookie.com\/embed","nalviTeacherVideoDialog","data-teacher-video-id"])assert.match(academicScript,new RegExp(marker));
+  for(const marker of ['data-gesa-pane="video-library"','data-gesa-pane="audio-library"',"Biblioteca de videos","Biblioteca de audios","Buscar un video","Abecedario guaraní","vKbkIim_nE0","youtube-nocookie.com\/embed","nalviTeacherVideoDialog","data-teacher-video-id","renderTeacherVideoLibrary"])assert.match(academicScript,new RegExp(marker));
   const videoUrl=context.window.NALVI_ACADEMIC_STUDIO.teacherVideoEmbedUrl("vKbkIim_nE0");
   assert.equal(videoUrl,"https://www.youtube-nocookie.com/embed/vKbkIim_nE0?autoplay=1&playsinline=1&rel=0");
   assert.equal(context.window.NALVI_ACADEMIC_STUDIO.teacherVideoEmbedUrl("https://youtu.be/vKbkIim_nE0"),"");
