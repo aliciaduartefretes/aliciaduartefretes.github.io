@@ -135,6 +135,18 @@ try{
   await assertSucceeds(updateDoc(institutionJoinCode,{active:false,updatedAt:serverTimestamp(),updatedBy:"alicia"}));
   await assertFails(setDoc(doc(sofia,"institutionMembers","ateneo__sofia"),{institutionId:"ateneo",uid:"sofia",claimedUid:"sofia",email:"sofia@example.com",name:"Sofía Vera",role:"teacher",active:true,joinedByCode:true,joinCode:"GCI-ABC123",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
 
+  const createdInstitutionId="org__ABCDEF234567",createdInstitutionCode="GCI-NALV12",createdInstitution=doc(alicia,"institutions",createdInstitutionId),createdManager=doc(alicia,"institutionMembers",`${createdInstitutionId}__alicia`),createdJoinCode=doc(alicia,"institutionJoinCodes",`code__${createdInstitutionCode}`),institutionBatch=writeBatch(alicia);
+  institutionBatch.set(createdInstitution,{name:"Instituto Ñe’ẽ",country:"Paraguay",active:true,status:"active",ownerUid:"alicia",organization:true,selfService:false,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  institutionBatch.set(createdManager,{institutionId:createdInstitutionId,uid:"alicia",claimedUid:"alicia",email:"alicia@example.com",name:"Alicia Duarte",role:"institution_manager",active:true,organizationOwner:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  await assertSucceeds(institutionBatch.commit());
+  await assertSucceeds(setDoc(createdJoinCode,{type:"institution_teacher_invite",code:createdInstitutionCode,institutionId:createdInstitutionId,institutionName:"Instituto Ñe’ẽ",active:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertSucceeds(getDoc(createdInstitution));
+  await assertSucceeds(getDoc(createdManager));
+  await assertSucceeds(getDoc(createdJoinCode));
+  await assertSucceeds(setDoc(doc(alicia,"groups","created-institution-class"),{name:"Clase vinculada",courseId:"general",institutionId:createdInstitutionId,teacherId:"alicia",teacherEmail:"alicia@example.com",teacherName:"Alicia Duarte",studentEmails:[],code:"GCA-ORG001",status:"active",archived:false,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(sofia,"institutions","org__SPOOF1234567"),{name:"Institución ajena",country:"Paraguay",active:true,status:"active",ownerUid:"alicia",organization:true,selfService:false,createdBy:"sofia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(sofia,"institutionMembers",`${createdInstitutionId}__sofia`),{institutionId:createdInstitutionId,uid:"sofia",claimedUid:"sofia",email:"sofia@example.com",name:"Sofía Vera",role:"institution_manager",active:true,organizationOwner:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+
   const selfInstitution=doc(alicia,"institutions","self__alicia");
   await assertSucceeds(setDoc(selfInstitution,{name:"Aula de Alicia",country:"",active:true,status:"active",ownerUid:"alicia",selfService:true,createdBy:"alicia",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(anonymous,"institutions","self__anonymous"),{name:"Aula anónima",country:"",active:true,status:"active",ownerUid:"anonymous",selfService:true,createdBy:"anonymous",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));

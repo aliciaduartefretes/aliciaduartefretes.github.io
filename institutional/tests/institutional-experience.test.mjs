@@ -380,10 +380,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-11"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-12"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-11/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-9/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-12/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-10/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -396,13 +396,17 @@ test("academic management is self-service and exposes classes, wheel, live PIN a
 });
 
 test("independent teachers and institutional teachers use separate secure workspaces",()=>{
-  for(const marker of ["nalviAcademicInstitution.v1","nalviAcademicInstitutionCode","joinInstitutionByCode","institutionJoinCodes","institution_teacher_invite","joinedByCode","nalviInstitutionCodeCard","rotateInstitutionCode","nalviAcademicWorkspaceSwitcher"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  for(const marker of ["nalviAcademicInstitution.v1","nalviAcademicInstitutionCode","joinInstitutionByCode","institutionJoinCodes","institution_teacher_invite","joinedByCode","nalviInstitutionCodeCard","rotateInstitutionCode","nalviAcademicWorkspaceSwitcher","createInstitutionSpace","organizationOwner","nalviOpenInstitutionCreator","institutionCode","resolveClassInstitution"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
   assert.match(index,/ACTIVE_ACADEMIC_INSTITUTION_KEY="nalviAcademicInstitution\.v1"/);
   assert.match(index,/preferredMembership=memberships\.find/);
   assert.match(index,/institutionName:institution\.data\(\)\.name/);
   assert.match(firestoreRules,/match \/institutionJoinCodes\/\{joinCodeId\}/);
   assert.match(firestoreRules,/hasValidInstitutionJoinCode/);
   assert.match(firestoreRules,/request\.resource\.data\.get\('role', ''\) == 'teacher'/);
+  assert.match(firestoreRules,/getAfter\(institutionPath\(request\.resource\.data\.get\('institutionId', ''\)\)\)\.data\.get\('ownerUid', ''\) == request\.auth\.uid/);
+  assert.match(firestoreRules,/institutionId\.matches\('\^org__\[A-Z0-9\]\{12\}\$'\)/);
+  assert.match(firestoreRules,/request\.resource\.data\.get\('organizationOwner', false\) == true/);
+  assert.match(index,/NALVI_ACADEMIC_STUDIO\?\.resolveClassInstitution/);
   assert.match(academicStyle,/\.nalvi-workspace-switcher/);
   assert.match(academicStyle,/\.nalvi-institution-code-row/);
 });

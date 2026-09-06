@@ -473,7 +473,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 </style>
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-2">
 <link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-17">
-<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-9">
+<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-10">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
 <link rel="stylesheet" href="assets/css/nalvi-accessibility.css?v=NALVI-ACCESSIBILITY-1"></head>
@@ -7280,7 +7280,23 @@ function renderInstitutions(){const root=document.querySelector("#gesaInstitutio
 function renderMembers(){const root=document.querySelector("#gesaMemberList"),scoped=cache.members.filter(item=>!context.institutionId||item.institutionId===context.institutionId||context.role==="platform_admin"),grouped=new Map();scoped.forEach(item=>{const key=`${item.institutionId}__${normalizeEmail(item.email)}__${item.role}`,prior=grouped.get(key);if(!prior)grouped.set(key,{...item,active:item.active!==false});else grouped.set(key,{...prior,name:prior.name||item.name,active:prior.active||item.active!==false})});const members=[...grouped.values()];root.innerHTML=members.length?members.map(item=>`<article class="gesa-list-item"><div><span class="gesa-status ${item.active===false?"suspended":"active"}">${item.active===false?"Inactivo":"Activo"}</span><h4>${esc(item.name||item.email||"Miembro")}</h4><small>${esc(item.email||"")} · ${esc(roleLabel[item.role]||item.role||"")}</small></div><button class="mini-btn" data-member-toggle="${esc(item.id)}">${item.active===false?"Activar":"Desactivar"}</button></article>`).join(""):'<div class="gesa-state">Todavía no hay miembros.</div>'}
 function filterStudentRows(event){const q=String(event.target.value||"").trim().toLowerCase();document.querySelectorAll("#gesaStudentRows tr").forEach(row=>row.hidden=!!q&&!String(row.dataset.studentSearch||"").includes(q))}
 
-async function createGroup(event){event.preventDefault();const form=event.currentTarget,status=document.querySelector("#gesaGroupStatus"),data=Object.fromEntries(new FormData(form)),institutionId=context.role==="platform_admin"?data.institutionId:context.institutionId,emails=unique(String(data.studentEmails||"").split(/[\s,;]+/).map(normalizeEmail).filter(email=>email.includes("@")));if(!institutionId)return status.textContent="Selecciona una institución.";const selectedTeacher=cache.teachers.find(item=>(item.uid||item.id)===data.teacherId),teacherId=data.teacherId||currentUser.uid,teacherEmail=selectedTeacher?.email||currentUser.email,teacherName=selectedTeacher?.name||currentUser.displayName||"Profesor",code=`GCA-${Math.random().toString(36).slice(2,8).toUpperCase()}`;status.textContent="Creando grupo…";try{const ref=await addDoc(collection(db,"groups"),{name:data.name,courseId:data.courseId,course:{general:"Guaraní general",police:"Guaraní para Policía",medicine:"Guaraní para Medicina",kids:"Jugar"}[data.courseId],institutionId,teacherId,teacherEmail:normalizeEmail(teacherEmail),teacherName,studentEmails:emails,code,status:"active",archived:false,createdBy:currentUser.uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});await setDoc(doc(db,"courseAccess",`code__${code}`),{type:"group_invite",code,groupId:ref.id,groupName:data.name,courseId:data.courseId,institutionId,teacherId,teacherEmail:normalizeEmail(teacherEmail),active:true,createdAt:serverTimestamp()},{merge:true});await Promise.all(emails.map(email=>setDoc(doc(db,"enrollments",`${ref.id}__${email}`),{groupId:ref.id,groupName:data.name,courseId:data.courseId,institutionId,studentEmail:email,teacherId,teacherEmail:normalizeEmail(teacherEmail),active:true,createdAt:serverTimestamp()},{merge:true})));form.reset();status.className="gesa-form-status ok";status.textContent="Grupo creado con código y enlace.";await loadAcademic()}catch(error){console.error(error);status.className="gesa-form-status error";status.textContent="No se pudo crear el grupo. Revisa las reglas de Firebase."}}
+async function createGroup(event){
+  event.preventDefault();const form=event.currentTarget,status=document.querySelector("#gesaGroupStatus"),data=Object.fromEntries(new FormData(form)),emails=unique(String(data.studentEmails||"").split(/[\s,;]+/).map(normalizeEmail).filter(email=>email.includes("@")));let institutionId=context.role==="platform_admin"?data.institutionId:context.institutionId,linkedInstitution=null;
+  if(context.role!=="platform_admin"&&data.institutionCode){
+    status.className="gesa-form-status";status.textContent="Validando la institución…";
+    try{linkedInstitution=await window.NALVI_ACADEMIC_STUDIO?.resolveClassInstitution?.(data.institutionCode);institutionId=linkedInstitution?.institutionId||""}catch(error){console.error("GESA_CLASS_INSTITUTION",error);status.className="gesa-form-status error";status.textContent="No encontramos una institución activa con ese código.";return}
+  }
+  if(!institutionId){status.className="gesa-form-status error";status.textContent="Selecciona una institución o crea tu espacio docente.";return}
+  const changedInstitution=!!linkedInstitution&&institutionId!==context.institutionId,selectedTeacher=changedInstitution?null:cache.teachers.find(item=>(item.uid||item.id)===data.teacherId),teacherId=changedInstitution?currentUser.uid:data.teacherId||currentUser.uid,teacherEmail=changedInstitution?currentUser.email:selectedTeacher?.email||currentUser.email,teacherName=changedInstitution?currentUser.displayName||"Profesor":selectedTeacher?.name||currentUser.displayName||"Profesor",code=`GCA-${Math.random().toString(36).slice(2,8).toUpperCase()}`;status.className="gesa-form-status";status.textContent="Creando clase…";
+  try{
+    const ref=await addDoc(collection(db,"groups"),{name:data.name,courseId:data.courseId,course:{general:"Guaraní general",police:"Guaraní para Policía",medicine:"Guaraní para Medicina",kids:"Jugar"}[data.courseId],institutionId,teacherId,teacherEmail:normalizeEmail(teacherEmail),teacherName,studentEmails:emails,code,status:"active",archived:false,createdBy:currentUser.uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    await setDoc(doc(db,"courseAccess",`code__${code}`),{type:"group_invite",code,groupId:ref.id,groupName:data.name,courseId:data.courseId,institutionId,teacherId,teacherEmail:normalizeEmail(teacherEmail),active:true,createdAt:serverTimestamp()},{merge:true});
+    await Promise.all(emails.map(email=>setDoc(doc(db,"enrollments",`${ref.id}__${email}`),{groupId:ref.id,groupName:data.name,courseId:data.courseId,institutionId,studentEmail:email,teacherId,teacherEmail:normalizeEmail(teacherEmail),active:true,createdAt:serverTimestamp()},{merge:true})));
+    form.reset();status.className="gesa-form-status ok";status.textContent="Clase creada con código y enlace.";
+    if(changedInstitution){setTimeout(()=>location.reload(),500);return}
+    await loadAcademic();
+  }catch(error){console.error(error);status.className="gesa-form-status error";status.textContent="No se pudo crear la clase. Revisa las reglas de Firebase."}
+}
 
 async function copyText(value,message){try{await navigator.clipboard.writeText(value)}catch{const area=document.createElement("textarea");area.value=value;area.readOnly=true;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove()}window.showToast?.(message)}
 function closeGroupAccessDialog(){const dialog=document.querySelector("#gesaGroupAccessDialog");if(dialog?.open)dialog.close();groupAccessState={groupId:"",mode:""}}
@@ -7385,7 +7401,7 @@ try{
 <script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-14"></script>
 <script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-19"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-2"></script>
-<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-11"></script>
+<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-12"></script>
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>
 </body>
 </html>

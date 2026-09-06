@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-11";
+  const VERSION="NALVI-ACADEMIC-STUDIO-12";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -92,9 +92,18 @@
     it:{joinTitle:"Lavori per un’istituzione?",joinBody:"Inserisci il codice fornito dall’amministratore. Il tuo account sarà collegato come docente.",joinLabel:"Codice dell’istituzione",joinButton:"Entra come docente",joinFormat:"Inserisci un codice come GCI-ABC123.",joinSearching:"Verifica del codice…",joinSuccess:"Fatto. Apertura dello spazio {name}…",joinExisting:"Fai già parte di {name}. Apertura dello spazio…",joinInactive:"La tua iscrizione non è attiva. Chiedi all’amministratore di riattivarla.",joinError:"Non abbiamo trovato un’istituzione attiva con questo codice.",codeTitle:"Codice per i docenti",codeBody:"Condividi questo codice solo con i docenti dell’istituzione. Puoi rinnovarlo quando vuoi.",codeInstitution:"Istituzione",codeEmpty:"Non c’è ancora un codice attivo.",codeCreate:"Crea codice",codeRotate:"Rinnova codice",codeCopy:"Copia codice",codeLoading:"Caricamento del codice…",codeSaved:"Codice pronto per essere condiviso.",codeCopied:"Codice dell’istituzione copiato.",codeError:"Impossibile aggiornare il codice.",workspace:"Spazio di lavoro",personal:"Il mio spazio indipendente"},
     de:{joinTitle:"Arbeitest du für eine Institution?",joinBody:"Gib den Code der Verwaltung ein. Dein Konto wird als Lehrkraft verknüpft.",joinLabel:"Institutionscode",joinButton:"Als Lehrkraft beitreten",joinFormat:"Gib einen Code wie GCI-ABC123 ein.",joinSearching:"Code wird geprüft…",joinSuccess:"Fertig. {name} wird geöffnet…",joinExisting:"Du gehörst bereits zu {name}. Dieser Bereich wird geöffnet…",joinInactive:"Deine Mitgliedschaft ist inaktiv. Bitte die Verwaltung um Reaktivierung.",joinError:"Zu diesem Code wurde keine aktive Institution gefunden.",codeTitle:"Zugangscode für Lehrkräfte",codeBody:"Teile diesen Code nur mit Lehrkräften der Institution. Du kannst ihn jederzeit erneuern.",codeInstitution:"Institution",codeEmpty:"Noch kein aktiver Code vorhanden.",codeCreate:"Code erstellen",codeRotate:"Code erneuern",codeCopy:"Code kopieren",codeLoading:"Code wird geladen…",codeSaved:"Der Code kann jetzt geteilt werden.",codeCopied:"Institutionscode kopiert.",codeError:"Der Code konnte nicht aktualisiert werden.",workspace:"Arbeitsbereich",personal:"Mein eigener Bereich"}
   };
+  const ORGANIZATION_COPY={
+    es:{open:"Crear institución",title:"Crear una institución",body:"Crea el espacio principal y recibe un código para que sus docentes puedan unirse.",name:"Nombre de la institución",country:"País (opcional)",submit:"Crear institución",saving:"Creando la institución…",invalid:"Escribe un nombre de al menos dos caracteres.",error:"No se pudo crear la institución. Revisa la conexión y las reglas de Firebase.",success:"Institución creada. Guarda o comparte este código con sus docentes.",code:"Código de la institución",copy:"Copiar código",copied:"Código copiado.",openWorkspace:"Abrir institución",classCode:"Código de institución (opcional)",classHelp:"Úsalo solo si quieres vincular esta clase a otra institución. Si lo dejas vacío, se usará el espacio actual.",classResolving:"Validando la institución…",classError:"No encontramos una institución activa con ese código."},
+    en:{open:"Create institution",title:"Create an institution",body:"Create the main workspace and receive a code for its teachers to join.",name:"Institution name",country:"Country (optional)",submit:"Create institution",saving:"Creating the institution…",invalid:"Enter a name with at least two characters.",error:"The institution could not be created. Check the connection and Firebase rules.",success:"Institution created. Save or share this code with its teachers.",code:"Institution code",copy:"Copy code",copied:"Code copied.",openWorkspace:"Open institution",classCode:"Institution code (optional)",classHelp:"Use it only to link this class to another institution. Leave it blank to use the current workspace.",classResolving:"Checking the institution…",classError:"We could not find an active institution with that code."},
+    pt:{open:"Criar instituição",title:"Criar uma instituição",body:"Crie o espaço principal e receba um código para os professores entrarem.",name:"Nome da instituição",country:"País (opcional)",submit:"Criar instituição",saving:"Criando a instituição…",invalid:"Digite um nome com pelo menos dois caracteres.",error:"Não foi possível criar a instituição. Verifique a conexão e as regras do Firebase.",success:"Instituição criada. Guarde ou compartilhe este código com os professores.",code:"Código da instituição",copy:"Copiar código",copied:"Código copiado.",openWorkspace:"Abrir instituição",classCode:"Código da instituição (opcional)",classHelp:"Use somente para vincular esta turma a outra instituição. Deixe em branco para usar o espaço atual.",classResolving:"Validando a instituição…",classError:"Não encontramos uma instituição ativa com esse código."},
+    fr:{open:"Créer une institution",title:"Créer une institution",body:"Créez l’espace principal et obtenez un code pour permettre aux enseignants de le rejoindre.",name:"Nom de l’institution",country:"Pays (facultatif)",submit:"Créer l’institution",saving:"Création de l’institution…",invalid:"Saisissez un nom d’au moins deux caractères.",error:"Impossible de créer l’institution. Vérifiez la connexion et les règles Firebase.",success:"Institution créée. Conservez ou partagez ce code avec les enseignants.",code:"Code de l’institution",copy:"Copier le code",copied:"Code copié.",openWorkspace:"Ouvrir l’institution",classCode:"Code de l’institution (facultatif)",classHelp:"Utilisez-le uniquement pour associer cette classe à une autre institution. Laissez vide pour utiliser l’espace actuel.",classResolving:"Vérification de l’institution…",classError:"Aucune institution active ne correspond à ce code."},
+    it:{open:"Crea istituzione",title:"Crea un’istituzione",body:"Crea lo spazio principale e ricevi un codice che permetta ai docenti di partecipare.",name:"Nome dell’istituzione",country:"Paese (facoltativo)",submit:"Crea istituzione",saving:"Creazione dell’istituzione…",invalid:"Inserisci un nome di almeno due caratteri.",error:"Impossibile creare l’istituzione. Controlla la connessione e le regole Firebase.",success:"Istituzione creata. Conserva o condividi questo codice con i docenti.",code:"Codice dell’istituzione",copy:"Copia codice",copied:"Codice copiato.",openWorkspace:"Apri istituzione",classCode:"Codice dell’istituzione (facoltativo)",classHelp:"Usalo solo per collegare questa classe a un’altra istituzione. Lascialo vuoto per usare lo spazio attuale.",classResolving:"Verifica dell’istituzione…",classError:"Non abbiamo trovato un’istituzione attiva con questo codice."},
+    de:{open:"Institution erstellen",title:"Institution erstellen",body:"Erstelle den zentralen Bereich und erhalte einen Code, mit dem Lehrkräfte beitreten können.",name:"Name der Institution",country:"Land (optional)",submit:"Institution erstellen",saving:"Institution wird erstellt…",invalid:"Gib einen Namen mit mindestens zwei Zeichen ein.",error:"Die Institution konnte nicht erstellt werden. Prüfe die Verbindung und die Firebase-Regeln.",success:"Institution erstellt. Bewahre diesen Code auf oder teile ihn mit den Lehrkräften.",code:"Institutionscode",copy:"Code kopieren",copied:"Code kopiert.",openWorkspace:"Institution öffnen",classCode:"Institutionscode (optional)",classHelp:"Nutze ihn nur, um diese Klasse mit einer anderen Institution zu verknüpfen. Leer lassen, um den aktuellen Bereich zu verwenden.",classResolving:"Institution wird geprüft…",classError:"Zu diesem Code wurde keine aktive Institution gefunden."}
+  };
   function locale(){const value=String($("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es").toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]||COPY.es}
   function institutionCopy(){return INSTITUTION_COPY[locale()]||INSTITUTION_COPY.es}
+  function organizationCopy(){return ORGANIZATION_COPY[locale()]||ORGANIZATION_COPY.es}
   function libraryCopy(){return{...(RESOURCE_COPY[locale()]||RESOURCE_COPY.es),...(LIBRARY_COPY[locale()]||LIBRARY_COPY.es),...(VIDEO_LIBRARY_COPY[locale()]||VIDEO_LIBRARY_COPY.es)}}
   function formatCopy(value,replacements={}){return String(value||"").replace(/\{(\w+)\}/g,(_,key)=>String(replacements[key]??""))}
   let firebase=null;
@@ -177,24 +186,53 @@
     }catch(error){console.error("NALVI_ACADEMIC_SETUP",error);setStatus("#nalviAcademicStartStatus","No se pudo crear. Revisa la conexión y vuelve a intentarlo.",true);button.disabled=false}
   }
 
+  function randomInstitutionToken(length=12){
+    const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",values=window.crypto?.getRandomValues?window.crypto.getRandomValues(new Uint32Array(length)):Array.from({length},()=>Math.floor(Math.random()*alphabet.length));
+    return[...values].map(value=>alphabet[Number(value)%alphabet.length]).join("");
+  }
+
+  async function createInstitutionSpace({name,country=""}={}){
+    if(!signedIn())throw new Error("institution-auth-required");
+    const cleanName=String(name||"").trim().slice(0,160),cleanCountry=String(country||"").trim().slice(0,80);
+    if(cleanName.length<2)throw new Error("institution-name-invalid");
+    const user=currentUser(),institution=`org__${randomInstitutionToken(12)}`,code=`GCI-${randomInstitutionToken(6)}`,timestamp=firebase.serverTimestamp(),batch=firebase.writeBatch(firebase.db);
+    batch.set(firebase.doc(firebase.db,"institutions",institution),{name:cleanName,country:cleanCountry,active:true,status:"active",ownerUid:user.uid,organization:true,selfService:false,createdBy:user.uid,createdAt:timestamp,updatedAt:timestamp});
+    batch.set(firebase.doc(firebase.db,"institutionMembers",`${institution}__${user.uid}`),{institutionId:institution,uid:user.uid,claimedUid:user.uid,email:String(user.email||"").trim().toLowerCase(),name:String(user.displayName||cleanName).slice(0,120),role:"institution_manager",active:true,organizationOwner:true,createdAt:timestamp,updatedAt:timestamp});
+    await batch.commit();
+    await firebase.setDoc(firebase.doc(firebase.db,"institutionJoinCodes",`code__${code}`),{type:"institution_teacher_invite",code,institutionId:institution,institutionName:cleanName,active:true,createdBy:user.uid,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});selectInstitution(institution);
+    return{institutionId:institution,institutionName:cleanName,code};
+  }
+
+  async function claimInstitutionCode(rawCode){
+    if(!signedIn())throw new Error("institution-auth-required");
+    const code=normalizeInstitutionCode(rawCode);
+    if(!/^GCI-[A-Z0-9]{6}$/.test(code))throw new Error("institution-code-format");
+    const inviteSnapshot=await firebase.getDoc(firebase.doc(firebase.db,"institutionJoinCodes",`code__${code}`));
+    if(!inviteSnapshot.exists())throw new Error("institution-code-not-found");
+    const invite=inviteSnapshot.data(),institution=String(invite.institutionId||""),name=String(invite.institutionName||"la institución");
+    if(invite.type!=="institution_teacher_invite"||invite.active!==true||invite.code!==code||!institution||institution.startsWith("self__"))throw new Error("institution-code-invalid");
+    const user=currentUser(),membershipRef=firebase.doc(firebase.db,"institutionMembers",`${institution}__${user.uid}`),membershipSnapshot=await firebase.getDoc(membershipRef);
+    if(membershipSnapshot.exists()){
+      if(membershipSnapshot.data().active===false)throw new Error("institution-membership-inactive");
+      if(!["teacher","institution_manager"].includes(membershipSnapshot.data().role))throw new Error("institution-membership-role");
+    }else await firebase.setDoc(membershipRef,{institutionId:institution,uid:user.uid,claimedUid:user.uid,email:String(user.email||"").trim().toLowerCase(),name:String(user.displayName||user.email||"Docente").slice(0,120),role:"teacher",active:true,joinedByCode:true,joinCode:code,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+    return{institutionId:institution,institutionName:name,code,existing:membershipSnapshot.exists()};
+  }
+
+  async function resolveClassInstitution(rawCode){
+    const code=normalizeInstitutionCode(rawCode);
+    if(!code)return{institutionId:institutionId(),institutionName:"",code:"",existing:true};
+    const result=await claimInstitutionCode(code);selectInstitution(result.institutionId);return result;
+  }
+
   async function joinInstitutionByCode(){
     const i=institutionCopy(),code=normalizeInstitutionCode($("#nalviAcademicInstitutionCode")?.value||readIntent()?.value||"");
     if(!/^GCI-[A-Z0-9]{6}$/.test(code)){setStatus("#nalviAcademicInstitutionStatus",i.joinFormat,true);return}
     if(!signedIn()){requestLogin("joinInstitution",code);return}
     const button=$("#nalviAcademicJoinInstitution");if(button)button.disabled=true;setStatus("#nalviAcademicInstitutionStatus",i.joinSearching);
     try{
-      const inviteSnapshot=await firebase.getDoc(firebase.doc(firebase.db,"institutionJoinCodes",`code__${code}`));
-      if(!inviteSnapshot.exists())throw new Error("institution-code-not-found");
-      const invite=inviteSnapshot.data(),institution=String(invite.institutionId||""),name=String(invite.institutionName||"la institución");
-      if(invite.type!=="institution_teacher_invite"||invite.active!==true||invite.code!==code||!institution||institution.startsWith("self__"))throw new Error("institution-code-invalid");
-      const user=currentUser(),membershipRef=firebase.doc(firebase.db,"institutionMembers",`${institution}__${user.uid}`),membershipSnapshot=await firebase.getDoc(membershipRef);
-      if(membershipSnapshot.exists()){
-        if(membershipSnapshot.data().active===false){setStatus("#nalviAcademicInstitutionStatus",i.joinInactive,true);return}
-        selectInstitution(institution);clearIntent();setStatus("#nalviAcademicInstitutionStatus",formatCopy(i.joinExisting,{name}));setTimeout(()=>location.reload(),450);return;
-      }
-      await firebase.setDoc(membershipRef,{institutionId:institution,uid:user.uid,claimedUid:user.uid,email:String(user.email||"").trim().toLowerCase(),name:String(user.displayName||user.email||"Docente").slice(0,120),role:"teacher",active:true,joinedByCode:true,joinCode:code,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
-      selectInstitution(institution);clearIntent();setStatus("#nalviAcademicInstitutionStatus",formatCopy(i.joinSuccess,{name}));setTimeout(()=>location.reload(),450);
-    }catch(error){console.error("NALVI_INSTITUTION_JOIN",error);setStatus("#nalviAcademicInstitutionStatus",i.joinError,true)}
+      const result=await claimInstitutionCode(code);selectInstitution(result.institutionId);clearIntent();setStatus("#nalviAcademicInstitutionStatus",formatCopy(result.existing?i.joinExisting:i.joinSuccess,{name:result.institutionName}));setTimeout(()=>location.reload(),450);
+    }catch(error){console.error("NALVI_INSTITUTION_JOIN",error);setStatus("#nalviAcademicInstitutionStatus",error?.message==="institution-membership-inactive"?i.joinInactive:i.joinError,true)}
     finally{if(button)button.disabled=false}
   }
 
@@ -524,6 +562,30 @@
     kpis.hidden=true;if(!kpis._nalviSummaryObserver&&typeof MutationObserver==="function"){kpis._nalviSummaryObserver=new MutationObserver(refreshTeacherSummary);kpis._nalviSummaryObserver.observe(kpis,{childList:true,subtree:true,characterData:true})}refreshTeacherSummary();
   }
 
+  function closeInstitutionCreator(){const dialog=$("#nalviCreateInstitutionDialog");if(dialog?.open)dialog.close()}
+
+  async function submitInstitutionCreator(event){
+    event.preventDefault();const form=event.currentTarget,c=organizationCopy(),button=event.submitter,name=String(form.elements.name?.value||"").trim(),country=String(form.elements.country?.value||"").trim(),result=$("#nalviCreatedInstitution"),status="#nalviCreateInstitutionStatus";
+    if(name.length<2){setStatus(status,c.invalid,true);form.elements.name?.focus();return}
+    button.disabled=true;setStatus(status,c.saving);if(result)result.hidden=true;
+    try{
+      const created=await createInstitutionSpace({name,country}),code=$("#nalviCreatedInstitutionCode");if(code)code.textContent=created.code;
+      setStatus(status,c.success);if(result)result.hidden=false;form.elements.name.value="";form.elements.country.value="";
+    }catch(error){console.error("NALVI_INSTITUTION_CREATE",error);setStatus(status,error?.message==="institution-name-invalid"?c.invalid:c.error,true)}
+    finally{button.disabled=false}
+  }
+
+  function installInstitutionCreator(management,admin){
+    const groupPane=$("[data-gesa-pane='groups']",management),groupCard=$(".gesa-card",groupPane),intro=$("p",groupCard),form=$("#gesaGroupForm",groupPane),c=organizationCopy();if(!groupCard||!form)return;
+    let open=$("#nalviOpenInstitutionCreator",groupCard);if(!open){intro?.insertAdjacentHTML("afterend",'<button class="mini-btn nalvi-open-institution-creator" id="nalviOpenInstitutionCreator" type="button"></button>');open=$("#nalviOpenInstitutionCreator",groupCard)}
+    open.hidden=!!admin;open.textContent=`🏫 ${c.open}`;
+    let field=$(".nalvi-class-institution-code",form);if(!field){const teacher=$("#gesaGroupTeacher",form)?.closest("label");(teacher||form.querySelector("button[type='submit']"))?.insertAdjacentHTML("beforebegin",'<label class="nalvi-class-institution-code"><span></span><input name="institutionCode" maxlength="10" autocomplete="off" autocapitalize="characters" placeholder="GCI-ABC123"><small></small></label>');field=$(".nalvi-class-institution-code",form);const input=$("input",field);input?.addEventListener("input",event=>{event.target.value=normalizeInstitutionCode(event.target.value)})}
+    field.hidden=!!admin;$("span",field).textContent=c.classCode;$("small",field).textContent=c.classHelp;
+    let dialog=$("#nalviCreateInstitutionDialog");if(!dialog){document.body.insertAdjacentHTML("beforeend",`<dialog class="gesa-dialog nalvi-institution-create-dialog" id="nalviCreateInstitutionDialog" aria-labelledby="nalviCreateInstitutionTitle"><form class="gesa-dialog-card gesa-form" id="nalviCreateInstitutionForm"><div class="gesa-dialog-head"><div><span class="tag">INSTITUCIÓN</span><h3 id="nalviCreateInstitutionTitle"></h3></div><button class="gesa-dialog-close" type="button" data-institution-dialog-close aria-label="Cerrar">×</button></div><p data-institution-create-body></p><label><span data-institution-name-label></span><input name="name" required maxlength="160"></label><label><span data-institution-country-label></span><input name="country" maxlength="80"></label><button class="btn" type="submit" data-institution-submit></button><div class="gesa-form-status" id="nalviCreateInstitutionStatus" role="status" aria-live="polite"></div><section class="nalvi-created-institution" id="nalviCreatedInstitution" hidden><small data-institution-code-label></small><strong id="nalviCreatedInstitutionCode"></strong><div><button class="mini-btn" id="nalviCopyCreatedInstitution" type="button"></button><button class="btn" id="nalviOpenCreatedInstitution" type="button"></button></div></section></form></dialog>`);dialog=$("#nalviCreateInstitutionDialog");$("#nalviCreateInstitutionForm")?.addEventListener("submit",submitInstitutionCreator);$("[data-institution-dialog-close]",dialog)?.addEventListener("click",closeInstitutionCreator);dialog.addEventListener("click",event=>{if(event.target===dialog)closeInstitutionCreator()});$("#nalviCopyCreatedInstitution")?.addEventListener("click",async()=>{const value=$("#nalviCreatedInstitutionCode")?.textContent||"";try{await navigator.clipboard.writeText(value)}catch{const area=document.createElement("textarea");area.value=value;area.readOnly=true;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove()}setStatus("#nalviCreateInstitutionStatus",organizationCopy().copied)});$("#nalviOpenCreatedInstitution")?.addEventListener("click",()=>location.reload())}
+    $("#nalviCreateInstitutionTitle",dialog).textContent=c.title;$("[data-institution-create-body]",dialog).textContent=c.body;$("[data-institution-name-label]",dialog).textContent=c.name;$("[data-institution-country-label]",dialog).textContent=c.country;$("[data-institution-submit]",dialog).textContent=c.submit;$("[data-institution-code-label]",dialog).textContent=c.code;$("#nalviCopyCreatedInstitution",dialog).textContent=c.copy;$("#nalviOpenCreatedInstitution",dialog).textContent=c.openWorkspace;
+    if(!open.dataset.nalviBound){open.dataset.nalviBound="true";open.addEventListener("click",()=>{$("#nalviCreateInstitutionForm")?.reset();setStatus("#nalviCreateInstitutionStatus","");const result=$("#nalviCreatedInstitution");if(result)result.hidden=true;dialog.showModal();setTimeout(()=>$("#nalviCreateInstitutionForm [name='name']")?.focus(),0)})}
+  }
+
   function installDashboard(){
     const management=$("#institutional[data-gesa-installed='true']");if(!management||!canManage())return;
     const admin=window.GESA_CONTEXT?.role==="platform_admin",c=copy(),resource=libraryCopy();
@@ -532,7 +594,7 @@
     $("#nalviAcademicQuickStart",management)?.remove();
     const security=$(".gesa-note.security",management);if(security)security.textContent=`🔐 ${c.security}`;
     decorateAcademicNavigation(management,admin);
-    installWorkspaceLayout(management);installWorkspaceSwitcher(management);installTeacherSummary(management);installInstitutionTools(management);
+    installWorkspaceLayout(management);installWorkspaceSwitcher(management);installTeacherSummary(management);installInstitutionTools(management);installInstitutionCreator(management,admin);
     const groupPane=$("[data-gesa-pane='groups']",management),groupHeading=$(".gesa-card h3",groupPane),groupIntro=$(".gesa-card p",groupPane),studentField=$("textarea[name='studentEmails']",groupPane)?.closest("label");
     if(groupHeading)groupHeading.textContent=c.createClass;
     if(groupIntro)groupIntro.textContent=c.createClassBody;
@@ -632,6 +694,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft,teacherVideoEmbedUrl};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,createInstitutionSpace,resolveClassInstitution,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft,teacherVideoEmbedUrl};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

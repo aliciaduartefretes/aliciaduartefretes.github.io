@@ -77,6 +77,16 @@
 .nalvi-institution-code-card .tag{display:inline-flex;margin-bottom:8px}.nalvi-institution-code-card .gesa-form{margin-top:15px}
 .nalvi-institution-code-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid #ddd4ed;border-radius:14px;background:#fff}
 .nalvi-institution-code-row strong{color:#4d3696;font-size:20px;letter-spacing:.08em}
+.nalvi-open-institution-creator{margin:0 0 14px}
+.nalvi-class-institution-code small{display:block;color:#746c7f;font-size:11px;font-weight:650;line-height:1.4}
+.nalvi-institution-create-dialog{width:min(560px,calc(100vw - 28px));max-width:none;padding:0;border:0;border-radius:22px;background:#fff;color:#302743;box-shadow:0 24px 70px rgba(27,20,47,.35)}
+.nalvi-institution-create-dialog::backdrop{background:rgba(25,20,39,.72);backdrop-filter:blur(3px)}
+.nalvi-institution-create-dialog .gesa-dialog-card{display:grid;gap:14px;max-width:none;padding:22px}
+.nalvi-institution-create-dialog .gesa-dialog-head{margin-bottom:0}
+.nalvi-institution-create-dialog [data-institution-create-body]{margin:0;color:#675f74;line-height:1.5}
+.nalvi-created-institution{display:grid;gap:9px;padding:15px;border:1px solid #dcd3ec;border-radius:16px;background:#f8f5ff}
+.nalvi-created-institution>small{color:#675f74;font-weight:850}.nalvi-created-institution>strong{color:#4d3696;font-size:23px;letter-spacing:.08em}
+.nalvi-created-institution>div{display:flex;flex-wrap:wrap;gap:9px}
 
 @media(max-width:900px){
   .nalvi-academic-workspace,#institutional.nalvi-nav-collapsed .nalvi-academic-workspace{grid-template-columns:minmax(0,1fr);gap:14px}
@@ -106,6 +116,7 @@
   .nalvi-academic-pin-row button{width:100%}
   .nalvi-workspace-switcher{display:grid;width:100%}.nalvi-workspace-switcher select{width:100%;max-width:none}
   .nalvi-institution-code-row{align-items:stretch;flex-direction:column}.nalvi-institution-code-row .mini-btn{width:100%}
+  .nalvi-created-institution>div>*{width:100%}
   .nalvi-student-class{grid-template-columns:auto minmax(0,1fr)}
   .nalvi-student-class button{grid-column:1/-1;width:100%}
   .gesa-group-share{justify-items:start}
