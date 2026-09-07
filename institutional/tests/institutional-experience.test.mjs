@@ -10,6 +10,7 @@ const notificationScriptUrl=new URL("../../assets/js/nalvi-notification-center.j
 const notificationStyleUrl=new URL("../../assets/css/nalvi-notification-center.css",import.meta.url);
 const academicScriptUrl=new URL("../../assets/js/nalvi-academic-studio.js",import.meta.url);
 const academicStyleUrl=new URL("../../assets/css/nalvi-academic-studio.css",import.meta.url);
+const studentDashboardStyleUrl=new URL("../../assets/css/nalvi-student-dashboard.css",import.meta.url);
 const accessibilityScriptUrl=new URL("../../assets/js/nalvi-accessibility.js",import.meta.url);
 const accessibilityStyleUrl=new URL("../../assets/css/nalvi-accessibility.css",import.meta.url);
 const audioManifestUrl=new URL("../../assets/audio/guarani/ali-2026/manifest.json",import.meta.url);
@@ -22,6 +23,7 @@ const notificationScript=await readFile(notificationScriptUrl,"utf8");
 const notificationStyle=await readFile(notificationStyleUrl,"utf8");
 const academicScript=await readFile(academicScriptUrl,"utf8");
 const academicStyle=await readFile(academicStyleUrl,"utf8");
+const studentDashboardStyle=await readFile(studentDashboardStyleUrl,"utf8");
 const accessibilityScript=await readFile(accessibilityScriptUrl,"utf8");
 const accessibilityStyle=await readFile(accessibilityStyleUrl,"utf8");
 const audioManifest=JSON.parse(await readFile(audioManifestUrl,"utf8"));
@@ -405,6 +407,20 @@ test("academic management is self-service and exposes classes, wheel, live PIN a
   assert.match(firestoreRules,/isOwnSelfInstitution/);
   assert.match(firestoreRules,/ownsSelfInstitution/);
   assert.match(firestoreRules,/memberId == request\.resource\.data\.get\('institutionId', ''\) \+ '__' \+ request\.auth\.uid/);
+});
+
+test("student learning dashboard matches the teacher workspace hierarchy",()=>{
+  assert.match(index,/nalvi-student-dashboard\.css\?v=NALVI-STUDENT-DASHBOARD-1/);
+  for(const marker of ["STUDENT_COPY","nalvi-student-contextbar","nalvi-student-subnav","nalviStudentOverview","nalviStudentCourses","nalviStudentClasses","nalviStudentTasks","nalviStudentAssessments","nalviStudentCertificates","studentEnrollments","nalvi-student-join-more"])assert.match(index,new RegExp(marker));
+  const progressShell=index.match(/if\(!\$\("#progressHub"\)\)[\s\S]*?\n\s*if\(!\$\("#institutions"\)\)/)?.[0]||"";
+  assert.doesNotMatch(progressShell,/class="gesa-hero"/);
+  assert.match(progressShell,/data-student-jump="nalviStudentOverview"/);
+  assert.match(index,/if\(id==="progressHub"\)\{renderProgressHub\(\);requestAnimationFrame\(\(\)=>window\.scrollTo\(\{top:0,behavior:"auto"\}\)\)\}/);
+  assert.match(studentDashboardStyle,/\.nalvi-student-overview-grid/);
+  assert.match(studentDashboardStyle,/grid-template-columns:minmax\(0,2\.1fr\) minmax\(260px,\.9fr\)/);
+  assert.match(studentDashboardStyle,/@media\(max-width:980px\)/);
+  assert.match(studentDashboardStyle,/@media\(max-width:760px\)/);
+  assert.match(studentDashboardStyle,/@media\(max-width:430px\)/);
 });
 
 test("independent teachers and institutional teachers use separate secure workspaces",()=>{
