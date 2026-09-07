@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-20";
+  const VERSION="NALVI-ACADEMIC-STUDIO-21";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -145,6 +145,14 @@
     it:{accessTitle:"Il mio collegamento istituzionale",accessBody:"Usa questo stesso account per entrare in un’istituzione. Le tue classi indipendenti restano disponibili.",joinLabel:"Codice dell’istituzione",joinButton:"Entra",requestButton:"Richiedi un’istituzione",statusTitle:"Stato delle mie richieste",statusBody:"Qui vedrai la decisione dell’Amministrazione NALVI.",empty:"Non hai ancora inviato una richiesta.",loading:"Verifica dello stato…",loadError:"Impossibile verificare lo stato. Riprova.",sent:"Inviata · In attesa",approved:"Approvata",rejected:"Rifiutata",approvedBody:"La tua istituzione è stata approvata ed è disponibile con lo stesso account.",pendingBody:"L’Amministrazione NALVI sta esaminando la richiesta.",rejectedBody:"La richiesta non è stata approvata. Puoi inviarne una nuova con dati aggiornati.",code:"Codice istituzionale",showCode:"Mostra il codice istituzionale",copyCode:"Copia codice",codeCopied:"Codice copiato.",open:"Apri istituzione",refresh:"Aggiorna stato",adminAttention:"Richieste in attesa della tua decisione",sameAccount:"Non devi creare un altro profilo."},
     de:{accessTitle:"Meine Institutionsverknüpfung",accessBody:"Nutze dasselbe Konto, um einer Institution beizutreten. Deine eigenen Klassen bleiben erhalten.",joinLabel:"Institutionscode",joinButton:"Beitreten",requestButton:"Institution beantragen",statusTitle:"Status meiner Anträge",statusBody:"Hier siehst du die Entscheidung der NALVI-Administration.",empty:"Du hast noch keinen Antrag gesendet.",loading:"Status wird geprüft…",loadError:"Der Status konnte nicht geprüft werden. Versuche es erneut.",sent:"Gesendet · Offen",approved:"Genehmigt",rejected:"Abgelehnt",approvedBody:"Deine Institution wurde genehmigt und ist mit demselben Konto verfügbar.",pendingBody:"Die NALVI-Administration prüft deinen Antrag.",rejectedBody:"Der Antrag wurde nicht genehmigt. Du kannst einen neuen Antrag mit aktuellen Angaben senden.",code:"Institutionscode",showCode:"Institutionscode anzeigen",copyCode:"Code kopieren",codeCopied:"Code kopiert.",open:"Institution öffnen",refresh:"Status aktualisieren",adminAttention:"Anträge, die auf deine Entscheidung warten",sameAccount:"Du brauchst kein neues Profil."}
   };
+  const TEACHER_DASHBOARD_COPY={
+    es:{title:"Gestión académica",workspace:"Espacio de trabajo",personal:"Mi espacio particular",home:"Inicio",summary:"Resumen",libraries:"Bibliotecas",tasks:"Tareas",activities:"Actividades",space:"Mi espacio",classes:"Tus clases",today:"Hoy",pendingTasks:"tareas pendientes",activeStudents:"estudiantes activos",library:"Biblioteca docente",libraryBody:"Accede a tus recursos para enriquecer tus clases.",videos:"Videos",audios:"Audios",live:"Actividad en vivo",liveBody:"Crea actividades interactivas para tus estudiantes en tiempo real.",createActivity:"Crear actividad",createClass:"Crear una clase",open:"Abrir",active:"Activa",students:"estudiantes",empty:"Todavía no hay clases en este espacio.",certificates:"Certificados"},
+    en:{title:"Academic management",workspace:"Workspace",personal:"My independent space",home:"Home",summary:"Overview",libraries:"Libraries",tasks:"Assignments",activities:"Activities",space:"My space",classes:"Your classes",today:"Today",pendingTasks:"pending assignments",activeStudents:"active learners",library:"Teacher library",libraryBody:"Access resources to enrich your classes.",videos:"Videos",audios:"Audio",live:"Live activity",liveBody:"Create interactive activities for your learners in real time.",createActivity:"Create activity",createClass:"Create a class",open:"Open",active:"Active",students:"learners",empty:"There are no classes in this workspace yet.",certificates:"Certificates"},
+    pt:{title:"Gestão acadêmica",workspace:"Espaço de trabalho",personal:"Meu espaço particular",home:"Início",summary:"Resumo",libraries:"Bibliotecas",tasks:"Tarefas",activities:"Atividades",space:"Meu espaço",classes:"Suas turmas",today:"Hoje",pendingTasks:"tarefas pendentes",activeStudents:"alunos ativos",library:"Biblioteca docente",libraryBody:"Acesse recursos para enriquecer suas aulas.",videos:"Vídeos",audios:"Áudios",live:"Atividade ao vivo",liveBody:"Crie atividades interativas para seus alunos em tempo real.",createActivity:"Criar atividade",createClass:"Criar uma turma",open:"Abrir",active:"Ativa",students:"alunos",empty:"Ainda não há turmas neste espaço.",certificates:"Certificados"},
+    fr:{title:"Gestion académique",workspace:"Espace de travail",personal:"Mon espace particulier",home:"Accueil",summary:"Résumé",libraries:"Bibliothèques",tasks:"Devoirs",activities:"Activités",space:"Mon espace",classes:"Vos classes",today:"Aujourd’hui",pendingTasks:"devoirs en attente",activeStudents:"élèves actifs",library:"Bibliothèque enseignante",libraryBody:"Accédez aux ressources pour enrichir vos cours.",videos:"Vidéos",audios:"Audios",live:"Activité en direct",liveBody:"Créez des activités interactives en temps réel.",createActivity:"Créer une activité",createClass:"Créer une classe",open:"Ouvrir",active:"Active",students:"élèves",empty:"Il n’y a pas encore de classes dans cet espace.",certificates:"Certificats"},
+    it:{title:"Gestione accademica",workspace:"Spazio di lavoro",personal:"Il mio spazio personale",home:"Home",summary:"Riepilogo",libraries:"Biblioteche",tasks:"Compiti",activities:"Attività",space:"Il mio spazio",classes:"Le tue classi",today:"Oggi",pendingTasks:"compiti in sospeso",activeStudents:"studenti attivi",library:"Biblioteca docente",libraryBody:"Accedi alle risorse per arricchire le tue lezioni.",videos:"Video",audios:"Audio",live:"Attività dal vivo",liveBody:"Crea attività interattive per gli studenti in tempo reale.",createActivity:"Crea attività",createClass:"Crea una classe",open:"Apri",active:"Attiva",students:"studenti",empty:"Non ci sono ancora classi in questo spazio.",certificates:"Certificati"},
+    de:{title:"Akademische Verwaltung",workspace:"Arbeitsbereich",personal:"Mein eigener Bereich",home:"Start",summary:"Übersicht",libraries:"Bibliotheken",tasks:"Aufgaben",activities:"Aktivitäten",space:"Mein Bereich",classes:"Deine Klassen",today:"Heute",pendingTasks:"offene Aufgaben",activeStudents:"aktive Lernende",library:"Lehrbibliothek",libraryBody:"Nutze Ressourcen, um deinen Unterricht zu bereichern.",videos:"Videos",audios:"Audios",live:"Live-Aktivität",liveBody:"Erstelle interaktive Aktivitäten für deine Lernenden in Echtzeit.",createActivity:"Aktivität erstellen",createClass:"Klasse erstellen",open:"Öffnen",active:"Aktiv",students:"Lernende",empty:"In diesem Bereich gibt es noch keine Klassen.",certificates:"Zertifikate"}
+  };
   function locale(){const value=String($("#headerLang")?.value||$("#lang")?.value||document.documentElement.lang||"es").toLowerCase().slice(0,2);return COPY[value]?value:"es"}
   function copy(){return COPY[locale()]||COPY.es}
   function institutionCopy(){return INSTITUTION_COPY[locale()]||INSTITUTION_COPY.es}
@@ -153,6 +161,7 @@
   function requestStatusCopy(){return REQUEST_STATUS_COPY[locale()]||REQUEST_STATUS_COPY.es}
   function contextualCopy(){return CONTEXTUAL_ACADEMIC_COPY[locale()]||CONTEXTUAL_ACADEMIC_COPY.es}
   function libraryCopy(){return{...(RESOURCE_COPY[locale()]||RESOURCE_COPY.es),...(LIBRARY_COPY[locale()]||LIBRARY_COPY.es),...(VIDEO_LIBRARY_COPY[locale()]||VIDEO_LIBRARY_COPY.es)}}
+  function teacherDashboardCopy(){return TEACHER_DASHBOARD_COPY[locale()]||TEACHER_DASHBOARD_COPY.es}
   function formatCopy(value,replacements={}){return String(value||"").replace(/\{(\w+)\}/g,(_,key)=>String(replacements[key]??""))}
   let firebase=null;
   let savedActivities=[];
@@ -512,13 +521,31 @@
     renderWheel();
   }
 
+  function academicIcon(name){
+    const paths={
+      home:'<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+      video:'<path d="m4 3 3 4M10 3l3 4M16 3l3 4"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18M10 12l5 3-5 3z"/>',
+      audio:'<rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
+      tasks:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 9h8M8 13h8M8 17h5"/>',
+      activities:'<path d="m4 20 4.5-1 10-10-3.5-3.5-10 10zM13.5 7l3.5 3.5M4 20l1-4.5 3.5 3.5z"/>',
+      space:'<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/>',
+      certificates:'<circle cx="12" cy="9" r="6"/><path d="m8 14-1 8 5-3 5 3-1-8M12 6v6M9 9h6"/>',
+      folder:'<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+      users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+      book:'<path d="M4 4h6a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H4zM20 4h-6a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h6z"/>',
+      live:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3zM8 22h8M12 18v4"/>'
+    };
+    return`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name]||paths.home}</svg>`;
+  }
+
   function decorateAcademicNavigation(management,admin){
-    const c=copy(),tabs=$(".gesa-tabs",management);if(!tabs)return;
+    const c=copy(),tabs=$(".gesa-tabs",management),dashboard=teacherDashboardCopy();if(!tabs)return;
     tabs.classList.add("nalvi-academic-nav");
     $$("[data-gesa-tab]",tabs).forEach(button=>{
       const name=button.dataset.gesaTab,key=name==="summary"&&admin?"adminSummary":name==="institution"&&admin?"adminInstitution":name,activityLabels={es:"Actividades",en:"Activities",pt:"Atividades",fr:"Activités",it:"Attività",de:"Aktivitäten"},spaceLabels={es:["🏫","Mi espacio","Cuenta e instituciones"],en:["🏫","My space","Account and institutions"],pt:["🏫","Meu espaço","Conta e instituições"],fr:["🏫","Mon espace","Compte et établissements"],it:["🏫","Il mio spazio","Account e istituzioni"],de:["🏫","Mein Bereich","Konto und Institutionen"]},resource=libraryCopy(),entry=key==="video-library"?resource.videoTab:key==="audio-library"?resource.audioTab:key==="tools"?["✏️",activityLabels[locale()]||activityLabels.es,c.tabs.tools?.[2]||""]:key==="institution"?spaceLabels[locale()]||spaceLabels.es:c.tabs[key];if(!entry)return;
-      button.innerHTML=`<span class="nalvi-academic-nav-icon" aria-hidden="true">${entry[0]}</span><span class="nalvi-academic-nav-copy"><b>${esc(entry[1])}</b><small>${esc(entry[2])}</small></span>`;
-      button.setAttribute("aria-label",entry[1]);
+      const compactLabels={summary:dashboard.home,"video-library":dashboard.videos,"audio-library":dashboard.audios,"teacher-tasks":dashboard.tasks,tools:dashboard.activities,institution:dashboard.space,certificates:dashboard.certificates},icons={summary:"home","video-library":"video","audio-library":"audio","teacher-tasks":"tasks",tools:"activities",institution:"space",certificates:"certificates"},label=!admin&&compactLabels[name]?compactLabels[name]:entry[1];
+      button.innerHTML=`<span class="nalvi-academic-nav-icon" aria-hidden="true">${admin?entry[0]:academicIcon(icons[name]||"home")}</span><span class="nalvi-academic-nav-copy"><b>${esc(label)}</b><small>${esc(entry[2])}</small></span>`;
+      button.setAttribute("aria-label",label);
     });
   }
 
@@ -530,13 +557,28 @@
 
   function installWorkspaceLayout(management){
     management.classList.add("nalvi-academic-dashboard");const shell=$(".shell.gesa-management",management),tabs=$(".gesa-tabs",management);if(!shell||!tabs)return;
-    const admin=window.GESA_CONTEXT?.role==="platform_admin",hero=$(".staff-hero",management);hero?.classList.toggle("nalvi-academic-admin-hero",admin);hero?.classList.toggle("nalvi-academic-teacher-hero",!admin);
+    const admin=window.GESA_CONTEXT?.role==="platform_admin",hero=$(".staff-hero",management),dashboard=teacherDashboardCopy();hero?.classList.toggle("nalvi-academic-admin-hero",admin);hero?.classList.toggle("nalvi-academic-teacher-hero",!admin);management.classList.toggle("nalvi-academic-admin-mode",admin);management.classList.toggle("nalvi-academic-teacher-mode",!admin);
     let workspace=$(".nalvi-academic-workspace",shell);if(!workspace){workspace=document.createElement("div");workspace.className="nalvi-academic-workspace";tabs.before(workspace);const state=$("#gesaAcademicState",shell);workspace.append(tabs,...(state?[state]:[]),...$$("[data-gesa-pane]",shell))}
-    let contextBar=$("#nalviAcademicContextBar",shell);if(admin)contextBar?.remove();else{if(!contextBar){contextBar=document.createElement("section");contextBar.id="nalviAcademicContextBar";contextBar.className="nalvi-academic-contextbar"}contextBar.innerHTML=`<small>${esc(institutionCopy().workspace)}</small><div id="nalviAcademicContextControl"></div>`;if(contextBar.parentElement!==workspace)workspace.prepend(contextBar)}
-    if(!$("#nalviAcademicMenuToggle",tabs)){tabs.insertAdjacentHTML("afterbegin",`<button class="nalvi-academic-menu-toggle" id="nalviAcademicMenuToggle" type="button" aria-expanded="true"><b aria-hidden="true">☰</b><span>${esc(libraryCopy().menu)}</span></button>`);$("#nalviAcademicMenuToggle",tabs).addEventListener("click",()=>toggleAcademicMenu(management))}
+    let contextBar=$("#nalviAcademicContextBar",shell);if(admin)contextBar?.remove();else{if(!contextBar){contextBar=document.createElement("section");contextBar.id="nalviAcademicContextBar";contextBar.className="nalvi-academic-contextbar"}contextBar.innerHTML=`<div class="nalvi-academic-page-title"><h2>${esc(dashboard.title)}</h2></div><div class="nalvi-academic-workspace-control"><span>${esc(dashboard.workspace)}</span><div id="nalviAcademicContextControl"></div></div>`;if(contextBar.parentElement!==workspace)workspace.prepend(contextBar)}
+    if(admin&&!$("#nalviAcademicMenuToggle",tabs)){tabs.insertAdjacentHTML("afterbegin",`<button class="nalvi-academic-menu-toggle" id="nalviAcademicMenuToggle" type="button" aria-expanded="true"><b aria-hidden="true">☰</b><span>${esc(libraryCopy().menu)}</span></button>`);$("#nalviAcademicMenuToggle",tabs).addEventListener("click",()=>toggleAcademicMenu(management))}
+    if(!admin){$("#nalviAcademicMenuToggle",tabs)?.remove();management.classList.remove("nalvi-nav-collapsed");installTeacherSubnav(management)}
     $("#gesaReloadAcademic",management)?.remove();
     if(!tabs.dataset.nalviVerticalKeys){tabs.dataset.nalviVerticalKeys="true";tabs.addEventListener("keydown",event=>{if(!["ArrowUp","ArrowDown"].includes(event.key))return;const items=$$("[data-gesa-tab]:not([hidden])",tabs),current=items.indexOf(document.activeElement);if(current<0)return;event.preventDefault();const next=(current+(event.key==="ArrowDown"?1:-1)+items.length)%items.length;items[next].focus();items[next].click()})}
-    let collapsed=false;try{collapsed=localStorage.getItem("nalviAcademicMenuCollapsed")==="1"}catch{}toggleAcademicMenu(management,collapsed);
+    if(admin){let collapsed=false;try{collapsed=localStorage.getItem("nalviAcademicMenuCollapsed")==="1"}catch{}toggleAcademicMenu(management,collapsed)}
+  }
+
+  function teacherSubnavTarget(name){return["video-library","audio-library"].includes(name)?"libraries":name==="teacher-tasks"?"tasks":name==="tools"?"activities":name==="institution"?"space":"summary"}
+  function syncTeacherSubnav(name){
+    const management=$("#institutional.nalvi-academic-teacher-mode"),active=teacherSubnavTarget(name);if(!management)return;
+    $$("[data-academic-subnav]",management).forEach(button=>{const selected=button.dataset.academicSubnav===active;button.classList.toggle("active",selected);button.setAttribute("aria-selected",String(selected));button.tabIndex=selected?0:-1});
+  }
+  function installTeacherSubnav(management){
+    const workspace=$(".nalvi-academic-workspace",management),context=$("#nalviAcademicContextBar",management),c=teacherDashboardCopy();if(!workspace||!context)return;
+    let nav=$("#nalviAcademicSubnav",management);if(!nav){nav=document.createElement("nav");nav.id="nalviAcademicSubnav";nav.className="nalvi-academic-subnav";nav.setAttribute("aria-label",c.title);context.after(nav)}
+    nav.innerHTML=`<button type="button" data-academic-subnav="summary" data-academic-open="summary">${academicIcon("home")}<span>${esc(c.summary)}</span></button><button type="button" data-academic-subnav="libraries" data-academic-open="video-library">${academicIcon("folder")}<span>${esc(c.libraries)}</span></button><button type="button" data-academic-subnav="tasks" data-academic-open="teacher-tasks">${academicIcon("tasks")}<span>${esc(c.tasks)}</span></button><button type="button" data-academic-subnav="activities" data-academic-open="tools">${academicIcon("activities")}<span>${esc(c.activities)}</span></button><button type="button" data-academic-subnav="space" data-academic-open="institution">${academicIcon("space")}<span>${esc(c.space)}</span></button>`;
+    if(!nav.dataset.nalviBound){nav.dataset.nalviBound="true";nav.addEventListener("click",event=>{const button=event.target.closest?.("[data-academic-open]");if(button)openTool(button.dataset.academicOpen)})}
+    if(!management.dataset.nalviSubnavTabsBound){management.dataset.nalviSubnavTabsBound="true";management.addEventListener("click",event=>{const tab=event.target.closest?.("[data-gesa-tab]");if(tab)setTimeout(()=>syncTeacherSubnav(tab.dataset.gesaTab),0)})}
+    syncTeacherSubnav($("[data-gesa-tab].active",management)?.dataset.gesaTab||"summary");
   }
 
   function installWorkspaceSwitcher(management){
@@ -544,9 +586,9 @@
     if(window.GESA_CONTEXT?.role==="platform_admin")return;
     const user=currentUser(),personalId=user?.uid?`self__${user.uid}`:"",memberships=[...new Map((window.GESA_CONTEXT?.memberships||[]).filter(item=>item?.active!==false&&item?.institutionId).map(item=>[item.institutionId,item])).values()];
     if(personalId&&!memberships.some(item=>item.institutionId===personalId))memberships.unshift({institutionId:personalId,name:institutionCopy().personal,virtual:true,selfService:true});
-    const i=institutionCopy(),active=institutionId()||personalId,host=$("#nalviAcademicContextControl",management)||$(".staff-hero",management);if(!host||!memberships.length)return;
-    host.insertAdjacentHTML("beforeend",`<label class="nalvi-workspace-switcher" id="nalviAcademicWorkspaceSwitcher"><span>${esc(i.workspace)}</span><select>${memberships.map(item=>`<option value="${esc(item.institutionId)}" ${item.institutionId===active?"selected":""}>${esc(item.institutionId.startsWith("self__")?i.personal:item.institutionName||item.name||item.institutionId)}</option>`).join("")}</select></label>`);
-    $("select",$("#nalviAcademicWorkspaceSwitcher",management))?.addEventListener("change",async event=>{const id=String(event.target.value||""),item=memberships.find(row=>row.institutionId===id);if(!item)return;event.target.disabled=true;try{if(item.virtual)await ensurePersonalWorkspace();selectInstitution(id);location.reload()}catch(error){console.error("NALVI_PERSONAL_WORKSPACE",error);window.showToast?.("No se pudo abrir tu espacio particular.");event.target.disabled=false}});
+    const i=institutionCopy(),dashboard=teacherDashboardCopy(),active=institutionId()||personalId,host=$("#nalviAcademicContextControl",management)||$(".staff-hero",management);if(!host||!memberships.length)return;
+    host.insertAdjacentHTML("beforeend",`<div class="nalvi-workspace-switcher" id="nalviAcademicWorkspaceSwitcher" role="tablist" aria-label="${esc(dashboard.workspace)}">${memberships.map(item=>{const label=item.institutionId.startsWith("self__")?dashboard.personal:item.institutionName||item.name||item.institutionId,selected=item.institutionId===active;return`<button type="button" role="tab" data-workspace-id="${esc(item.institutionId)}" class="${selected?"active":""}" aria-selected="${selected}">${esc(label)}</button>`}).join("")}<span class="nalvi-workspace-chevron" aria-hidden="true">⌄</span></div>`);
+    const switcher=$("#nalviAcademicWorkspaceSwitcher",management);switcher?.addEventListener("click",async event=>{const button=event.target.closest?.("[data-workspace-id]");if(!button||button.classList.contains("active"))return;const id=String(button.dataset.workspaceId||""),item=memberships.find(row=>row.institutionId===id);if(!item)return;$$('button',switcher).forEach(node=>node.disabled=true);try{if(item.virtual)await ensurePersonalWorkspace();selectInstitution(id);location.reload()}catch(error){console.error("NALVI_PERSONAL_WORKSPACE",error);window.showToast?.("No se pudo abrir tu espacio particular.");$$('button',switcher).forEach(node=>node.disabled=false)}});
   }
 
   function mergeLiveActivity(management,admin){
@@ -733,6 +775,24 @@
 
   function metricText(count,one,many){return count===1?one:formatCopy(many,{count})}
 
+  function classInitials(name){return String(name||"Clase").split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]?.toUpperCase()||"").join("")||"C"}
+  function teacherForClass(group,members=[]){const email=String(group.teacherEmail||"").toLowerCase(),match=members.find(item=>item.uid===group.teacherId||String(item.email||"").toLowerCase()===email);return match?.name||group.teacherName||group.teacherEmail||currentUser()?.displayName||"—"}
+  function teacherOverviewClassRows(groups=[],members=[]){
+    const c=teacherDashboardCopy();if(!groups.length)return`<div class="nalvi-overview-empty"><p>${esc(c.empty)}</p><button class="btn" type="button" data-summary-create-class>+ ${esc(c.createClass)}</button></div>`;
+    return groups.map(group=>{const students=[...new Set((group.studentEmails||[]).map(value=>String(value||"").trim().toLowerCase()).filter(Boolean))],teacher=teacherForClass(group,members);return`<article class="nalvi-overview-class-row"><span class="nalvi-overview-class-avatar" aria-hidden="true">${esc(classInitials(group.name))}</span><div class="nalvi-overview-class-main"><h4>${esc(group.name||c.classes)}</h4><span>${academicIcon("book")} ${esc(courseLabel(group.courseId))}</span></div><span class="nalvi-overview-class-meta students">${academicIcon("users")} ${students.length} ${esc(c.students)}</span><span class="nalvi-overview-class-meta teacher">${academicIcon("space")} ${esc(teacher)}</span><span class="gesa-status active">${esc(c.active)}</span><button class="btn" type="button" data-overview-class-open="${esc(group.id)}">${esc(c.open)}</button></article>`}).join("");
+  }
+  function renderTeacherOverview(data=window.GESA_DATA||{}){
+    const management=$("#institutional.nalvi-academic-teacher-mode");if(!management)return;const root=$("#nalviTeacherOverview",management);if(!root)return;
+    const c=teacherDashboardCopy(),groups=(data.groups||[]).filter(group=>classStatus(group)==="active"),studentSet=new Set(groups.flatMap(group=>group.studentEmails||[]).map(value=>String(value||"").trim().toLowerCase()).filter(Boolean)),pending=(data.assignments||[]).filter(item=>!["completed","done","archived"].includes(String(item.status||"").toLowerCase())).length;
+    root.innerHTML=`<div class="nalvi-teacher-overview-grid"><section class="nalvi-overview-card nalvi-overview-classes"><header><h3>${esc(c.classes)}</h3><button class="btn" type="button" data-summary-create-class>+ ${esc(c.createClass)}</button></header><div class="nalvi-overview-class-list">${teacherOverviewClassRows(groups,data.members||[])}</div></section><aside class="nalvi-overview-card nalvi-overview-today"><h3>${esc(c.today)}</h3><div><span class="nalvi-overview-metric-icon tasks">${academicIcon("tasks")}</span><p><b>${pending}</b><span>${esc(c.pendingTasks)}</span></p></div><hr><div><span class="nalvi-overview-metric-icon students">${academicIcon("users")}</span><p><b>${studentSet.size}</b><span>${esc(c.activeStudents)}</span></p></div></aside></div><div class="nalvi-teacher-overview-actions"><section class="nalvi-overview-card nalvi-overview-library"><h3>${esc(c.library)}</h3><p>${esc(c.libraryBody)}</p><div><button type="button" data-overview-open="video-library"><span class="video">${academicIcon("video")}</span><b>${esc(c.videos)}</b><i aria-hidden="true">›</i></button><button type="button" data-overview-open="audio-library"><span class="audio">${academicIcon("audio")}</span><b>${esc(c.audios)}</b><i aria-hidden="true">›</i></button></div></section><section class="nalvi-overview-card nalvi-overview-live"><div><h3>${esc(c.live)}</h3><p>${esc(c.liveBody)}</p><span class="nalvi-overview-live-art" aria-hidden="true">${academicIcon("live")}</span></div><button type="button" data-overview-open="tools"><span aria-hidden="true">+</span>${esc(c.createActivity)}</button></section></div>`;
+  }
+  function installTeacherOverview(management){
+    const pane=$("[data-gesa-pane='summary']",management);if(!pane)return;pane.classList.add("nalvi-teacher-overview-pane");
+    let root=$("#nalviTeacherOverview",pane);if(!root){root=document.createElement("section");root.id="nalviTeacherOverview";root.className="nalvi-teacher-overview";pane.prepend(root)}
+    if(!management.dataset.nalviTeacherOverviewBound){management.dataset.nalviTeacherOverviewBound="true";management.addEventListener("click",event=>{const shortcut=event.target.closest?.("[data-overview-open]"),classButton=event.target.closest?.("[data-overview-class-open]");if(shortcut){openTool(shortcut.dataset.overviewOpen);return}if(classButton){const id=classButton.dataset.overviewClassOpen;openTool("groups");setTimeout(()=>openClassDetail(management,id),0)}})}
+    renderTeacherOverview();
+  }
+
   function refreshTeacherSummary(){
     const root=$("#nalviTeacherSummary"),kpis=$("#gesaAcademicKpis");if(!root||!kpis)return;const values=$$(":scope > .gesa-kpi b",kpis).map(node=>Number(node.textContent)||0),students=values[0]||0,groups=values[1]||0,tasks=values[2]||0,c=libraryCopy(),classCopy=classAdminCopy(),x=contextualCopy(),institutionalTeacher=window.GESA_CONTEXT?.role!=="platform_admin"&&hasSelectedInstitution();
     if(!groups&&institutionalTeacher){const communityLabel=({es:"Comunidad",en:"Community",pt:"Comunidade",fr:"Communauté",it:"Comunità",de:"Community"})[locale()]||"Comunidad";root.innerHTML=`<article class="nalvi-teacher-first-step institutional"><span aria-hidden="true">🏫</span><div><small>${esc(c.today)}</small><h3>${esc(selectedInstitutionName()||copy().teacherPanelTitle)}</h3><p>${esc(x.institutionReadyBody)}</p></div><div class="nalvi-first-step-actions"><button class="btn" type="button" data-summary-go="groups">${esc(x.openClasses)} →</button><button class="mini-btn" type="button" data-summary-community>💬 ${esc(communityLabel)}</button></div></article>`}
@@ -744,6 +804,7 @@
 
   function installTeacherSummary(management){
     const pane=$("[data-gesa-pane='summary']",management),kpis=$("#gesaAcademicKpis",pane);if(!pane||!kpis)return;
+    if(window.GESA_CONTEXT?.role!=="platform_admin"){kpis.hidden=true;installTeacherOverview(management);return}
     if(!$("#nalviTeacherSummary",pane))kpis.insertAdjacentHTML("beforebegin",'<section id="nalviTeacherSummary" class="nalvi-teacher-summary" aria-live="polite"></section>');
     if(!$("#nalviStudentData",pane)){const toolbar=kpis.nextElementSibling,table=toolbar?.nextElementSibling,wrapper=document.createElement("section");wrapper.id="nalviStudentData";wrapper.className="nalvi-student-data";wrapper.innerHTML=`<div class="gesa-section-head"><div><h3>${esc(libraryCopy().studentsTitle)}</h3><p>${esc(libraryCopy().studentsBody)}</p></div></div>`;toolbar?.before(wrapper);if(toolbar)wrapper.append(toolbar);if(table)wrapper.append(table);const actions=$(".gesa-inline-actions",toolbar);if(actions){const details=document.createElement("details");details.className="nalvi-export-menu";details.innerHTML=`<summary>${esc(libraryCopy().export)}</summary>`;actions.before(details);details.append(actions)}}
     const data=$("#nalviStudentData",pane),resource=libraryCopy(),heading=$(".gesa-section-head h3",data),description=$(".gesa-section-head p",data),exportLabel=$(".nalvi-export-menu > summary",data);if(heading)heading.textContent=resource.studentsTitle;if(description)description.textContent=resource.studentsBody;if(exportLabel)exportLabel.textContent=resource.export;
@@ -793,6 +854,7 @@
     const management=$("#institutional[data-gesa-installed='true']");if(!management)return;
     $$("[data-gesa-tab]",management).forEach(button=>{const active=button.dataset.gesaTab===name;button.classList.toggle("active",active);button.setAttribute("aria-selected",String(active));button.tabIndex=active?0:-1});
     $$("[data-gesa-pane]",management).forEach(pane=>{const active=pane.dataset.gesaPane===name;pane.classList.toggle("hide",!active);pane.setAttribute("aria-hidden",String(!active))});
+    syncTeacherSubnav(name);
     if(name==="tools")loadActivities();
     setTimeout(()=>$("[data-gesa-pane='"+name+"']",management)?.scrollIntoView({behavior:"smooth",block:"start"}),0);
   }
@@ -876,6 +938,7 @@
       window.addEventListener("nalvi:auth-known",()=>setTimeout(()=>{refresh();restorePendingIntent("auth")},100));
       window.addEventListener("nalvi:role-known",()=>setTimeout(()=>{refresh();restorePendingIntent("role")},100));
       window.addEventListener("nalvi:group-joined",handleGroupJoined);
+      window.addEventListener("nalvi:academic-data",event=>renderTeacherOverview(event.detail||{}));
       window.addEventListener("nalvi:institution-request-saved",()=>setTimeout(renderOwnInstitutionRequests,0));
       document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))setTimeout(()=>{refresh();renderOwnInstitutionRequests()},0)},true);
       for(let attempt=0;attempt<40&&!$("#institutional[data-gesa-installed='true']");attempt++)await new Promise(resolve=>setTimeout(resolve,100));
