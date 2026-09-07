@@ -292,10 +292,10 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
   assert.match(script,/data-community-label="true"/);
 });
 
-test("global bell exposes relevant read-only Community notifications",()=>{
+test("global bell merges relevant Community and academic notifications",()=>{
   assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-14"/);
-  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-2"/);
-  for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","message","nalviCommunityNotificationsSeen.v1","openPost","openMessages"])assert.match(notificationScript,new RegExp(marker));
+  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-3"/);
+  for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","message","institutionApproved","nalvi:academic-notifications","communityItems","academicItems","nalviCommunityNotificationsSeen.v1","openPost","openMessages"])assert.match(notificationScript,new RegExp(marker));
   assert.match(notificationScript,/header \.stats/);
   assert.match(notificationScript,/aria-haspopup="dialog"/);
   assert.match(notificationStyle,/\.nalvi-notification-panel\{position:fixed/);
@@ -373,17 +373,17 @@ test("index loads the protected service and new social experience",()=>{
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-14/);
   assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-19/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
-  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-2/);
+  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-3/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
   assert.doesNotMatch(index,/firebase-storage\.js|storageRef,uploadBytes|getDownloadURL,deleteObject/);
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-15"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-16"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-15/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-11/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-16/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-12/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -513,6 +513,8 @@ test("academic login intent returns to the class creator instead of bouncing to 
   assert.match(academicScript,/requestLogin\("teacher"\)/);
   assert.match(academicScript,/rememberIntent\("createClass"\)/);
   assert.match(academicScript,/intent\.kind==="createClass"&&canManage\(\)/);
+  assert.match(academicScript,/requestLogin\("requestInstitution"\)/);
+  assert.match(academicScript,/intent\.kind==="requestInstitution"/);
   assert.match(academicScript,/restorePendingIntent\("role"\)/);
   assert.match(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="institutions"\}/);
   assert.doesNotMatch(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="home"/);

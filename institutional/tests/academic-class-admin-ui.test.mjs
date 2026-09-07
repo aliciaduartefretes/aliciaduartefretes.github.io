@@ -19,7 +19,7 @@ test("empty teacher home offers three clear, separate starting actions",()=>{
 });
 
 test("an independent teacher creates a class before any optional institution link",()=>{
-  for(const marker of ["Vincularte con una institución es opcional","Opcional: unirme a una institución","rememberIntent(\"createClass\")","intent.kind===\"createClass\"","Preparando tus clases","Estudiantes","Añadir estudiante"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  for(const marker of ["Son independientes de tus clases particulares","Ya tengo un código institucional","rememberIntent(\"createClass\")","intent.kind===\"createClass\"","Preparando tus clases","Estudiantes","Añadir estudiante"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
   const createGroupBlock=index.match(/async function createGroup\(event\)\{[\s\S]*?\n\}/)?.[0]||"";
   assert.doesNotMatch(createGroupBlock,/institutionCode|resolveClassInstitution|Selecciona una institución/);
   assert.match(createGroupBlock,/institutionId=context\.role==="platform_admin"\?data\.institutionId:context\.institutionId/);
@@ -46,21 +46,25 @@ test("class directory has search, active/archive filters and a searchable detail
   assert.doesNotMatch(markup,/Antiguos alumnos/);
 });
 
-test("common users request an institution while platform admins approve it atomically",()=>{
+test("common users request an institution while platform admins approve it with a retry-safe two-stage write",()=>{
   const dashboardBlock=academicScript.match(/function installDashboard\(\)[\s\S]*?function openTool/)?.[0]||"";
   assert.match(dashboardBlock,/installInstitutionRequest\(management,admin\)/);
   assert.doesNotMatch(dashboardBlock,/installInstitutionCreator\(management,admin\)/);
   assert.match(academicScript,/submitInstitutionLead/);
   assert.match(index,/function decideInstitutionRequest\(id,decision\)/);
+  assert.match(index,/function approvedInstitutionDocumentId\(leadId\)/);
   assert.match(index,/writeBatch\(db\)/);
   assert.match(index,/institution_teacher_invite/);
   assert.match(index,/status:"approved",institutionId:institutionRef\.id,institutionCode:code/);
   assert.match(index,/if\(context\.role!=="platform_admin"/);
+  const approval=index.match(/async function decideInstitutionRequest\(id,decision\)\{[\s\S]*?\n\}/)?.[0]||"";
+  assert.ok(approval.indexOf("await setDoc(institutionRef")<approval.indexOf("batch=writeBatch(db)"));
+  assert.doesNotMatch(approval,/if\(lead\.institutionId\).*return/);
 });
 
 test("institution requesters can see a persistent sent, pending, approved, or rejected state",()=>{
   for(const marker of ["nalviInstitutionLeadIds.v1","rememberInstitutionLeadId","loadOwnInstitutionLeads","nalvi:institution-request-saved"])assert.match(index,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  for(const marker of ["nalviInstitutionRequestTracker","nalviOwnInstitutionRequests","Enviada · Pendiente","Estado de mis solicitudes","data-open-request-institution"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  for(const marker of ["nalviInstitutionRequestTracker","nalviOwnInstitutionRequests","nalviAcademicRequestInstitution","Enviada · Pendiente","Estado de mis solicitudes","data-open-request-institution","data-copy-institution-code","nalvi:academic-notifications"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
   assert.match(index,/getDoc\(doc\(db,"institutionalLeads",id\)\)/);
   const api=academicApi();
   assert.equal(api.institutionRequestStatus("new").label,"Enviada · Pendiente");
@@ -69,6 +73,7 @@ test("institution requesters can see a persistent sent, pending, approved, or re
   const markup=api.renderInstitutionRequestRows([{id:"request-1",organization:"Ateneo",status:"approved",institutionId:"org__ABC",institutionCode:"GCI-ABC123"}]);
   assert.match(markup,/Ateneo/);
   assert.match(markup,/GCI-ABC123/);
+  assert.match(markup,/<details class="nalvi-approved-institution-code">/);
   assert.match(markup,/data-open-request-institution="org__ABC"/);
 });
 

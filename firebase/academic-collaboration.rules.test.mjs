@@ -1,5 +1,5 @@
 import {assertFails,assertSucceeds,initializeTestEnvironment} from "@firebase/rules-unit-testing";
-import {arrayUnion,collection,deleteDoc,doc,getDoc,getDocs,query,serverTimestamp,setDoc,updateDoc,where} from "firebase/firestore";
+import {arrayUnion,collection,deleteDoc,doc,getDoc,getDocs,query,serverTimestamp,setDoc,updateDoc,where,writeBatch} from "firebase/firestore";
 import {readFileSync} from "node:fs";
 import {dirname,join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -134,6 +134,17 @@ try{
   await assertFails(setDoc(doc(anonymous,"institutionalLeads","anonymous"),leadShape("anonymous@example.com","Invitado")));
   await assertSucceeds(getDocs(query(collection(admin,"institutionalLeads"),where("status","==","new"))));
   await assertSucceeds(updateDoc(doc(admin,"institutionalLeads","request-student-class"),{status:"approved",decisionBy:"admin",decisionAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:"admin"}));
+  const twoPhaseRequest=doc(studentClass,"institutionalLeads","request-two-phase");
+  await assertSucceeds(setDoc(twoPhaseRequest,leadShape("student-class@example.com","Estudiante Clase")));
+  await assertSucceeds(setDoc(doc(admin,"institutions","org__TWOPHASE1234"),{name:"Institución en dos pasos",country:"Paraguay",active:true,status:"active",ownerUid:"student-class",organization:true,selfService:false,createdBy:"admin",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
+  const approvalBatch=writeBatch(admin),approvalTimestamp=serverTimestamp();
+  approvalBatch.set(doc(admin,"institutionMembers","org__TWOPHASE1234__invite__student-class@example.com"),{institutionId:"org__TWOPHASE1234",email:"student-class@example.com",name:"Estudiante Clase",role:"institution_manager",active:true,invitedBy:"admin",approvedRequestId:"request-two-phase",createdAt:approvalTimestamp,updatedAt:approvalTimestamp});
+  approvalBatch.set(doc(admin,"institutionJoinCodes","code__GCI-NALVI2"),{type:"institution_teacher_invite",code:"GCI-NALVI2",institutionId:"org__TWOPHASE1234",institutionName:"Institución en dos pasos",active:true,createdBy:"admin",createdAt:approvalTimestamp,updatedAt:approvalTimestamp});
+  approvalBatch.update(doc(admin,"institutionalLeads","request-two-phase"),{status:"approved",institutionId:"org__TWOPHASE1234",institutionCode:"GCI-NALVI2",decisionBy:"admin",decisionAt:approvalTimestamp,updatedAt:approvalTimestamp,updatedBy:"admin"});
+  await assertSucceeds(approvalBatch.commit());
+  await assertSucceeds(getDoc(doc(studentClass,"institutions","org__TWOPHASE1234")));
+  await assertSucceeds(getDoc(doc(studentClass,"institutionalLeads","request-two-phase")));
+  await assertSucceeds(getDoc(doc(studentClass,"institutionJoinCodes","code__GCI-NALVI2")));
   await assertFails(setDoc(doc(teacherA,"institutions","org__ABCDEF123456"),{name:"Organización directa",country:"Paraguay",active:true,status:"active",ownerUid:"teacher-a",organization:true,selfService:false,createdBy:"teacher-a",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(admin,"institutions","org__ABCDEF123456"),{name:"Organización aprobada",country:"Paraguay",active:true,status:"active",ownerUid:"teacher-a",organization:true,selfService:false,createdBy:"admin",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
   await assertSucceeds(setDoc(doc(studentClass,"institutions","self__student-class"),{name:"Aula particular",country:"",active:true,status:"active",ownerUid:"student-class",selfService:true,createdBy:"student-class",createdAt:serverTimestamp(),updatedAt:serverTimestamp()}));
