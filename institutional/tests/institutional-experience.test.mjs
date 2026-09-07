@@ -29,12 +29,13 @@ const index=await readFile(indexUrl,"utf8");
 const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
-test("community is a focused social network without academic-management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-19"/);
+test("community is a focused social network with scoped class conversations but no management tabs",()=>{
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-20"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
-  for(const removed of ["Tu lugar para conversar y aprender","Aula","En vivo","Miembros","Gestión académica"])assert.doesNotMatch(script,new RegExp(removed));
+  assert.match(script,/data-community-space="academic"/);
+  for(const removed of ["Tu lugar para conversar y aprender","En vivo","Miembros","Gestión académica"])assert.doesNotMatch(script,new RegExp(removed));
 });
 
 test("comment replies stay grouped beneath the comment they answer",()=>{
@@ -373,8 +374,8 @@ test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-14/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-19/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-20/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-18/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-5/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
@@ -382,10 +383,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-18"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-19"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicStudentLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-18/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-13/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-19/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-14/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -413,6 +414,10 @@ test("independent teachers and institutional teachers use separate secure worksp
   assert.match(createGroupBlock,/institutionId=context\.role==="platform_admin"\?data\.institutionId:context\.institutionId/);
   assert.match(academicStyle,/\.nalvi-workspace-switcher/);
   assert.match(academicStyle,/\.nalvi-institution-code-row/);
+  assert.match(academicScript,/if\(personalId&&!memberships\.some/);
+  assert.match(academicScript,/ensurePersonalWorkspace/);
+  assert.match(academicScript,/simplifyAcademicNavigation/);
+  assert.match(academicStyle,/\.nalvi-academic-contextbar/);
 });
 
 test("class links, QR and membership controls complete the teacher and student flow",()=>{

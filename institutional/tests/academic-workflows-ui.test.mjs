@@ -7,8 +7,8 @@ const js=fs.readFileSync(new URL("../../assets/js/nalvi-academic-workflows.mjs",
 const css=fs.readFileSync(new URL("../../assets/css/nalvi-academic-workflows.css",import.meta.url),"utf8");
 
 test("academic workflows are loaded with versioned JavaScript and CSS",()=>{
-  assert.match(html,/nalvi-academic-workflows\.css\?v=NALVI-ACADEMIC-WORKFLOWS-1/);
-  assert.match(html,/nalvi-academic-workflows\.mjs\?v=NALVI-ACADEMIC-WORKFLOWS-1/);
+  assert.match(html,/nalvi-academic-workflows\.css\?v=NALVI-ACADEMIC-WORKFLOWS-2/);
+  assert.match(html,/nalvi-academic-workflows\.mjs\?v=NALVI-ACADEMIC-WORKFLOWS-2/);
 });
 
 test("teacher workflow makes exact review explicit before save and assignment",()=>{
@@ -23,6 +23,9 @@ test("academic wall has explicit class or institution audience and nested replie
   assert.match(js,/audience:isClass\?"class":"institution"/);
   assert.match(js,/data-replies-for/);
   assert.match(js,/service\.replyToPost/);
+  assert.match(js,/nalviAcademicCommunityMount/);
+  assert.match(js,/nalvi:community-academic-mount/);
+  assert.doesNotMatch(js,/navButton\("academic-wall"/);
 });
 
 test("teacher room and student task runner are present and mobile safe",()=>{
@@ -30,4 +33,5 @@ test("teacher room and student task runner are present and mobile safe",()=>{
   assert.match(js,/service\.saveTaskSubmission/);
   assert.match(css,/@media\(max-width:620px\)/);
   assert.match(css,/\.nalvi-task-dialog::backdrop/);
+  assert.match(css,/\.nalvi-academic-community-secondary/);
 });

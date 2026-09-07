@@ -31,7 +31,7 @@ body:has(#institutionalExperience:not(.hide)) .reaction-sound-toggle{display:non
 .nalvi-community-head-actions>button:last-child{padding-left:6px}
 .nalvi-community-head-actions .nalvi-community-avatar{width:32px;height:32px;font-size:11px}
 
-.nalvi-community-feed-tabs{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--institutional-line);background:#fff}
+.nalvi-community-feed-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-bottom:1px solid var(--institutional-line);background:#fff}
 .nalvi-community-feed-tabs button{position:relative;min-width:0;min-height:46px;border:0;background:transparent;color:var(--institutional-muted);font:inherit;font-size:14px;font-weight:900;cursor:pointer}
 .nalvi-community-feed-tabs button[aria-selected="true"]{color:var(--institutional-ink)}
 .nalvi-community-feed-tabs button[aria-selected="true"]:after{content:"";position:absolute;right:28%;bottom:0;left:28%;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--institutional-green),var(--institutional-purple))}
