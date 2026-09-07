@@ -7,7 +7,7 @@ const academicScript=await readFile(new URL("../../assets/js/nalvi-academic-stud
 const index=await readFile(new URL("../../index.html",import.meta.url),"utf8");
 
 function academicApi(){
-  const context=vm.createContext({window:{},document:{readyState:"loading",documentElement:{lang:"es"},addEventListener(){},querySelector(){return null}},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Array,Promise,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
+  const context=vm.createContext({window:{},location:{origin:"https://nalvi.test",pathname:"/"},document:{readyState:"loading",documentElement:{lang:"es"},addEventListener(){},querySelector(){return null}},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Array,Promise,URL,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
   vm.runInContext(academicScript,context);
   return context.window.NALVI_ACADEMIC_STUDIO;
 }
@@ -16,6 +16,16 @@ test("empty teacher home offers three clear, separate starting actions",()=>{
   for(const marker of ["Crear mi primera clase","Unirme a una institución","Solicitar una institución","data-summary-create-class","data-empty-join-institution","data-empty-request-institution"])assert.match(academicScript,new RegExp(marker));
   assert.match(academicScript,/openClassCreator\(management\)/);
   assert.match(academicScript,/openInstitutionRequest\(\)/);
+});
+
+test("an independent teacher creates a class before any optional institution link",()=>{
+  for(const marker of ["Vincularte con una institución es opcional","Opcional: unirme a una institución","rememberIntent(\"createClass\")","intent.kind===\"createClass\"","Preparando tus clases","Estudiantes","Añadir estudiante"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  const createGroupBlock=index.match(/async function createGroup\(event\)\{[\s\S]*?\n\}/)?.[0]||"";
+  assert.doesNotMatch(createGroupBlock,/institutionCode|resolveClassInstitution|Selecciona una institución/);
+  assert.match(createGroupBlock,/institutionId=context\.role==="platform_admin"\?data\.institutionId:context\.institutionId/);
+  const requestInstallBlock=academicScript.match(/function installInstitutionRequest\(management,admin\)\{[\s\S]*?\n  \}/)?.[0]||"";
+  assert.doesNotMatch(requestInstallBlock,/nalvi-class-institution-code|name="institutionCode"/);
+  assert.match(academicScript,/setAttribute\("translate","no"\)/);
 });
 
 test("class creation is an exclusive pane and publishes its access data only after persistence",()=>{
@@ -31,6 +41,9 @@ test("class directory has search, active/archive filters and a searchable detail
   assert.equal(api.classStateMatches("active","all"),true);
   assert.equal(api.classStateMatches("active","active"),true);
   assert.equal(api.classStateMatches("archived","active"),false);
+  const markup=api.renderClassWorkspace([{id:"class-1",name:"Guaraní inicial",institutionId:"self__teacher",teacherId:"teacher",studentEmails:[]}],[],[],[],[]);
+  assert.match(markup,/>Estudiantes</);
+  assert.doesNotMatch(markup,/Antiguos alumnos/);
 });
 
 test("common users request an institution while platform admins approve it atomically",()=>{

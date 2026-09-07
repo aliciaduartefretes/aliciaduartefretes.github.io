@@ -380,10 +380,10 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-14"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-15"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-14/);
-  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-10/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-15/);
+  assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-11/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
   assert.match(academicStyle,/\.gesa-tabs\.nalvi-academic-nav/);
@@ -406,7 +406,9 @@ test("independent teachers and institutional teachers use separate secure worksp
   assert.match(firestoreRules,/getAfter\(institutionPath\(request\.resource\.data\.get\('institutionId', ''\)\)\)\.data\.get\('ownerUid', ''\) == request\.auth\.uid/);
   assert.match(firestoreRules,/institutionId\.matches\('\^org__\[A-Z0-9\]\{12\}\$'\)/);
   assert.match(firestoreRules,/request\.resource\.data\.get\('organizationOwner', false\) == true/);
-  assert.match(index,/NALVI_ACADEMIC_STUDIO\?\.resolveClassInstitution/);
+  const createGroupBlock=index.match(/async function createGroup\(event\)\{[\s\S]*?\n\}/)?.[0]||"";
+  assert.doesNotMatch(createGroupBlock,/institutionCode|resolveClassInstitution|Selecciona una institución/);
+  assert.match(createGroupBlock,/institutionId=context\.role==="platform_admin"\?data\.institutionId:context\.institutionId/);
   assert.match(academicStyle,/\.nalvi-workspace-switcher/);
   assert.match(academicStyle,/\.nalvi-institution-code-row/);
 });
@@ -506,10 +508,11 @@ test("accessibility controls provide keyboard, contrast, motion and non-3D game 
   for(const marker of [":focus-visible","nalvi-high-contrast","nalvi-reduced-motion","nalvi-skip-link"])assert.match(accessibilityStyle,new RegExp(marker));
 });
 
-test("academic login intent returns to management instead of bouncing to home",()=>{
+test("academic login intent returns to the class creator instead of bouncing to home",()=>{
   assert.match(academicScript,/nalviAcademicIntent\.v1/);
   assert.match(academicScript,/requestLogin\("teacher"\)/);
-  assert.match(academicScript,/rememberIntent\("openDashboard"\)/);
+  assert.match(academicScript,/rememberIntent\("createClass"\)/);
+  assert.match(academicScript,/intent\.kind==="createClass"&&canManage\(\)/);
   assert.match(academicScript,/restorePendingIntent\("role"\)/);
   assert.match(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="institutions"\}/);
   assert.doesNotMatch(index,/if\(id==="institutional"&&!window\.canAccessInstitutional\)\{id="home"/);

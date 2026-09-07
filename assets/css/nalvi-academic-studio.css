@@ -16,6 +16,7 @@
 .nalvi-academic-live-entry>b{color:#4f4661;font-size:13px}
 .nalvi-institution-join{display:grid;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid #e4deee}
 .nalvi-institution-join>b{color:#342c47;font-size:14px}.nalvi-institution-join>p{margin:0 0 2px;font-size:13px}
+.nalvi-optional-institution-join{margin-top:16px;border-top:1px solid #e4deee;padding-top:12px}.nalvi-optional-institution-join>summary{cursor:pointer;width:max-content;max-width:100%;color:#5b42ad;font-size:13px;font-weight:950;list-style-position:inside}.nalvi-optional-institution-join[open]>summary{margin-bottom:4px}.nalvi-optional-institution-join .nalvi-institution-join{margin-top:0;padding-top:10px;border-top:0}
 .nalvi-academic-pin-row.institution-code input{font-size:17px;letter-spacing:.08em}
 .nalvi-student-class-section{margin:22px 0;padding:20px;border:2px solid var(--gesa-border,#e5dfed);border-radius:24px;background:#fff}
 .nalvi-student-class-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
