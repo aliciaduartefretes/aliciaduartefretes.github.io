@@ -18,6 +18,23 @@ test("empty teacher home offers three clear, separate starting actions",()=>{
   assert.match(academicScript,/openInstitutionRequest\(\)/);
 });
 
+test("the academic entry adapts after joining an institution or a class",()=>{
+  for(const marker of ["hasSelectedInstitution","selectedInstitutionName","institutionReadyBody","Abrir mis clases","nalviAcademicStudentClassCode","nalviAcademicStudentLivePin","nalvi-student-class-tools"])assert.match(academicScript,new RegExp(marker));
+  const publicHub=academicScript.match(/function publicHubMarkup\(\)\{[\s\S]*?\n  \}/)?.[0]||"";
+  assert.doesNotMatch(publicHub,/nalviAcademicLivePin/);
+  assert.match(publicHub,/nalviAcademicStudentLivePin/);
+  assert.match(publicHub,/institutionalTeacher\?"":/);
+  assert.match(academicScript,/entry\.hidden=hasClasses&&!canManage\(\)/);
+});
+
+test("teachers can search a name-only directory scoped to their institution",()=>{
+  for(const marker of ["installTeacherDirectory","renderTeacherDirectory","teacher-directory","nalviTeacherDirectorySearch","data-teacher-directory-row","Teachers in my institution","Professores da minha instituição","Lehrkräfte meiner Institution"])assert.match(academicScript,new RegExp(marker));
+  const directory=academicScript.match(/function renderTeacherDirectory\(members=\[\]\)\{[\s\S]*?\n  \}/)?.[0]||"";
+  assert.match(directory,/item\.institutionId===id/);
+  assert.match(directory,/\["teacher","institution_manager"\]/);
+  assert.doesNotMatch(directory,/esc\(item\.email/);
+});
+
 test("an independent teacher creates a class before any optional institution link",()=>{
   for(const marker of ["Son independientes de tus clases particulares","Ya tengo un código institucional","rememberIntent(\"createClass\")","intent.kind===\"createClass\"","Preparando tus clases","Estudiantes","Añadir estudiante"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
   const createGroupBlock=index.match(/async function createGroup\(event\)\{[\s\S]*?\n\}/)?.[0]||"";
