@@ -409,11 +409,17 @@ test("academic management is self-service and exposes classes, wheel, live PIN a
   assert.match(firestoreRules,/memberId == request\.resource\.data\.get\('institutionId', ''\) \+ '__' \+ request\.auth\.uid/);
 });
 
-test("student learning dashboard matches the teacher workspace hierarchy",()=>{
+test("student academic dashboard contains only human-led classes",()=>{
   assert.match(index,/nalvi-student-dashboard\.css\?v=NALVI-STUDENT-DASHBOARD-1/);
-  for(const marker of ["STUDENT_COPY","nalvi-student-contextbar","nalvi-student-subnav","nalviStudentOverview","nalviStudentCourses","nalviStudentClasses","nalviStudentTasks","nalviStudentAssessments","nalviStudentCertificates","studentEnrollments","nalvi-student-join-more"])assert.match(index,new RegExp(marker));
+  for(const marker of ["STUDENT_COPY","Mi espacio académico","nalvi-student-contextbar","nalvi-student-subnav","nalviStudentOverview","nalviStudentClasses","nalviStudentTasks","nalviStudentAssessments","nalviStudentCertificates","studentEnrollments","nalvi-student-join-more"])assert.match(index,new RegExp(marker));
   const progressShell=index.match(/if\(!\$\("#progressHub"\)\)[\s\S]*?\n\s*if\(!\$\("#institutions"\)\)/)?.[0]||"";
+  const studentRender=index.match(/function renderProgressHub\(\)\{[\s\S]*?\n  \}\n\n  const ASSESSMENT_BANK/)?.[0]||"";
   assert.doesNotMatch(progressShell,/class="gesa-hero"/);
+  assert.doesNotMatch(progressShell,/Mis cursos|nalviStudentCourses/);
+  for(const removed of ["courseStats","nalviStudentCourses","nalvi-student-course-row","Guaraní para Policía","Guaraní para Medicina"])assert.doesNotMatch(studentRender,new RegExp(removed));
+  assert.match(studentRender,/remote\.studentEnrollments/);
+  assert.match(studentRender,/item\.groupName/);
+  assert.match(studentRender,/item\.teacherName\|\|item\.teacherEmail/);
   assert.match(progressShell,/data-student-jump="nalviStudentOverview"/);
   assert.match(index,/if\(id==="progressHub"\)\{renderProgressHub\(\);requestAnimationFrame\(\(\)=>window\.scrollTo\(\{top:0,behavior:"auto"\}\)\)\}/);
   assert.match(studentDashboardStyle,/\.nalvi-student-overview-grid/);
