@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-19";
+  const VERSION="NALVI-ACADEMIC-STUDIO-20";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -531,10 +531,10 @@
   function installWorkspaceLayout(management){
     management.classList.add("nalvi-academic-dashboard");const shell=$(".shell.gesa-management",management),tabs=$(".gesa-tabs",management);if(!shell||!tabs)return;
     const admin=window.GESA_CONTEXT?.role==="platform_admin",hero=$(".staff-hero",management);hero?.classList.toggle("nalvi-academic-admin-hero",admin);hero?.classList.toggle("nalvi-academic-teacher-hero",!admin);
-    let contextBar=$("#nalviAcademicContextBar",shell);if(!admin&&!contextBar){contextBar=document.createElement("section");contextBar.id="nalviAcademicContextBar";contextBar.className="nalvi-academic-contextbar";contextBar.innerHTML=`<div><small>${esc(institutionCopy().workspace)}</small><strong>${esc(selectedInstitutionName()||institutionCopy().personal)}</strong></div><div id="nalviAcademicContextControl"></div>`;hero?.insertAdjacentElement("afterend",contextBar)}
     let workspace=$(".nalvi-academic-workspace",shell);if(!workspace){workspace=document.createElement("div");workspace.className="nalvi-academic-workspace";tabs.before(workspace);const state=$("#gesaAcademicState",shell);workspace.append(tabs,...(state?[state]:[]),...$$("[data-gesa-pane]",shell))}
+    let contextBar=$("#nalviAcademicContextBar",shell);if(admin)contextBar?.remove();else{if(!contextBar){contextBar=document.createElement("section");contextBar.id="nalviAcademicContextBar";contextBar.className="nalvi-academic-contextbar"}contextBar.innerHTML=`<small>${esc(institutionCopy().workspace)}</small><div id="nalviAcademicContextControl"></div>`;if(contextBar.parentElement!==workspace)workspace.prepend(contextBar)}
     if(!$("#nalviAcademicMenuToggle",tabs)){tabs.insertAdjacentHTML("afterbegin",`<button class="nalvi-academic-menu-toggle" id="nalviAcademicMenuToggle" type="button" aria-expanded="true"><b aria-hidden="true">☰</b><span>${esc(libraryCopy().menu)}</span></button>`);$("#nalviAcademicMenuToggle",tabs).addEventListener("click",()=>toggleAcademicMenu(management))}
-    const reload=$("#gesaReloadAcademic",management);if(reload&&reload.parentElement!==tabs){reload.classList.add("nalvi-academic-refresh");tabs.append(reload)}if(reload)reload.textContent=`↻ ${copy().reload}`;
+    $("#gesaReloadAcademic",management)?.remove();
     if(!tabs.dataset.nalviVerticalKeys){tabs.dataset.nalviVerticalKeys="true";tabs.addEventListener("keydown",event=>{if(!["ArrowUp","ArrowDown"].includes(event.key))return;const items=$$("[data-gesa-tab]:not([hidden])",tabs),current=items.indexOf(document.activeElement);if(current<0)return;event.preventDefault();const next=(current+(event.key==="ArrowDown"?1:-1)+items.length)%items.length;items[next].focus();items[next].click()})}
     let collapsed=false;try{collapsed=localStorage.getItem("nalviAcademicMenuCollapsed")==="1"}catch{}toggleAcademicMenu(management,collapsed);
   }

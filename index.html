@@ -474,7 +474,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 <link rel="stylesheet" href="assets/css/nalvi-design-system.css?v=NALVI-VISUAL-STABLE-2">
 <link rel="stylesheet" href="assets/css/nalvi-institutional-experience.css?v=NALVI-COMMUNITY-EXPERIENCE-18">
 <link rel="stylesheet" href="assets/css/nalvi-academic-workflows.css?v=NALVI-ACADEMIC-WORKFLOWS-2">
-<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-14">
+<link rel="stylesheet" href="assets/css/nalvi-academic-studio.css?v=NALVI-ACADEMIC-STUDIO-15">
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
 <link rel="stylesheet" href="assets/css/nalvi-accessibility.css?v=NALVI-ACCESSIBILITY-1"></head>
@@ -7228,6 +7228,12 @@ function installManagementShell(){
 function openAcademicTab(name){document.querySelectorAll("[data-gesa-tab]").forEach(button=>{const active=button.dataset.gesaTab===name;button.classList.toggle("active",active);button.setAttribute("role","tab");button.setAttribute("aria-selected",String(active));button.tabIndex=active?0:-1});document.querySelectorAll("[data-gesa-pane]").forEach(pane=>{const active=pane.dataset.gesaPane===name;pane.classList.toggle("hide",!active);pane.setAttribute("role","tabpanel");pane.setAttribute("aria-hidden",String(!active))})}
 function setAcademicState(kind,message){const state=document.querySelector("#gesaAcademicState");if(!state)return;if(!message){state.classList.add("hide");return}state.className=`gesa-state ${kind||""}`;state.innerHTML=kind==="loading"?`<div><div class="spinner"></div>${esc(message)}</div>`:`<div>${esc(message)}${kind==="error"?'<br><button class="mini-btn" id="gesaStateRetry" style="margin-top:12px">Reintentar</button>':""}</div>`;document.querySelector("#gesaStateRetry")?.addEventListener("click",loadAcademic)}
 function publishAcademicData(patch={}){window.GESA_DATA={...(window.GESA_DATA||{}),...patch};window.dispatchEvent(new CustomEvent("nalvi:academic-data",{detail:{...window.GESA_DATA}}))}
+function resetAcademicAccountState(){
+  cache={institutions:[],members:[],groups:[],enrollments:[],assignments:[],users:[],progress:[],assessments:[],certificateRequests:[],certificates:[],liveRooms:[],teachers:[],leads:[]};studentInfo={enrollments:[],assignments:[],institutionId:"",groupId:""};groupAccessState={groupId:"",mode:""};window.GESA_LIVE_CONTEXT=null;
+  window.GESA_DATA={groups:[],users:[],progress:[],assignments:[],institutions:[],members:[],leads:[],studentEnrollments:[],studentAssignments:[],studentAssessments:[]};window.dispatchEvent(new CustomEvent("nalvi:academic-data",{detail:{...window.GESA_DATA}}));
+  document.querySelector("#nalviAcademicContextBar")?.remove();document.querySelector("#nalviAcademicWorkspaceSwitcher")?.remove();document.querySelectorAll("#institutional [data-gesa-pane]").forEach(pane=>pane.classList.add("hide"));
+  if(!document.querySelector("#institutional")?.classList.contains("hide"))setAcademicState("loading","Cargando el espacio de esta cuenta…");
+}
 
 async function scopedDocs(name,{institutionField="institutionId",teacherField="teacherId"}={}){
   if(context.role==="platform_admin")return(await runNamedQuery(`${name} (colección completa · admin)`,getDocs(collection(db,name)))).docs.map(item=>({id:item.id,...item.data()}));
@@ -7407,7 +7413,7 @@ function exposeApi(){window.GESA={submitInstitutionLead,loadOwnInstitutionLeads,
 async function syncUserInstitutionScope(user){if(!user||user.isAnonymous)return;const institutionIds=unique([...(context.institutionIds||[]),...(studentInfo.enrollments||[]).map(item=>item.institutionId)]),primaryInstitutionId=context.institutionId||(studentInfo.enrollments||[]).find(item=>item.institutionId)?.institutionId||institutionIds[0]||"";try{await setDoc(doc(db,"users",user.uid),{uid:user.uid,email:normalizeEmail(user.email),displayName:user.displayName||"Alumno",institutionIds,primaryInstitutionId,updatedAt:serverTimestamp()},{merge:true})}catch(error){console.info("No se pudo actualizar el alcance institucional del perfil",error?.code||error)}}
 
 async function handleAuth(user){
-  currentUser=user;context={role:"student",canManage:false,canHostLive:false,canAdministerInstitution:false,institutionIds:[],institutionId:"",memberships:[]};window.GESA_CONTEXT=context;window.canAccessInstitutional=false;document.querySelectorAll(".staff-entry").forEach(node=>node.classList.remove("visible"));window.GESA_SYNC_INSTITUTION_NAV?.(false);
+  currentUser=user;academicLoadPromise=null;resetAcademicAccountState();context={role:"student",canManage:false,canHostLive:false,canAdministerInstitution:false,institutionIds:[],institutionId:"",memberships:[]};window.GESA_CONTEXT=context;window.canAccessInstitutional=false;document.querySelectorAll(".staff-entry").forEach(node=>node.classList.remove("visible"));window.GESA_SYNC_INSTITUTION_NAV?.(false);
   try{
     await sleep(80);context=await resolveContext(user);window.GESA_CONTEXT=context;window.canAccessInstitutional=context.canManage;window.NALVI_ROLE_SNAPSHOT={role:context.role||"student",canManage:!!context.canManage,canHostLive:!!context.canHostLive};window.dispatchEvent(new CustomEvent("nalvi:role-known",{detail:window.NALVI_ROLE_SNAPSHOT}));document.body.dataset.gesaLiveHost=String(context.canHostLive);document.querySelectorAll(".staff-entry").forEach(node=>node.classList.toggle("visible",context.canManage));const open=document.querySelector("#gesaOpenManagement");if(open)open.hidden=!context.canManage;window.GESA_SYNC_INSTITUTION_NAV?.(context.canManage);
     const managementVisible=!document.querySelector("#institutional")?.classList.contains("hide");
@@ -7435,7 +7441,7 @@ try{
 <script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-14"></script>
 <script src="assets/js/nalvi-institutional-experience.js?v=NALVI-COMMUNITY-EXPERIENCE-20"></script>
 <script src="assets/js/nalvi-notification-center.js?v=NALVI-NOTIFICATION-CENTER-5"></script>
-<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-19"></script>
+<script src="assets/js/nalvi-academic-studio.js?v=NALVI-ACADEMIC-STUDIO-20"></script>
 <script type="module" src="assets/js/nalvi-academic-workflows.mjs?v=NALVI-ACADEMIC-WORKFLOWS-2"></script>
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>
 </body>

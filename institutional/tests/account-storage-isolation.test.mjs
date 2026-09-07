@@ -61,3 +61,10 @@ test("practice, assessments, course library, and academic workspace use the acti
   assert.match(academic,/window\.NALVI_USER_STORAGE_KEY\?\.\(ACTIVE_INSTITUTION_KEY,currentUser\(\)\)/);
   assert.match(notifications,/window\.NALVI_USER_STORAGE_KEY\?\.\("nalviAcademicInstitution\.v1",user\)/);
 });
+
+test("switching accounts clears every academic view before resolving the next workspace",()=>{
+  assert.match(index,/function resetAcademicAccountState\(\)/);
+  assert.match(index,/window\.GESA_DATA=\{groups:\[\],users:\[\],progress:\[\],assignments:\[\],institutions:\[\],members:\[\],leads:\[\]/);
+  assert.match(index,/document\.querySelector\("#nalviAcademicContextBar"\)\?\.remove\(\)/);
+  assert.match(index,/currentUser=user;academicLoadPromise=null;resetAcademicAccountState\(\);context=/);
+});
