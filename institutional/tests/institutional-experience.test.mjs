@@ -294,7 +294,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 
 test("global bell merges relevant Community and academic notifications",()=>{
   assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-14"/);
-  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-4"/);
+  assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-5"/);
   assert.match(notificationScript,/Se aprobó tu solicitud de institución/);
   assert.match(notificationScript,/item\.kind==="institutionApproved"\?action/);
   for(const marker of ["nalviNotificationButton","nalviNotificationBadge","nalviNotificationPanel","subscribeNotifications","Marandu · Notificaciones","comment","like","follow","message","institutionApproved","nalvi:academic-notifications","communityItems","academicItems","nalviCommunityNotificationsSeen.v1","openPost","openMessages"])assert.match(notificationScript,new RegExp(marker));
@@ -375,16 +375,16 @@ test("index loads the protected service and new social experience",()=>{
   assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-14/);
   assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-19/);
   assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-17/);
-  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-4/);
+  assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-5/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
   assert.doesNotMatch(index,/firebase-storage\.js|storageRef,uploadBytes|getDownloadURL,deleteObject/);
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-17"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-18"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicStudentLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-17/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-18/);
   assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-13/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);

@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-17";
+  const VERSION="NALVI-ACADEMIC-STUDIO-18";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -182,7 +182,7 @@
   function rememberIntent(kind,value=""){try{sessionStorage.setItem(INTENT_KEY,JSON.stringify({kind,value,createdAt:Date.now()}))}catch{}}
   function readIntent(){try{const value=JSON.parse(sessionStorage.getItem(INTENT_KEY)||"null");if(!value||Date.now()-Number(value.createdAt||0)>15*60*1000)return null;return value}catch{return null}}
   function clearIntent(){try{sessionStorage.removeItem(INTENT_KEY)}catch{}}
-  function selectInstitution(value){try{localStorage.setItem(ACTIVE_INSTITUTION_KEY,String(value||""))}catch{}}
+  function selectInstitution(value){try{const key=window.NALVI_USER_STORAGE_KEY?.(ACTIVE_INSTITUTION_KEY,currentUser())||ACTIVE_INSTITUTION_KEY;localStorage.setItem(key,String(value||""))}catch{}}
   function requestLogin(kind,value=""){rememberIntent(kind,value);window.show?.("institutions",true);window.courseGoogleLogin?.()}
 
   function publicHubMarkup(){
