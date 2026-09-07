@@ -1,5 +1,5 @@
 import {assertFails,assertSucceeds,initializeTestEnvironment} from "@firebase/rules-unit-testing";
-import {collection,deleteDoc,doc,getDoc,getDocs,query,serverTimestamp,setDoc,updateDoc,where} from "firebase/firestore";
+import {arrayUnion,collection,deleteDoc,doc,getDoc,getDocs,query,serverTimestamp,setDoc,updateDoc,where} from "firebase/firestore";
 import {readFileSync} from "node:fs";
 import {dirname,join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -126,6 +126,7 @@ try{
 
   const institutionRequest=doc(studentClass,"institutionalLeads","request-student-class");
   await assertSucceeds(setDoc(institutionRequest,leadShape("student-class@example.com","Estudiante Clase")));
+  await assertSucceeds(setDoc(doc(studentClass,"users","student-class"),{uid:"student-class",email:"student-class@example.com",institutionLeadIds:arrayUnion("request-student-class"),updatedAt:serverTimestamp()},{merge:true}));
   await assertSucceeds(getDoc(institutionRequest));
   await assertFails(getDocs(collection(studentClass,"institutionalLeads")));
   await assertFails(updateDoc(institutionRequest,{status:"approved",decisionBy:"student-class",decisionAt:serverTimestamp()}));

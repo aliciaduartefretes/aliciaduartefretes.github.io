@@ -7,7 +7,7 @@ const academicScript=await readFile(new URL("../../assets/js/nalvi-academic-stud
 const index=await readFile(new URL("../../index.html",import.meta.url),"utf8");
 
 function academicApi(){
-  const context=vm.createContext({window:{},document:{readyState:"loading",addEventListener(){}},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Array,Promise,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
+  const context=vm.createContext({window:{},document:{readyState:"loading",documentElement:{lang:"es"},addEventListener(){},querySelector(){return null}},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Array,Promise,URLSearchParams,setTimeout,clearTimeout,setInterval,clearInterval});
   vm.runInContext(academicScript,context);
   return context.window.NALVI_ACADEMIC_STUDIO;
 }
@@ -45,8 +45,28 @@ test("common users request an institution while platform admins approve it atomi
   assert.match(index,/if\(context\.role!=="platform_admin"/);
 });
 
+test("institution requesters can see a persistent sent, pending, approved, or rejected state",()=>{
+  for(const marker of ["nalviInstitutionLeadIds.v1","rememberInstitutionLeadId","loadOwnInstitutionLeads","nalvi:institution-request-saved"])assert.match(index,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  for(const marker of ["nalviInstitutionRequestTracker","nalviOwnInstitutionRequests","Enviada · Pendiente","Estado de mis solicitudes","data-open-request-institution"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/getDoc\(doc\(db,"institutionalLeads",id\)\)/);
+  const api=academicApi();
+  assert.equal(api.institutionRequestStatus("new").label,"Enviada · Pendiente");
+  assert.equal(api.institutionRequestStatus("approved").label,"Aprobada");
+  assert.equal(api.institutionRequestStatus("rejected").label,"Rechazada");
+  const markup=api.renderInstitutionRequestRows([{id:"request-1",organization:"Ateneo",status:"approved",institutionId:"org__ABC",institutionCode:"GCI-ABC123"}]);
+  assert.match(markup,/Ateneo/);
+  assert.match(markup,/GCI-ABC123/);
+  assert.match(markup,/data-open-request-institution="org__ABC"/);
+});
+
+test("a teacher keeps the same profile and independent classes when joining an institution",()=>{
+  for(const marker of ["nalviTeacherInstitutionAccess","nalviDashboardInstitutionCode","sameAccount","Tus clases particulares se conservan","joinInstitutionByCode(\"dashboard\")","nalviAcademicWorkspaceSwitcher"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  assert.match(index,/manager=memberships\.find\(item=>item\.role==="institution_manager"&&!String\(item\.institutionId\|\|""\)\.startsWith\("self__"\)\)/);
+  assert.match(index,/preferredMembership\|\|manager\|\|teacherMemberships\[0\]/);
+});
+
 test("platform administration is separate, role-gated and counts the complete user directory",()=>{
-  for(const marker of ["data-gesa-tab=\"admin-overview\"","data-gesa-pane=\"admin-overview\"","data-platform-only","registeredUsers","enrolledStudents","pendingRequests","nalviAdminSearch"])assert.match(academicScript,new RegExp(marker));
+  for(const marker of ["data-gesa-tab=\"admin-overview\"","data-gesa-pane=\"admin-overview\"","data-platform-only","registeredUsers","enrolledStudents","pendingRequests","nalviAdminSearch","nalviAdminRequestsSection","nalviAdminRequestCount","Solicitudes que necesitan tu decisión"])assert.match(academicScript,new RegExp(marker));
   assert.match(academicScript,/window\.GESA_CONTEXT\?\.role!=="platform_admin"/);
   assert.match(index,/renderAdminOverview\?\.\(\{institutions:cache\.institutions,users:cache\.users,members:cache\.members,groups:cache\.groups,leads:cache\.leads\}\)/);
   assert.match(index,/if\(context\.role==="platform_admin"\)return\(await runNamedQuery\("users \(colección completa · admin\)"/);

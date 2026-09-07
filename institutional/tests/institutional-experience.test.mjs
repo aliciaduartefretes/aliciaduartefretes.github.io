@@ -380,9 +380,9 @@ test("index loads the protected service and new social experience",()=>{
 });
 
 test("academic management is self-service and exposes classes, wheel, live PIN and progress",()=>{
-  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-13"/);
+  assert.match(academicScript,/const VERSION="NALVI-ACADEMIC-STUDIO-14"/);
   for(const marker of ["self__${user.uid}","institutionMembers","institution_manager","nalviAcademicClassCode","joinGroupByCode","nalviAcademicLivePin","gca68OpenJoin",'data-gesa-tab="tools"','data-gesa-tab="video-library"','data-gesa-tab="audio-library"',"academicActivities","activityType","wheel","assessment","Crear una clase","Ruleta y preguntas","Biblioteca de videos","Biblioteca de audios","Actividad con PIN","Panel de administración","Todos los alumnos","decorateAcademicNavigation"])assert.match(academicScript,new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
-  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-13/);
+  assert.match(index,/nalvi-academic-studio\.js\?v=NALVI-ACADEMIC-STUDIO-14/);
   assert.match(index,/nalvi-academic-studio\.css\?v=NALVI-ACADEMIC-STUDIO-10/);
   assert.doesNotMatch(academicScript,/sin aprobación manual/);
   assert.match(academicStyle,/\.nalvi-wheel/);
