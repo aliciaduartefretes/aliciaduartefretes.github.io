@@ -3,8 +3,8 @@ import { lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RECORDED_AUDIO_MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V1";
-export const RECORDED_AUDIO_EXPECTED_COUNT = 99;
+export const RECORDED_AUDIO_MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V2";
+export const RECORDED_AUDIO_EXPECTED_COUNT = 200;
 export const RECORDED_AUDIO_BASE_PATH = "assets/audio/guarani/ali-2026";
 
 const DEFAULT_MANIFEST_URL = new URL("../assets/audio/guarani/ali-2026/manifest.json", import.meta.url);

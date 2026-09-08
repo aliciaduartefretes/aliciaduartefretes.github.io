@@ -1,11 +1,11 @@
 (function installNalviRecordedAudio() {
   "use strict";
 
-  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V4";
-  const MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V1";
+  const VERSION = "NALVI_RECORDED_AUDIO_CLIENT_V5";
+  const MANIFEST_VERSION = "NALVI_RECORDED_AUDIO_V2";
   const MANIFEST_PATH = "assets/audio/guarani/ali-2026/manifest.json";
   const SCRIPT_URL = document.currentScript?.src ? new URL(document.currentScript.src, document.baseURI) : null;
-  const EXPECTED_RECORDING_COUNT = 99;
+  const EXPECTED_RECORDING_COUNT = 200;
   const MANIFEST_TIMEOUT_MS = 8000;
   const SAFE_ID = /^NALVI-AUDIO-(\d{3})$/;
   const SAFE_FILE = /^(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*\.m4a$/;

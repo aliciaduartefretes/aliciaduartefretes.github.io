@@ -35,3 +35,9 @@ Antes de una llamada futura debe evaluarse `canResolveWithoutAI`. Si es `true`, 
 OpenAI no puede resolver respuestas exactas, multiple choice, matching, orden conocido, XP, vidas, progreso, mastery básico, conjugaciones conocidas, reglas gramaticales, selección de actividades existentes, navegación, renderizado ni traducciones validadas.
 
 En el PASO 4 OpenAI permanece desconectado. Un vacío lingüístico, dato pendiente o conflicto tampoco autoriza a la IA a inventar una forma: el Grammar Engine devuelve `unavailable`, `reviewRequired` o `conflict` y mantiene `aiPermitted: false`.
+
+## Lotes de audio y video
+
+Cada nuevo audio humano debe incorporarse al manifiesto autorizado, quedar asociado a una entrada buscable del diccionario, mostrar el control de escucha en cualquier ejercicio o contenido donde aparezca esa palabra y sumarse automáticamente a la práctica auditiva. La importación debe conservar una ruta canónica, un identificador único y un checksum verificable.
+
+Cada nuevo video docente debe aparecer en la biblioteca de videos con título y búsqueda interna. La interfaz no puede mostrar la URL de origen, ofrecer un botón para copiarla ni conceder permiso de portapapeles al reproductor. Los videos externos se reproducen dentro de NALVI mediante un embed restringido.

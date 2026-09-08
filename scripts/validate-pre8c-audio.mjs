@@ -3,9 +3,9 @@ import { lstatSync, readFileSync, readdirSync, realpathSync, statSync } from "no
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const EXPECTED_VERSION = "NALVI_RECORDED_AUDIO_V1";
-const EXPECTED_COUNT = 99;
-const EXPECTED_TOTAL_BYTES = 1_548_150;
+const EXPECTED_VERSION = "NALVI_RECORDED_AUDIO_V2";
+const EXPECTED_COUNT = 200;
+const EXPECTED_TOTAL_BYTES = 3_022_756;
 const AUDIO_BASE_PATH = "assets/audio/guarani/ali-2026";
 const SAFE_ID = /^NALVI-AUDIO-(\d{3})$/;
 const SAFE_FILE = /^(\d{3})-[a-z0-9]+(?:-[a-z0-9]+)*\.m4a$/;

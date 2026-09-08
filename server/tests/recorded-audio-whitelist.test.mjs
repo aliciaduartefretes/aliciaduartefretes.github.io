@@ -57,10 +57,10 @@ const richClaimFor = recording => {
   };
 };
 
-test("el índice síncrono del fallback corresponde exactamente a las 99 entradas del manifiesto", () => {
+test("el índice síncrono del fallback corresponde exactamente a las 200 entradas del manifiesto", () => {
   assert.deepEqual(bundledRecordedAudioIndexAudit(), {
     version: manifest.version,
-    count: 99,
+    count: 200,
     basePath: "assets/audio/guarani/ali-2026",
     exactIdPathTextRequired: true,
     playbackReady: false
@@ -164,7 +164,7 @@ test("el índice público es total y rechaza accessors, símbolos y extras no en
 test("los imports browser del fallback fijan catálogo e índice de audio versionados", () => {
   const source = readFileSync(new URL("../../progression-engine/fallback-intervention.mjs", import.meta.url), "utf8");
   assert.match(source, /nalvi-activity-catalog\.mjs\?v=NALVI-CATALOG-3/);
-  assert.match(source, /recorded-audio-manifest-index\.mjs\?v=NALVI-AUDIO-INDEX-3/);
+  assert.match(source, /recorded-audio-manifest-index\.mjs\?v=NALVI-AUDIO-INDEX-4/);
 });
 
 function requestWithAudio(audio, overrides = {}) {
@@ -469,15 +469,15 @@ async function runPlannerCandidate(context, candidate, planOverrides = {}) {
   return service.orchestrateAdaptiveTutoring(context);
 }
 
-test("la whitelist default deriva 99 entradas presentes del manifiesto físico", () => {
+test("la whitelist default deriva 200 entradas presentes del manifiesto físico", () => {
   const audit = recordedAudioWhitelistAudit();
   assert.equal(audit.ready, true);
-  assert.equal(audit.manifestRecordings, 99);
-  assert.equal(audit.authorizedRecordings, 99);
+  assert.equal(audit.manifestRecordings, 200);
+  assert.equal(audit.authorizedRecordings, 200);
   assert.equal(audit.rejectedRecordings, 0);
   assert.equal(audit.verifiesPhysicalFiles, true);
   assert.equal(audit.verifiesRecoveryChecksums, true);
-  assert.equal(audit.recoveryChecksumRecords, 99);
+  assert.equal(audit.recoveryChecksumRecords, 200);
   assert.equal(audit.playbackAuthorizationIsLinguisticApproval, false);
 
   for (const recording of manifest.recordings) {
@@ -523,13 +523,13 @@ test("un archivo inexistente o una entrada no autorizada queda fuera de la white
       ? { present: false, regularFile: false, signatureValid: false, size: 0 }
       : inspectOk()
   });
-  assert.equal(missingAuthority.audit().authorizedRecordings, 98);
+  assert.equal(missingAuthority.audit().authorizedRecordings, 199);
   assert.equal(missingAuthority.resolve(claimFor(manifest.recordings[49])), null);
 
   const unauthorizedManifest = clone(manifest);
   unauthorizedManifest.recordings[49].authorizedForPlayback = false;
   const unauthorizedAuthority = createRecordedAudioAuthority({ manifest: unauthorizedManifest, audioDirectoryUrl, inspectFile: inspectOk });
-  assert.equal(unauthorizedAuthority.audit().authorizedRecordings, 98);
+  assert.equal(unauthorizedAuthority.audit().authorizedRecordings, 199);
   assert.equal(unauthorizedAuthority.resolve(claimFor(unauthorizedManifest.recordings[49])), null);
 
   const expectedChecksums = new Map(manifest.recordings.map(recording => [canonicalRecordedAudioPath(recording.file), "a".repeat(64)]));
@@ -539,7 +539,7 @@ test("un archivo inexistente o una entrada no autorizada queda fuera de la white
     expectedChecksums,
     inspectFile: recording => ({ ...inspectOk(), sha256: recording.id === "NALVI-AUDIO-050" ? "b".repeat(64) : "a".repeat(64) })
   });
-  assert.equal(checksumAuthority.audit().authorizedRecordings, 98);
+  assert.equal(checksumAuthority.audit().authorizedRecordings, 199);
   assert.equal(checksumAuthority.resolve(claimFor(manifest.recordings[49])), null);
   assert.match(checksumAuthority.audit().rejected[0].reason, /RECOVERY_CHECKSUM_MISMATCH/);
 });

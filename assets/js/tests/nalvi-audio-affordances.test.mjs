@@ -31,7 +31,7 @@ test("los controles públicos muestran solo un icono y ocultan datos internos", 
 });
 
 test("la página carga las affordances después del registro autorizado", () => {
-  const registry = index.indexOf("nalvi-recorded-audio.js?v=NALVI-AUDIO-4");
+  const registry = index.indexOf("nalvi-recorded-audio.js?v=NALVI-AUDIO-5");
   const affordances = index.indexOf("nalvi-audio-affordances.js?v=NALVI-AUDIO-AFFORDANCES-3");
   assert.ok(registry > 0);
   assert.ok(affordances > registry);

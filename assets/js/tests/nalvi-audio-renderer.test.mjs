@@ -126,7 +126,7 @@ test("la galería carga el registry antes del renderer", () => {
   assert.ok(registryPosition > 0);
   assert.ok(rendererPosition > registryPosition);
   assert.ok(galleryPosition > rendererPosition);
-  assert.match(galleryHtml, /nalvi-recorded-audio\.js\?v=NALVI-AUDIO-4/);
+  assert.match(galleryHtml, /nalvi-recorded-audio\.js\?v=NALVI-AUDIO-5/);
   assert.match(galleryHtml, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);
   assert.match(galleryHtml, /id="recordedAudioLibrary"/);
   assert.match(rendererSource, /NALVI-ACTIVITY-CATALOG-RENDERER-6/);
@@ -206,8 +206,8 @@ test("los cinco estados del botón tienen etiquetas completas en los seis idioma
   }
 });
 
-test("la vista técnica publica exactamente 99 controles y filtra cualquier entrada no autorizada", async () => {
-  const recordings = Array.from({ length: 100 }, (_, index) => {
+test("la vista técnica publica exactamente 200 controles y filtra cualquier entrada no autorizada", async () => {
+  const recordings = Array.from({ length: 201 }, (_, index) => {
     const ordinal = String(index + 1).padStart(3, "0");
     return {
       audioId: `NALVI-AUDIO-${ordinal}`,
@@ -222,7 +222,7 @@ test("la vista técnica publica exactamente 99 controles y filtra cualquier entr
   const registry = {
     ready: Promise.resolve({ ok: true }),
     list: () => recordings,
-    authorize: selection => selection.audioId === "NALVI-AUDIO-100"
+    authorize: selection => selection.audioId === "NALVI-AUDIO-201"
       ? null
       : recordings.find(item => item.audioId === selection.audioId),
     playSelection: async () => true,
@@ -236,12 +236,12 @@ test("la vista técnica publica exactamente 99 controles y filtra cualquier entr
   };
   const result = await globalThis.window.NALVI_ACTIVITY_CATALOG.renderRecordedAudioLibrary(target, { language: "es" });
 
-  assert.deepEqual(result, { ok: true, count: 99 });
+  assert.deepEqual(result, { ok: true, count: 200 });
   assert.equal(target.dataset.audioLibraryState, "ready");
-  assert.equal((target.innerHTML.match(/data-recorded-audio-entry=/g) || []).length, 99);
+  assert.equal((target.innerHTML.match(/data-recorded-audio-entry=/g) || []).length, 200);
   assert.match(target.innerHTML, /NALVI-AUDIO-001/);
-  assert.match(target.innerHTML, /NALVI-AUDIO-099/);
-  assert.doesNotMatch(target.innerHTML, /NALVI-AUDIO-100/);
+  assert.match(target.innerHTML, /NALVI-AUDIO-200/);
+  assert.doesNotMatch(target.innerHTML, /NALVI-AUDIO-201/);
 });
 
 test("AUDIO_SELECT no usa fallback textual cuando ID/ruta no están autorizados", async () => {

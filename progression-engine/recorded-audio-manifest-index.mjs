@@ -13,7 +13,20 @@ const LABELS = Object.freeze([
   "Chokokue", "Chororī", "Churi", "Denuka", "Deprovécho", "Eja", "Eja’e’ỹva", "Ekoporã", "Guarara",
   "Guata", "Guavira", "Gueteri", "Guyguy", "Ha", "Ha’etegua", "Haihára", "Hakua", "Hasakuaa’ỹva",
   "Hekombo’e", "Hembevo", "Hendu", "Hepyme’ēva", "Hesakã", "Ichupe", "Ikatu", "Ikatúpa", "Ikatupáva",
-  "Imo’ãporãva", "Inimbe’i", "Iporã", "Iporupy", "Itati", "Jagua", "Jaho’i’o", "Japyhy", "Nahániri"
+  "Imo’ãporãva", "Inimbe’i", "Iporã", "Iporupy", "Itati", "Jagua", "Jaho’i’o", "Japyhy", "Nahániri",
+  "Jehegui", "Jepeju", "Jepokuaaha", "Jeroky", "Jo’a", "Joheipyre", "Ju’ái", "Júi",
+  "Jurupipi", "Ka’ípe", "Kape", "Kapituha", "Káva", "Ko’ãga", "Ko’ēro", "Kokue",
+  "Kuaa", "Kuimba’e", "Kuimba’ehápe", "Kururu", "Le’ãi", "Luisõ", "Maitei", "Mba’apokue",
+  "Mba’e", "Mba’éichapa", "Mbo’ehao", "Mbo’ehára", "Mbohykue", "Mbojepi", "Mbyky", "Mitã",
+  "Moambue", "Mombáy", "Muangekõi", "Ndahepyi", "Ñande", "Ñe’ē", "Ñe’ēkurusu", "Ñembiso",
+  "Ñembopo’i", "Ñendyvu", "Ñepu’Ã", "Ñopytyvõ", "Óga", "Oime", "Oimeve", "Ojapy",
+  "Ojohuguy", "Ombohováiva", "Ombyasyva", "Opáichagua", "Opu’ãva", "Ore", "Oréve", "Oúva",
+  "Paraguay", "Pekõi", "Pokyikue", "Poro’u", "Porohupiha", "Py’aporã", "Py’ỹi", "Pyri",
+  "Ra’ỹingue", "Rahaha", "Rañykãguyruru", "Ratyu", "Reko", "Rembiasakue", "Repyno", "Ro’a",
+  "Roja", "Rombyasy", "Ryke’y", "Sapy’apy’a", "Sogue", "Sororo", "Sy", "Taípy",
+  "Teraguapy", "Tereho", "Terere", "Tesa’yju", "Tova", "Tujupyre", "Umíva", "Upeichagua",
+  "Upepeve", "Upévare", "Urupe", "Urutau", "Va’erã", "Vaietépe", "Vare’a", "Vera",
+  "Virureruha", "Voko", "Vy’a’ỹva", "Vyresa", "Vyrorei"
 ]);
 
 const BASE_PATH = "assets/audio/guarani/ali-2026";
@@ -89,7 +102,7 @@ export function authorizeBundledRecordedAudio(claim = {}, targetText = "") {
 
 export function bundledRecordedAudioIndexAudit() {
   return Object.freeze({
-    version: "NALVI_RECORDED_AUDIO_V1",
+    version: "NALVI_RECORDED_AUDIO_V2",
     count: RECORDINGS.length,
     basePath: BASE_PATH,
     exactIdPathTextRequired: true,

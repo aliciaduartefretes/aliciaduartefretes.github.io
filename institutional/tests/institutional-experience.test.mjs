@@ -510,11 +510,14 @@ test("teacher library turns reviewed source material into a question draft witho
   assert.match(academicScript,/data-teacher-audio-id/);
   assert.match(academicScript,/audioAuthorized===true&&item\?\.humanRecorded===true/);
   assert.match(academicScript,/Biblioteca de audio/);
-  for(const marker of ['data-gesa-pane="video-library"','data-gesa-pane="audio-library"',"Biblioteca de videos","Biblioteca de audios","Buscar un video","Abecedario guaraní","vKbkIim_nE0","youtube-nocookie.com\/embed","nalviTeacherVideoDialog","data-teacher-video-id","renderTeacherVideoLibrary"])assert.match(academicScript,new RegExp(marker));
+  for(const marker of ['data-gesa-pane="video-library"','data-gesa-pane="audio-library"',"Biblioteca de videos","Biblioteca de audios","Buscar un video","Abecedario guaraní","vKbkIim_nE0","8WMSGtiuxJs","youtube-nocookie.com\/embed","nalviTeacherVideoDialog","data-teacher-video-id","renderTeacherVideoLibrary"])assert.match(academicScript,new RegExp(marker));
+  assert.match(academicScript,/Ñe’ẽjoajuha \(conjugaciones\)/);
   const videoUrl=context.window.NALVI_ACADEMIC_STUDIO.teacherVideoEmbedUrl("vKbkIim_nE0");
   assert.equal(videoUrl,"https://www.youtube-nocookie.com/embed/vKbkIim_nE0?autoplay=1&playsinline=1&rel=0");
   assert.equal(context.window.NALVI_ACADEMIC_STUDIO.teacherVideoEmbedUrl("https://youtu.be/vKbkIim_nE0"),"");
   assert.doesNotMatch(academicScript,/href=["'][^"']*(?:youtube|youtu\.be)/i);
+  assert.match(academicScript,/sandbox="allow-scripts allow-same-origin allow-presentation"/);
+  assert.doesNotMatch(academicScript,/clipboard-write/);
   assert.doesNotMatch(academicScript,/data-library-go/);
   assert.doesNotMatch(academicScript,/fetch\([^)]*nalviMaterial|openai|generativeLanguage/i);
   assert.match(academicStyle,/\.nalvi-audio-library-results/);
@@ -587,10 +590,10 @@ test("academic studio stays text-only while uploads would require paid storage",
 });
 
 test("listening practice expands to every authorized human recording without exposing internal metadata",()=>{
-  assert.equal(audioManifest.count,99);
-  assert.equal(audioManifest.recordings.length,99);
-  assert.equal(new Set(audioManifest.recordings.map(recording=>recording.id)).size,99);
-  assert.match(index,/const AUTHORIZED_LISTENING_COUNT=99/);
+  assert.equal(audioManifest.count,200);
+  assert.equal(audioManifest.recordings.length,200);
+  assert.equal(new Set(audioManifest.recordings.map(recording=>recording.id)).size,200);
+  assert.match(index,/const AUTHORIZED_LISTENING_COUNT=200/);
   assert.match(index,/registry\.list\(\)\.map\(recording=>registry\.authorize\(/);
   assert.match(index,/practices\.listen=activities/);
   assert.match(index,/audio:recording\.audioId/);

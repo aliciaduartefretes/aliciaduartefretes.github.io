@@ -215,30 +215,30 @@ test("un response.json eternamente pendiente también resuelve ready fail-closed
 test("la resolución conserva el contrato ID/ruta/autorización/origen humano", async () => {
   const client = loadClient();
   assert.equal((await client.registry.ready).ok, true);
-  const recording = client.registry.resolve("NALVI-AUDIO-099");
+  const recording = client.registry.resolve("NALVI-AUDIO-200");
 
-  assert.equal(recording.audioId, "NALVI-AUDIO-099");
-  assert.equal(recording.path, "assets/audio/guarani/ali-2026/099-nahaniri.m4a");
+  assert.equal(recording.audioId, "NALVI-AUDIO-200");
+  assert.equal(recording.path, "assets/audio/guarani/ali-2026/200-vyrorei.m4a");
   assert.equal(recording.audioPath, recording.path);
-  assert.equal(recording.url, "https://nalvi.test/assets/audio/guarani/ali-2026/099-nahaniri.m4a");
+  assert.equal(recording.url, "https://nalvi.test/assets/audio/guarani/ali-2026/200-vyrorei.m4a");
   assert.equal(recording.audioAuthorized, true);
   assert.equal(recording.humanRecorded, true);
   assert.equal(recording.audioSource, "manifest-human-recording");
-  assert.equal(client.registry.audit().version, "NALVI_RECORDED_AUDIO_CLIENT_V4");
-  assert.equal(client.registry.audit().importedRecordings, 99);
+  assert.equal(client.registry.audit().version, "NALVI_RECORDED_AUDIO_CLIENT_V5");
+  assert.equal(client.registry.audit().importedRecordings, 200);
 });
 
-test("list expone las 99 grabaciones validadas y las muestras inicial, media y final", async () => {
+test("list expone las 200 grabaciones validadas y las muestras inicial, media y final", async () => {
   const client = loadClient();
   assert.equal((await client.registry.ready).ok, true);
   const listed = client.registry.list();
 
-  assert.equal(listed.length, 99);
+  assert.equal(listed.length, 200);
   assert.equal(Object.isFrozen(listed), true);
   for (const [index, expectedId, expectedFile] of [
     [0, "NALVI-AUDIO-001", "001-adio.m4a"],
-    [49, "NALVI-AUDIO-050", "050-amamo-aha.m4a"],
-    [98, "NALVI-AUDIO-099", "099-nahaniri.m4a"]
+    [99, "NALVI-AUDIO-100", "100-jehegui.m4a"],
+    [199, "NALVI-AUDIO-200", "200-vyrorei.m4a"]
   ]) {
     assert.equal(listed[index].audioId, expectedId);
     assert.equal(listed[index].file, expectedFile);
@@ -440,7 +440,7 @@ test("las muestras inicial, media y final se reproducen de a una y reinician la 
   const finalButton = new client.ElementStub();
   await client.registry.ready;
   const middle = client.registry.resolve("NALVI-AUDIO-050");
-  const final = client.registry.resolve("NALVI-AUDIO-099");
+  const final = client.registry.resolve("NALVI-AUDIO-200");
 
   assert.equal(await client.registry.playSelection(firstSelection, firstButton), true);
   client.audioInstances[0].currentTime = 2;
@@ -459,9 +459,9 @@ test("las muestras inicial, media y final se reproducen de a una y reinician la 
   assert.deepEqual(client.audioSources, [
     "https://nalvi.test/assets/audio/guarani/ali-2026/001-adio.m4a",
     "https://nalvi.test/assets/audio/guarani/ali-2026/050-amamo-aha.m4a",
-    "https://nalvi.test/assets/audio/guarani/ali-2026/099-nahaniri.m4a"
+    "https://nalvi.test/assets/audio/guarani/ali-2026/200-vyrorei.m4a"
   ]);
-  assert.equal(client.registry.audit().activeRecordingId, "NALVI-AUDIO-099");
+  assert.equal(client.registry.audit().activeRecordingId, "NALVI-AUDIO-200");
   assert.equal(client.registry.audit().playbackState, "playing");
 });
 
