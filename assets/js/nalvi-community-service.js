@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-14";
+  const VERSION="NALVI-COMMUNITY-SERVICE-15";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
@@ -29,6 +29,8 @@
   let directorySeedAttempted=false;
   let lastPostAt=0;
   let lastCommentAt=0;
+  let activePostWrite=null;
+  let activeCommentWrite=null;
   const viewedThisSession=new Set();
   const followStateCheckedIds=new Set();
 
@@ -273,12 +275,17 @@
   async function createRemotePost(body,category="community"){
     requireEnabled();const text=normalizeBody(body);if(!text)throw new TypeError("EMPTY_COMMUNITY_POST");
     const categoryKey=CATEGORY_KEYS.includes(category)&&category!=="announcements"?category:"community";
-    const firebase=await firebaseReady(),user=currentUser(firebase);
+    const firebase=await firebaseReady(),user=currentUser(firebase),writeKey=`${user.uid}\n${categoryKey}\n${text.toLocaleLowerCase()}`;
+    if(activePostWrite){if(activePostWrite.key===writeKey)return activePostWrite.promise;throw new Error("COMMUNITY_POST_COOLDOWN")}
     const now=Date.now();if(now-lastPostAt<POST_COOLDOWN_MS)throw new Error("COMMUNITY_POST_COOLDOWN");
     if(posts.some(post=>post.authorId===user.uid&&normalizeBody(post.body).toLocaleLowerCase()===text.toLocaleLowerCase()))throw new Error("COMMUNITY_DUPLICATE_POST");
-    const {displayName:authorName}=await ensureOwnProfile(firebase);
-    const payload={authorId:user.uid,authorName,body:text,category:categoryKey,pinned:false,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()};
-    const reference=await firebase.addDoc(firebase.collection(firebase.db,"communityPosts"),payload);lastPostAt=Date.now();return reference.id;
+    const promise=(async()=>{
+      const {displayName:authorName}=await ensureOwnProfile(firebase);
+      const payload={authorId:user.uid,authorName,body:text,category:categoryKey,pinned:false,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()};
+      const reference=await firebase.addDoc(firebase.collection(firebase.db,"communityPosts"),payload);lastPostAt=Date.now();return reference.id;
+    })();
+    activePostWrite={key:writeKey,promise};
+    try{return await promise}finally{if(activePostWrite?.promise===promise)activePostWrite=null}
   }
   async function deleteRemotePost(postId){requireEnabled();const firebase=await firebaseReady();currentUser(firebase);await firebase.deleteDoc(firebase.doc(firebase.db,"communityPosts",String(postId)));return true}
   async function toggleReaction(postId){
@@ -288,13 +295,18 @@
   }
   async function createComment(postId,body,parentCommentId=""){
     requireEnabled();const text=normalizeComment(body);if(!text)throw new TypeError("EMPTY_COMMUNITY_COMMENT");
-    const firebase=await firebaseReady(),user=currentUser(firebase);
+    const firebase=await firebaseReady(),user=currentUser(firebase),safePostId=String(postId),safeParentId=String(parentCommentId||"").slice(0,120),writeKey=`${user.uid}\n${safePostId}\n${safeParentId}\n${text.toLocaleLowerCase()}`;
+    if(activeCommentWrite){if(activeCommentWrite.key===writeKey)return activeCommentWrite.promise;throw new Error("COMMUNITY_COMMENT_COOLDOWN")}
     if(Date.now()-lastCommentAt<COMMENT_COOLDOWN_MS)throw new Error("COMMUNITY_COMMENT_COOLDOWN");
-    const {displayName:authorName}=await ensureOwnProfile(firebase);
-    const postRef=firebase.doc(firebase.db,"communityPosts",String(postId));
-    const reference=await firebase.addDoc(firebase.collection(postRef,"comments"),{authorId:user.uid,authorName,body:text,parentCommentId:String(parentCommentId||"").slice(0,120),createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
-    lastCommentAt=Date.now();
-    return reference.id;
+    const promise=(async()=>{
+      const {displayName:authorName}=await ensureOwnProfile(firebase);
+      const postRef=firebase.doc(firebase.db,"communityPosts",safePostId);
+      const reference=await firebase.addDoc(firebase.collection(postRef,"comments"),{authorId:user.uid,authorName,body:text,parentCommentId:safeParentId,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+      lastCommentAt=Date.now();
+      return reference.id;
+    })();
+    activeCommentWrite={key:writeKey,promise};
+    try{return await promise}finally{if(activeCommentWrite?.promise===promise)activeCommentWrite=null}
   }
   async function toggleFollow(userId){
     requireEnabled();const firebase=await firebaseReady(),user=currentUser(firebase),targetId=String(userId||"");if(!targetId||targetId===user.uid)throw new TypeError("COMMUNITY_INVALID_FOLLOW");

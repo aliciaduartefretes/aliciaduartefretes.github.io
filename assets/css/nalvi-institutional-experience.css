@@ -63,6 +63,10 @@ body:has(#institutionalExperience:not(.hide)) .reaction-sound-toggle{display:non
 .nalvi-community-bilingual-action small{margin-top:2px;color:rgba(255,255,255,.78);font-size:9px;font-weight:750}
 .nalvi-community-status{min-height:18px;margin-top:6px;color:#7c5a15;font-size:12px;font-weight:800}
 .nalvi-community-status.error{color:#a13b57}
+.nalvi-community-publish-confirmation{position:fixed;z-index:10040;top:50%;left:50%;display:grid;grid-template-columns:44px auto;align-items:center;gap:12px;min-width:min(340px,calc(100vw - 32px));padding:18px 22px;border:1px solid rgba(19,123,92,.25);border-radius:20px;background:#fff;color:var(--institutional-ink,#211d32);box-shadow:0 24px 70px rgba(33,29,50,.25);opacity:0;pointer-events:none;transform:translate(-50%,-44%) scale(.96);transition:opacity .18s ease,transform .18s ease}
+.nalvi-community-publish-confirmation.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.nalvi-community-publish-confirmation span{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#e7f8f1;color:#137b5c;font-size:26px;font-weight:950}
+.nalvi-community-publish-confirmation strong{font-size:17px;line-height:1.25}
 
 .nalvi-community-categories{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:100%;padding:11px 16px;border-bottom:1px solid var(--institutional-line)}
 .nalvi-community-category{min-width:0;min-height:44px;border:1px solid var(--institutional-line);border-radius:14px;background:#fff;padding:7px 8px;color:var(--institutional-muted);font:inherit;font-size:11px;font-weight:850;line-height:1.22;overflow-wrap:anywhere;cursor:pointer}

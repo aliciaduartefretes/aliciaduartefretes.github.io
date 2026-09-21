@@ -32,7 +32,7 @@ const firestoreRules=await readFile(firestoreRulesUrl,"utf8");
 const stableRuntime=index.match(/<script id="gca59-stable-runtime">([\s\S]*?)<\/script>/)?.[1]||"";
 
 test("community is a focused social network with scoped class conversations but no management tabs",()=>{
-  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-20"/);
+  assert.match(script,/const VERSION="NALVI-COMMUNITY-EXPERIENCE-21"/);
   assert.match(script,/class="nalvi-community-stream"/);
   assert.doesNotMatch(script,/class="nalvi-community-bar"/);
   assert.doesNotMatch(script,/data-institutional-tab|classroomPanel|livePanel|membersPanel|managementPanel/);
@@ -121,6 +121,40 @@ test("enabled service writes only through authenticated Firestore operations",as
   assert.ok(writes.some(item=>item.kind==="delete"&&item.path.endsWith("communityPosts/post-1")));
   assert.equal(writes.find(item=>item.kind==="add"&&item.path.endsWith("communityPosts")).data.authorName,"Alicia Pública");
   assert.ok(writes.some(item=>item.kind==="set"&&item.data.displayName==="Alicia Ñe’ẽ"&&item.data.bio==="Docente de guaraní"));
+});
+
+test("repeated clicks share one in-flight post or comment write",async()=>{
+  const writes=[],gates=[],reference=path=>({path});
+  const firebase={
+    auth:{currentUser:{uid:"alicia",displayName:"Alicia Duarte",photoURL:"",isAnonymous:false}},db:reference("db"),
+    doc:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
+    collection:(base,...parts)=>reference(`${base.path}/${parts.join("/")}`),
+    getDoc:async ref=>({exists:()=>ref.path.endsWith("communityProfiles/alicia"),data:()=>({displayName:"Alicia Duarte",bio:""}),ref}),
+    setDoc:async()=>{},
+    addDoc:(ref,data)=>new Promise(resolve=>{writes.push({path:ref.path,data});gates.push(()=>resolve({id:`write-${writes.length}`}))}),
+    serverTimestamp:()=>"timestamp"
+  };
+  const context=vm.createContext({window:{GCA_FEATURES:{communityWrites:true},GCA_FIREBASE_LIVE:firebase},Date,JSON,Error,TypeError,String,Math,Map,Set,Object,Promise,setTimeout,clearTimeout,Intl,document:{documentElement:{lang:"es"}}});
+  vm.runInContext(service,context);const api=context.window.NALVI_COMMUNITY_SERVICE;
+
+  const firstPost=api.createRemotePost("Peteĩ marandu"),secondPost=api.createRemotePost("Peteĩ marandu");
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(writes.filter(item=>item.path.endsWith("communityPosts")).length,1);
+  gates.shift()();
+  assert.deepEqual(await Promise.all([firstPost,secondPost]),["write-1","write-1"]);
+
+  const firstComment=api.createComment("post-1","Aguyje","comment-1"),secondComment=api.createComment("post-1","Aguyje","comment-1");
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(writes.filter(item=>item.path.endsWith("communityPosts/post-1/comments")).length,1);
+  gates.shift()();
+  assert.deepEqual(await Promise.all([firstComment,secondComment]),["write-2","write-2"]);
+});
+
+test("publishing state survives feed rerenders and confirms success visibly",()=>{
+  for(const marker of ["postSubmitting:false","commentSubmittingKey:\"\"","commentDrafts:new Map","aria-busy=\"true\"","Publicando…","Publicado.","showPublishConfirmation","nalviCommunityPublishConfirmation"])assert.match(script,new RegExp(marker));
+  assert.match(style,/\.nalvi-community-publish-confirmation/);
+  assert.match(service,/activePostWrite/);
+  assert.match(service,/activeCommentWrite/);
 });
 
 test("feed supports discovery, likes, replies, views, sharing, own deletion and followers",()=>{
@@ -296,7 +330,7 @@ test("legacy language repaint cannot relabel Community as Videos",()=>{
 });
 
 test("global bell merges relevant Community and academic notifications",()=>{
-  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-14"/);
+  assert.match(service,/const VERSION="NALVI-COMMUNITY-SERVICE-15"/);
   assert.match(notificationScript,/const VERSION="NALVI-NOTIFICATION-CENTER-5"/);
   assert.match(notificationScript,/Se aprobó tu solicitud de institución/);
   assert.match(notificationScript,/item\.kind==="institutionApproved"\?action/);
@@ -375,9 +409,9 @@ test("mobile-first styles keep the social feed compact and safe",()=>{
 test("index loads the protected service and new social experience",()=>{
   assert.match(index,/institutionalExperience:true/);
   assert.match(index,/communityWrites:true/);
-  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-14/);
-  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-20/);
-  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-18/);
+  assert.match(index,/nalvi-community-service\.js\?v=NALVI-COMMUNITY-SERVICE-15/);
+  assert.match(index,/nalvi-institutional-experience\.js\?v=NALVI-COMMUNITY-EXPERIENCE-21/);
+  assert.match(index,/nalvi-institutional-experience\.css\?v=NALVI-COMMUNITY-EXPERIENCE-21/);
   assert.match(index,/nalvi-notification-center\.js\?v=NALVI-NOTIFICATION-CENTER-5/);
   assert.match(index,/nalvi-notification-center\.css\?v=NALVI-NOTIFICATION-CENTER-1/);
   for(const operation of ["addDoc","deleteDoc","getDocs","getCountFromServer","orderBy","limit","writeBatch"])assert.match(index,new RegExp(`GCA_FIREBASE_LIVE=.*${operation}`));
