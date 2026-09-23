@@ -618,7 +618,7 @@ test("el diálogo autorizado de saludos conserva dos turnos previos y la tercera
   assert.equal(validation.leakage.codes.includes("ANSWER_IN_DIALOGUE"), false);
   const html = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
   assert.match(html, /assets\/js\/kuaa-general-activities\.js\?v=NALVI-GENERAL-ACTIVITIES-3/);
-  assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-13/);
+  assert.match(html, /assets\/js\/nalvi-intervention-client\.mjs\?v=NALVI-TUTOR-CLIENT-CATALOG-14/);
   const client = readFileSync(new URL("../../assets/js/nalvi-intervention-client.mjs", import.meta.url), "utf8");
   assert.match(client, /progression-engine\/fallback-intervention\.mjs\?v=NALVI-CATALOG-6/);
   assert.match(client, /nalvi-activity-catalog-renderer\.mjs\?v=NALVI-CATALOG-RENDERER-6/);

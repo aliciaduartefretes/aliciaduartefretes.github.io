@@ -10,7 +10,7 @@ import { detectAnswerLeakage, selectFirstValidCandidate, validateCatalogActivity
 import { ACTIVITY_TYPES, catalogAudit } from "../../activity-catalog/nalvi-activity-catalog.mjs?v=NALVI-CATALOG-3";
 import "./nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-6";
 
-const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-13";
+const VERSION = "NALVI-TUTOR-CLIENT-CATALOG-14";
 // Stable regression marker: scoring feedback is shown before any network result.
 const IMMEDIATE_LOCAL_FEEDBACK = true;
 const HISTORY_KEY = "nalvi.tutor.history.v2";
@@ -22,18 +22,20 @@ const LEGACY_PENDING_RETEST_KEY = "nalvi.tutor.pending-spaced-retest.v1";
 const PENDING_RETEST_VERSION = 2;
 const MINIMUM_BRIDGE_ACTIVITIES = 2;
 const ATTEMPT_TTL_MS = 30 * 60 * 1000;
+const CONTEXT_TIMEOUT_MS = 4000;
+const RECOVERY_DIAGNOSTIC_KEY = "nalvi.lesson.recovery.v1";
 const LANGUAGES = new Set(["es", "en", "pt", "fr", "it", "de"]);
 const activeRequests = new WeakMap();
 const activeSequences = new WeakMap();
 const renderedActivityIds = new Set();
 let sessionHistory = [];
 const COPY = Object.freeze({
-  es: { wrong: "No del todo. Seguimos y lo practicaremos de otra forma.", loading: "Preparando otra forma de practicar…", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde.", match: "Relaciona cada expresión con su significado.", matchInstruction: "Une las expresiones que corresponden.", recall: "Responde sin opciones.", recallContext: "Recuerda el concepto que practicamos." },
-  en: { wrong: "Not quite. Keep going; we’ll practise it another way.", loading: "Preparing another way to practise…", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review.", match: "Match each expression with its meaning.", matchInstruction: "Connect the expressions that belong together.", recall: "Answer without options.", recallContext: "Recall the concept you practised." },
-  pt: { wrong: "Ainda não. Continue; vamos praticar de outra forma.", loading: "Preparando outra forma de praticar…", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde.", match: "Relacione cada expressão ao seu significado.", matchInstruction: "Una as expressões correspondentes.", recall: "Responda sem opções.", recallContext: "Lembre o conceito que você praticou." },
-  fr: { wrong: "Pas tout à fait. Continuez : nous le reverrons autrement.", loading: "Préparation d’une autre façon de pratiquer…", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure.", match: "Associez chaque expression à sa signification.", matchInstruction: "Reliez les expressions correspondantes.", recall: "Répondez sans choix.", recallContext: "Rappelez-vous le concept travaillé." },
-  it: { wrong: "Non proprio. Continua: lo riprenderemo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo.", match: "Abbina ogni espressione al suo significato.", matchInstruction: "Collega le espressioni corrispondenti.", recall: "Rispondi senza opzioni.", recallContext: "Ricorda il concetto che hai esercitato." },
-  de: { wrong: "Noch nicht ganz. Mach weiter; wir üben es später anders.", loading: "Eine andere Übungsform wird vorbereitet…", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt.", match: "Ordne jedem Ausdruck seine Bedeutung zu.", matchInstruction: "Verbinde die zusammengehörigen Ausdrücke.", recall: "Antworte ohne Auswahlmöglichkeiten.", recallContext: "Erinnere dich an das geübte Konzept." }
+  es: { wrong: "No del todo. Seguimos y lo practicaremos de otra forma.", loading: "Preparando otra forma de practicar…", complete: "Bien. Ahora seguiremos comprobando lo aprendido.", example: "Observa este ejemplo", deferred: "Guardamos este concepto para repasarlo más tarde.", recovery: "No pudimos preparar el refuerzo, pero tu lección no se perdió.", retry: "Reintentar esta pregunta", continuePractice: "Continuar con otro ejercicio", reference: "Referencia para soporte", match: "Relaciona cada expresión con su significado.", matchInstruction: "Une las expresiones que corresponden.", recall: "Responde sin opciones.", recallContext: "Recuerda el concepto que practicamos." },
+  en: { wrong: "Not quite. Keep going; we’ll practise it another way.", loading: "Preparing another way to practise…", complete: "Good. We’ll keep checking what you learned.", example: "Study this example", deferred: "We saved this concept for a later review.", recovery: "We could not prepare the extra practice, but your lesson was not lost.", retry: "Try this question again", continuePractice: "Continue with another exercise", reference: "Support reference", match: "Match each expression with its meaning.", matchInstruction: "Connect the expressions that belong together.", recall: "Answer without options.", recallContext: "Recall the concept you practised." },
+  pt: { wrong: "Ainda não. Continue; vamos praticar de outra forma.", loading: "Preparando outra forma de praticar…", complete: "Bem. Continuaremos verificando o que você aprendeu.", example: "Observe este exemplo", deferred: "Guardamos este conceito para revisar mais tarde.", recovery: "Não foi possível preparar o reforço, mas sua lição não foi perdida.", retry: "Tentar esta pergunta novamente", continuePractice: "Continuar com outro exercício", reference: "Referência para suporte", match: "Relacione cada expressão ao seu significado.", matchInstruction: "Una as expressões correspondentes.", recall: "Responda sem opções.", recallContext: "Lembre o conceito que você praticou." },
+  fr: { wrong: "Pas tout à fait. Continuez : nous le reverrons autrement.", loading: "Préparation d’une autre façon de pratiquer…", complete: "Bien. Nous continuerons à vérifier vos acquis.", example: "Observez cet exemple", deferred: "Ce concept est prévu pour une révision ultérieure.", recovery: "L’exercice de renforcement n’a pas pu être préparé, mais votre leçon n’est pas perdue.", retry: "Réessayer cette question", continuePractice: "Continuer avec un autre exercice", reference: "Référence d’assistance", match: "Associez chaque expression à sa signification.", matchInstruction: "Reliez les expressions correspondantes.", recall: "Répondez sans choix.", recallContext: "Rappelez-vous le concept travaillé." },
+  it: { wrong: "Non proprio. Continua: lo riprenderemo in un altro modo.", loading: "Preparazione di un altro modo per esercitarsi…", complete: "Bene. Continueremo a verificare ciò che hai imparato.", example: "Osserva questo esempio", deferred: "Abbiamo salvato questo concetto per un ripasso successivo.", recovery: "Non è stato possibile preparare il rinforzo, ma la lezione non è andata persa.", retry: "Riprova questa domanda", continuePractice: "Continua con un altro esercizio", reference: "Riferimento per l’assistenza", match: "Abbina ogni espressione al suo significato.", matchInstruction: "Collega le espressioni corrispondenti.", recall: "Rispondi senza opzioni.", recallContext: "Ricorda il concetto che hai esercitato." },
+  de: { wrong: "Noch nicht ganz. Mach weiter; wir üben es später anders.", loading: "Eine andere Übungsform wird vorbereitet…", complete: "Gut. Wir überprüfen das Gelernte weiter.", example: "Sieh dir dieses Beispiel an", deferred: "Dieses Konzept wurde für eine spätere Wiederholung vorgemerkt.", recovery: "Die Zusatzübung konnte nicht vorbereitet werden, aber deine Lektion ist nicht verloren.", retry: "Diese Frage erneut versuchen", continuePractice: "Mit einer anderen Übung fortfahren", reference: "Support-Referenz", match: "Ordne jedem Ausdruck seine Bedeutung zu.", matchInstruction: "Verbinde die zusammengehörigen Ausdrücke.", recall: "Antworte ohne Auswahlmöglichkeiten.", recallContext: "Erinnere dich an das geübte Konzept." }
 });
 
 const locale = value => LANGUAGES.has(value) ? value : "es";
@@ -856,6 +858,48 @@ function loadingState(target, language) {
   target.innerHTML = `<section class="nalvi-tutor-loading" aria-live="polite"><span class="nalvi-tutor-loading__mark" aria-hidden="true"></span><p>${escapeHtml(copy.loading)}</p><i aria-hidden="true"></i></section>`;
 }
 
+function recoveryReference(activity = {}) {
+  const id = String(activity.id || "").trim();
+  const legacy = /^legacy-general-(\d+)-(\d+)$/.exec(id);
+  if (legacy) return `GG-${Number(legacy[1]) + 1}-${Number(legacy[2]) + 1}`;
+  return id ? id.slice(0, 48) : "GG-SIN-UBICACION";
+}
+
+function rememberRecoveryFailure(activity, error) {
+  const entry = {
+    at: new Date().toISOString(),
+    reference: recoveryReference(activity),
+    activityId: String(activity?.id || ""),
+    reason: String(error?.message || error || "UNKNOWN_RECOVERY_FAILURE").slice(0, 160),
+    version: VERSION
+  };
+  try {
+    const current = JSON.parse(localStorage.getItem(RECOVERY_DIAGNOSTIC_KEY) || "[]");
+    localStorage.setItem(RECOVERY_DIAGNOSTIC_KEY, JSON.stringify([...current, entry].slice(-20)));
+  } catch { /* El modo privado no debe impedir que la lección se recupere. */ }
+  try { window.courseAnalytics?.("lesson_recovery_failed", { reference: entry.reference, version: VERSION }); }
+  catch { /* El diagnóstico nunca debe bloquear la recuperación visible. */ }
+  try { window.dispatchEvent(new CustomEvent("nalvi:lesson-recovery-failed", { detail: entry })); }
+  catch { /* La pantalla de salida sigue disponible aunque falle la telemetría local. */ }
+  return entry;
+}
+
+function recoveryState(target, language, detail, error) {
+  activeRequests.delete(target);
+  activeSequences.delete(target);
+  const copy = COPY[language] || COPY.es;
+  const activity = detail?.activity || {};
+  const diagnostic = rememberRecoveryFailure(activity, error);
+  target.innerHTML = `<section class="kuaa-activity nalvi-tutor-recovery" aria-live="polite"><div class="feedback no"><b>${escapeHtml(copy.recovery)}</b></div><div class="quiz-actions"><button class="btn" type="button" data-nalvi-tutor-retry>${escapeHtml(copy.retry)}</button><button class="mini-btn" type="button" data-nalvi-tutor-continue>${escapeHtml(copy.continuePractice)}</button></div><small>${escapeHtml(copy.reference)}: <b>${escapeHtml(diagnostic.reference)}</b></small></section>`;
+  target.querySelector("[data-nalvi-tutor-retry]")?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("nalvi:retry-objective-practice", { detail: { courseId: "general", sourceActivityId: String(activity.id || "") } }));
+  });
+  target.querySelector("[data-nalvi-tutor-continue]")?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("nalvi:resume-objective-practice", { detail: { courseId: "general", sourceActivityId: String(activity.id || ""), excludedActivityIds: [activity.id].filter(Boolean), markWeak: true, reviewDue: true } }));
+  });
+  scrollToActivity(target);
+}
+
 function scrollToActivity(target) {
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   requestAnimationFrame(() => target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }));
@@ -1120,7 +1164,10 @@ async function handleIncorrect(detail, target) {
     await sleep(750);
     if (activeRequests.get(target) !== requestState) return;
     loadingState(target, language);
-    const contextResult = await contextPromise;
+    const contextResult = await Promise.race([
+      contextPromise,
+      sleep(CONTEXT_TIMEOUT_MS).then(() => ({ context: null, error: new Error("NALVI_TUTOR_CONTEXT_TIMEOUT") }))
+    ]);
     if (activeRequests.get(target) !== requestState) return;
     const forceLocalFallback = !contextResult.context;
     if (contextResult.error) console.warn("NALVI_TUTOR_CONTEXT_BUILD_FALLBACK", String(contextResult.error?.message || contextResult.error));
@@ -1202,10 +1249,8 @@ async function handleIncorrect(detail, target) {
     }
   } catch (error) {
     if (activeRequests.get(target) !== requestState) return;
-    activeRequests.delete(target);
-    activeSequences.delete(target);
     console.warn("NALVI_TUTOR_INTERVENTION_FALLBACK_FAILED", String(error?.message || error));
-    target.innerHTML = `<div class="feedback no nalvi-tutor-feedback" aria-live="polite">${escapeHtml((COPY[language] || COPY.es).deferred)}</div>`;
+    recoveryState(target, language, detail, error);
   }
 }
 
@@ -1240,6 +1285,10 @@ window.NALVI_INTERVENTION = Object.freeze({
   },
   consumeDueRetest,
   consumePendingRetestAtBoundary: targetSelector => consumeDueRetest(targetSelector, { force: true }),
+  getRecoveryDiagnostics: () => {
+    try { return JSON.parse(localStorage.getItem(RECOVERY_DIAGNOSTIC_KEY) || "[]"); }
+    catch { return []; }
+  },
   clearLocalHistory: () => {
     sessionHistory = [];
     [HISTORY_KEY, ATTEMPT_KEY, EFFECTIVENESS_KEY, EXPOSURE_KEY, PENDING_RETEST_KEY, LEGACY_PENDING_RETEST_KEY]

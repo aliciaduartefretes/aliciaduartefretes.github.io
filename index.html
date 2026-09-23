@@ -2968,6 +2968,12 @@ onAuthStateChanged(auth,async user=>{
     if(freshIndexes.length){generalQueue=freshIndexes;generalQueuePos=0;generalQueueUnit=unit;step=generalQueue[0];checked=false;selected="";renderQuiz();save();return}
     restartGeneralPractice(step);
   });
+  window.addEventListener("nalvi:retry-objective-practice",event=>{
+    if(event.detail?.courseId&&event.detail.courseId!=="general")return;
+    if(phase!=="quiz")return;
+    clearTimeout(window.__nalviGeneralAdvanceTimer);
+    checked=false;selected="";renderQuiz();save();
+  });
   renderGeneralFinishedScreen=function(){
     const body=$("#lessonBody");if(!body)return;const hasNext=unit+1<U.length;
     $("#lessonProgress").style.width="100%";$("#lessonLabel").textContent=UI[lang].finish;
@@ -7477,7 +7483,7 @@ try{
 <script src="assets/js/nalvi-recorded-audio.js?v=NALVI-AUDIO-5"></script>
 <script src="assets/js/nalvi-audio-affordances.js?v=NALVI-AUDIO-AFFORDANCES-3"></script>
   <script type="module" src="assets/js/nalvi-activity-catalog-renderer.mjs?v=NALVI-CATALOG-RENDERER-6"></script>
-  <script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-TUTOR-CLIENT-CATALOG-13"></script>
+  <script type="module" src="assets/js/nalvi-intervention-client.mjs?v=NALVI-TUTOR-CLIENT-CATALOG-14"></script>
 <script src="assets/js/nalvi-ui.js?v=NALVI-UI-2"></script>
 <script src="assets/js/nalvi-general-route-ui.js"></script>
 <script src="assets/js/nalvi-community-service.js?v=NALVI-COMMUNITY-SERVICE-15"></script>
