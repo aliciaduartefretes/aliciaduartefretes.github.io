@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "rules": "firestore-PASO-6.rules"
+    "rules": "proposals/REGLAS-FIRESTORE-COMUNIDAD-PARA-COPIAR.rules"
   },
   "storage": {
     "rules": "proposals/REGLAS-STORAGE-COMUNIDAD-PARA-COPIAR.rules"
