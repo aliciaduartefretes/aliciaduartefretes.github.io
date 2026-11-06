@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createBillingRouter } from "../billing.js";
+import { createBillingRouter } from "../../api/billing.js";
 
 function response() {
   return {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createRecordLearningAttemptHandler } from "../record-learning-attempt.js";
-import { createMasteryAttemptService } from "../../server/mastery-attempt-service.mjs";
+import { createRecordLearningAttemptHandler } from "../../api/record-learning-attempt.js";
+import { createMasteryAttemptService } from "../mastery-attempt-service.mjs";
 
 const NOW = Date.parse("2026-09-03T12:00:00.000Z");
 const USER_ID = "endpoint-user";

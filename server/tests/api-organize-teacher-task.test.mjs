@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createOrganizeTeacherTaskHandler } from "../organize-teacher-task.js";
+import { createOrganizeTeacherTaskHandler } from "../../api/organize-teacher-task.js";
 
 const USER = "api-teacher-1";
 

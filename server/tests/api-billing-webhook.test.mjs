@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { createLemonSqueezyWebhookHandler } from "../../server/billing-webhook-handler.mjs";
+import { createLemonSqueezyWebhookHandler } from "../billing-webhook-handler.mjs";
 
 const plan = Object.freeze({
   planKey: "nalvi_plus_monthly",
