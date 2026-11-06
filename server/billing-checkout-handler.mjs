@@ -4,6 +4,12 @@ import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
 import { createLemonSqueezyCheckout } from "./lemon-squeezy-client.mjs";
 
 const PLAN_KEY_PATTERN = /^[a-z][a-z0-9_-]{2,63}$/;
+const SAFE_CHECKOUT_ERRORS = /^(?:LEMONSQUEEZY_CHECKOUT_HTTP_\d{3}|INVALID_CHECKOUT_URL|BILLING_NOT_CONFIGURED)$/;
+
+function safeCheckoutErrorCode(error) {
+  const message = String(error?.message || "");
+  return SAFE_CHECKOUT_ERRORS.test(message) ? message : "CHECKOUT_INTERNAL_ERROR";
+}
 
 export function createCheckoutHandler({
   configReader = readBillingConfig,
@@ -32,6 +38,7 @@ export function createCheckoutHandler({
       return sendJson(response, 200, { ok: true, checkoutUrl: checkout.checkoutUrl, expiresAt: checkout.expiresAt });
     } catch (error) {
       const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
+      if (!tooLarge) console.error(`[billing] checkout failed: ${safeCheckoutErrorCode(error)}`);
       return sendJson(response, tooLarge ? 413 : 502, {
         ok: false,
         reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "CHECKOUT_UNAVAILABLE"
@@ -39,3 +46,5 @@ export function createCheckoutHandler({
     }
   };
 }
+
+export const __test = { safeCheckoutErrorCode };
