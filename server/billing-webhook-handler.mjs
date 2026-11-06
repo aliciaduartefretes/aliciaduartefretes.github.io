@@ -1,7 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { readBillingConfig } from "../../server/billing-config.mjs";
-import { rawBody, sendJson } from "../../server/billing-http.mjs";
-import { persistSubscriptionSnapshot, readBillingWebhookEvent } from "../../server/billing-store.mjs";
+import { readBillingConfig } from "./billing-config.mjs";
+import { rawBody, sendJson } from "./billing-http.mjs";
+import { persistSubscriptionSnapshot, readBillingWebhookEvent } from "./billing-store.mjs";
 
 const SUPPORTED_EVENTS = new Set([
   "subscription_created",
@@ -124,6 +124,4 @@ export function createLemonSqueezyWebhookHandler({
   };
 }
 
-export const config = { api: { bodyParser: false } };
-export default createLemonSqueezyWebhookHandler();
 export const __test = { signatureValid, activeFor, normalizeSubscriptionEvent, SUPPORTED_EVENTS };

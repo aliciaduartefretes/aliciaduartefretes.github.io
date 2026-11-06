@@ -16,13 +16,7 @@
     "api/record-learning-attempt.js": {
       "maxDuration": 15
     },
-    "api/billing/create-checkout.js": {
-      "maxDuration": 15
-    },
-    "api/billing/status.js": {
-      "maxDuration": 15
-    },
-    "api/billing/lemon-squeezy-webhook.js": {
+    "api/billing.js": {
       "maxDuration": 20
     }
   },
@@ -80,7 +74,7 @@
       ]
     },
     {
-      "source": "/api/billing/(.*)",
+      "source": "/api/billing",
       "headers": [
         {
           "key": "Cache-Control",

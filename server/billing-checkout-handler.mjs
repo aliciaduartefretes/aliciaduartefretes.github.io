@@ -1,7 +1,7 @@
-import { readBillingConfig } from "../../server/billing-config.mjs";
-import { bearerToken, jsonBody, requestOriginAllowed, sendJson } from "../../server/billing-http.mjs";
-import { verifyFirebaseIdToken } from "../../server/firebase-id-token.mjs";
-import { createLemonSqueezyCheckout } from "../../server/lemon-squeezy-client.mjs";
+import { readBillingConfig } from "./billing-config.mjs";
+import { bearerToken, jsonBody, requestOriginAllowed, sendJson } from "./billing-http.mjs";
+import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
+import { createLemonSqueezyCheckout } from "./lemon-squeezy-client.mjs";
 
 const PLAN_KEY_PATTERN = /^[a-z][a-z0-9_-]{2,63}$/;
 
@@ -39,5 +39,3 @@ export function createCheckoutHandler({
     }
   };
 }
-
-export default createCheckoutHandler();

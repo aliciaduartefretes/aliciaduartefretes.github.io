@@ -1,5 +1,5 @@
-import { publicBillingCatalog, readBillingConfig } from "../../server/billing-config.mjs";
-import { sendJson } from "../../server/billing-http.mjs";
+import { publicBillingCatalog, readBillingConfig } from "./billing-config.mjs";
+import { sendJson } from "./billing-http.mjs";
 
 export function createBillingCatalogHandler({ configReader = readBillingConfig } = {}) {
   return async function handler(request, response) {
@@ -20,5 +20,3 @@ export function createBillingCatalogHandler({ configReader = readBillingConfig }
     }
   };
 }
-
-export default createBillingCatalogHandler();

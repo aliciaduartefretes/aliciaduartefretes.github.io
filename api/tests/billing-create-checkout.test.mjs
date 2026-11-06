@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createCheckoutHandler } from "../billing/create-checkout.js";
+import { createCheckoutHandler } from "../../server/billing-checkout-handler.mjs";
 
 const plan = Object.freeze({ planKey: "nalvi_plus_monthly", kind: "subscription", variantId: "123" });
 const config = Object.freeze({ enabled: true, mode: "test", plans: new Map([[plan.planKey, plan]]) });

@@ -1,6 +1,6 @@
-import { bearerToken, requestOriginAllowed, sendJson } from "../../server/billing-http.mjs";
-import { readBillingEntitlement } from "../../server/billing-store.mjs";
-import { verifyFirebaseIdToken } from "../../server/firebase-id-token.mjs";
+import { bearerToken, requestOriginAllowed, sendJson } from "./billing-http.mjs";
+import { readBillingEntitlement } from "./billing-store.mjs";
+import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
 
 function publicStatus(document) {
   if (!document || document.active !== true) {
@@ -35,5 +35,4 @@ export function createBillingStatusHandler({ verifyIdToken = verifyFirebaseIdTok
   };
 }
 
-export default createBillingStatusHandler();
 export const __test = { publicStatus };
