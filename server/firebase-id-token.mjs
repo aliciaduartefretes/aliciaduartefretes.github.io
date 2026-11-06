@@ -52,7 +52,14 @@ export async function verifyFirebaseIdToken(idToken, {
     if (payload.aud !== projectId || payload.iss !== `https://securetoken.google.com/${projectId}`) return null;
     if (!uid || uid.length > 128 || Number(payload.exp) <= nowSeconds || Number(payload.iat) > nowSeconds + 30) return null;
     if (payload.auth_time != null && Number(payload.auth_time) > nowSeconds + 30) return null;
-    return { uid, isAnonymous: payload.firebase?.sign_in_provider === "anonymous" };
+    return {
+      uid,
+      isAnonymous: payload.firebase?.sign_in_provider === "anonymous",
+      email: typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "",
+      emailVerified: payload.email_verified === true,
+      name: typeof payload.name === "string" ? payload.name.trim().slice(0, 120) : "",
+      authTime: Number.isFinite(Number(payload.auth_time)) ? Number(payload.auth_time) : null
+    };
   } catch {
     return null;
   }

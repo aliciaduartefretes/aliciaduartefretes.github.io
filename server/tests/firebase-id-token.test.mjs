@@ -18,6 +18,9 @@ function token(overrides = {}) {
     iat: nowSeconds - 30,
     exp: nowSeconds + 3600,
     auth_time: nowSeconds - 60,
+    email: "student@example.com",
+    email_verified: true,
+    name: "Estudiante Nalvi",
     firebase: { sign_in_provider: "google.com" },
     ...overrides
   })).toString("base64url");
@@ -34,7 +37,14 @@ const fetchCertificates = async () => ({
 test("verifica un Firebase ID token con el proyecto server-side ya configurado", async () => {
   __test.resetCertificateCache();
   const result = await verifyFirebaseIdToken(token(), { env, fetchImpl: fetchCertificates, now });
-  assert.deepEqual(result, { uid: "student-pseudonymous-uid", isAnonymous: false });
+  assert.deepEqual(result, {
+    uid: "student-pseudonymous-uid",
+    isAnonymous: false,
+    email: "student@example.com",
+    emailVerified: true,
+    name: "Estudiante Nalvi",
+    authTime: nowSeconds - 60
+  });
 });
 
 test("rechaza audiencia, vencimiento o firma incorrectos", async () => {

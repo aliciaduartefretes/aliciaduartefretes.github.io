@@ -32,6 +32,9 @@ try {
     await setDoc(doc(db, "users", "studentA", "mastery", "GG-C-001"), { userId: "studentA", conceptId: "GG-C-001", masteryScore: 35, status: "LEARNING" });
     await setDoc(doc(db, "users", "studentA", "baselines", "guarani-general"), { userId: "studentA", routeId: "guarani-general" });
     await setDoc(doc(db, "users", "studentA", "reviewSchedule", "GG-C-001"), { userId: "studentA", conceptId: "GG-C-001" });
+    await setDoc(doc(db, "billingEntitlements", "studentA"), { userId: "studentA", planKey: "nalvi_plus_monthly", active: true, entitlements: ["courses:premium"] });
+    await setDoc(doc(db, "billingSubscriptions", "subscription-1"), { subscriptionId: "subscription-1", userId: "studentA", status: "active" });
+    await setDoc(doc(db, "billingWebhookEvents", "event-1"), { eventId: "event-1", status: "processed" });
   });
 
   const studentA = testEnv.authenticatedContext("studentA", { email: "studenta@example.com" }).firestore();
@@ -74,6 +77,17 @@ try {
   await check("Cliente no puede aprobar conocimiento ni emitir certificados", async () => {
     await assertFails(setDoc(doc(studentA, "linguisticKnowledge", "fake"), { expertVerified: true, allowedForGeneration: true }));
     await assertFails(setDoc(doc(studentA, "certificates", "fake"), { studentId: "studentA", status: "approved" }));
+  });
+
+  await check("Facturación permite lectura propia pero nunca escritura cliente", async () => {
+    await assertSucceeds(getDoc(doc(studentA, "billingEntitlements", "studentA")));
+    await assertSucceeds(getDoc(doc(studentA, "billingSubscriptions", "subscription-1")));
+    await assertFails(getDoc(doc(studentB, "billingEntitlements", "studentA")));
+    await assertFails(getDoc(doc(studentB, "billingSubscriptions", "subscription-1")));
+    await assertFails(setDoc(doc(studentA, "billingEntitlements", "studentA"), { active: true, entitlements: ["admin"] }));
+    await assertFails(setDoc(doc(admin, "billingEntitlements", "studentA"), { active: true, entitlements: ["admin"] }));
+    await assertSucceeds(getDoc(doc(admin, "billingWebhookEvents", "event-1")));
+    await assertFails(getDoc(doc(studentA, "billingWebhookEvents", "event-1")));
   });
 } finally {
   await testEnv.cleanup();

@@ -77,6 +77,59 @@ function fromFirestoreFields(fields = {}) {
 
 const safeSegment = value => encodeURIComponent(String(value || "").replace(/\//g, "_"));
 
+function validDocumentSegments(pathSegments) {
+  return Array.isArray(pathSegments)
+    && pathSegments.length >= 2
+    && pathSegments.length % 2 === 0
+    && pathSegments.every(segment => typeof segment === "string" && segment.length >= 1 && segment.length <= 256 && !segment.includes("/"));
+}
+
+function documentPath(pathSegments) {
+  if (!validDocumentSegments(pathSegments)) throw new TypeError("INVALID_FIRESTORE_DOCUMENT_PATH");
+  return pathSegments.map(safeSegment).join("/");
+}
+
+export async function readAdminDocument({ pathSegments, env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const auth = await getAccessToken({ env, fetchImpl });
+  if (!auth.ok) return { status: "skipped", reason: auth.reason, document: null };
+  let path;
+  try { path = documentPath(pathSegments); }
+  catch { return { status: "failed", reason: "INVALID_FIRESTORE_DOCUMENT_PATH", document: null }; }
+  const url = `https://firestore.googleapis.com/v1/projects/${safeSegment(auth.projectId)}/databases/(default)/documents/${path}`;
+  const response = await fetchImpl(url, { headers: { Authorization: `Bearer ${auth.token}` } });
+  if (response.status === 404) return { status: "missing", document: null };
+  if (!response.ok) return { status: "failed", reason: "FIRESTORE_READ_FAILED", httpStatus: response.status, document: null };
+  const result = await response.json();
+  return { status: "found", document: fromFirestoreFields(result.fields || {}) };
+}
+
+export async function commitAdminDocuments({ documents, env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  if (!Array.isArray(documents) || documents.length < 1 || documents.length > 20) {
+    return { status: "failed", reason: "INVALID_FIRESTORE_COMMIT" };
+  }
+  const auth = await getAccessToken({ env, fetchImpl });
+  if (!auth.ok) return { status: "skipped", reason: auth.reason };
+  const root = `projects/${auth.projectId}/databases/(default)/documents`;
+  let writes;
+  try {
+    writes = documents.map(document => ({
+      update: {
+        name: `${root}/${documentPath(document.pathSegments)}`,
+        fields: toFirestoreFields(document.fields || {})
+      }
+    }));
+  } catch {
+    return { status: "failed", reason: "INVALID_FIRESTORE_DOCUMENT_PATH" };
+  }
+  const response = await fetchImpl(`https://firestore.googleapis.com/v1/projects/${safeSegment(auth.projectId)}/databases/(default)/documents:commit`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ writes })
+  });
+  if (!response.ok) return { status: "failed", reason: "FIRESTORE_COMMIT_FAILED", httpStatus: response.status };
+  return { status: "persisted" };
+}
+
 export async function persistInterventionEvent({ userId, event, env = process.env, fetchImpl = globalThis.fetch } = {}) {
   if (!userId) return { status: "skipped", reason: "ANONYMOUS_USER" };
   const auth = await getAccessToken({ env, fetchImpl });
@@ -123,4 +176,12 @@ export async function persistMasteryTransition({ userId, event, profile, env = p
   return { status: "persisted", eventPath: `users/${userId}/learningEvents/${event.eventId}`, masteryPath: `users/${userId}/mastery/${profile.conceptId}` };
 }
 
-export const __test = { toFirestoreValue, toFirestoreFields, fromFirestoreValue, fromFirestoreFields, readServiceAccount };
+export const __test = {
+  toFirestoreValue,
+  toFirestoreFields,
+  fromFirestoreValue,
+  fromFirestoreFields,
+  readServiceAccount,
+  validDocumentSegments,
+  documentPath
+};

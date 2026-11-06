@@ -521,6 +521,38 @@ service cloud.firestore {
       }
     }
 
+    // Facturación: el navegador nunca puede conceder, modificar ni revocar
+    // acceso pagado. Solo el backend, después de validar el webhook firmado,
+    // escribe estas colecciones mediante la cuenta de servicio.
+    match /billingEntitlements/{userId} {
+      allow get: if (signedIn() && request.auth.uid == userId)
+        || isPlatformAdmin();
+      allow list: if isPlatformAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /billingSubscriptions/{subscriptionId} {
+      allow get: if isPlatformAdmin()
+        || (
+          signedIn()
+          && resource.data.get('userId', '') == request.auth.uid
+        );
+      allow list: if isPlatformAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /billingCustomers/{userId} {
+      allow get: if (signedIn() && request.auth.uid == userId)
+        || isPlatformAdmin();
+      allow list: if isPlatformAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /billingWebhookEvents/{eventId} {
+      allow get, list: if isPlatformAdmin();
+      allow create, update, delete: if false;
+    }
+
     match /staff/{staffEmail} {
       allow get: if isPlatformAdmin()
         || (signedIn() && staffEmail.lower() == email());

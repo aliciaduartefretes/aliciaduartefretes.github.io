@@ -15,6 +15,15 @@
     },
     "api/record-learning-attempt.js": {
       "maxDuration": 15
+    },
+    "api/billing/create-checkout.js": {
+      "maxDuration": 15
+    },
+    "api/billing/status.js": {
+      "maxDuration": 15
+    },
+    "api/billing/lemon-squeezy-webhook.js": {
+      "maxDuration": 20
     }
   },
   "headers": [
@@ -67,6 +76,23 @@
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/api/billing/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
         }
       ]
     }

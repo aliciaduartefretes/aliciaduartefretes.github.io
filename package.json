@@ -18,6 +18,8 @@
     "test:activity-catalog": "node --test activity-catalog/tests/*.test.mjs",
     "test:answer-evaluator": "node --test assessment/tests/*.test.mjs",
     "test:institutional": "node --test institutional/tests/*.test.mjs",
+    "test:billing": "node --test server/tests/billing-config.test.mjs server/tests/lemon-squeezy-client.test.mjs api/tests/billing-create-checkout.test.mjs api/tests/billing-webhook.test.mjs server/tests/firebase-id-token.test.mjs",
+    "test:billing-rules": "firebase emulators:exec --only firestore --project demo-nalvi-paso-6 --config firebase/firebase.json \"node firebase/firestore-paso-6.test.mjs\"",
     "generate:community-rules": "node scripts/generate-community-firestore-rules.mjs",
     "test:community-rules": "firebase emulators:exec --only firestore --project demo-nalvi-community-open --config firebase/firebase.json \"node --test firebase/community-open-proposal.test.mjs\"",
     "test:community-media-rules": "firebase emulators:exec --only storage --project demo-nalvi-community-media --config firebase/firebase.json \"node --test firebase/storage-community-media.test.mjs\"",
