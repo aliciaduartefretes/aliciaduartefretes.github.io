@@ -10,12 +10,19 @@ const plan = Object.freeze({
   productId: "456",
   entitlements: ["courses:premium"]
 });
+const oneTimePlan = Object.freeze({
+  planKey: "nalvi_test_course_once",
+  kind: "one_time",
+  variantId: "124",
+  productId: "457",
+  entitlements: ["course:test-one-time"]
+});
 const config = Object.freeze({
   enabled: true,
   mode: "test",
   storeId: "42",
   webhookSecret: "webhook-secret",
-  plans: new Map([[plan.planKey, plan]])
+  plans: new Map([[plan.planKey, plan], [oneTimePlan.planKey, oneTimePlan]])
 });
 
 function payload(overrides = {}) {
@@ -33,6 +40,26 @@ function payload(overrides = {}) {
         renews_at: "2026-12-05T00:00:00.000Z",
         ends_at: null,
         test_mode: true,
+        ...overrides
+      }
+    }
+  };
+}
+
+function orderPayload(overrides = {}) {
+  return {
+    meta: { event_name: "order_created", custom_data: { user_id: "user-123", plan_key: oneTimePlan.planKey } },
+    data: {
+      type: "orders",
+      id: "790",
+      attributes: {
+        store_id: 42,
+        customer_id: 91,
+        status: "paid",
+        refunded: false,
+        test_mode: true,
+        created_at: "2026-11-05T12:00:00.000Z",
+        first_order_item: { product_id: 457, variant_id: 124 },
         ...overrides
       }
     }
@@ -65,7 +92,7 @@ test("un webhook firmado concede únicamente los permisos del catálogo server-s
   const handler = createLemonSqueezyWebhookHandler({
     configReader: () => config,
     readEvent: async () => ({ status: "missing" }),
-    persistSnapshot: async snapshot => { saved = snapshot; return { status: "persisted" }; },
+    persistSubscription: async snapshot => { saved = snapshot; return { status: "persisted" }; },
     clock: () => new Date("2026-11-05T12:00:00.000Z")
   });
   const res = response();
@@ -81,7 +108,7 @@ test("firma inválida no consulta ni escribe Firestore", async () => {
   const handler = createLemonSqueezyWebhookHandler({
     configReader: () => config,
     readEvent: async () => { reads += 1; return { status: "missing" }; },
-    persistSnapshot: async () => { writes += 1; return { status: "persisted" }; }
+    persistSubscription: async () => { writes += 1; return { status: "persisted" }; }
   });
   const res = response();
   await handler(signedRequest(payload(), "0".repeat(64)), res);
@@ -94,7 +121,7 @@ test("reenvío idéntico es idempotente", async () => {
   const handler = createLemonSqueezyWebhookHandler({
     configReader: () => config,
     readEvent: async () => ({ status: "found", document: { status: "processed" } }),
-    persistSnapshot: async () => { writes += 1; return { status: "persisted" }; }
+    persistSubscription: async () => { writes += 1; return { status: "persisted" }; }
   });
   const res = response();
   await handler(signedRequest(payload()), res);
@@ -107,7 +134,7 @@ test("producto, entorno o usuario manipulados se rechazan", async () => {
   const handler = createLemonSqueezyWebhookHandler({
     configReader: () => config,
     readEvent: async () => ({ status: "missing" }),
-    persistSnapshot: async () => ({ status: "persisted" })
+    persistSubscription: async () => ({ status: "persisted" })
   });
   for (const event of [
     payload({ variant_id: 999 }),
@@ -126,7 +153,7 @@ test("cancelación conserva acceso hasta ends_at y expiración lo revoca", async
   const handler = createLemonSqueezyWebhookHandler({
     configReader: () => config,
     readEvent: async () => ({ status: "missing" }),
-    persistSnapshot: async snapshot => { snapshots.push(snapshot); return { status: "persisted" }; },
+    persistSubscription: async snapshot => { snapshots.push(snapshot); return { status: "persisted" }; },
     clock: () => new Date("2026-11-05T12:00:00.000Z")
   });
   const cancelled = payload({ status: "cancelled", ends_at: "2026-12-05T00:00:00.000Z" });
@@ -138,4 +165,41 @@ test("cancelación conserva acceso hasta ends_at y expiración lo revoca", async
   assert.equal(snapshots[0].entitlement.active, true);
   assert.equal(snapshots[1].entitlement.active, false);
   assert.deepEqual(snapshots[1].entitlement.entitlements, []);
+});
+
+test("order_created pagado concede de forma permanente solo el curso comprado", async () => {
+  let saved;
+  const handler = createLemonSqueezyWebhookHandler({
+    configReader: () => config,
+    readEvent: async () => ({ status: "missing" }),
+    persistPurchase: async snapshot => { saved = snapshot; return { status: "persisted" }; },
+    clock: () => new Date("2026-11-05T12:01:00.000Z")
+  });
+  const res = response();
+  await handler(signedRequest(orderPayload()), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(saved.kind, "one_time");
+  assert.equal(saved.purchase.orderId, "790");
+  assert.equal(saved.entitlement.active, true);
+  assert.equal(saved.entitlement.permanent, true);
+  assert.deepEqual(saved.entitlement.entitlements, ["course:test-one-time"]);
+});
+
+test("una orden no pagada o con otra variante nunca desbloquea el curso", async () => {
+  let writes = 0;
+  const handler = createLemonSqueezyWebhookHandler({
+    configReader: () => config,
+    readEvent: async () => ({ status: "missing" }),
+    persistPurchase: async () => { writes += 1; return { status: "persisted" }; }
+  });
+  for (const event of [
+    orderPayload({ status: "pending" }),
+    orderPayload({ first_order_item: { product_id: 457, variant_id: 999 } }),
+    orderPayload({ test_mode: false })
+  ]) {
+    const res = response();
+    await handler(signedRequest(event), res);
+    assert.equal(res.statusCode, 400);
+  }
+  assert.equal(writes, 0);
 });

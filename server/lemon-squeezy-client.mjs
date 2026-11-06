@@ -10,7 +10,9 @@ export async function createLemonSqueezyCheckout({ config, plan, user, fetchImpl
   if (!config?.enabled || !plan || !user?.uid || !user?.email) throw new Error("BILLING_NOT_CONFIGURED");
   const redirectUrl = new URL("/", config.appUrl);
   redirectUrl.searchParams.set("billing", "success");
-  redirectUrl.hash = "subscription";
+  redirectUrl.searchParams.set("plan", plan.planKey);
+  if (plan.kind === "one_time") redirectUrl.searchParams.set("billingTest", "1");
+  redirectUrl.hash = plan.kind === "one_time" ? "paidCourseTest" : "subscription";
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   const response = await fetchImpl("https://api.lemonsqueezy.com/v1/checkouts", {
     method: "POST",

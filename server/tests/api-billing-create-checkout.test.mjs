@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { __test, createCheckoutHandler } from "../billing-checkout-handler.mjs";
 
 const plan = Object.freeze({ planKey: "nalvi_plus_monthly", kind: "subscription", variantId: "123" });
-const config = Object.freeze({ enabled: true, mode: "test", plans: new Map([[plan.planKey, plan]]) });
+const oneTimePlan = Object.freeze({ planKey: "nalvi_test_course_once", kind: "one_time", variantId: "124" });
+const config = Object.freeze({ enabled: true, mode: "test", plans: new Map([
+  [plan.planKey, plan],
+  [oneTimePlan.planKey, oneTimePlan]
+]) });
 
 function response() {
   return {
@@ -51,6 +55,14 @@ test("crea checkout solo para una clave de plan permitida", async () => {
   assert.equal(res.statusCode, 200);
   assert.equal(res.payload.ok, true);
   assert.match(res.payload.checkoutUrl, /^https:\/\/nalvi\.lemonsqueezy\.com\//);
+});
+
+test("permite un checkout de pago único definido exclusivamente por el servidor", async () => {
+  const res = response();
+  await handler()(request({ planKey: oneTimePlan.planKey }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.kind, "one_time");
+  assert.match(res.payload.checkoutUrl, /nalvi_test_course_once/);
 });
 
 test("el cliente no puede enviar precio, variante ni permisos", async () => {

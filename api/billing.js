@@ -1,5 +1,6 @@
 import { createBillingCatalogHandler } from "../server/billing-catalog-handler.mjs";
 import { createCheckoutHandler } from "../server/billing-checkout-handler.mjs";
+import { createBillingCourseContentHandler } from "../server/billing-course-content-handler.mjs";
 import { sendJson } from "../server/billing-http.mjs";
 import { createBillingStatusHandler } from "../server/billing-status-handler.mjs";
 import { createLemonSqueezyWebhookHandler } from "../server/billing-webhook-handler.mjs";
@@ -7,6 +8,7 @@ import { createLemonSqueezyWebhookHandler } from "../server/billing-webhook-hand
 const handlers = Object.freeze({
   catalog: createBillingCatalogHandler(),
   checkout: createCheckoutHandler(),
+  "course-content": createBillingCourseContentHandler(),
   status: createBillingStatusHandler(),
   webhook: createLemonSqueezyWebhookHandler()
 });

@@ -33,9 +33,16 @@ export function createCheckoutHandler({
         return sendJson(response, 400, { ok: false, reason: "INVALID_PLAN" });
       }
       const plan = config.plans.get(body.planKey);
-      if (!plan || plan.kind !== "subscription") return sendJson(response, 400, { ok: false, reason: "INVALID_PLAN" });
+      if (!plan || !["subscription", "one_time"].includes(plan.kind)) {
+        return sendJson(response, 400, { ok: false, reason: "INVALID_PLAN" });
+      }
       const checkout = await createCheckout({ config, plan, user });
-      return sendJson(response, 200, { ok: true, checkoutUrl: checkout.checkoutUrl, expiresAt: checkout.expiresAt });
+      return sendJson(response, 200, {
+        ok: true,
+        kind: plan.kind,
+        checkoutUrl: checkout.checkoutUrl,
+        expiresAt: checkout.expiresAt
+      });
     } catch (error) {
       const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
       if (!tooLarge) console.error(`[billing] checkout failed: ${safeCheckoutErrorCode(error)}`);

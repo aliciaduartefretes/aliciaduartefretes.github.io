@@ -1,0 +1,22 @@
+#paidCourseTest{min-height:calc(100vh - 160px);padding:34px 0 150px;background:linear-gradient(145deg,#f7f5ff 0%,#f1fbfa 100%)}
+.nalvi-paid-test-shell{width:min(1120px,calc(100% - 32px));margin:auto}
+.nalvi-paid-test-back{appearance:none;border:0;background:transparent;color:#49409a;font:800 14px/1.2 inherit;cursor:pointer;margin:0 0 18px;padding:8px 0}
+.nalvi-paid-test-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:20px;align-items:stretch}
+.nalvi-paid-test-card,.nalvi-paid-test-state,.nalvi-paid-test-content{background:#fff;border:1px solid #ded9f0;border-radius:24px;box-shadow:0 18px 45px rgba(48,43,98,.09)}
+.nalvi-paid-test-card{padding:32px;background:linear-gradient(135deg,#251c5f 0%,#5540c8 65%,#118887 100%);color:#fff;position:relative;overflow:hidden}
+.nalvi-paid-test-card:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-72px;bottom:-104px;border:45px solid rgba(255,255,255,.08)}
+.nalvi-paid-test-tag{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;font-weight:900;letter-spacing:.04em}
+.nalvi-paid-test-card h2{margin:18px 0 10px;font-size:clamp(31px,5vw,52px);line-height:1.02;color:#fff;max-width:700px}
+.nalvi-paid-test-card p{max-width:670px;margin:0;color:rgba(255,255,255,.86);line-height:1.55;font-weight:650}
+.nalvi-paid-test-points{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}.nalvi-paid-test-points span{padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.12);font-size:12px;font-weight:800}
+.nalvi-paid-test-state{padding:25px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.nalvi-paid-test-lock{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;background:#f0edff;font-size:28px;margin-bottom:15px}
+.nalvi-paid-test-state h3{margin:0 0 8px;color:#26213e;font-size:24px}.nalvi-paid-test-state p{margin:0 0 18px;color:#6e687d;line-height:1.48}
+.nalvi-paid-test-action{width:100%;min-height:48px;border:0;border-radius:14px;padding:12px 16px;background:#4239aa;color:#fff;font:900 15px/1.2 inherit;cursor:pointer}.nalvi-paid-test-action:disabled{cursor:wait;opacity:.62}
+.nalvi-paid-test-secondary{margin-top:10px;background:#fff;color:#4239aa;border:1px solid #cbc5ed}
+.nalvi-paid-test-notice{margin-top:12px;font-size:12px;color:#746e83;line-height:1.45}.nalvi-paid-test-notice[data-kind="error"]{color:#aa254a}.nalvi-paid-test-notice[data-kind="ok"]{color:#087863}
+.nalvi-paid-test-content{margin-top:22px;padding:28px}.nalvi-paid-test-content[hidden]{display:none}
+.nalvi-paid-test-content header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px}.nalvi-paid-test-content h3{margin:0;color:#26213e;font-size:27px}.nalvi-paid-test-content header p{margin:5px 0 0;color:#706a7e}.nalvi-paid-test-paid{padding:7px 11px;border-radius:999px;background:#e6f8f1;color:#087a62;font-weight:900;font-size:12px;white-space:nowrap}
+.nalvi-paid-test-lesson{padding:22px;border:1px solid #e3dff1;border-radius:18px;background:#fbfaff}.nalvi-paid-test-lesson h4{margin:0 0 7px;font-size:21px;color:#30294a}.nalvi-paid-test-lesson>p{margin:0 0 17px;color:#716a7e}.nalvi-paid-test-words{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.nalvi-paid-test-word{padding:15px;border-radius:14px;background:#fff;border:1px solid #e5e0f2}.nalvi-paid-test-word b,.nalvi-paid-test-word small{display:block}.nalvi-paid-test-word b{color:#4035a2;font-size:18px}.nalvi-paid-test-word small{margin-top:4px;color:#746d82}
+.nalvi-paid-test-catalog{border-color:#cfc8f1!important;background:linear-gradient(145deg,#f4f0ff,#ecfffb)!important}.nalvi-paid-test-catalog .course-ribbon{background:#efeaff;color:#493ca9}.nalvi-paid-test-catalog button{margin-top:auto}
+@media(max-width:760px){#paidCourseTest{padding-top:20px}.nalvi-paid-test-hero{grid-template-columns:1fr}.nalvi-paid-test-card{padding:24px 20px}.nalvi-paid-test-state{padding:22px}.nalvi-paid-test-content{padding:20px}.nalvi-paid-test-content header{display:block}.nalvi-paid-test-paid{display:inline-flex;margin-top:12px}.nalvi-paid-test-words{grid-template-columns:1fr}}

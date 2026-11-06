@@ -9,7 +9,7 @@ const config = {
   apiKey: "server-secret-api-key",
   appUrl: "https://www.idiomaguarani.com.py"
 };
-const plan = { planKey: "nalvi_plus_monthly", variantId: "123" };
+const plan = { planKey: "nalvi_plus_monthly", kind: "subscription", variantId: "123" };
 const user = { uid: "user-123", email: "student@example.com", name: "Estudiante" };
 
 test("el servidor fija tienda, variante, entorno e identidad del checkout", async () => {
@@ -40,6 +40,24 @@ test("el servidor fija tienda, variante, entorno e identidad del checkout", asyn
   assert.deepEqual(sent.body.data.attributes.checkout_data.custom, { user_id: "user-123", plan_key: "nalvi_plus_monthly" });
   assert.equal(sent.body.data.attributes.test_mode, true);
   assert.equal("custom_price" in sent.body.data.attributes, false);
+  assert.equal(new URL(sent.body.data.attributes.product_options.redirect_url).hash, "#subscription");
+});
+
+test("el pago único vuelve a la prueba del curso sin mezclarlo con una suscripción", async () => {
+  let sent;
+  await createLemonSqueezyCheckout({
+    config,
+    plan: { planKey: "nalvi_test_course_once", kind: "one_time", variantId: "124" },
+    user,
+    fetchImpl: async (_url, options) => {
+      sent = JSON.parse(options.body);
+      return { ok: true, json: async () => ({ data: { attributes: { url: "https://nalvi.lemonsqueezy.com/checkout/custom/once" } } }) };
+    }
+  });
+  const redirect = new URL(sent.data.attributes.product_options.redirect_url);
+  assert.equal(redirect.searchParams.get("plan"), "nalvi_test_course_once");
+  assert.equal(redirect.searchParams.get("billingTest"), "1");
+  assert.equal(redirect.hash, "#paidCourseTest");
 });
 
 test("nunca devuelve al navegador una URL de pago fuera de Lemon Squeezy", async () => {

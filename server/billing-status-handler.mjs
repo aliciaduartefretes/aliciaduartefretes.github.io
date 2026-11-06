@@ -1,6 +1,9 @@
 import { bearerToken, requestOriginAllowed, sendJson } from "./billing-http.mjs";
-import { readBillingEntitlement } from "./billing-store.mjs";
+import { readBillingConfig } from "./billing-config.mjs";
+import { readBillingCourseEntitlement, readBillingEntitlement } from "./billing-store.mjs";
 import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
+
+const PLAN_KEY_PATTERN = /^[a-z][a-z0-9_-]{2,63}$/;
 
 function publicStatus(document) {
   if (!document || document.active !== true) {
@@ -15,7 +18,25 @@ function publicStatus(document) {
   };
 }
 
-export function createBillingStatusHandler({ verifyIdToken = verifyFirebaseIdToken, readEntitlement = readBillingEntitlement } = {}) {
+function publicPurchase(document, planKey) {
+  const active = document?.active === true && document?.planKey === planKey;
+  return {
+    active,
+    planKey,
+    status: active ? String(document.status || "paid") : "not_purchased",
+    entitlements: active && Array.isArray(document.entitlements)
+      ? document.entitlements.filter(value => typeof value === "string").slice(0, 20)
+      : [],
+    purchasedAt: active && typeof document.purchasedAt === "string" ? document.purchasedAt : null
+  };
+}
+
+export function createBillingStatusHandler({
+  configReader = readBillingConfig,
+  verifyIdToken = verifyFirebaseIdToken,
+  readEntitlement = readBillingEntitlement,
+  readCourseEntitlement = readBillingCourseEntitlement
+} = {}) {
   return async function handler(request, response) {
     if (request.method !== "GET") {
       response.setHeader("Allow", "GET");
@@ -25,14 +46,26 @@ export function createBillingStatusHandler({ verifyIdToken = verifyFirebaseIdTok
     try {
       const user = await verifyIdToken(bearerToken(request));
       if (!user || user.isAnonymous) return sendJson(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
-      const result = await readEntitlement({ userId: user.uid });
-      if (result.status === "missing") return sendJson(response, 200, { ok: true, subscription: publicStatus(null) });
-      if (result.status !== "found") return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
-      return sendJson(response, 200, { ok: true, subscription: publicStatus(result.document) });
+      const subscriptionResult = await readEntitlement({ userId: user.uid });
+      if (!["found", "missing"].includes(subscriptionResult.status)) {
+        return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
+      }
+      const payload = { ok: true, subscription: publicStatus(subscriptionResult.document) };
+      const planKey = new URL(request.url || "/api/billing", "https://www.idiomaguarani.com.py").searchParams.get("planKey") || "";
+      if (!planKey) return sendJson(response, 200, payload);
+      const config = configReader();
+      const plan = PLAN_KEY_PATTERN.test(planKey) ? config.plans.get(planKey) : null;
+      if (!plan || plan.kind !== "one_time") return sendJson(response, 400, { ok: false, reason: "INVALID_PLAN" });
+      const purchaseResult = await readCourseEntitlement({ userId: user.uid, planKey });
+      if (!["found", "missing"].includes(purchaseResult.status)) {
+        return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
+      }
+      payload.purchase = publicPurchase(purchaseResult.document, planKey);
+      return sendJson(response, 200, payload);
     } catch {
       return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
     }
   };
 }
 
-export const __test = { publicStatus };
+export const __test = { publicStatus, publicPurchase };
