@@ -2,11 +2,12 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-COMMUNITY-SERVICE-15";
+  const VERSION="NALVI-COMMUNITY-SERVICE-16";
   const WRITES_ENABLED=window.GCA_FEATURES?.communityWrites===true||window.NALVI_FEATURES?.communityWrites===true;
   const CATEGORY_KEYS=Object.freeze(["community","announcements","questions","learning"]);
   const POST_COOLDOWN_MS=15000;
   const COMMENT_COOLDOWN_MS=5000;
+  const HYDRATION_CACHE_TTL_MS=5*60*1000;
   const initialPosts=[
     {id:"announcement",category:1,categoryKey:"announcements",initials:"NA",author:"Equipo NALVI",authorId:"nalvi",handle:"@nalvi",date:"Hoy",pinned:true,body:"¡Bienvenidos a Comunidad NALVI! Un lugar para preguntar, compartir y encontrarnos alrededor del guaraní.",links:["Comunidad"],likes:18,comments:4,views:126,followers:84,commentPreview:{author:"Ana P.",text:"Qué lindo contar con este punto de encuentro."}},
     {id:"question",category:2,categoryKey:"questions",initials:"MF",author:"María F.",authorId:"mariaf",handle:"@mariaf",date:"Hace 2 h",body:"¿Dónde puedo volver a practicar los verbos de la unidad?",links:["Verbos en presente"],likes:7,comments:3,views:54,followers:16,commentPreview:{author:"Ana P.",text:"Está dentro de Guaraní general, en la sección de verbos."}}
@@ -33,6 +34,16 @@
   let activeCommentWrite=null;
   const viewedThisSession=new Set();
   const followStateCheckedIds=new Set();
+  const postHydrationCache=new Map();
+  const postHydrationInFlight=new Map();
+  const profileHydrationCache=new Map();
+  const profileHydrationInFlight=new Map();
+
+  const cacheFresh=entry=>!!entry&&Date.now()-entry.cachedAt<HYDRATION_CACHE_TTL_MS;
+  const viewerId=firebase=>{const user=firebase?.auth?.currentUser;return user&&!user.isAnonymous?String(user.uid||""):"anonymous"};
+  const hydrationKey=(resourceId,firebase)=>`${String(resourceId||"")}::${viewerId(firebase)}`;
+  function invalidatePostHydration(postId){const prefix=`${String(postId||"")}::`;for(const key of postHydrationCache.keys())if(key.startsWith(prefix))postHydrationCache.delete(key)}
+  function invalidateProfileHydration(userId){const prefix=`${String(userId||"")}::`;for(const key of profileHydrationCache.keys())if(key.startsWith(prefix))profileHydrationCache.delete(key)}
 
   function listPosts(){return clone(posts)}
   function listProfiles(){return clone([...profilesById.values()])}
@@ -79,38 +90,60 @@
   }
   async function ensureOwnProfile(firebase){
     const user=currentUser(firebase),reference=firebase.doc(firebase.db,"communityProfiles",user.uid),snapshot=await firebase.getDoc(reference);
-    const current=snapshot.exists()?snapshot.data()||{}:{},displayName=safeName(current.displayName)||safeName(user.displayName),base={userId:user.uid,photoURL:safePhoto(user.photoURL),updatedAt:firebase.serverTimestamp()};
+    const current=snapshot.exists()?snapshot.data()||{}:{},displayName=safeName(current.displayName)||safeName(user.displayName),photoURL=safePhoto(user.photoURL),base={userId:user.uid,photoURL};
     if(!displayName)throw new TypeError("COMMUNITY_DISPLAY_NAME_REQUIRED");
-    if(snapshot.exists())await firebase.setDoc(reference,base,{merge:true});
-    else await firebase.setDoc(reference,{...base,displayName,bio:"",createdAt:firebase.serverTimestamp()});
+    if(snapshot.exists()){
+      if(String(current.userId||"")!==user.uid||safePhoto(current.photoURL)!==photoURL){
+        await firebase.setDoc(reference,{...base,updatedAt:firebase.serverTimestamp()},{merge:true});
+        invalidateProfileHydration(user.uid);
+      }
+    }else{
+      await firebase.setDoc(reference,{...base,displayName,bio:"",createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
+      invalidateProfileHydration(user.uid);
+    }
     profilesById.set(user.uid,{...(profilesById.get(user.uid)||{}),...current,...base,displayName,userId:user.uid});
     return{reference,displayName};
   }
   async function hydrateProfile(firebase,userId){
     if(!userId)return null;
-    const reference=firebase.doc(firebase.db,"communityProfiles",userId),user=firebase.auth?.currentUser;
-    const tasks=[
-      firebase.getDoc(reference),
-      firebase.getCountFromServer(firebase.collection(reference,"followers")),
-      user&&!user.isAnonymous&&user.uid!==userId?firebase.getDoc(firebase.doc(reference,"followers",user.uid)):Promise.resolve(null)
-    ];
-    const [profileResult,countResultValue,followingResult]=await Promise.allSettled(tasks);
-    const data=profileResult.status==="fulfilled"&&profileResult.value.exists()?profileResult.value.data()||{}:{};
-    return {userId,displayName:safeName(data.displayName),photoURL:safePhoto(data.photoURL),bio:normalizeBio(data.bio),followers:countResult(countResultValue),following:followingResult.status==="fulfilled"&&followingResult.value?.exists?.()===true};
+    const key=hydrationKey(userId,firebase),cached=profileHydrationCache.get(key);
+    if(cacheFresh(cached))return clone(cached.value);
+    if(profileHydrationInFlight.has(key))return clone(await profileHydrationInFlight.get(key));
+    const promise=(async()=>{
+      const reference=firebase.doc(firebase.db,"communityProfiles",userId),user=firebase.auth?.currentUser;
+      const tasks=[
+        firebase.getDoc(reference),
+        firebase.getCountFromServer(firebase.collection(reference,"followers")),
+        user&&!user.isAnonymous&&user.uid!==userId?firebase.getDoc(firebase.doc(reference,"followers",user.uid)):Promise.resolve(null)
+      ];
+      const [profileResult,countResultValue,followingResult]=await Promise.allSettled(tasks);
+      const data=profileResult.status==="fulfilled"&&profileResult.value.exists()?profileResult.value.data()||{}:{},value={userId,displayName:safeName(data.displayName),photoURL:safePhoto(data.photoURL),bio:normalizeBio(data.bio),followers:countResult(countResultValue),following:followingResult.status==="fulfilled"&&followingResult.value?.exists?.()===true};
+      if([profileResult,countResultValue,followingResult].every(result=>result.status==="fulfilled"))profileHydrationCache.set(key,{cachedAt:Date.now(),value:clone(value)});
+      return value;
+    })();
+    profileHydrationInFlight.set(key,promise);
+    try{return clone(await promise)}finally{if(profileHydrationInFlight.get(key)===promise)profileHydrationInFlight.delete(key)}
   }
   async function hydratePost(firebase,snapshot){
-    const post=fromDocument(snapshot),postRef=snapshot.ref,user=firebase.auth?.currentUser;
-    const commentsQuery=firebase.query(firebase.collection(postRef,"comments"),firebase.orderBy("createdAt","desc"),firebase.limit(12));
-    const tasks=[
-      firebase.getCountFromServer(firebase.collection(postRef,"reactions")),firebase.getCountFromServer(firebase.collection(postRef,"comments")),firebase.getCountFromServer(firebase.collection(postRef,"views")),firebase.getDocs(commentsQuery),
-      user&&!user.isAnonymous?firebase.getDoc(firebase.doc(postRef,"reactions",user.uid)):Promise.resolve(null)
-    ];
-    const [likes,comments,views,commentList,reaction]=await Promise.allSettled(tasks);
-    post.likes=countResult(likes);post.comments=countResult(comments);post.views=countResult(views);
-    if(commentList.status==="fulfilled"){post.commentItems=commentList.value.docs.map(item=>{const data=item.data()||{};return{id:item.id,authorId:String(data.authorId||""),author:safeName(data.authorName)||"Miembro NALVI",text:normalizeComment(data.body),parentCommentId:String(data.parentCommentId||"")}}).reverse();post.comments=Math.max(post.comments,post.commentItems.length)}
-    post.commentPreview=post.commentItems.at(-1)||null;
-    post.likedByCurrent=reaction.status==="fulfilled"&&reaction.value?.exists?.()===true;
-    return post;
+    const post=fromDocument(snapshot),key=hydrationKey(snapshot.id,firebase),cached=postHydrationCache.get(key);
+    if(cacheFresh(cached))return{...post,...clone(cached.value)};
+    let promise=postHydrationInFlight.get(key);
+    if(!promise){
+      promise=(async()=>{
+        const postRef=snapshot.ref,user=firebase.auth?.currentUser,commentsQuery=firebase.query(firebase.collection(postRef,"comments"),firebase.orderBy("createdAt","desc"),firebase.limit(12));
+        const tasks=[
+          firebase.getCountFromServer(firebase.collection(postRef,"reactions")),firebase.getCountFromServer(firebase.collection(postRef,"comments")),firebase.getCountFromServer(firebase.collection(postRef,"views")),firebase.getDocs(commentsQuery),
+          user&&!user.isAnonymous?firebase.getDoc(firebase.doc(postRef,"reactions",user.uid)):Promise.resolve(null)
+        ];
+        const [likes,comments,views,commentList,reaction]=await Promise.allSettled(tasks);
+        const commentItems=commentList.status==="fulfilled"?commentList.value.docs.map(item=>{const data=item.data()||{};return{id:item.id,authorId:String(data.authorId||""),author:safeName(data.authorName)||"Miembro NALVI",text:normalizeComment(data.body),parentCommentId:String(data.parentCommentId||"")}}).reverse():[];
+        const value={likes:countResult(likes),comments:Math.max(countResult(comments),commentItems.length),views:countResult(views),commentItems,commentPreview:commentItems.at(-1)||null,likedByCurrent:reaction.status==="fulfilled"&&reaction.value?.exists?.()===true};
+        if([likes,comments,views,commentList,reaction].every(result=>result.status==="fulfilled"))postHydrationCache.set(key,{cachedAt:Date.now(),value:clone(value)});
+        return value;
+      })();
+      postHydrationInFlight.set(key,promise);
+    }
+    try{return{...post,...clone(await promise)}}finally{if(postHydrationInFlight.get(key)===promise)postHydrationInFlight.delete(key)}
   }
   function subscribePosts(onPosts,onError){
     if(typeof onPosts!=="function")throw new TypeError("COMMUNITY_SUBSCRIBER_REQUIRED");
@@ -121,12 +154,15 @@
       if(cancelled)return;
       const user=firebase.auth?.currentUser;
       if(user&&!user.isAnonymous)await ensureOwnProfile(firebase);
+      if(cancelled)return;
       const feed=firebase.query(firebase.collection(firebase.db,"communityPosts"),firebase.orderBy("createdAt","desc"),firebase.limit(40));
       remoteUnsubscribe=firebase.onSnapshot(feed,async snapshot=>{
         try{
           const next=await Promise.all(snapshot.docs.map(item=>hydratePost(firebase,item)));
+          if(cancelled)return;
           const profileIds=new Set(next.map(item=>item.authorId).filter(Boolean));if(user&&!user.isAnonymous)profileIds.add(user.uid);
           const profileEntries=await Promise.all([...profileIds].map(async userId=>[userId,await hydrateProfile(firebase,userId)]));
+          if(cancelled)return;
           profileEntries.forEach(([userId,profile])=>{if(profile)profilesById.set(userId,profile)});
           posts=next.map(post=>{const profile=profilesById.get(post.authorId);return profile?{...post,author:profile.displayName||post.author,initials:initials(profile.displayName||post.author),photoURL:profile.photoURL,bio:profile.bio,followers:profile.followers,following:profile.following}:post});
           onPosts(listPosts());
@@ -287,11 +323,11 @@
     activePostWrite={key:writeKey,promise};
     try{return await promise}finally{if(activePostWrite?.promise===promise)activePostWrite=null}
   }
-  async function deleteRemotePost(postId){requireEnabled();const firebase=await firebaseReady();currentUser(firebase);await firebase.deleteDoc(firebase.doc(firebase.db,"communityPosts",String(postId)));return true}
+  async function deleteRemotePost(postId){requireEnabled();const firebase=await firebaseReady();currentUser(firebase);await firebase.deleteDoc(firebase.doc(firebase.db,"communityPosts",String(postId)));invalidatePostHydration(postId);return true}
   async function toggleReaction(postId){
     requireEnabled();const firebase=await firebaseReady(),user=currentUser(firebase),postRef=firebase.doc(firebase.db,"communityPosts",String(postId)),reactionRef=firebase.doc(postRef,"reactions",user.uid),snapshot=await firebase.getDoc(reactionRef);
-    if(snapshot.exists()){await firebase.deleteDoc(reactionRef);return false}
-    await firebase.setDoc(reactionRef,{type:"like",createdAt:firebase.serverTimestamp()});return true;
+    if(snapshot.exists()){await firebase.deleteDoc(reactionRef);invalidatePostHydration(postId);return false}
+    await firebase.setDoc(reactionRef,{type:"like",createdAt:firebase.serverTimestamp()});invalidatePostHydration(postId);return true;
   }
   async function createComment(postId,body,parentCommentId=""){
     requireEnabled();const text=normalizeComment(body);if(!text)throw new TypeError("EMPTY_COMMUNITY_COMMENT");
@@ -302,7 +338,7 @@
       const {displayName:authorName}=await ensureOwnProfile(firebase);
       const postRef=firebase.doc(firebase.db,"communityPosts",safePostId);
       const reference=await firebase.addDoc(firebase.collection(postRef,"comments"),{authorId:user.uid,authorName,body:text,parentCommentId:safeParentId,createdAt:firebase.serverTimestamp(),updatedAt:firebase.serverTimestamp()});
-      lastCommentAt=Date.now();
+      lastCommentAt=Date.now();invalidatePostHydration(safePostId);
       return reference.id;
     })();
     activeCommentWrite={key:writeKey,promise};
@@ -315,12 +351,13 @@
     const reference=firebase.doc(target,"followers",user.uid),snapshot=await firebase.getDoc(reference);
     const active=!snapshot.exists();
     if(active)await firebase.setDoc(reference,{createdAt:firebase.serverTimestamp()});else await firebase.deleteDoc(reference);
+    invalidateProfileHydration(targetId);
     profilesById.set(targetId,{...(profilesById.get(targetId)||{userId:targetId}),following:active});followStateCheckedIds.add(targetId);return active;
   }
   async function saveOwnProfile(displayName,bio){
     requireEnabled();const firebase=await firebaseReady(),user=currentUser(firebase),name=safeName(displayName);if(name.length<2)throw new TypeError("COMMUNITY_DISPLAY_NAME_REQUIRED");
     const {reference}=await ensureOwnProfile(firebase),payload={displayName:name,bio:normalizeBio(bio),updatedAt:firebase.serverTimestamp()};
-    await firebase.setDoc(reference,payload,{merge:true});profilesById.set(user.uid,{...(profilesById.get(user.uid)||{}),...payload,userId:user.uid});return true;
+    await firebase.setDoc(reference,payload,{merge:true});invalidateProfileHydration(user.uid);profilesById.set(user.uid,{...(profilesById.get(user.uid)||{}),...payload,userId:user.uid});return true;
   }
   async function recordView(postId){
     if(!WRITES_ENABLED||viewedThisSession.has(postId))return false;
@@ -328,7 +365,7 @@
     viewedThisSession.add(postId);
     const postRef=firebase.doc(firebase.db,"communityPosts",String(postId)),viewRef=firebase.doc(postRef,"views",user.uid),snapshot=await firebase.getDoc(viewRef);
     if(snapshot.exists())return false;
-    await firebase.setDoc(viewRef,{createdAt:firebase.serverTimestamp()});return true;
+    await firebase.setDoc(viewRef,{createdAt:firebase.serverTimestamp()});invalidatePostHydration(postId);return true;
   }
 
   window.NALVI_COMMUNITY_SERVICE=Object.freeze({VERSION,WRITES_ENABLED,CATEGORY_KEYS,listPosts,listProfiles,getProfile,previewPost,subscribePosts,hydrateFollowStates,subscribeProfiles,subscribeConversations,subscribeMessages,conversationIdFor,sendDirectMessage,markConversationRead,subscribeNotifications,createRemotePost,deleteRemotePost,toggleReaction,createComment,toggleFollow,saveOwnProfile,recordView,resetDemo});

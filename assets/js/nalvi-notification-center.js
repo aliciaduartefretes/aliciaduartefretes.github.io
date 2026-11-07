@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-NOTIFICATION-CENTER-5";
+  const VERSION="NALVI-NOTIFICATION-CENTER-6";
   const COPY={
     es:{label:"Notificaciones",title:"Marandu · Notificaciones",empty:"Todavía no hay interacciones nuevas.",signIn:"Inicia sesión para ver tus notificaciones.",comment:"comentó en tu publicación",like:"marcó Me gusta en tu publicación",follow:"comenzó a seguirte",message:"te envió un mensaje",institutionApproved:"Se aprobó tu solicitud de institución",someone:"Alguien",open:"Abrir",close:"Cerrar"},
     en:{label:"Notifications",title:"Marandu · Notifications",empty:"There are no new interactions yet.",signIn:"Sign in to see your notifications.",comment:"commented on your post",like:"liked your post",follow:"started following you",message:"sent you a message",institutionApproved:"Your institution request was approved",someone:"Someone",open:"Open",close:"Close"},
@@ -34,7 +34,7 @@
   function close(){state.open=false;render()}
   function toggle(){state.open=!state.open;if(state.open&&signedIn())saveSeen();render()}
   function connect(){
-    state.unsubscribe?.();state.unsubscribe=null;const user=currentUser(),nextUserId=user&&!user.isAnonymous?String(user.uid||""):"";state.userId=nextUserId;state.seenAt=readSeen(nextUserId);state.communityItems=[];state.academicItems=[];syncItems();
+    const user=currentUser(),nextUserId=user&&!user.isAnonymous?String(user.uid||""):"";if(nextUserId===state.userId&&state.unsubscribe)return;state.unsubscribe?.();state.unsubscribe=null;state.userId=nextUserId;state.seenAt=readSeen(nextUserId);state.communityItems=[];state.academicItems=[];syncItems();
     if(!nextUserId)return;const service=window.NALVI_COMMUNITY_SERVICE;if(!service?.subscribeNotifications)return;
     state.unsubscribe=service.subscribeNotifications(items=>{state.communityItems=Array.isArray(items)?items:[];syncItems()},()=>{state.communityItems=[];syncItems()});
   }
