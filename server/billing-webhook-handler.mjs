@@ -17,7 +17,7 @@ const SUBSCRIPTION_EVENTS = new Set([
   "subscription_unpaused",
   "subscription_plan_changed"
 ]);
-const ORDER_EVENTS = new Set(["order_created"]);
+const ORDER_EVENTS = new Set(["order_created", "order_refunded"]);
 const SUPPORTED_EVENTS = new Set([...SUBSCRIPTION_EVENTS, ...ORDER_EVENTS]);
 const VALID_STATUSES = new Set(["on_trial", "active", "paused", "past_due", "unpaid", "cancelled", "expired"]);
 const UID_PATTERN = /^[A-Za-z0-9:_-]{1,128}$/;
@@ -105,6 +105,7 @@ function normalizeOrderEvent(payload, config, raw, now = new Date()) {
   const planKey = String(custom.plan_key || "");
   const plan = config.plans.get(planKey);
   const status = String(attributes.status || "");
+  const refunded = attributes.refunded === true || status === "refunded";
   if (!/^\d{1,20}$/.test(orderId) || !UID_PATTERN.test(userId) || !plan || plan.kind !== "one_time") {
     throw new Error("INVALID_EVENT_LINK");
   }
@@ -112,7 +113,9 @@ function normalizeOrderEvent(payload, config, raw, now = new Date()) {
     throw new Error("INVALID_EVENT_PRODUCT");
   }
   if (plan.productId && String(item.product_id || "") !== plan.productId) throw new Error("INVALID_EVENT_PRODUCT");
-  if (status !== "paid" || attributes.refunded === true || Boolean(attributes.test_mode) !== (config.mode === "test")) {
+  const isPaidOrder = eventName === "order_created" && status === "paid" && !refunded;
+  const isRefundedOrder = eventName === "order_refunded" && refunded;
+  if ((!isPaidOrder && !isRefundedOrder) || Boolean(attributes.test_mode) !== (config.mode === "test")) {
     throw new Error("INVALID_EVENT_ENVIRONMENT");
   }
   const eventId = createHash("sha256").update(raw).digest("hex");
@@ -138,6 +141,7 @@ function normalizeOrderEvent(payload, config, raw, now = new Date()) {
       variantId: String(item.variant_id || ""),
       customerId: String(attributes.customer_id || ""),
       status,
+      refunded,
       testMode: Boolean(attributes.test_mode),
       purchasedAt,
       updatedAt: processedAt
@@ -148,9 +152,9 @@ function normalizeOrderEvent(payload, config, raw, now = new Date()) {
       orderId,
       planKey,
       status,
-      active: true,
-      permanent: true,
-      entitlements: [...plan.entitlements],
+      active: isPaidOrder,
+      permanent: isPaidOrder,
+      entitlements: isPaidOrder ? [...plan.entitlements] : [],
       testMode: Boolean(attributes.test_mode),
       purchasedAt,
       updatedAt: processedAt

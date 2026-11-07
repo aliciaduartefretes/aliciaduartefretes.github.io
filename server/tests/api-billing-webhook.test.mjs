@@ -185,6 +185,25 @@ test("order_created pagado concede de forma permanente solo el curso comprado", 
   assert.deepEqual(saved.entitlement.entitlements, ["course:test-one-time"]);
 });
 
+test("order_refunded revoca el acceso permanente del curso comprado", async () => {
+  let saved;
+  const handler = createLemonSqueezyWebhookHandler({
+    configReader: () => config,
+    readEvent: async () => ({ status: "missing" }),
+    persistPurchase: async snapshot => { saved = snapshot; return { status: "persisted" }; },
+    clock: () => new Date("2026-11-05T12:02:00.000Z")
+  });
+  const refunded = orderPayload({ status: "refunded", refunded: true });
+  refunded.meta.event_name = "order_refunded";
+  const res = response();
+  await handler(signedRequest(refunded), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(saved.purchase.refunded, true);
+  assert.equal(saved.entitlement.active, false);
+  assert.equal(saved.entitlement.permanent, false);
+  assert.deepEqual(saved.entitlement.entitlements, []);
+});
+
 test("una orden no pagada o con otra variante nunca desbloquea el curso", async () => {
   let writes = 0;
   const handler = createLemonSqueezyWebhookHandler({
@@ -194,6 +213,7 @@ test("una orden no pagada o con otra variante nunca desbloquea el curso", async 
   });
   for (const event of [
     orderPayload({ status: "pending" }),
+    { ...orderPayload({ status: "paid", refunded: false }), meta: { ...orderPayload().meta, event_name: "order_refunded" } },
     orderPayload({ first_order_item: { product_id: 457, variant_id: 999 } }),
     orderPayload({ test_mode: false })
   ]) {
