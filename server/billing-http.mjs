@@ -15,7 +15,6 @@ export function sendJson(response, status, payload, extraHeaders = {}) {
 
 export function requestOriginAllowed(request, env = process.env) {
   const origin = String(request.headers?.origin || "").trim();
-  if (!origin) return false;
   const configured = String(env.NALVI_ALLOWED_ORIGINS || "")
     .split(",")
     .map(item => item.trim())
@@ -25,7 +24,18 @@ export function requestOriginAllowed(request, env = process.env) {
     allowed.add("http://127.0.0.1:4174");
     allowed.add("http://localhost:4174");
   }
-  return allowed.has(origin);
+  if (origin) return allowed.has(origin);
+
+  // Browsers do not consistently include Origin on same-origin GET requests.
+  // Referer is still browser-controlled, so it is a safe fallback for the
+  // read-only authenticated endpoints used by the protected-course screen.
+  const referer = String(request.headers?.referer || "").trim();
+  if (!referer) return false;
+  try {
+    return allowed.has(new URL(referer).origin);
+  } catch {
+    return false;
+  }
 }
 
 export async function jsonBody(request, maximumBytes = 4_096) {

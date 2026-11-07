@@ -59,6 +59,34 @@ test("antes del pago el estado y el contenido permanecen bloqueados", async () =
   assert.equal(contentResponse.payload.reason, "PURCHASE_REQUIRED");
 });
 
+test("acepta GET del mismo sitio cuando el navegador omite Origin", async () => {
+  const contentResponse = response();
+  const sameSiteRequest = request("course-content");
+  delete sameSiteRequest.headers.origin;
+  sameSiteRequest.headers.referer = "https://www.idiomaguarani.com.py/?billingTest=1";
+  await createBillingCourseContentHandler({
+    configReader: () => config,
+    verifyIdToken,
+    readCourseEntitlement: async () => ({ status: "missing" })
+  })(sameSiteRequest, contentResponse);
+  assert.equal(contentResponse.statusCode, 402);
+  assert.equal(contentResponse.payload.reason, "PURCHASE_REQUIRED");
+});
+
+test("rechaza GET sin Origin cuando Referer pertenece a otro sitio", async () => {
+  const contentResponse = response();
+  const foreignRequest = request("course-content");
+  delete foreignRequest.headers.origin;
+  foreignRequest.headers.referer = "https://evil.example/steal";
+  await createBillingCourseContentHandler({
+    configReader: () => config,
+    verifyIdToken,
+    readCourseEntitlement: async () => ({ status: "missing" })
+  })(foreignRequest, contentResponse);
+  assert.equal(contentResponse.statusCode, 403);
+  assert.equal(contentResponse.payload.reason, "CROSS_ORIGIN_DENIED");
+});
+
 test("después del webhook el mismo usuario recibe el contenido protegido", async () => {
   const statusResponse = response();
   await createBillingStatusHandler({
