@@ -49,7 +49,12 @@ export function createBillingCourseContentHandler({
       if (!plan || !course) return sendJson(response, 404, { ok: false, reason: "COURSE_NOT_FOUND" });
       const result = await readCourseEntitlement({ userId: user.uid, planKey });
       if (result.status === "missing") return sendJson(response, 402, { ok: false, reason: "PURCHASE_REQUIRED" });
-      if (result.status !== "found") return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
+      if (result.status !== "found") {
+        const storeReason = String(result.reason || "UNKNOWN").replace(/[^A-Z0-9_]/gi, "_").slice(0, 64);
+        const storeStatus = Number.isInteger(result.httpStatus) ? `:${result.httpStatus}` : "";
+        console.error(`[billing] course access store unavailable: ${storeReason}${storeStatus}`);
+        return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
+      }
       const entitlement = result.document || {};
       const allowed = entitlement.active === true
         && entitlement.userId === user.uid
@@ -58,7 +63,9 @@ export function createBillingCourseContentHandler({
         && entitlement.entitlements.includes(TEST_COURSE_ENTITLEMENT);
       if (!allowed) return sendJson(response, 402, { ok: false, reason: "PURCHASE_REQUIRED" });
       return sendJson(response, 200, { ok: true, course });
-    } catch {
+    } catch (error) {
+      const errorName = String(error?.name || "UNKNOWN").replace(/[^A-Z0-9_]/gi, "_").slice(0, 64);
+      console.error(`[billing] course access failed: ${errorName}`);
       return sendJson(response, 503, { ok: false, reason: "COURSE_ACCESS_UNAVAILABLE" });
     }
   };
