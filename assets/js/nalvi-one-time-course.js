@@ -42,7 +42,7 @@
     action.disabled=true;setNotice(poll?"Esperando la confirmación segura del pago…":"Comprobando tu acceso…");
     try{
       const user=await currentUser();
-      if(!user||user.isAnonymous)return showSignedOut();
+      if(!user||user.isAnonymous){showSignedOut();return null}
       login.hidden=true;action.hidden=false;
       const attempts=poll?8:1;
       for(let index=0;index<attempts;index+=1){
@@ -52,7 +52,7 @@
         if(index<attempts-1)await new Promise(resolve=>setTimeout(resolve,1500));
       }
       content.hidden=true;$("#paidCourseIcon").textContent="🔒";$("#paidCourseStateTitle").textContent="Contenido bloqueado";$("#paidCourseStateCopy").textContent="Todavía no existe una compra confirmada para esta cuenta.";action.textContent="Comprar en modo de prueba";setNotice("Acceso bloqueado correctamente. La prueba de compra no realiza cobros reales.");return false;
-    }catch(error){setNotice("No pudimos comprobar el acceso. Inténtalo nuevamente.","error");console.error("NALVI_ONE_TIME_ACCESS",error);return false}
+    }catch(error){setNotice("No pudimos comprobar el acceso. Inténtalo nuevamente.","error");console.error("NALVI_ONE_TIME_ACCESS",error);return null}
     finally{action.disabled=false}
   };
   const startCheckout=async()=>{
@@ -71,7 +71,7 @@
   grid?.querySelector("[data-paid-test-open]")?.addEventListener("click",()=>window.show?.(ROUTE,true));
   $("[data-paid-test-back]")?.addEventListener("click",()=>window.show?.("catalog",true));
   login.addEventListener("click",()=>window.courseGoogleLogin?.());
-  action.addEventListener("click",async()=>{const purchased=await checkAccess();if(!purchased)await startCheckout()});
+  action.addEventListener("click",async()=>{const purchased=await checkAccess();if(purchased===false)await startCheckout()});
   window.addEventListener("nalvi:auth-known",()=>{if(!$("#paidCourseTest")?.classList.contains("hide"))checkAccess()});
 
   if(location.hash===`#${ROUTE}`||params.get("billingTest")==="1"){
