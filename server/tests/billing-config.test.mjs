@@ -38,6 +38,19 @@ test("test mode requiere todos los secretos y un catálogo validado", () => {
   }]);
 });
 
+test("conserva completa una clave JWT larga de Lemon Squeezy", () => {
+  const longApiKey = `header.${"a".repeat(1_010)}.signature`;
+  const config = readBillingConfig({
+    NALVI_BILLING_MODE: "test",
+    LEMONSQUEEZY_API_KEY: longApiKey,
+    LEMONSQUEEZY_STORE_ID: "42",
+    LEMONSQUEEZY_WEBHOOK_SECRET: "secret-123",
+    LEMONSQUEEZY_PLAN_CATALOG_JSON: catalog
+  });
+  assert.equal(config.enabled, true);
+  assert.equal(config.apiKey, longApiKey);
+});
+
 test("live no puede activarse por accidente", () => {
   assert.throws(() => readBillingConfig({ NALVI_BILLING_MODE: "live" }), /LIVE_BILLING_NOT_CONFIRMED/);
 });

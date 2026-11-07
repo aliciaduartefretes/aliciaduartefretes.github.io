@@ -51,7 +51,9 @@ export function readBillingConfig(env = process.env) {
   const mode = configuredMode(env);
   const plans = parseCatalog(env.LEMONSQUEEZY_PLAN_CATALOG_JSON);
   const storeId = cleanString(env.LEMONSQUEEZY_STORE_ID, 20);
-  const apiKey = cleanString(env.LEMONSQUEEZY_API_KEY, 512);
+  // Lemon Squeezy API keys are signed JWTs and can exceed 1,000 characters.
+  // Keep a defensive ceiling without truncating a valid credential.
+  const apiKey = cleanString(env.LEMONSQUEEZY_API_KEY, 2_048);
   const webhookSecret = cleanString(env.LEMONSQUEEZY_WEBHOOK_SECRET, 128);
   const appUrl = cleanString(env.NALVI_PUBLIC_APP_URL, 300) || "https://www.idiomaguarani.com.py";
   const configured = mode !== "disabled"
