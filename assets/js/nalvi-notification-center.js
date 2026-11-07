@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-NOTIFICATION-CENTER-6";
+  const VERSION="NALVI-NOTIFICATION-CENTER-7";
   const COPY={
     es:{label:"Notificaciones",title:"Marandu · Notificaciones",empty:"Todavía no hay interacciones nuevas.",signIn:"Inicia sesión para ver tus notificaciones.",comment:"comentó en tu publicación",like:"marcó Me gusta en tu publicación",follow:"comenzó a seguirte",message:"te envió un mensaje",institutionApproved:"Se aprobó tu solicitud de institución",someone:"Alguien",open:"Abrir",close:"Cerrar"},
     en:{label:"Notifications",title:"Marandu · Notifications",empty:"There are no new interactions yet.",signIn:"Sign in to see your notifications.",comment:"commented on your post",like:"liked your post",follow:"started following you",message:"sent you a message",institutionApproved:"Your institution request was approved",someone:"Someone",open:"Open",close:"Close"},
@@ -31,9 +31,10 @@
     else if(!state.items.length)list.innerHTML=`<p class="nalvi-notification-empty">${escapeHtml(c.empty)}</p>`;
     else list.innerHTML=state.items.slice(0,30).map(item=>`<button class="nalvi-notification-item${(Number(item.createdAt)||0)>state.seenAt?" unread":""}" type="button" data-notification-id="${escapeHtml(item.id)}">${itemCopy(item)}<i>${escapeHtml(c.open)} →</i></button>`).join("");
   }
-  function close(){state.open=false;render()}
-  function toggle(){state.open=!state.open;if(state.open&&signedIn())saveSeen();render()}
+  function close(){if(state.open&&signedIn())saveSeen();state.open=false;render()}
+  function toggle(){if(state.open)return close();state.open=true;if(signedIn())connect();render()}
   function connect(){
+    if(new URLSearchParams(location.search).get("billingTest")==="1")return;
     const user=currentUser(),nextUserId=user&&!user.isAnonymous?String(user.uid||""):"";if(nextUserId===state.userId&&state.unsubscribe)return;state.unsubscribe?.();state.unsubscribe=null;state.userId=nextUserId;state.seenAt=readSeen(nextUserId);state.communityItems=[];state.academicItems=[];syncItems();
     if(!nextUserId)return;const service=window.NALVI_COMMUNITY_SERVICE;if(!service?.subscribeNotifications)return;
     state.unsubscribe=service.subscribeNotifications(items=>{state.communityItems=Array.isArray(items)?items:[];syncItems()},()=>{state.communityItems=[];syncItems()});
@@ -46,7 +47,7 @@
     shell.querySelector("button")?.addEventListener("click",event=>{event.stopPropagation();toggle()});document.querySelector("#nalviNotificationClose")?.addEventListener("click",close);
     document.querySelector("#nalviNotificationPanel")?.addEventListener("click",event=>{event.stopPropagation();const signInButton=event.target.closest?.("[data-notification-sign-in]");if(signInButton){close();window.courseGoogleLogin?.();return}const itemButton=event.target.closest?.("[data-notification-id]");if(!itemButton)return;const item=state.items.find(candidate=>candidate.id===itemButton.dataset.notificationId);close();if(item?.kind==="message")window.NALVI_INSTITUTIONAL_EXPERIENCE?.openMessages?.(item.actorId);else if(item?.kind==="institutionApproved"&&item.institutionId){try{const user=window.GCA_FIREBASE_LIVE?.auth?.currentUser,key=window.NALVI_USER_STORAGE_KEY?.("nalviAcademicInstitution.v1",user)||"nalviAcademicInstitution.v1";localStorage.setItem(key,item.institutionId)}catch{}location.reload()}else if(item?.postId)window.NALVI_INSTITUTIONAL_EXPERIENCE?.openPost?.(item.postId);else window.NALVI_INSTITUTIONAL_EXPERIENCE?.open?.()});
     document.addEventListener("click",event=>{if(state.open&&!event.target.closest?.("#nalviNotificationPanel,#nalviNotificationButton"))close()});document.addEventListener("keydown",event=>{if(event.key==="Escape"&&state.open)close()});
-    document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))render()},true);window.addEventListener("nalvi:academic-notifications",event=>{state.academicItems=Array.isArray(event.detail?.items)?event.detail.items:[];syncItems()});window.addEventListener("nalvi:auth-known",connect);connect();render();document.documentElement.dataset.nalviNotifications=VERSION;
+    document.addEventListener("change",event=>{if(event.target.matches?.("#headerLang,#lang"))render()},true);window.addEventListener("nalvi:academic-notifications",event=>{state.academicItems=Array.isArray(event.detail?.items)?event.detail.items:[];syncItems()});window.addEventListener("nalvi:auth-known",()=>{if(state.open)connect();else{state.unsubscribe?.();state.unsubscribe=null;state.userId="";state.communityItems=[];syncItems()}});render();document.documentElement.dataset.nalviNotifications=VERSION;
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();
 })();
