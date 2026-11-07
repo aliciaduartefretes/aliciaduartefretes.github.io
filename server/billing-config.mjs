@@ -65,8 +65,13 @@ export function readBillingConfig(env = process.env) {
 }
 
 export function publicBillingCatalog(config) {
-  return [...config.plans.values()].map(({ planKey, kind, displayName, description, priceLabel }) => ({
-    planKey, kind, displayName, description, priceLabel
+  return [...config.plans.values()].map(({ planKey, kind, entitlements, displayName, description, priceLabel }) => ({
+    planKey,
+    kind,
+    displayName,
+    description,
+    priceLabel,
+    unlocksPremiumCourses: entitlements.includes("courses:premium")
   }));
 }
 

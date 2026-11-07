@@ -34,7 +34,8 @@ test("test mode requiere todos los secretos y un catálogo validado", () => {
     kind: "subscription",
     displayName: "NALVI Plus",
     description: "Cursos y biblioteca premium",
-    priceLabel: "USD 9/mes"
+    priceLabel: "USD 9/mes",
+    unlocksPremiumCourses: true
   }]);
 });
 
