@@ -21,6 +21,21 @@ const ORDER_EVENTS = new Set(["order_created", "order_refunded"]);
 const SUPPORTED_EVENTS = new Set([...SUBSCRIPTION_EVENTS, ...ORDER_EVENTS]);
 const VALID_STATUSES = new Set(["on_trial", "active", "paused", "past_due", "unpaid", "cancelled", "expired"]);
 const UID_PATTERN = /^[A-Za-z0-9:_-]{1,128}$/;
+const SAFE_WEBHOOK_ERRORS = new Set([
+  "UNSUPPORTED_EVENT",
+  "INVALID_EVENT_LINK",
+  "INVALID_EVENT_PRODUCT",
+  "INVALID_EVENT_ENVIRONMENT",
+  "PAYLOAD_TOO_LARGE",
+  "SyntaxError"
+]);
+
+function safeWebhookErrorCode(error) {
+  const message = String(error?.message || "");
+  if (SAFE_WEBHOOK_ERRORS.has(message)) return message;
+  if (SAFE_WEBHOOK_ERRORS.has(error?.name)) return error.name;
+  return "INVALID_WEBHOOK";
+}
 
 function signatureValid(raw, signature, secret) {
   if (!Buffer.isBuffer(raw) || !/^[a-f0-9]{64}$/i.test(signature || "") || !secret) return false;
@@ -200,6 +215,7 @@ export function createLemonSqueezyWebhookHandler({
     } catch (error) {
       const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
       const invalidBody = ["UNSUPPORTED_EVENT", "INVALID_EVENT_LINK", "INVALID_EVENT_PRODUCT", "INVALID_EVENT_ENVIRONMENT"].includes(error?.message);
+      console.error(`[billing] webhook rejected: ${safeWebhookErrorCode(error)}`);
       return sendJson(response, tooLarge ? 413 : invalidBody ? 400 : 400, {
         ok: false,
         reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "INVALID_WEBHOOK"
@@ -214,5 +230,6 @@ export const __test = {
   normalizeSubscriptionEvent,
   normalizeOrderEvent,
   normalizeWebhookEvent,
+  safeWebhookErrorCode,
   SUPPORTED_EVENTS
 };

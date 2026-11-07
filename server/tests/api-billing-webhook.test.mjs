@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { createLemonSqueezyWebhookHandler } from "../billing-webhook-handler.mjs";
+import { createLemonSqueezyWebhookHandler, __test } from "../billing-webhook-handler.mjs";
 
 const plan = Object.freeze({
   planKey: "nalvi_plus_monthly",
@@ -23,6 +23,11 @@ const config = Object.freeze({
   storeId: "42",
   webhookSecret: "webhook-secret",
   plans: new Map([[plan.planKey, plan], [oneTimePlan.planKey, oneTimePlan]])
+});
+
+test("el diagnóstico del webhook nunca expone mensajes arbitrarios", () => {
+  assert.equal(__test.safeWebhookErrorCode(new Error("INVALID_EVENT_PRODUCT")), "INVALID_EVENT_PRODUCT");
+  assert.equal(__test.safeWebhookErrorCode(new Error("secret customer payload")), "INVALID_WEBHOOK");
 });
 
 function payload(overrides = {}) {
