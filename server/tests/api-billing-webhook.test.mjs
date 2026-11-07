@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { createLemonSqueezyWebhookHandler, __test } from "../billing-webhook-handler.mjs";
+import {
+  createLemonSqueezyFetchWebhookHandler,
+  createLemonSqueezyWebhookHandler,
+  __test
+} from "../billing-webhook-handler.mjs";
 
 const plan = Object.freeze({
   planKey: "nalvi_plus_monthly",
@@ -106,6 +110,44 @@ test("un webhook firmado concede únicamente los permisos del catálogo server-s
   assert.equal(saved.entitlement.active, true);
   assert.deepEqual(saved.entitlement.entitlements, ["courses:premium"]);
   assert.equal(saved.entitlement.userId, "user-123");
+});
+
+test("la ruta Web Standard conserva el cuerpo original y procesa la firma", async () => {
+  let saved;
+  const fetchWebhook = createLemonSqueezyFetchWebhookHandler({
+    configReader: () => config,
+    readEvent: async () => ({ status: "missing" }),
+    persistPurchase: async snapshot => { saved = snapshot; return { status: "persisted" }; },
+    clock: () => new Date("2026-11-05T12:01:00.000Z")
+  });
+  const body = JSON.stringify(orderPayload());
+  const signature = createHmac("sha256", config.webhookSecret).update(body).digest("hex");
+  const result = await fetchWebhook(new Request("https://www.idiomaguarani.com.py/api/billing-webhook", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-signature": signature },
+    body
+  }));
+  assert.equal(result.status, 200);
+  assert.deepEqual(await result.json(), { ok: true });
+  assert.equal(saved.purchase.orderId, "790");
+  assert.equal(saved.entitlement.active, true);
+});
+
+test("la ruta Web Standard rechaza una firma inválida antes de leer o escribir", async () => {
+  let reads = 0, writes = 0;
+  const fetchWebhook = createLemonSqueezyFetchWebhookHandler({
+    configReader: () => config,
+    readEvent: async () => { reads += 1; return { status: "missing" }; },
+    persistPurchase: async () => { writes += 1; return { status: "persisted" }; }
+  });
+  const result = await fetchWebhook(new Request("https://www.idiomaguarani.com.py/api/billing-webhook", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-signature": "0".repeat(64) },
+    body: JSON.stringify(orderPayload())
+  }));
+  assert.equal(result.status, 401);
+  assert.deepEqual(await result.json(), { ok: false, reason: "INVALID_SIGNATURE" });
+  assert.deepEqual({ reads, writes }, { reads: 0, writes: 0 });
 });
 
 test("firma inválida no consulta ni escribe Firestore", async () => {

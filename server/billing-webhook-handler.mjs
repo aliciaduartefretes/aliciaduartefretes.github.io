@@ -21,6 +21,7 @@ const ORDER_EVENTS = new Set(["order_created", "order_refunded"]);
 const SUPPORTED_EVENTS = new Set([...SUBSCRIPTION_EVENTS, ...ORDER_EVENTS]);
 const VALID_STATUSES = new Set(["on_trial", "active", "paused", "past_due", "unpaid", "cancelled", "expired"]);
 const UID_PATTERN = /^[A-Za-z0-9:_-]{1,128}$/;
+const MAXIMUM_WEBHOOK_BYTES = 524_288;
 const SAFE_WEBHOOK_ERRORS = new Set([
   "UNSUPPORTED_EVENT",
   "INVALID_EVENT_LINK",
@@ -184,6 +185,51 @@ function normalizeWebhookEvent(payload, config, raw, now = new Date()) {
   throw new Error("UNSUPPORTED_EVENT");
 }
 
+function webhookFailure(error) {
+  const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
+  console.error(`[billing] webhook rejected: ${safeWebhookErrorCode(error)}`);
+  return {
+    status: tooLarge ? 413 : 400,
+    payload: {
+      ok: false,
+      reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "INVALID_WEBHOOK"
+    }
+  };
+}
+
+export function createLemonSqueezyWebhookProcessor({
+  configReader = readBillingConfig,
+  readEvent = readBillingWebhookEvent,
+  persistSubscription = persistSubscriptionSnapshot,
+  persistPurchase = persistOneTimePurchaseSnapshot,
+  clock = () => new Date()
+} = {}) {
+  return async function processWebhook(raw, signature) {
+    try {
+      const config = configReader();
+      if (!config.enabled) return { status: 503, payload: { ok: false, reason: "BILLING_NOT_AVAILABLE" } };
+      if (!signatureValid(raw, signature, config.webhookSecret)) {
+        return { status: 401, payload: { ok: false, reason: "INVALID_SIGNATURE" } };
+      }
+      const snapshot = normalizeWebhookEvent(JSON.parse(raw.toString("utf8")), config, raw, clock());
+      const existing = await readEvent({ eventId: snapshot.event.eventId });
+      if (existing.status === "found") return { status: 200, payload: { ok: true, duplicate: true } };
+      if (existing.status !== "missing") {
+        return { status: 503, payload: { ok: false, reason: "BILLING_STORE_UNAVAILABLE" } };
+      }
+      const persisted = snapshot.kind === "one_time"
+        ? await persistPurchase(snapshot)
+        : await persistSubscription(snapshot);
+      if (persisted.status !== "persisted") {
+        return { status: 503, payload: { ok: false, reason: "BILLING_STORE_UNAVAILABLE" } };
+      }
+      return { status: 200, payload: { ok: true } };
+    } catch (error) {
+      return webhookFailure(error);
+    }
+  };
+}
+
 export function createLemonSqueezyWebhookHandler({
   configReader = readBillingConfig,
   readEvent = readBillingWebhookEvent,
@@ -191,35 +237,56 @@ export function createLemonSqueezyWebhookHandler({
   persistPurchase = persistOneTimePurchaseSnapshot,
   clock = () => new Date()
 } = {}) {
+  const processWebhook = createLemonSqueezyWebhookProcessor({
+    configReader,
+    readEvent,
+    persistSubscription,
+    persistPurchase,
+    clock
+  });
   return async function handler(request, response) {
     if (request.method !== "POST") {
       response.setHeader("Allow", "POST");
       return sendJson(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" });
     }
     try {
-      const config = configReader();
-      if (!config.enabled) return sendJson(response, 503, { ok: false, reason: "BILLING_NOT_AVAILABLE" });
-      const raw = await rawBody(request);
-      if (!signatureValid(raw, request.headers?.["x-signature"], config.webhookSecret)) {
-        return sendJson(response, 401, { ok: false, reason: "INVALID_SIGNATURE" });
-      }
-      const snapshot = normalizeWebhookEvent(JSON.parse(raw.toString("utf8")), config, raw, clock());
-      const existing = await readEvent({ eventId: snapshot.event.eventId });
-      if (existing.status === "found") return sendJson(response, 200, { ok: true, duplicate: true });
-      if (existing.status !== "missing") return sendJson(response, 503, { ok: false, reason: "BILLING_STORE_UNAVAILABLE" });
-      const persisted = snapshot.kind === "one_time"
-        ? await persistPurchase(snapshot)
-        : await persistSubscription(snapshot);
-      if (persisted.status !== "persisted") return sendJson(response, 503, { ok: false, reason: "BILLING_STORE_UNAVAILABLE" });
-      return sendJson(response, 200, { ok: true });
+      const raw = await rawBody(request, MAXIMUM_WEBHOOK_BYTES);
+      const result = await processWebhook(raw, request.headers?.["x-signature"]);
+      return sendJson(response, result.status, result.payload);
     } catch (error) {
-      const tooLarge = error?.message === "PAYLOAD_TOO_LARGE";
-      const invalidBody = ["UNSUPPORTED_EVENT", "INVALID_EVENT_LINK", "INVALID_EVENT_PRODUCT", "INVALID_EVENT_ENVIRONMENT"].includes(error?.message);
-      console.error(`[billing] webhook rejected: ${safeWebhookErrorCode(error)}`);
-      return sendJson(response, tooLarge ? 413 : invalidBody ? 400 : 400, {
-        ok: false,
-        reason: tooLarge ? "PAYLOAD_TOO_LARGE" : "INVALID_WEBHOOK"
-      });
+      const result = webhookFailure(error);
+      return sendJson(response, result.status, result.payload);
+    }
+  };
+}
+
+export function createLemonSqueezyFetchWebhookHandler(dependencies = {}) {
+  const processWebhook = createLemonSqueezyWebhookProcessor(dependencies);
+  return async function fetchWebhook(request) {
+    const responseHeaders = {
+      "Cache-Control": "no-store",
+      "Content-Type": "application/json; charset=utf-8",
+      "Referrer-Policy": "no-referrer",
+      "X-Content-Type-Options": "nosniff"
+    };
+    if (request.method !== "POST") {
+      return Response.json(
+        { ok: false, reason: "METHOD_NOT_ALLOWED" },
+        { status: 405, headers: { ...responseHeaders, Allow: "POST" } }
+      );
+    }
+    try {
+      const declaredLength = Number(request.headers.get("content-length") || 0);
+      if (Number.isFinite(declaredLength) && declaredLength > MAXIMUM_WEBHOOK_BYTES) {
+        throw new RangeError("PAYLOAD_TOO_LARGE");
+      }
+      const raw = Buffer.from(await request.arrayBuffer());
+      if (raw.length > MAXIMUM_WEBHOOK_BYTES) throw new RangeError("PAYLOAD_TOO_LARGE");
+      const result = await processWebhook(raw, request.headers.get("x-signature") || "");
+      return Response.json(result.payload, { status: result.status, headers: responseHeaders });
+    } catch (error) {
+      const result = webhookFailure(error);
+      return Response.json(result.payload, { status: result.status, headers: responseHeaders });
     }
   };
 }
@@ -231,5 +298,6 @@ export const __test = {
   normalizeOrderEvent,
   normalizeWebhookEvent,
   safeWebhookErrorCode,
+  webhookFailure,
   SUPPORTED_EVENTS
 };
