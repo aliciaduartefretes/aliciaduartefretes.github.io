@@ -1,9 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { generateKeyPairSync, verify } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { createMuxVideoHandler } from "../mux-video-handler.mjs";
 import { createMuxDirectUpload, createMuxPlaybackToken } from "../mux-video.mjs";
 import { createPremiumAcademyRouter } from "../premium-academy-router.mjs";
+
+test("premium academy passes signed Mux JWTs with the iframe playback-token parameter", async () => {
+  const source = await readFile(new URL("../../assets/js/nalvi-premium-academy.js", import.meta.url), "utf8");
+  assert.match(source, /player\.mux\.com\/\$\{encodeURIComponent\(payload\.playbackId\)\}\?playback-token=/);
+  assert.doesNotMatch(source, /player\.mux\.com\/[^\n]+\?token=/);
+});
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const env = Object.freeze({

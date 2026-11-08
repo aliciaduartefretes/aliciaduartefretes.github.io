@@ -139,7 +139,7 @@
       const{response,payload}=await muxApi("playback-token",{courseId:player.dataset.muxCourse,lessonId:player.dataset.muxLesson});
       if(!response.ok||!payload.playbackId||!payload.token){player.innerHTML='<div class="nalvi-premium-video-loading error">No pudimos abrir este video protegido.</div>';continue}
       const frame=document.createElement("iframe");
-      frame.src=`https://player.mux.com/${encodeURIComponent(payload.playbackId)}?token=${encodeURIComponent(payload.token)}`;
+      frame.src=`https://player.mux.com/${encodeURIComponent(payload.playbackId)}?playback-token=${encodeURIComponent(payload.token)}`;
       frame.title=player.dataset.muxTitle||"Video de la lección";
       frame.loading="lazy";
       frame.allow="autoplay; encrypted-media; picture-in-picture";
