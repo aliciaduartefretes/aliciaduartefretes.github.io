@@ -128,11 +128,20 @@
 
   function renderLibraryReader(library,access,sectionId=""){
     const reader=document.querySelector("#nalviPremiumReader");if(!reader)return;
+    document.querySelector(`#${ACADEMY_ROUTE}`)?.setAttribute("data-content-view","library");
     const sections=library.lessons||[],selected=sections.find(section=>section.lessonId===(sectionId||state.reader.lessonId))||sections[0];
     state.reader={course:library,access,lessonId:selected?.lessonId||""};
     const items=selected?.materials||[];
-    reader.hidden=false;reader.innerHTML=`<button class="nalvi-premium-reader-close" type="button" data-premium-reader-close>×</button><header class="nalvi-premium-reader-heading"><div><span>${access==="administrator"?"VISTA ADMINISTRATIVA":"BIBLIOTECA NALVI PLUS"}</span><h3>${escapeHtml(library.title)}</h3><p>${escapeHtml(library.description||library.summary||"")}</p></div><b>${sections.length} secciones</b></header><div class="nalvi-premium-course-layout nalvi-premium-library-layout"><aside class="nalvi-premium-course-sidebar"><details class="nalvi-premium-index" open><summary><span>CONTENIDOS</span><i aria-hidden="true">⌄</i></summary><div>${sections.map((section,index)=>`<button type="button" class="${section.lessonId===selected?.lessonId?"active":""}" data-premium-library-section="${escapeHtml(section.lessonId)}"><span>${String(index+1).padStart(2,"0")}</span><b>${escapeHtml(section.title)}</b></button>`).join("")}</div></details></aside><article class="nalvi-premium-library-panel"><header><span>${materialIcon(items[0]?.type)}</span><div><h4>${escapeHtml(selected?.title||"Biblioteca")}</h4><p>${escapeHtml(selected?.summary||"")}</p></div></header><div class="nalvi-premium-library-grid">${items.length?items.map(material=>materialResourceMarkup(library.courseId,selected.lessonId,material,"nalvi-premium-library-resource")).join(""):'<div class="nalvi-premium-library-empty"><span>📚</span><b>Sección en preparación</b><small>Los recursos aparecerán aquí cuando estén revisados y publicados.</small></div>'}</div></article></div>`;
-    reader.scrollIntoView({behavior:"smooth",block:"start"});
+    reader.hidden=false;reader.innerHTML=`<button class="nalvi-premium-reader-return" type="button" data-premium-reader-close>← Volver a cursos y biblioteca</button><button class="nalvi-premium-reader-close" type="button" data-premium-reader-close aria-label="Cerrar biblioteca">×</button><header class="nalvi-premium-reader-heading"><div><span>${access==="administrator"?"VISTA ADMINISTRATIVA":"BIBLIOTECA NALVI PLUS"}</span><h3>${escapeHtml(library.title)}</h3><p>${escapeHtml(library.description||library.summary||"")}</p></div><b>${sections.length} secciones</b></header><div class="nalvi-premium-course-layout nalvi-premium-library-layout"><aside class="nalvi-premium-course-sidebar"><details class="nalvi-premium-index" open><summary><span>CONTENIDOS</span><i aria-hidden="true">⌄</i></summary><div>${sections.map((section,index)=>`<button type="button" class="${section.lessonId===selected?.lessonId?"active":""}" data-premium-library-section="${escapeHtml(section.lessonId)}"><span>${String(index+1).padStart(2,"0")}</span><b>${escapeHtml(section.title)}</b></button>`).join("")}</div></details></aside><article class="nalvi-premium-library-panel"><header><span>${materialIcon(items[0]?.type)}</span><div><h4>${escapeHtml(selected?.title||"Biblioteca")}</h4><p>${escapeHtml(selected?.summary||"")}</p></div></header><div class="nalvi-premium-library-grid">${items.length?items.map(material=>materialResourceMarkup(library.courseId,selected.lessonId,material,"nalvi-premium-library-resource")).join(""):'<div class="nalvi-premium-library-empty"><span>📚</span><b>Sección en preparación</b><small>Los recursos aparecerán aquí cuando estén revisados y publicados.</small></div>'}</div></article></div>`;
+    window.scrollTo({top:0,behavior:"auto"});
+  }
+
+  function closeReader(){
+    const reader=document.querySelector("#nalviPremiumReader"),academy=document.querySelector(`#${ACADEMY_ROUTE}`);
+    if(reader)reader.hidden=true;
+    academy?.removeAttribute("data-content-view");
+    state.reader={course:null,access:"",lessonId:""};
+    document.querySelector("#nalviPremiumGrid")?.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
   function renderReader(course,access,lessonId=""){
@@ -333,7 +342,7 @@
       else if(target.dataset.premiumLibrarySection){if(state.reader.course)renderLibraryReader(state.reader.course,state.reader.access,target.dataset.premiumLibrarySection)}
       else if(target.dataset.premiumPrivateMaterial){await openPrivateMaterial(target.dataset.premiumResourceCourse,target.dataset.premiumResourceLesson,target.dataset.premiumPrivateMaterial,target)}
       else if(target.dataset.premiumComplete){await saveLessonProgress(target.dataset.premiumComplete,target)}
-      else if(target.matches("[data-premium-reader-close]")){document.querySelector("#nalviPremiumReader").hidden=true}
+      else if(target.matches("[data-premium-reader-close]")){closeReader()}
       else if(target.matches("[data-studio-new]")){state.editing=blankCourse();renderStudioList();renderEditor()}
       else if(target.matches("[data-studio-refresh]")){await loadAdminCourses()}
       else if(target.dataset.studioEdit){const course=state.adminCourses.find(item=>item.courseId===target.dataset.studioEdit);if(course){state.editing=clone(course);renderStudioList();renderEditor()}}

@@ -15,11 +15,14 @@ test("premium academy passes signed Mux JWTs with the iframe playback-token para
   assert.match(source, /contentType==="library"/);
   assert.match(source, /Abrir biblioteca/);
   assert.match(source, /nalvi-premium-library-panel/);
+  assert.match(source, /data-content-view","library"/);
+  assert.match(source, /Volver a cursos y biblioteca/);
   assert.match(source, /course\.contentType!=="library"/);
   assert.match(source, /NALVI_UPLOAD_PRIVATE_BLOB/);
   assert.match(source, /operation:"resource"/);
   assert.match(source, /data-premium-private-material/);
   assert.match(styles, /\.nalvi-premium-reader>header\.nalvi-premium-reader-heading\{position:static/);
+  assert.match(styles, /#recordedAcademy\[data-content-view="library"\].*\.nalvi-premium-grid\{display:none\}/);
 });
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
