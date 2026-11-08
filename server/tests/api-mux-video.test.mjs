@@ -16,6 +16,7 @@ test("premium academy passes signed Mux JWTs with the iframe playback-token para
   assert.match(source, /Abrir biblioteca/);
   assert.match(source, /nalvi-premium-library-panel/);
   assert.match(source, /data-content-view","library"/);
+  assert.match(source, /data-content-view","course"/);
   assert.match(source, /Volver a cursos y biblioteca/);
   assert.match(source, /course\.contentType!=="library"/);
   assert.doesNotMatch(source, /nalvi-premium-course-meta/);
@@ -24,7 +25,7 @@ test("premium academy passes signed Mux JWTs with the iframe playback-token para
   assert.match(source, /operation:"resource"/);
   assert.match(source, /data-premium-private-material/);
   assert.match(styles, /\.nalvi-premium-reader>header\.nalvi-premium-reader-heading\{position:static/);
-  assert.match(styles, /#recordedAcademy\[data-content-view="library"\].*\.nalvi-premium-grid\{display:none\}/);
+  assert.match(styles, /#recordedAcademy\[data-content-view\].*\.nalvi-premium-grid\{display:none\}/);
   assert.doesNotMatch(styles, /\.nalvi-premium-course-meta/);
 });
 
