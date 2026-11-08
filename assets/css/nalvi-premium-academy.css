@@ -15,3 +15,23 @@
 .nalvi-studio-mux-upload span{grid-column:1/-1;min-height:18px;color:#4d4580;font-size:12px;font-weight:850}
 .nalvi-studio-mux-upload button:disabled{opacity:.58;cursor:wait}
 @media(max-width:700px){.nalvi-studio-mux-upload{grid-template-columns:1fr}.nalvi-studio-mux-upload span{grid-column:1}.nalvi-studio-mux-upload button{width:100%}}
+.nalvi-premium-course-progress{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:0 0 14px}
+.nalvi-premium-course-progress>div,.nalvi-premium-reader-progress{height:9px;overflow:hidden;border-radius:999px;background:#e8e5ef}
+.nalvi-premium-course-progress span,.nalvi-premium-reader-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#5b45d1,#139c91);transition:width .25s ease}
+.nalvi-premium-course-progress b{min-width:36px;color:#51469f;font-size:12px;text-align:right}
+.nalvi-premium-reader-progress{margin:-10px 0 24px}
+.nalvi-premium-course-layout{display:grid;grid-template-columns:minmax(230px,290px) minmax(0,1fr);gap:20px;align-items:start}
+.nalvi-premium-index{position:sticky;top:92px;padding:16px;border:1px solid #ded9ed;border-radius:18px;background:#faf9fe}
+.nalvi-premium-index>strong{display:block;margin:2px 6px 12px;color:#554f68;font-size:12px;letter-spacing:.1em}
+.nalvi-premium-index button{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;margin-top:6px;padding:11px;border:1px solid transparent;border-radius:13px;background:transparent;color:#49435c;text-align:left;cursor:pointer}
+.nalvi-premium-index button span{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#ece9f5;color:#655a8a;font-size:11px;font-weight:950}
+.nalvi-premium-index button b{overflow:hidden;font-size:13px;line-height:1.3;text-overflow:ellipsis}
+.nalvi-premium-index button.active{border-color:#cfc6f4;background:#eeeaff;color:#33288c}
+.nalvi-premium-index button.completed span{background:#def5e9;color:#08775d}
+.nalvi-premium-active-lesson{overflow:hidden;border:1px solid #dfdaed;border-radius:20px;background:#fff}
+.nalvi-premium-active-lesson>footer{display:flex;justify-content:flex-end;padding:18px;border-top:1px solid #e5e1ed}
+.nalvi-premium-complete{min-height:44px;padding:10px 16px;border:1px solid #5749bd;border-radius:12px;background:#4a3fb0;color:#fff;font:900 13px/1.2 inherit;cursor:pointer}
+.nalvi-premium-complete.done{border-color:#abdccb;background:#e4f7ef;color:#08745e}
+.nalvi-premium-complete:disabled{opacity:.55;cursor:wait}
+@media(max-width:900px){.nalvi-premium-course-layout{grid-template-columns:1fr}.nalvi-premium-index{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.nalvi-premium-index>strong{grid-column:1/-1}}
+@media(max-width:700px){.nalvi-premium-index{display:block;max-height:330px;overflow:auto}.nalvi-premium-active-lesson>footer{justify-content:stretch}.nalvi-premium-complete{width:100%}}

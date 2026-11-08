@@ -94,6 +94,57 @@ test("la suscripción general desbloquea cualquier curso con courses:premium", a
   assert.equal(res.payload.course.lessons[0].materials[0].type, "ebook");
 });
 
+test("guarda el avance del alumno y calcula el porcentaje con lecciones publicadas", async () => {
+  const course = {
+    ...premiumCourse,
+    lessons: [
+      premiumCourse.lessons[0],
+      { lessonId: "lesson-2", title: "Números", status: "published", videoProvider: "none", videoValue: "" },
+      { lessonId: "lesson-draft", title: "Próximamente", status: "draft", videoProvider: "none", videoValue: "" }
+    ]
+  };
+  let saved = null;
+  const res = response();
+  await createPremiumAcademyHandler({
+    verifyIdToken: async () => student,
+    readCourse: async () => ({ status: "found", document: course }),
+    readEntitlement: async () => ({
+      status: "found",
+      document: { userId: student.uid, active: true, entitlements: ["courses:premium"] }
+    }),
+    readProgress: async () => ({ status: "found", document: { completedLessonIds: ["lesson-1", "lesson-draft", "unknown"] } }),
+    saveProgress: async ({ progress }) => { saved = progress; return { status: "persisted" }; },
+    now: () => "2026-11-07T23:00:00.000Z"
+  })(request("progress-save", {
+    method: "POST",
+    body: { lessonId: "lesson-2", completed: true }
+  }), res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(saved.completedLessonIds, ["lesson-1", "lesson-2"]);
+  assert.equal(res.payload.progress.completedLessons, 2);
+  assert.equal(res.payload.progress.totalLessons, 2);
+  assert.equal(res.payload.progress.percent, 100);
+});
+
+test("el avance no permite marcar una lección inexistente ni saltarse la suscripción", async () => {
+  const noAccess = response();
+  await createPremiumAcademyHandler({
+    verifyIdToken: async () => student,
+    readCourse: async () => ({ status: "found", document: premiumCourse }),
+    readEntitlement: async () => ({ status: "missing", document: null })
+  })(request("progress"), noAccess);
+  assert.equal(noAccess.statusCode, 402);
+
+  const invalidLesson = response();
+  await createPremiumAcademyHandler({
+    verifyIdToken: async () => admin,
+    readCourse: async () => ({ status: "found", document: premiumCourse }),
+    readProgress: async () => ({ status: "missing", document: null })
+  })(request("progress-save", { method: "POST", body: { lessonId: "other-course-lesson", completed: true } }), invalidLesson);
+  assert.equal(invalidLesson.statusCode, 400);
+  assert.equal(invalidLesson.payload.reason, "INVALID_PREMIUM_LESSON");
+});
+
 test("la administradora entra al estudio aunque el servicio de suscripciones no responda", async () => {
   const res = response();
   let entitlementWasRead = false;

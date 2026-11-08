@@ -7,7 +7,7 @@
   const MUX_API=API;
   const routeParams=new URLSearchParams(location.search);
   const studioRequested=location.hash===`#${STUDIO_ROUTE}`||routeParams.get("premiumStudio")==="1";
-  const state={courses:[],access:{signedIn:false,administrator:false,premium:false},billing:{enabled:false,environment:"disabled",plans:[]},adminCourses:[],editing:null,loaded:false};
+  const state={courses:[],access:{signedIn:false,administrator:false,premium:false},billing:{enabled:false,environment:"disabled",plans:[]},progress:{},reader:{course:null,access:"",lessonId:""},adminCourses:[],editing:null,loaded:false};
   const main=document.querySelector("main");
   if(!main)return;
 
@@ -78,7 +78,19 @@
     try{const{response,payload}=await api("catalog");state.courses=response.ok&&Array.isArray(payload.courses)?payload.courses:[];renderCatalog()}catch{if(grid)grid.innerHTML='<div class="nalvi-premium-empty error">No pudimos cargar el catálogo. Inténtalo nuevamente.</div>'}
   }
 
-  async function loadAcademy(){await Promise.all([loadAccess(),loadBilling(),loadCatalog()]);state.loaded=true;renderAccess();renderCatalog()}
+  async function loadAcademy(){await Promise.all([loadAccess(),loadBilling()]);await loadCatalog();await loadCatalogProgress();state.loaded=true;renderAccess();renderCatalog()}
+
+  async function loadProgress(courseId){
+    if(!state.access.signedIn)return null;
+    try{const{response,payload}=await api("progress",{courseId,auth:true});if(response.ok&&payload.progress){state.progress[courseId]=payload.progress;return payload.progress}}catch{}
+    return null;
+  }
+
+  async function loadCatalogProgress(){
+    if(!state.access.signedIn)return;
+    const available=state.courses.filter(course=>course.access==="free"||state.access.premium||state.access.administrator);
+    await Promise.all(available.map(course=>loadProgress(course.courseId)));
+  }
 
   function renderAccess(){
     const card=document.querySelector("#nalviPremiumAccessCard"),actions=document.querySelector("#nalviPremiumHeroActions");if(!card||!actions)return;
@@ -94,7 +106,7 @@
   function renderCatalog(){
     const grid=document.querySelector("#nalviPremiumGrid");if(!grid)return;
     if(!state.courses.length){grid.innerHTML=`<div class="nalvi-premium-empty"><b>El catálogo se está preparando</b><p>Los cursos grabados aparecerán aquí cuando la administración los publique.</p>${state.access.administrator?'<button class="nalvi-premium-primary" type="button" data-premium-studio-open>Crear el primer curso</button>':""}</div>`;return}
-    grid.innerHTML=state.courses.map(course=>{const unlocked=course.access==="free"||state.access.premium||state.access.administrator;return`<article class="nalvi-premium-course-card" data-access="${escapeHtml(course.access)}">${course.coverImageUrl?`<img src="${escapeHtml(course.coverImageUrl)}" alt="">`:`<div class="nalvi-premium-cover">${course.access==="free"?"▶":"✦"}</div>`}<div class="nalvi-premium-course-body"><div class="nalvi-premium-badges"><span>${course.access==="free"?"GRATUITO":"NALVI PLUS"}</span>${course.level?`<span>${escapeHtml(course.level)}</span>`:""}</div><h4>${escapeHtml(course.title)}</h4><p>${escapeHtml(course.summary||course.description||"")}</p><div class="nalvi-premium-course-meta"><span>${Number(course.lessonCount)||0} lecciones</span><span>${Number(course.durationMinutes)||0} min</span></div><button class="${unlocked?"nalvi-premium-primary":"nalvi-premium-secondary"}" type="button" data-premium-course="${escapeHtml(course.courseId)}">${unlocked?"Abrir curso":"🔒 Ver acceso"}</button></div></article>`}).join("");
+    grid.innerHTML=state.courses.map(course=>{const unlocked=course.access==="free"||state.access.premium||state.access.administrator,progress=state.progress[course.courseId],percent=unlocked?Number(progress?.percent)||0:0;return`<article class="nalvi-premium-course-card" data-access="${escapeHtml(course.access)}">${course.coverImageUrl?`<img src="${escapeHtml(course.coverImageUrl)}" alt="">`:`<div class="nalvi-premium-cover">${course.access==="free"?"▶":"✦"}</div>`}<div class="nalvi-premium-course-body"><div class="nalvi-premium-badges"><span>${course.access==="free"?"GRATUITO":"NALVI PLUS"}</span>${course.level?`<span>${escapeHtml(course.level)}</span>`:""}</div><h4>${escapeHtml(course.title)}</h4><p>${escapeHtml(course.summary||course.description||"")}</p><div class="nalvi-premium-course-meta"><span>${Number(course.lessonCount)||0} lecciones</span><span>${Number(course.durationMinutes)||0} min</span></div><div class="nalvi-premium-course-progress" aria-label="${unlocked?`${percent}% completado`:"Curso bloqueado"}"><div><span style="width:${percent}%"></span></div><b>${unlocked?`${percent}%`:"🔒"}</b></div><button class="${unlocked?"nalvi-premium-primary":"nalvi-premium-secondary"}" type="button" data-premium-course="${escapeHtml(course.courseId)}">${unlocked?(percent?"Continuar curso":"Abrir curso"):"🔒 Ver acceso"}</button></div></article>`}).join("");
   }
 
   function youtubeId(value){const text=String(value||"").trim();if(/^[A-Za-z0-9_-]{6,20}$/.test(text))return text;try{const url=new URL(text);const candidate=url.hostname.includes("youtu.be")?url.pathname.slice(1):url.searchParams.get("v")||url.pathname.split("/").filter(Boolean).pop();return/^[A-Za-z0-9_-]{6,20}$/.test(candidate||"")?candidate:""}catch{return""}}
@@ -105,11 +117,21 @@
     return"";
   }
 
-  function renderReader(course,access){
+  function renderReader(course,access,lessonId=""){
     const reader=document.querySelector("#nalviPremiumReader");if(!reader)return;
-    reader.hidden=false;reader.innerHTML=`<button class="nalvi-premium-reader-close" type="button" data-premium-reader-close>×</button><header><div><span>${access==="free"?"CURSO GRATUITO":access==="administrator"?"VISTA ADMINISTRATIVA":"INCLUIDO EN NALVI PLUS"}</span><h3>${escapeHtml(course.title)}</h3><p>${escapeHtml(course.description||course.summary||"")}</p></div><b>${(course.lessons||[]).length} lecciones</b></header><div class="nalvi-premium-lessons">${(course.lessons||[]).map((lesson,index)=>`<article class="nalvi-premium-lesson"><div class="nalvi-premium-lesson-heading"><span>${String(index+1).padStart(2,"0")}</span><div><h4>${escapeHtml(lesson.title)}</h4><p>${escapeHtml(lesson.summary||"")}</p></div><small>${Number(lesson.durationMinutes)||0} min</small></div>${lessonMedia(course.courseId,lesson)}${lesson.body?`<div class="nalvi-premium-lesson-body">${escapeHtml(lesson.body)}</div>`:""}${lesson.materials?.length?`<div class="nalvi-premium-materials"><h5>Materiales de esta lección</h5>${lesson.materials.map(material=>`<a href="${escapeHtml(material.url)}" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer"><span>${material.type==="ebook"||material.type==="pdf"?"📘":"📎"}</span><b>${escapeHtml(material.title)}</b><i>Abrir</i></a>`).join("")}</div>`:""}</article>`).join("")||'<div class="nalvi-premium-empty">Este curso todavía no tiene lecciones publicadas.</div>'}</div>`;
+    const lessons=course.lessons||[],progress=state.progress[course.courseId]||{completedLessonIds:[],percent:0},completed=new Set(progress.completedLessonIds||[]),selected=lessons.find(lesson=>lesson.lessonId===(lessonId||state.reader.lessonId||progress.lastLessonId))||lessons[0];
+    state.reader={course,access,lessonId:selected?.lessonId||""};
+    if(!selected){reader.hidden=false;reader.innerHTML=`<button class="nalvi-premium-reader-close" type="button" data-premium-reader-close>×</button><div class="nalvi-premium-empty">Este curso todavía no tiene lecciones publicadas.</div>`;return}
+    const selectedIndex=lessons.findIndex(lesson=>lesson.lessonId===selected.lessonId),isComplete=completed.has(selected.lessonId),percent=Number(progress.percent)||0;
+    reader.hidden=false;reader.innerHTML=`<button class="nalvi-premium-reader-close" type="button" data-premium-reader-close>×</button><header><div><span>${access==="free"?"CURSO GRATUITO":access==="administrator"?"VISTA ADMINISTRATIVA":"INCLUIDO EN NALVI PLUS"}</span><h3>${escapeHtml(course.title)}</h3><p>${escapeHtml(course.description||course.summary||"")}</p></div><b>${percent}% completado</b></header><div class="nalvi-premium-reader-progress"><span style="width:${percent}%"></span></div><div class="nalvi-premium-course-layout"><aside class="nalvi-premium-index"><strong>ÍNDICE</strong>${lessons.map((lesson,index)=>`<button type="button" class="${lesson.lessonId===selected.lessonId?"active":""}${completed.has(lesson.lessonId)?" completed":""}" data-premium-lesson="${escapeHtml(lesson.lessonId)}"><span>${completed.has(lesson.lessonId)?"✓":String(index+1).padStart(2,"0")}</span><b>${escapeHtml(lesson.title)}</b></button>`).join("")}</aside><article class="nalvi-premium-active-lesson"><div class="nalvi-premium-lesson-heading"><span>${String(selectedIndex+1).padStart(2,"0")}</span><div><h4>${escapeHtml(selected.title)}</h4><p>${escapeHtml(selected.summary||"")}</p></div><small>${Number(selected.durationMinutes)||0} min</small></div>${lessonMedia(course.courseId,selected)}${selected.body?`<div class="nalvi-premium-lesson-body">${escapeHtml(selected.body)}</div>`:""}${selected.materials?.length?`<div class="nalvi-premium-materials"><h5>Materiales de esta lección</h5>${selected.materials.map(material=>`<a href="${escapeHtml(material.url)}" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer"><span>${material.type==="ebook"||material.type==="pdf"?"📘":"📎"}</span><b>${escapeHtml(material.title)}</b><i>Abrir</i></a>`).join("")}</div>`:""}<footer><button class="nalvi-premium-complete ${isComplete?"done":""}" type="button" data-premium-complete="${escapeHtml(selected.lessonId)}" aria-pressed="${isComplete}">${isComplete?"✓ Clase completada":"Marcar clase como completada"}</button></footer></article></div>`;
     hydrateMuxPlayers(reader);
     reader.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function saveLessonProgress(lessonId,button){
+    const course=state.reader.course;if(!course||!state.access.signedIn){window.courseGoogleLogin?.();return}
+    const current=state.progress[course.courseId]||{completedLessonIds:[]},completed=!(current.completedLessonIds||[]).includes(lessonId);button.disabled=true;
+    try{const{response,payload}=await api("progress-save",{courseId:course.courseId,method:"POST",body:{lessonId,completed},auth:true});if(!response.ok||!payload.progress)throw new Error(payload.reason||"PROGRESS_SAVE_FAILED");state.progress[course.courseId]=payload.progress;renderReader(course,state.reader.access,lessonId);renderCatalog();window.showToast?.(completed?"Clase marcada como completada.":"Clase marcada como pendiente.")}catch{button.disabled=false;window.showToast?.("No pudimos guardar tu avance.")}
   }
 
   async function hydrateMuxPlayers(container){
@@ -130,7 +152,7 @@
   async function openCourse(courseId){
     const reader=document.querySelector("#nalviPremiumReader");if(reader){reader.hidden=false;reader.innerHTML='<div class="nalvi-premium-empty">Verificando acceso…</div>';reader.scrollIntoView({behavior:"smooth",block:"start"})}
     const{response,payload}=await api("course",{courseId,auth:true});
-    if(response.ok&&payload.course)return renderReader(payload.course,payload.access);
+    if(response.ok&&payload.course){await loadProgress(courseId);return renderReader(payload.course,payload.access)}
     if(response.status===401){if(reader)reader.innerHTML='<div class="nalvi-premium-lock"><b>Inicia sesión para continuar</b><p>El acceso debe quedar asociado a tu cuenta.</p><button class="nalvi-premium-primary" type="button" data-premium-login>Iniciar sesión con Google</button></div>';return}
     if(response.status===402){if(reader)reader.innerHTML='<div class="nalvi-premium-lock"><b>Este curso forma parte de NALVI Plus</b><p>Una sola suscripción habilita todos los cursos grabados premium publicados.</p><div class="nalvi-premium-hero-actions" data-premium-plan-actions></div></div>';renderAccess();const source=document.querySelector("#nalviPremiumHeroActions"),target=reader?.querySelector("[data-premium-plan-actions]");if(source&&target)target.innerHTML=source.innerHTML;return}
     if(reader)reader.innerHTML='<div class="nalvi-premium-empty error">No pudimos abrir este curso. Inténtalo nuevamente.</div>';
@@ -248,6 +270,8 @@
       else if(target.matches("[data-premium-login]")){window.courseGoogleLogin?.()}
       else if(target.dataset.premiumSubscribe){await startSubscription(target.dataset.premiumSubscribe)}
       else if(target.dataset.premiumCourse){await openCourse(target.dataset.premiumCourse)}
+      else if(target.dataset.premiumLesson){if(state.reader.course)renderReader(state.reader.course,state.reader.access,target.dataset.premiumLesson)}
+      else if(target.dataset.premiumComplete){await saveLessonProgress(target.dataset.premiumComplete,target)}
       else if(target.matches("[data-premium-reader-close]")){document.querySelector("#nalviPremiumReader").hidden=true}
       else if(target.matches("[data-studio-new]")){state.editing=blankCourse();renderStudioList();renderEditor()}
       else if(target.matches("[data-studio-refresh]")){await loadAdminCourses()}

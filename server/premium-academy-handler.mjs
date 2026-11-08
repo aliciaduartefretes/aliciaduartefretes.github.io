@@ -3,8 +3,10 @@ import { readBillingEntitlement } from "./billing-store.mjs";
 import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
 import {
   persistPremiumCourse,
+  persistPremiumCourseProgress,
   readPremiumCourse,
   readPremiumCourseCatalog,
+  readPremiumCourseProgress,
   validPremiumCourseId
 } from "./premium-academy-store.mjs";
 
@@ -170,6 +172,27 @@ function fullCourse(course, { administrator = false } = {}) {
   };
 }
 
+function normalizeProgress(document, course, userId) {
+  const lessons = (Array.isArray(course?.lessons) ? course.lessons : [])
+    .filter(lesson => lesson?.status !== "draft")
+    .map((lesson, index) => normalizeLesson(lesson, index));
+  const validLessonIds = new Set(lessons.map(lesson => lesson.lessonId));
+  const completedLessonIds = [...new Set(Array.isArray(document?.completedLessonIds) ? document.completedLessonIds : [])]
+    .map(value => cleanText(value, 80))
+    .filter(value => validLessonIds.has(value));
+  const totalLessons = lessons.length;
+  return {
+    userId: cleanText(userId, 256),
+    courseId: cleanText(course?.courseId, 80),
+    completedLessonIds,
+    lastLessonId: validLessonIds.has(cleanText(document?.lastLessonId, 80)) ? cleanText(document?.lastLessonId, 80) : "",
+    completedLessons: completedLessonIds.length,
+    totalLessons,
+    percent: totalLessons ? Math.round(completedLessonIds.length / totalLessons * 100) : 0,
+    updatedAt: cleanText(document?.updatedAt, 64)
+  };
+}
+
 function catalogDocuments(result) {
   if (result.status === "missing") return [];
   if (result.status !== "found" || !result.document || typeof result.document !== "object") return null;
@@ -192,6 +215,8 @@ export function createPremiumAcademyHandler({
   readCatalog = readPremiumCourseCatalog,
   readCourse = readPremiumCourse,
   saveCourse = persistPremiumCourse,
+  readProgress = readPremiumCourseProgress,
+  saveProgress = persistPremiumCourseProgress,
   env = process.env,
   now = () => new Date().toISOString()
 } = {}) {
@@ -206,12 +231,13 @@ export function createPremiumAcademyHandler({
     }
 
     const method = String(request.method || "GET").toUpperCase();
-    const readOnly = ["catalog", "course", "access", "admin-list"].includes(operation);
-    if ((readOnly && method !== "GET") || (operation === "admin-save" && method !== "POST")) {
+    const readOnly = ["catalog", "course", "access", "admin-list", "progress"].includes(operation);
+    const writeOnly = ["admin-save", "progress-save"].includes(operation);
+    if ((readOnly && method !== "GET") || (writeOnly && method !== "POST")) {
       response.setHeader("Allow", readOnly ? "GET" : "POST");
       return sendJson(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" });
     }
-    if (!["catalog", "course", "access", "admin-list", "admin-save"].includes(operation)) {
+    if (!["catalog", "course", "access", "admin-list", "admin-save", "progress", "progress-save"].includes(operation)) {
       return sendJson(response, 404, { ok: false, reason: "PREMIUM_OPERATION_NOT_FOUND" });
     }
     if (operation !== "catalog" && !requestOriginAllowed(request, env)) {
@@ -284,17 +310,50 @@ export function createPremiumAcademyHandler({
       if (courseResult.status !== "found") return sendJson(response, 503, { ok: false, reason: "PREMIUM_CATALOG_UNAVAILABLE" });
       const course = courseResult.document || {};
       if (course.status !== "published" && !administrator) return sendJson(response, 404, { ok: false, reason: "COURSE_NOT_FOUND" });
-      if (course.access === "free" || administrator) {
-        return sendJson(response, 200, { ok: true, access: administrator ? "administrator" : "free", course: fullCourse(course, { administrator }) });
+      let access = administrator ? "administrator" : course.access === "free" ? "free" : "";
+      if (!access) {
+        if (!user || user.isAnonymous) return sendJson(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
+        const entitlement = await readEntitlement({ userId: user.uid });
+        if (entitlement.status === "missing") return sendJson(response, 402, { ok: false, reason: "SUBSCRIPTION_REQUIRED" });
+        if (entitlement.status !== "found") return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
+        if (!hasPremiumSubscription(entitlement.document, user.uid)) {
+          return sendJson(response, 402, { ok: false, reason: "SUBSCRIPTION_REQUIRED" });
+        }
+        access = "subscription";
       }
-      if (!user || user.isAnonymous) return sendJson(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
-      const entitlement = await readEntitlement({ userId: user.uid });
-      if (entitlement.status === "missing") return sendJson(response, 402, { ok: false, reason: "SUBSCRIPTION_REQUIRED" });
-      if (entitlement.status !== "found") return sendJson(response, 503, { ok: false, reason: "BILLING_STATUS_UNAVAILABLE" });
-      if (!hasPremiumSubscription(entitlement.document, user.uid)) {
-        return sendJson(response, 402, { ok: false, reason: "SUBSCRIPTION_REQUIRED" });
+      if (["progress", "progress-save"].includes(operation)) {
+        if (!user || user.isAnonymous) return sendJson(response, 401, { ok: false, reason: "AUTH_REQUIRED" });
+        const current = await readProgress({ userId: user.uid, courseId });
+        if (!["found", "missing"].includes(current.status)) {
+          return sendJson(response, 503, { ok: false, reason: "PREMIUM_PROGRESS_UNAVAILABLE" });
+        }
+        let progress = normalizeProgress(current.document, course, user.uid);
+        if (operation === "progress-save") {
+          const body = await jsonBody(request, 2_048);
+          if (!body || Object.keys(body).some(key => !["lessonId", "completed"].includes(key)) || typeof body.completed !== "boolean") {
+            return sendJson(response, 400, { ok: false, reason: "INVALID_PREMIUM_PROGRESS" });
+          }
+          const lessonId = cleanText(body.lessonId, 80);
+          const publishedLessonIds = new Set((Array.isArray(course.lessons) ? course.lessons : [])
+            .filter(lesson => lesson?.status !== "draft")
+            .map((lesson, index) => normalizeLesson(lesson, index).lessonId));
+          if (!publishedLessonIds.has(lessonId)) return sendJson(response, 400, { ok: false, reason: "INVALID_PREMIUM_LESSON" });
+          const completed = new Set(progress.completedLessonIds);
+          if (body.completed) completed.add(lessonId); else completed.delete(lessonId);
+          const document = {
+            userId: user.uid,
+            courseId,
+            completedLessonIds: [...completed],
+            lastLessonId: lessonId,
+            updatedAt: now()
+          };
+          const saved = await saveProgress({ progress: document });
+          if (saved.status !== "persisted") return sendJson(response, 503, { ok: false, reason: "PREMIUM_PROGRESS_SAVE_FAILED" });
+          progress = normalizeProgress(document, course, user.uid);
+        }
+        return sendJson(response, 200, { ok: true, progress });
       }
-      return sendJson(response, 200, { ok: true, access: "subscription", course: fullCourse(course) });
+      return sendJson(response, 200, { ok: true, access, course: fullCourse(course, { administrator }) });
     } catch (error) {
       const failure = userFacingError(error);
       if (failure.status >= 500) console.error(`[premium-academy] ${String(error?.name || "UNKNOWN").slice(0, 64)}`);
@@ -311,5 +370,6 @@ export const __test = {
   normalizeLesson,
   publicCourseSummary,
   fullCourse,
+  normalizeProgress,
   catalogDocuments
 };
