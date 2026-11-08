@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync, verify } from "node:crypto";
 import { createMuxVideoHandler } from "../mux-video-handler.mjs";
 import { createMuxDirectUpload, createMuxPlaybackToken } from "../mux-video.mjs";
+import { createPremiumAcademyRouter } from "../premium-academy-router.mjs";
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const env = Object.freeze({
@@ -152,4 +153,15 @@ test("no firma referencias de lecciones inexistentes ni playback IDs arbitrarios
   })(request("playback-token", { lessonId: "lesson-otra" }), res);
   assert.equal(res.statusCode, 404);
   assert.equal(res.payload.reason, "LESSON_NOT_FOUND");
+});
+
+test("Mux comparte la función de academia para respetar el límite del plan gratuito", async () => {
+  const called = [];
+  const router = createPremiumAcademyRouter({
+    academyHandler: async () => called.push("academy"),
+    muxHandler: async () => called.push("mux")
+  });
+  await router({ url: "/api/premium-academy?operation=catalog" }, {});
+  await router({ url: "/api/premium-academy?operation=mux-playback-token" }, {});
+  assert.deepEqual(called, ["academy", "mux"]);
 });

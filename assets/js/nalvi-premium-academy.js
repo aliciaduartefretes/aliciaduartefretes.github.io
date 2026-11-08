@@ -4,7 +4,7 @@
   const ACADEMY_ROUTE="recordedAcademy";
   const STUDIO_ROUTE="premiumContentStudio";
   const API="/api/premium-academy";
-  const MUX_API="/api/mux-video";
+  const MUX_API=API;
   const routeParams=new URLSearchParams(location.search);
   const state={courses:[],access:{signedIn:false,administrator:false,premium:false},billing:{enabled:false,environment:"disabled",plans:[]},adminCourses:[],editing:null,loaded:false};
   const main=document.querySelector("main");
@@ -31,7 +31,7 @@
   }
 
   async function muxApi(operation,{courseId="",lessonId="",uploadId="",method="GET",body=null,auth=true}={}){
-    const query=new URLSearchParams({operation});
+    const query=new URLSearchParams({operation:`mux-${operation}`});
     if(courseId)query.set("courseId",courseId);
     if(lessonId)query.set("lessonId",lessonId);
     if(uploadId)query.set("uploadId",uploadId);

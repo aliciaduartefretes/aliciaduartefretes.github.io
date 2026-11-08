@@ -47,7 +47,8 @@ export function createMuxVideoHandler({
     let url;
     try { url = new URL(request.url || "/api/mux-video", "https://www.idiomaguarani.com.py"); }
     catch { return sendJson(response, 400, { ok: false, reason: "INVALID_REQUEST" }); }
-    const operation = url.searchParams.get("operation") || "status";
+    const requestedOperation = url.searchParams.get("operation") || "status";
+    const operation = requestedOperation.startsWith("mux-") ? requestedOperation.slice(4) : requestedOperation;
     const method = String(request.method || "GET").toUpperCase();
     if (!requestOriginAllowed(request, env)) return sendJson(response, 403, { ok: false, reason: "CROSS_ORIGIN_DENIED" });
     if (!muxConfigured(env)) return sendJson(response, 503, { ok: false, reason: "MUX_NOT_CONFIGURED" });
