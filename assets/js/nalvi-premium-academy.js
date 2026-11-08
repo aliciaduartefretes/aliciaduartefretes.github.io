@@ -6,6 +6,7 @@
   const API="/api/premium-academy";
   const MUX_API=API;
   const routeParams=new URLSearchParams(location.search);
+  const studioRequested=location.hash===`#${STUDIO_ROUTE}`||routeParams.get("premiumStudio")==="1";
   const state={courses:[],access:{signedIn:false,administrator:false,premium:false},billing:{enabled:false,environment:"disabled",plans:[]},adminCourses:[],editing:null,loaded:false};
   const main=document.querySelector("main");
   if(!main)return;
@@ -259,11 +260,11 @@
       else if(target.matches("[data-studio-preview]")){const course=collectEditor();if(course.courseId)renderReader(course,"administrator");navigate(ACADEMY_ROUTE,true)}
     });
     document.querySelector("#nalviStudioEditor")?.addEventListener("submit",event=>{event.preventDefault();saveEditor()});
-    window.addEventListener("nalvi:auth-known",async()=>{await loadAccess();if(!document.querySelector(`#${ACADEMY_ROUTE}`)?.classList.contains("hide"))await loadAcademy()});
+    window.addEventListener("nalvi:auth-known",async()=>{await loadAccess();if(studioRequested&&state.access.administrator&&document.querySelector(`#${STUDIO_ROUTE}`)?.classList.contains("hide")){navigate(STUDIO_ROUTE,false);await loadAdminCourses();return}if(!document.querySelector(`#${ACADEMY_ROUTE}`)?.classList.contains("hide"))await loadAcademy()});
   }
 
   install();
   setTimeout(loadAccess,0);
   if(location.hash===`#${ACADEMY_ROUTE}`||routeParams.get("premiumAcademy")==="1")setTimeout(()=>{navigate(ACADEMY_ROUTE,false);loadAcademy()},80);
-  if(location.hash===`#${STUDIO_ROUTE}`||routeParams.get("premiumStudio")==="1")setTimeout(openStudio,80);
+  if(studioRequested&&window.NALVI_AUTH_SNAPSHOT)setTimeout(openStudio,80);
 })();
