@@ -161,6 +161,8 @@ test("la normalización impone límites editoriales y HTTPS", () => {
     access: "premium",
     lessons: [{
       title: "Clase",
+      videoProvider: "mux",
+      videoValue: "https://evil.example/not-a-playback-id",
       materials: [
         { title: "Seguro", url: "https://example.com/a.pdf", type: "pdf" },
         { title: "Inseguro", url: "http://example.com/b.pdf", type: "pdf" }
@@ -169,6 +171,7 @@ test("la normalización impone límites editoriales y HTTPS", () => {
   }, { user: admin, now: "2026-11-07T10:00:00.000Z" });
   assert.equal(course.courseId, "ne-e-basico");
   assert.equal(course.lessons[0].materials.length, 1);
+  assert.equal(course.lessons[0].videoValue, "");
   assert.equal(course.access, "premium");
   assert.equal(course.status, "draft");
 });

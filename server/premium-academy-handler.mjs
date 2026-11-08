@@ -59,9 +59,15 @@ function normalizeMaterial(material, index) {
 function normalizeLesson(lesson, index) {
   const provider = VIDEO_PROVIDERS.has(lesson?.videoProvider) ? lesson.videoProvider : "none";
   const rawVideoValue = cleanText(lesson?.videoValue, 900);
-  const videoValue = provider === "external" ? safeHttpsUrl(rawVideoValue) : rawVideoValue;
+  const rawLessonId = cleanText(lesson?.lessonId, 80);
+  const lessonId = /^[A-Za-z0-9][A-Za-z0-9_-]{1,79}$/.test(rawLessonId) ? rawLessonId : `lesson-${index + 1}`;
+  const videoValue = provider === "external"
+    ? safeHttpsUrl(rawVideoValue)
+    : provider === "mux" && !/^[A-Za-z0-9_-]{6,180}$/.test(rawVideoValue)
+      ? ""
+      : rawVideoValue;
   return {
-    lessonId: cleanText(lesson?.lessonId, 80) || `lesson-${index + 1}`,
+    lessonId,
     title: cleanText(lesson?.title, 180) || `Lección ${index + 1}`,
     summary: cleanText(lesson?.summary, 600),
     body: cleanText(lesson?.body, 12_000),
