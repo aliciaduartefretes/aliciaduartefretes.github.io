@@ -8,8 +8,15 @@ import { createPremiumAcademyRouter } from "../premium-academy-router.mjs";
 
 test("premium academy passes signed Mux JWTs with the iframe playback-token parameter", async () => {
   const source = await readFile(new URL("../../assets/js/nalvi-premium-academy.js", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../../assets/css/nalvi-premium-academy.css", import.meta.url), "utf8");
   assert.match(source, /player\.mux\.com\/\$\{encodeURIComponent\(payload\.playbackId\)\}\?playback-token=/);
   assert.doesNotMatch(source, /player\.mux\.com\/[^\n]+\?token=/);
+  assert.match(source, /<details class="nalvi-premium-index" open>/);
+  assert.match(source, /contentType==="library"/);
+  assert.match(source, /Abrir biblioteca/);
+  assert.match(source, /nalvi-premium-library-panel/);
+  assert.match(source, /course\.contentType!=="library"/);
+  assert.match(styles, /\.nalvi-premium-reader>header\.nalvi-premium-reader-heading\{position:static/);
 });
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });

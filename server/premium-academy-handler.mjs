@@ -14,6 +14,7 @@ const PREMIUM_ENTITLEMENT = "courses:premium";
 const DEFAULT_ADMIN_EMAILS = Object.freeze(["aliciaduartefretes@gmail.com"]);
 const COURSE_STATUSES = new Set(["draft", "published", "archived"]);
 const COURSE_ACCESS = new Set(["free", "premium"]);
+const CONTENT_TYPES = new Set(["course", "library"]);
 const VIDEO_PROVIDERS = new Set(["youtube", "mux", "external", "none"]);
 const MATERIAL_TYPES = new Set(["ebook", "pdf", "audio", "worksheet", "link"]);
 const MAX_COURSE_BYTES = 384 * 1024;
@@ -93,6 +94,7 @@ export function normalizePremiumCourse(input, { existing = null, user, now = new
   if (!validPremiumCourseId(courseId)) throw new TypeError("INVALID_PREMIUM_COURSE_ID");
   const status = COURSE_STATUSES.has(input?.status) ? input.status : "draft";
   const access = COURSE_ACCESS.has(input?.access) ? input.access : "premium";
+  const contentType = CONTENT_TYPES.has(input?.contentType) ? input.contentType : "course";
   const lessons = (Array.isArray(input?.lessons) ? input.lessons : []).slice(0, 100).map(normalizeLesson);
   const course = {
     courseId,
@@ -102,6 +104,7 @@ export function normalizePremiumCourse(input, { existing = null, user, now = new
     description: cleanText(input?.description, 5_000),
     level: cleanText(input?.level, 80),
     coverImageUrl: safeHttpsUrl(input?.coverImageUrl),
+    contentType,
     access,
     status,
     order: cleanInteger(input?.order, 0, 10_000),
@@ -145,6 +148,7 @@ function publicCourseSummary(course) {
     description: cleanText(course?.description, 5_000),
     level: cleanText(course?.level, 80),
     coverImageUrl: safeHttpsUrl(course?.coverImageUrl),
+    contentType: course?.contentType === "library" ? "library" : "course",
     access: course?.access === "free" ? "free" : "premium",
     lessonCount: Array.isArray(course?.lessons) ? course.lessons.filter(lesson => lesson?.status !== "draft").length : 0,
     durationMinutes: Array.isArray(course?.lessons)

@@ -226,3 +226,25 @@ test("la normalización impone límites editoriales y HTTPS", () => {
   assert.equal(course.access, "premium");
   assert.equal(course.status, "draft");
 });
+
+test("la biblioteca conserva su jerarquía como contenido independiente", async () => {
+  const library = normalizePremiumCourse({
+    title: "Biblioteca NALVI Plus",
+    contentType: "library",
+    access: "premium",
+    status: "published",
+    lessons: [{
+      title: "Libros y manuales",
+      materials: [{ title: "Gramática guaraní", type: "pdf", url: "https://files.example.com/gramatica.pdf" }]
+    }]
+  }, { user: admin, now: "2026-11-08T07:00:00.000Z" });
+  assert.equal(library.contentType, "library");
+
+  const res = response();
+  await createPremiumAcademyHandler({
+    readCatalog: async () => ({ status: "found", document: { [library.courseId]: library } })
+  })(request("catalog", { token: "" }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.courses[0].contentType, "library");
+  assert.equal(JSON.stringify(res.payload).includes("gramatica.pdf"), false);
+});
