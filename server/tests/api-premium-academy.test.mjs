@@ -227,6 +227,23 @@ test("la normalización impone límites editoriales y HTTPS", () => {
   assert.equal(course.status, "draft");
 });
 
+test("la biblioteca conserva referencias privadas sin convertirlas en enlaces públicos", () => {
+  const course = normalizePremiumCourse({
+    title: "Biblioteca privada",
+    contentType: "library",
+    lessons: [{
+      title: "Libros",
+      materials: [
+        { title: "Documento protegido", type: "pdf", privatePath: "nalvi-plus/library/biblioteca-privada/documento.pdf" },
+        { title: "Ruta inválida", type: "pdf", privatePath: "public/documento.pdf" }
+      ]
+    }]
+  }, { user: admin, now: "2026-11-08T10:00:00.000Z" });
+  assert.equal(course.lessons[0].materials.length, 1);
+  assert.equal(course.lessons[0].materials[0].url, "");
+  assert.equal(course.lessons[0].materials[0].privatePath, "nalvi-plus/library/biblioteca-privada/documento.pdf");
+});
+
 test("la biblioteca conserva su jerarquía como contenido independiente", async () => {
   const library = normalizePremiumCourse({
     title: "Biblioteca NALVI Plus",

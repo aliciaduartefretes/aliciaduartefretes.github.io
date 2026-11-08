@@ -18,6 +18,7 @@ const CONTENT_TYPES = new Set(["course", "library"]);
 const VIDEO_PROVIDERS = new Set(["youtube", "mux", "external", "none"]);
 const MATERIAL_TYPES = new Set(["ebook", "pdf", "audio", "worksheet", "link"]);
 const MAX_COURSE_BYTES = 384 * 1024;
+const PRIVATE_LIBRARY_PATH = /^nalvi-plus\/library\/[a-z0-9][a-z0-9/_-]{1,190}\.pdf$/;
 
 const cleanText = (value, maximum) => String(value ?? "").replace(/\u0000/g, "").trim().slice(0, maximum);
 const cleanInteger = (value, minimum, maximum, fallback = 0) => {
@@ -50,12 +51,15 @@ function slugify(value) {
 function normalizeMaterial(material, index) {
   const type = MATERIAL_TYPES.has(material?.type) ? material.type : "link";
   const url = safeHttpsUrl(material?.url);
-  if (!url) return null;
+  const privatePath = cleanText(material?.privatePath, 220);
+  const validPrivatePath = PRIVATE_LIBRARY_PATH.test(privatePath) ? privatePath : "";
+  if (!url && !validPrivatePath) return null;
   return {
     materialId: cleanText(material?.materialId, 80) || `material-${index + 1}`,
     title: cleanText(material?.title, 140) || `Material ${index + 1}`,
     type,
-    url
+    url,
+    ...(validPrivatePath ? { privatePath: validPrivatePath } : {})
   };
 }
 
@@ -372,6 +376,7 @@ export const __test = {
   slugify,
   safeHttpsUrl,
   normalizeLesson,
+  normalizeMaterial,
   publicCourseSummary,
   fullCourse,
   normalizeProgress,

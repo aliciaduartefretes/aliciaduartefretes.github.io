@@ -16,6 +16,9 @@ test("premium academy passes signed Mux JWTs with the iframe playback-token para
   assert.match(source, /Abrir biblioteca/);
   assert.match(source, /nalvi-premium-library-panel/);
   assert.match(source, /course\.contentType!=="library"/);
+  assert.match(source, /NALVI_UPLOAD_PRIVATE_BLOB/);
+  assert.match(source, /operation:"resource"/);
+  assert.match(source, /data-premium-private-material/);
   assert.match(styles, /\.nalvi-premium-reader>header\.nalvi-premium-reader-heading\{position:static/);
 });
 
@@ -173,9 +176,11 @@ test("Mux comparte la función de academia para respetar el límite del plan gra
   const called = [];
   const router = createPremiumAcademyRouter({
     academyHandler: async () => called.push("academy"),
-    muxHandler: async () => called.push("mux")
+    muxHandler: async () => called.push("mux"),
+    resourceHandler: async () => called.push("resource")
   });
   await router({ url: "/api/premium-academy?operation=catalog" }, {});
   await router({ url: "/api/premium-academy?operation=mux-playback-token" }, {});
-  assert.deepEqual(called, ["academy", "mux"]);
+  await router({ url: "/api/premium-academy?operation=resource" }, {});
+  assert.deepEqual(called, ["academy", "mux", "resource"]);
 });
