@@ -19,6 +19,7 @@ test("premium academy passes signed Mux JWTs with the iframe playback-token para
   assert.match(source, /Volver a cursos y biblioteca/);
   assert.match(source, /course\.contentType!=="library"/);
   assert.doesNotMatch(source, /nalvi-premium-course-meta/);
+  assert.match(source, /aprende-guarani-de-cero-a-principiante":"\/assets\/images\/nalvi-plus-cero-principiante\.jpg"/);
   assert.match(source, /NALVI_UPLOAD_PRIVATE_BLOB/);
   assert.match(source, /operation:"resource"/);
   assert.match(source, /data-premium-private-material/);
