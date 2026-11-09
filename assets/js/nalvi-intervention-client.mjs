@@ -833,16 +833,19 @@ function professionalLocalPlan(context, localPlan, reason = "PROFESSIONAL_LOCAL_
 }
 
 async function serverPlan(context) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort("NALVI_TUTOR_SERVER_TIMEOUT"), 6000);
   try {
     const user = window.GCA_FIREBASE_LIVE?.auth?.currentUser;
     const headers = { "Content-Type": "application/json" };
     if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
-    const response = await fetch("/api/generate-adaptive-intervention-plan", { method: "POST", credentials: "same-origin", headers, body: JSON.stringify(context) });
+    const response = await fetch("/api/generate-adaptive-intervention-plan", { method: "POST", credentials: "same-origin", headers, body: JSON.stringify(context), signal: controller.signal });
     if (!response.ok) throw new Error(`SERVER_${response.status}`);
     const payload = await response.json();
     if (!payload?.ok || !payload.adaptiveInterventionPlan?.activities?.length) throw new Error(payload?.reason || "INVALID_SERVER_PLAN");
     return payload;
-  } catch (error) { return { ok: false, reason: String(error?.message || "SERVER_UNAVAILABLE") }; }
+  } catch (error) { return { ok: false, reason: controller.signal.aborted ? "SERVER_TIMEOUT" : String(error?.message || "SERVER_UNAVAILABLE") }; }
+  finally { clearTimeout(timeout); }
 }
 
 function shortFeedback(target, language, message) {

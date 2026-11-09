@@ -57,19 +57,24 @@ function readProfile(activity) {
 async function persistAuthenticated(event) {
   const user = window.GCA_FIREBASE_LIVE?.auth?.currentUser;
   if (!user) return { status: "skipped", reason: "GUEST_LOCAL_ONLY" };
+  let timeout;
   try {
     const idToken = await user.getIdToken();
+    const controller = new AbortController();
+    timeout = setTimeout(() => controller.abort("NALVI_PROGRESS_TIMEOUT"), 6000);
     const response = await fetch("/api/record-learning-attempt", {
       method: "POST",
       credentials: "same-origin",
       headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify(event)
+      body: JSON.stringify(event),
+      signal: controller.signal
     });
     if (!response.ok) return { status: "failed", reason: `HTTP_${response.status}` };
     return response.json();
   } catch {
     return { status: "failed", reason: "SERVER_UNAVAILABLE" };
   }
+  finally { clearTimeout(timeout); }
 }
 
 function evaluateActivityResult({ activity = {}, result = {}, uiLocale = "es", atObjectiveBoundary = false } = {}) {

@@ -5,15 +5,22 @@
   const STUDIO_ROUTE="premiumContentStudio";
   const API="/api/premium-academy";
   const MUX_API=API;
+  const REQUEST_TIMEOUT_MS=10000;
   const DEFAULT_COURSE_COVERS=Object.freeze({"aprende-guarani-de-cero-a-principiante":"/assets/images/nalvi-plus-cero-principiante.jpg"});
   const routeParams=new URLSearchParams(location.search);
   const studioRequested=location.hash===`#${STUDIO_ROUTE}`||routeParams.get("premiumStudio")==="1";
   const state={courses:[],access:{signedIn:false,administrator:false,premium:false},billing:{enabled:false,environment:"disabled",plans:[]},progress:{},reader:{course:null,access:"",lessonId:""},adminCourses:[],editing:null,loaded:false};
+  const muxPlaybackCache=new Map();
+  let accessRequest=null,accessRequestKey="",accessLoadedAt=0;
   const main=document.querySelector("main");
   if(!main)return;
 
   const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
   const clone=value=>JSON.parse(JSON.stringify(value));
+  async function fetchWithTimeout(resource,options={},timeoutMs=REQUEST_TIMEOUT_MS){
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort("NALVI_REQUEST_TIMEOUT"),timeoutMs);
+    try{return await fetch(resource,{...options,signal:controller.signal})}finally{clearTimeout(timer)}
+  }
   const firebaseReady=()=>window.GCA_FIREBASE_LIVE?Promise.resolve(window.GCA_FIREBASE_LIVE):new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error("FIREBASE_TIMEOUT")),12000);window.addEventListener("gca:firebase-live-ready",()=>{clearTimeout(timer);resolve(window.GCA_FIREBASE_LIVE)},{once:true})});
   const currentUser=async()=>{try{return(await firebaseReady()).auth.currentUser}catch{return null}};
   const authHeaders=async()=>{const user=await currentUser();return user&&!user.isAnonymous?{Authorization:`Bearer ${await user.getIdToken()}`}:{}};
@@ -27,7 +34,7 @@
 
   async function api(operation,{courseId="",method="GET",body=null,auth=false}={}){
     const query=new URLSearchParams({operation});if(courseId)query.set("courseId",courseId);
-    const response=await fetch(`${API}?${query}`,{method,headers:{...(auth?await authHeaders():{}),...(body?{"Content-Type":"application/json"}:{})},...(body?{body:JSON.stringify(body)}:{})});
+    const response=await fetchWithTimeout(`${API}?${query}`,{method,headers:{...(auth?await authHeaders():{}),...(body?{"Content-Type":"application/json"}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const payload=await response.json().catch(()=>({ok:false,reason:"INVALID_RESPONSE"}));
     return{response,payload};
   }
@@ -37,7 +44,7 @@
     if(courseId)query.set("courseId",courseId);
     if(lessonId)query.set("lessonId",lessonId);
     if(uploadId)query.set("uploadId",uploadId);
-    const response=await fetch(`${MUX_API}?${query}`,{method,headers:{...(auth?await authHeaders():{}),...(body?{"Content-Type":"application/json"}:{})},...(body?{body:JSON.stringify(body)}:{})});
+    const response=await fetchWithTimeout(`${MUX_API}?${query}`,{method,headers:{...(auth?await authHeaders():{}),...(body?{"Content-Type":"application/json"}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const payload=await response.json().catch(()=>({ok:false,reason:"INVALID_RESPONSE"}));
     return{response,payload};
   }
@@ -59,18 +66,28 @@
 
   function studioMarkup(){return`<section id="${STUDIO_ROUTE}" class="hide nalvi-premium-page nalvi-studio-page" aria-labelledby="nalviStudioTitle"><div class="nalvi-premium-shell"><button class="nalvi-premium-back" type="button" data-studio-back>← Volver a la academia</button><header class="nalvi-studio-head"><div><span>ADMINISTRACIÓN PRIVADA</span><h2 id="nalviStudioTitle">Estudio de contenido</h2><p>Crea cursos grabados, organiza la biblioteca y agrega e-books o recursos. Los borradores nunca aparecen a los alumnos.</p></div><button class="nalvi-premium-primary" type="button" data-studio-new>+ Crear contenido</button></header><div class="nalvi-studio-layout"><aside class="nalvi-studio-list"><div class="nalvi-studio-list-head"><h3>Contenido</h3><button type="button" data-studio-refresh aria-label="Actualizar">↻</button></div><div id="nalviStudioCourseList"><div class="nalvi-premium-empty">Cargando…</div></div></aside><form class="nalvi-studio-editor" id="nalviStudioEditor"><div class="nalvi-studio-placeholder"><b>Selecciona un contenido o crea uno nuevo</b><p>Desde aquí podrás administrar el catálogo premium sin editar código.</p></div></form></div></div></section>`}
 
-  async function loadAccess(){
-    const headers=await authHeaders();
-    const response=await fetch(`${API}?operation=access`,{headers});
-    const payload=await response.json().catch(()=>({}));
-    state.access=response.ok?payload:{signedIn:false,administrator:false,premium:false};
-    document.querySelectorAll("[data-premium-studio-open]").forEach(button=>button.hidden=!state.access.administrator);
-    renderAccess();
-    return state.access;
+  async function loadAccess({force=false}={}){
+    const user=await currentUser(),requestKey=user&&!user.isAnonymous?String(user.uid||"signed-in"):"anonymous";
+    if(!force&&requestKey===accessRequestKey&&Date.now()-accessLoadedAt<15000)return state.access;
+    if(accessRequest&&requestKey===accessRequestKey)return accessRequest;
+    accessRequestKey=requestKey;
+    accessRequest=(async()=>{
+      try{
+        const headers=user&&!user.isAnonymous?{Authorization:`Bearer ${await user.getIdToken()}`}:{ };
+        const response=await fetchWithTimeout(`${API}?operation=access`,{headers});
+        const payload=await response.json().catch(()=>({}));
+        state.access=response.ok?payload:{signedIn:false,administrator:false,premium:false};
+      }catch{state.access={signedIn:false,administrator:false,premium:false}}
+      accessLoadedAt=Date.now();
+      document.querySelectorAll("[data-premium-studio-open]").forEach(button=>button.hidden=!state.access.administrator);
+      renderAccess();
+      return state.access;
+    })();
+    try{return await accessRequest}finally{accessRequest=null}
   }
 
   async function loadBilling(){
-    try{const response=await fetch("/api/billing?operation=catalog");const payload=await response.json();state.billing=response.ok?payload:{enabled:false,environment:"disabled",plans:[]}}catch{state.billing={enabled:false,environment:"disabled",plans:[]}}
+    try{const response=await fetchWithTimeout("/api/billing?operation=catalog");const payload=await response.json();state.billing=response.ok?payload:{enabled:false,environment:"disabled",plans:[]}}catch{state.billing={enabled:false,environment:"disabled",plans:[]}}
   }
 
   async function loadCatalog(){
@@ -79,7 +96,7 @@
     try{const{response,payload}=await api("catalog");state.courses=response.ok&&Array.isArray(payload.courses)?payload.courses:[];renderCatalog()}catch{if(grid)grid.innerHTML='<div class="nalvi-premium-empty error">No pudimos cargar el catálogo. Inténtalo nuevamente.</div>'}
   }
 
-  async function loadAcademy(){await Promise.all([loadAccess(),loadBilling()]);await loadCatalog();await loadCatalogProgress();state.loaded=true;renderAccess();renderCatalog()}
+  async function loadAcademy(){await Promise.all([loadAccess(),loadBilling(),loadCatalog()]);await loadCatalogProgress();state.loaded=true;renderAccess();renderCatalog()}
 
   async function loadProgress(courseId){
     if(!state.access.signedIn)return null;
@@ -166,7 +183,16 @@
 
   async function hydrateMuxPlayers(container){
     for(const player of container.querySelectorAll(".nalvi-premium-mux-player")){
-      const{response,payload}=await muxApi("playback-token",{courseId:player.dataset.muxCourse,lessonId:player.dataset.muxLesson});
+      const key=`${player.dataset.muxCourse}:${player.dataset.muxLesson}`,cached=muxPlaybackCache.get(key);
+      let response,payload;
+      if(cached&&cached.expiresAt>Date.now()+60000){response={ok:true};payload=cached}
+      else{
+        ({response,payload}=await muxApi("playback-token",{courseId:player.dataset.muxCourse,lessonId:player.dataset.muxLesson}));
+        if(response.ok&&payload.playbackId&&payload.token){
+          const expiry=Date.parse(payload.expiresAt||"");
+          muxPlaybackCache.set(key,{...payload,expiresAt:Number.isFinite(expiry)?expiry:Date.now()+15*60*1000});
+        }
+      }
       if(!response.ok||!payload.playbackId||!payload.token){player.innerHTML='<div class="nalvi-premium-video-loading error">No pudimos abrir este video protegido.</div>';continue}
       const frame=document.createElement("iframe");
       frame.src=`https://player.mux.com/${encodeURIComponent(payload.playbackId)}?playback-token=${encodeURIComponent(payload.token)}`;
@@ -194,7 +220,7 @@
     if(button.querySelector("i"))button.querySelector("i").textContent="Abriendo…";
     try{
       const query=new URLSearchParams({operation:"resource",courseId,lessonId,materialId});
-      const response=await fetch(`${API}?${query}`,{headers:await authHeaders()});
+      const response=await fetchWithTimeout(`${API}?${query}`,{headers:await authHeaders()},15000);
       if(response.status===401){window.courseGoogleLogin?.();return}
       if(response.status===402){window.showToast?.("Este documento requiere NALVI Plus.");return}
       if(!response.ok)throw new Error(`RESOURCE_${response.status}`);
@@ -207,7 +233,7 @@
 
   async function startSubscription(planKey){
     const user=await currentUser();if(!user||user.isAnonymous){window.courseGoogleLogin?.();return}
-    try{const response=await fetch("/api/billing?operation=checkout",{method:"POST",headers:{Authorization:`Bearer ${await user.getIdToken()}`,"Content-Type":"application/json"},body:JSON.stringify({planKey})});const payload=await response.json();if(!response.ok||!payload.checkoutUrl)throw new Error(payload.reason||"CHECKOUT_UNAVAILABLE");location.assign(payload.checkoutUrl)}catch(error){console.error("NALVI_PREMIUM_CHECKOUT",error);window.showToast?.("No pudimos abrir el pago. Inténtalo nuevamente.")}
+    try{const response=await fetchWithTimeout("/api/billing?operation=checkout",{method:"POST",headers:{Authorization:`Bearer ${await user.getIdToken()}`,"Content-Type":"application/json"},body:JSON.stringify({planKey})},15000);const payload=await response.json();if(!response.ok||!payload.checkoutUrl)throw new Error(payload.reason||"CHECKOUT_UNAVAILABLE");location.assign(payload.checkoutUrl)}catch(error){console.error("NALVI_PREMIUM_CHECKOUT",error);window.showToast?.("No pudimos abrir el pago. Inténtalo nuevamente.")}
   }
 
   function blankCourse(){return{courseId:"",title:"",summary:"",description:"",level:"",coverImageUrl:"",contentType:"course",access:"premium",status:"draft",order:0,lessons:[]}}
@@ -358,11 +384,16 @@
     });
     document.querySelector("#nalviStudioEditor")?.addEventListener("submit",event=>{event.preventDefault();saveEditor()});
     document.querySelector("#nalviStudioEditor")?.addEventListener("change",event=>{if(event.target?.name==="contentType"){state.editing=collectEditor();renderEditor()}});
-    window.addEventListener("nalvi:auth-known",async()=>{await loadAccess();if(studioRequested&&state.access.administrator&&document.querySelector(`#${STUDIO_ROUTE}`)?.classList.contains("hide")){navigate(STUDIO_ROUTE,false);await loadAdminCourses();return}if(!document.querySelector(`#${ACADEMY_ROUTE}`)?.classList.contains("hide"))await loadAcademy()});
+    window.addEventListener("nalvi:auth-known",async()=>{
+      const academyVisible=!document.querySelector(`#${ACADEMY_ROUTE}`)?.classList.contains("hide");
+      if(!studioRequested&&!academyVisible)return;
+      await loadAccess();
+      if(studioRequested&&state.access.administrator&&document.querySelector(`#${STUDIO_ROUTE}`)?.classList.contains("hide")){navigate(STUDIO_ROUTE,false);await loadAdminCourses();return}
+      if(academyVisible)await loadAcademy();
+    });
   }
 
   install();
-  setTimeout(loadAccess,0);
   if(location.hash===`#${ACADEMY_ROUTE}`||routeParams.get("premiumAcademy")==="1")setTimeout(()=>{navigate(ACADEMY_ROUTE,false);loadAcademy()},80);
   if(studioRequested&&window.NALVI_AUTH_SNAPSHOT)setTimeout(openStudio,80);
 })();
