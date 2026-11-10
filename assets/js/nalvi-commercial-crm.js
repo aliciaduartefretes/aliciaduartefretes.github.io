@@ -2,7 +2,7 @@
 (()=>{
   "use strict";
 
-  const VERSION="NALVI-COMMERCIAL-CRM-4";
+  const VERSION="NALVI-COMMERCIAL-CRM-5";
   const API="/api/premium-academy?operation=live-courses";
   const STATUSES={
     waitlist:"Nuevo · por contactar",
@@ -86,9 +86,12 @@
   }
 
   function installAccountEntry(){
-    const menu=$("#accountMenu"),academic=$("[data-go='institutional']",menu);if(!menu||!academic)return;
-    let button=$("#nalviCommercialAccountEntry",menu);if(!button){button=document.createElement("button");button.id="nalviCommercialAccountEntry";button.className="mini-btn";button.type="button";button.textContent="📈 Gestión comercial";academic.insertAdjacentElement("afterend",button);button.addEventListener("click",()=>{menu.classList.add("hide");open()})}
-    button.hidden=!isAdmin();
+    const menu=$("#accountMenu"),logout=$("#logoutBtn",menu);if(!menu||!logout)return;
+    let academic=$("#nalviAcademicAccountEntry",menu);
+    if(!academic){academic=document.createElement("button");academic.id="nalviAcademicAccountEntry";academic.className="mini-btn nalvi-admin-account-entry";academic.type="button";academic.textContent="🏫 Gestión académica";logout.insertAdjacentElement("beforebegin",academic);academic.addEventListener("click",()=>{menu.classList.add("hide");window.show?.("institutional",true)})}
+    let commercial=$("#nalviCommercialAccountEntry",menu);
+    if(!commercial){commercial=document.createElement("button");commercial.id="nalviCommercialAccountEntry";commercial.className="mini-btn nalvi-admin-account-entry";commercial.type="button";commercial.textContent="📈 Gestión comercial";logout.insertAdjacentElement("beforebegin",commercial);commercial.addEventListener("click",()=>{menu.classList.add("hide");open()})}
+    academic.hidden=!isAdmin();commercial.hidden=!isAdmin();
   }
 
   function installAcademicSwitcher(){
