@@ -8,6 +8,7 @@ const DEFAULT_ADMIN_EMAILS = Object.freeze(["aliciaduartefretes@gmail.com"]);
 const SCHEDULES = new Set(["weekday-evenings", "saturday-mornings", "flexible", "other"]);
 const LEVELS = new Set(["new", "beginner", "intermediate"]);
 const PAYMENT_PREFERENCES = new Set(["full", "monthly"]);
+const CRM_STATUSES = new Set(["waitlist", "contacted", "payment_pending", "enrolled", "active", "completed", "not_interested"]);
 
 export const LIVE_COURSE = Object.freeze({
   courseId: "guarani-live-founders-2026",
@@ -52,6 +53,49 @@ function interestId(courseId, email) {
   return createHash("sha256").update(`${courseId}|${email}`).digest("hex").slice(0, 48);
 }
 
+function crmMetrics(interests = []) {
+  const byStatus = Object.fromEntries([...CRM_STATUSES].map(status => [status, 0]));
+  let marketingEligible = 0;
+  for (const interest of interests) {
+    const status = CRM_STATUSES.has(interest.status) ? interest.status : "waitlist";
+    byStatus[status] += 1;
+    if (interest.marketingConsent === true) marketingEligible += 1;
+  }
+  return {
+    total: interests.length,
+    marketingEligible,
+    pendingContact: byStatus.waitlist,
+    conversionReady: byStatus.payment_pending,
+    customers: byStatus.enrolled + byStatus.active + byStatus.completed,
+    byStatus
+  };
+}
+
+function publicAdminInterest(document = {}) {
+  return {
+    id: cleanText(document.id, 80),
+    name: cleanText(document.name, 100),
+    email: normalizedEmail(document.email),
+    whatsapp: cleanText(document.whatsapp, 40),
+    country: cleanText(document.country, 80),
+    timezone: cleanText(document.timezone, 100),
+    schedule: cleanText(document.schedule, 40),
+    level: cleanText(document.level, 40),
+    paymentPreference: cleanText(document.paymentPreference, 40),
+    goal: cleanText(document.goal, 800),
+    consent: document.consent === true,
+    marketingConsent: document.marketingConsent === true,
+    source: cleanText(document.source, 80),
+    status: CRM_STATUSES.has(document.status) ? document.status : "waitlist",
+    notes: cleanText(document.notes, 1200),
+    followUpAt: cleanText(document.followUpAt, 64),
+    createdAt: cleanText(document.createdAt, 64),
+    updatedAt: cleanText(document.updatedAt, 64),
+    crmUpdatedAt: cleanText(document.crmUpdatedAt, 64),
+    updateCount: Math.max(0, Number(document.updateCount || 0))
+  };
+}
+
 export function normalizeLiveCourseInterest(input, { existing = null, user = null, now = new Date().toISOString() } = {}) {
   if (cleanText(input?.website, 120)) throw new TypeError("SPAM_REJECTED");
   const name = cleanText(input?.name, 100);
@@ -68,6 +112,7 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
   if (!paymentPreference) throw new TypeError("PAYMENT_PREFERENCE_REQUIRED");
   if (input?.consent !== true) throw new TypeError("CONSENT_REQUIRED");
   const createdAt = cleanText(existing?.createdAt, 64) || now;
+  const existingStatus = cleanText(existing?.status, 40);
   return {
     courseId: LIVE_COURSE.courseId,
     name,
@@ -83,7 +128,11 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
     marketingConsent: input?.marketingConsent === true,
     source: cleanText(input?.source, 80) || "home-live-course-banner",
     locale: cleanText(input?.locale, 12) || "es",
-    status: cleanText(existing?.status, 40) || "waitlist",
+    status: CRM_STATUSES.has(existingStatus) ? existingStatus : "waitlist",
+    notes: cleanText(existing?.notes, 1200),
+    followUpAt: cleanText(existing?.followUpAt, 64),
+    crmUpdatedAt: cleanText(existing?.crmUpdatedAt, 64),
+    crmUpdatedBy: cleanText(existing?.crmUpdatedBy, 160),
     userId: cleanText(user?.uid, 256),
     createdAt,
     updatedAt: now,
@@ -148,24 +197,45 @@ export function createLiveCoursesHandler({
       const result = await listDocuments({ env });
       if (result.status !== "found") return sendJson(response, 503, { ok: false, reason: "LIVE_COURSE_LIST_UNAVAILABLE" });
       const interests = result.documents
-        .map(document => ({
-          id: cleanText(document.id, 80),
-          name: cleanText(document.name, 100),
-          email: normalizedEmail(document.email),
-          whatsapp: cleanText(document.whatsapp, 40),
-          country: cleanText(document.country, 80),
-          timezone: cleanText(document.timezone, 100),
-          schedule: cleanText(document.schedule, 40),
-          level: cleanText(document.level, 40),
-          paymentPreference: cleanText(document.paymentPreference, 40),
-          goal: cleanText(document.goal, 800),
-          status: cleanText(document.status, 40) || "waitlist",
-          createdAt: cleanText(document.createdAt, 64),
-          updatedAt: cleanText(document.updatedAt, 64)
-        }))
+        .map(publicAdminInterest)
         .filter(document => document.email)
         .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-      return sendJson(response, 200, { ok: true, courseId: LIVE_COURSE.courseId, total: interests.length, interests });
+      return sendJson(response, 200, { ok: true, courseId: LIVE_COURSE.courseId, total: interests.length, metrics: crmMetrics(interests), interests });
+    }
+
+    if (operation === "admin-update") {
+      if (request.method !== "POST") return sendJson(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" }, { Allow: "POST" });
+      const token = bearerToken(request);
+      const user = token ? await verifyIdToken(token, { env }) : null;
+      if (!isAdministrator(user, env)) return sendJson(response, 403, { ok: false, reason: "ADMIN_REQUIRED" });
+      try {
+        const body = await jsonBody(request, 8_192);
+        const id = cleanText(body?.id, 80);
+        const status = cleanText(body?.status, 40);
+        if (!/^[a-f0-9]{48}$/.test(id)) throw new TypeError("INVALID_INTEREST_ID");
+        if (!CRM_STATUSES.has(status)) throw new TypeError("INVALID_CRM_STATUS");
+        const existingResult = await readDocument({ pathSegments: [INTEREST_COLLECTION, id], env });
+        if (existingResult.status === "missing") return sendJson(response, 404, { ok: false, reason: "INTEREST_NOT_FOUND" });
+        if (existingResult.status !== "found" || !existingResult.document) throw new Error("LIVE_COURSE_READ_FAILED");
+        const timestamp = now();
+        const updated = {
+          ...existingResult.document,
+          status,
+          notes: cleanText(body?.notes, 1200),
+          followUpAt: cleanText(body?.followUpAt, 64),
+          crmUpdatedAt: timestamp,
+          crmUpdatedBy: cleanText(user.email, 160),
+          updatedAt: timestamp
+        };
+        const saved = await commitDocuments({ documents: [{ pathSegments: [INTEREST_COLLECTION, id], fields: updated }], env });
+        if (saved.status !== "persisted") throw new Error("LIVE_COURSE_WRITE_FAILED");
+        return sendJson(response, 200, { ok: true, interest: publicAdminInterest({ id, ...updated }) });
+      } catch (error) {
+        const reason = String(error?.message || "");
+        if (["INVALID_INTEREST_ID", "INVALID_CRM_STATUS"].includes(reason)) return sendJson(response, 400, { ok: false, reason });
+        if (reason === "PAYLOAD_TOO_LARGE") return sendJson(response, 413, { ok: false, reason });
+        return sendJson(response, 503, { ok: false, reason: "LIVE_COURSE_UPDATE_UNAVAILABLE" });
+      }
     }
 
     if (operation !== "interest") return sendJson(response, 404, { ok: false, reason: "UNKNOWN_OPERATION" });
@@ -201,4 +271,4 @@ export function createLiveCoursesHandler({
   };
 }
 
-export const __test = { interestId, isAdministrator, validEmail };
+export const __test = { interestId, isAdministrator, validEmail, crmMetrics, publicAdminInterest };

@@ -2,7 +2,7 @@
 (function(){
   "use strict";
 
-  const VERSION="NALVI-ACADEMIC-STUDIO-21";
+  const VERSION="NALVI-ACADEMIC-STUDIO-22";
   const INTENT_KEY="nalviAcademicIntent.v1";
   const ACTIVE_INSTITUTION_KEY="nalviAcademicInstitution.v1";
   const $=(selector,root=document)=>root.querySelector(selector);
@@ -949,6 +949,6 @@
     }catch(error){console.error("NALVI_ACADEMIC_STUDIO_INIT",error)}
   }
 
-  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,createInstitutionSpace,resolveClassInstitution,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft,teacherVideoEmbedUrl,classStateMatches,adminCounts,renderClassWorkspace,renderAdminOverview,renderInstitutionRequestRows,institutionRequestStatus};
+  window.NALVI_ACADEMIC_STUDIO={VERSION,refresh,openTool,loadActivities,loadStudentClasses,normalizeClassCode,normalizeInstitutionCode,normalizeLivePin,createInstitutionSpace,resolveClassInstitution,drawWithoutReplacement,wheelBackground,wheelLabelLayout,buildQuestionDraft,teacherVideoEmbedUrl,classStateMatches,adminCounts,renderClassWorkspace,renderAdminOverview,renderInstitutionRequestRows,institutionRequestStatus};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

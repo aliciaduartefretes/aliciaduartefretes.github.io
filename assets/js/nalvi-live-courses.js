@@ -19,7 +19,7 @@
       if(!form.elements.name.value)form.elements.name.value=user.displayName||"";
       if(!form.elements.email.value)form.elements.email.value=user.email||"";
       const email=String(user.email||"").toLowerCase(),admin=$("#nalviLiveAdmin");
-      if(admin)admin.hidden=!ADMIN_EMAILS.has(email);
+      if(admin){admin.hidden=!ADMIN_EMAILS.has(email);const button=$("#nalviLiveAdminButton");if(button)button.textContent="Abrir panel comercial"}
     }
   }
 
@@ -64,7 +64,9 @@
   });
 
   $("#nalviLiveAdminButton")?.addEventListener("click",async event=>{
-    const button=event.currentTarget,panel=$("#nalviLiveAdminPanel");button.disabled=true;panel.innerHTML='<p class="nalvi-live-admin-summary">Cargando inscripciones…</p>';
+    const button=event.currentTarget;
+    if(window.NALVI_COMMERCIAL_CRM){closeDialog();window.NALVI_COMMERCIAL_CRM.open();return}
+    const panel=$("#nalviLiveAdminPanel");button.disabled=true;panel.innerHTML='<p class="nalvi-live-admin-summary">Cargando inscripciones…</p>';
     try{
       const response=await fetch(`${API}&action=admin-list`,{headers:await authHeaders()}),payload=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(payload.reason||"ADMIN_LIST_FAILED");
