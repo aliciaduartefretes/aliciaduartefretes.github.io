@@ -89,13 +89,6 @@ function documentPath(pathSegments) {
   return pathSegments.map(safeSegment).join("/");
 }
 
-function validCollectionId(collectionId) {
-  return typeof collectionId === "string"
-    && collectionId.length >= 1
-    && collectionId.length <= 256
-    && !collectionId.includes("/");
-}
-
 export async function readAdminDocument({ pathSegments, env = process.env, fetchImpl = globalThis.fetch } = {}) {
   const auth = await getAccessToken({ env, fetchImpl });
   if (!auth.ok) return { status: "skipped", reason: auth.reason, document: null };
@@ -135,23 +128,6 @@ export async function commitAdminDocuments({ documents, env = process.env, fetch
   });
   if (!response.ok) return { status: "failed", reason: "FIRESTORE_COMMIT_FAILED", httpStatus: response.status };
   return { status: "persisted" };
-}
-
-export async function listAdminCollectionDocuments({ collectionId, pageSize = 100, env = process.env, fetchImpl = globalThis.fetch } = {}) {
-  if (!validCollectionId(collectionId)) return { status: "failed", reason: "INVALID_FIRESTORE_COLLECTION", documents: [] };
-  const auth = await getAccessToken({ env, fetchImpl });
-  if (!auth.ok) return { status: "skipped", reason: auth.reason, documents: [] };
-  const size = Math.min(100, Math.max(1, Number(pageSize) || 100));
-  const url = new URL(`https://firestore.googleapis.com/v1/projects/${safeSegment(auth.projectId)}/databases/(default)/documents/${safeSegment(collectionId)}`);
-  url.searchParams.set("pageSize", String(size));
-  const response = await fetchImpl(url, { headers: { Authorization: `Bearer ${auth.token}` } });
-  if (!response.ok) return { status: "failed", reason: "FIRESTORE_LIST_FAILED", httpStatus: response.status, documents: [] };
-  const result = await response.json();
-  const documents = (Array.isArray(result.documents) ? result.documents : []).map(document => ({
-    id: String(document.name || "").split("/").pop() || "",
-    ...fromFirestoreFields(document.fields || {})
-  }));
-  return { status: "found", documents };
 }
 
 export async function persistInterventionEvent({ userId, event, env = process.env, fetchImpl = globalThis.fetch } = {}) {
@@ -207,6 +183,5 @@ export const __test = {
   fromFirestoreFields,
   readServiceAccount,
   validDocumentSegments,
-  documentPath,
-  validCollectionId
+  documentPath
 };

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { bearerToken, jsonBody, requestOriginAllowed, sendJson } from "./billing-http.mjs";
 import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
-import { commitAdminDocuments, listAdminCollectionDocuments, readAdminDocument } from "./firestore-admin-rest.mjs";
+import { commitAdminJson, readAdminJson } from "./firebase-rtdb-admin-rest.mjs";
 
 const INTEREST_COLLECTION = "liveCourseInterests";
 const DEFAULT_ADMIN_EMAILS = Object.freeze(["aliciaduartefretes@gmail.com"]);
@@ -94,11 +94,23 @@ function errorResponse(error) {
   return { status: 503, reason: "LIVE_COURSE_REGISTRATION_UNAVAILABLE" };
 }
 
+async function listLiveCourseInterests({ env = process.env } = {}) {
+  const result = await readAdminJson({ pathSegments: [INTEREST_COLLECTION], env });
+  if (result.status === "missing") return { status: "found", documents: [] };
+  if (result.status !== "found" || !result.document || typeof result.document !== "object") {
+    return { status: "failed", reason: result.reason || "LIVE_COURSE_LIST_FAILED", documents: [] };
+  }
+  return {
+    status: "found",
+    documents: Object.entries(result.document).map(([id, document]) => ({ id, ...(document || {}) }))
+  };
+}
+
 export function createLiveCoursesHandler({
   verifyIdToken = verifyFirebaseIdToken,
-  readDocument = readAdminDocument,
-  commitDocuments = commitAdminDocuments,
-  listDocuments = listAdminCollectionDocuments,
+  readDocument = readAdminJson,
+  commitDocuments = commitAdminJson,
+  listDocuments = listLiveCourseInterests,
   env = process.env,
   now = () => new Date().toISOString()
 } = {}) {
@@ -126,7 +138,7 @@ export function createLiveCoursesHandler({
       const token = bearerToken(request);
       const user = token ? await verifyIdToken(token, { env }) : null;
       if (!isAdministrator(user, env)) return sendJson(response, 403, { ok: false, reason: "ADMIN_REQUIRED" });
-      const result = await listDocuments({ collectionId: INTEREST_COLLECTION, pageSize: 100, env });
+      const result = await listDocuments({ env });
       if (result.status !== "found") return sendJson(response, 503, { ok: false, reason: "LIVE_COURSE_LIST_UNAVAILABLE" });
       const interests = result.documents
         .map(document => ({
