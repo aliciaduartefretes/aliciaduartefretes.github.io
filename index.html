@@ -482,7 +482,7 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
 <link rel="stylesheet" href="assets/css/nalvi-accessibility.css?v=NALVI-ACCESSIBILITY-1">
 <link rel="stylesheet" href="assets/css/nalvi-premium-academy.css?v=NALVI-PREMIUM-ACADEMY-8">
-<link rel="stylesheet" href="assets/css/nalvi-live-courses.css?v=NALVI-LIVE-COURSES-1"></head>
+<link rel="stylesheet" href="assets/css/nalvi-live-courses.css?v=NALVI-LIVE-COURSES-2"></head>
 <body aria-busy="true"><div id="nalviBoot" class="nalvi-boot" role="status" aria-live="polite" aria-label="Cargando NALVI"><div class="nalvi-boot-card"><strong>NALVI</strong><span class="nalvi-boot-mark" aria-hidden="true"><i></i><i></i><i></i></span><small id="nalviBootCopy">Preparando tu experiencia…</small></div></div>
 <header><nav class="shell"><div class="brand" aria-label="NALVI"><strong>NALVI</strong><small>Lenguas vivas</small></div><div class="header-tools"><label class="header-lang" aria-label="Idioma nativo"><span>◎</span><select id="headerLang"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label></div><div class="stats"><span class="pill">🔥 <b>1</b></span><span class="pill">💚 <b id="lives">5</b></span><span class="pill">⭐ <b id="xp">0</b> XP</span><button class="account-btn" id="accountBtn"><span id="accountIcon">👤</span><span class="account-name" id="accountName">Guardar progreso</span></button></div></nav></header>
 <aside class="play-store-promo" id="playStorePromo" aria-label="Aplicación de NALVI en Google Play">
@@ -506,9 +506,9 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
           </ul>
         </div>
         <div class="nalvi-live-launch-card">
-          <div class="nalvi-live-launch-price"><small>Programa completo</small><strong>G. 490.000</strong><span>Horarios a confirmar según el grupo</span></div>
+          <div class="nalvi-live-launch-price"><small>Inscripción flexible</small><strong>Desde US$45/mes</strong><span>o US$79 en un solo pago · ahorras US$11</span></div>
           <button class="nalvi-live-launch-button" type="button" data-live-course-open>Quiero reservar mi lugar →</button>
-          <p class="nalvi-live-launch-note">No se cobra ahora. Te contactamos antes de confirmar la inscripción.</p>
+          <p class="nalvi-live-launch-note">Conoce las opciones de pago. No se cobra ahora.</p>
         </div>
       </div>
     </aside>
@@ -577,12 +577,13 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
         <div><small>Encuentros</small><b>60 minutos en vivo</b></div><div><small>Cupos</small><b>Máximo 12 personas</b></div>
       </div>
       <ul class="nalvi-live-includes"><li>16 clases en vivo en grupos reducidos</li><li>Materiales y grabaciones de apoyo</li><li>Acceso a NALVI Plus durante el programa</li><li>Seguimiento de avance y certificado final</li></ul>
-      <p class="nalvi-live-payment-note"><b>Programa completo: G. 490.000.</b><br>Reservar tu lugar no genera ningún cobro. Cuando confirmemos docente y horario, recibirás todos los datos antes de decidir.</p>
+      <p class="nalvi-live-payment-note"><b>Elige: US$79 completo o 2 mensualidades de US$45.</b><br>Ambas opciones incluyen el programa completo. Reservar tu lugar no genera ningún cobro.</p>
     </section>
     <section class="nalvi-live-dialog-content">
       <div id="nalviLiveCourseFormView">
         <header class="nalvi-live-form-head"><span>LISTA PRIORITARIA</span><h3>Reserva uno de los primeros cupos</h3><p>Cuéntanos cuándo te conviene estudiar. Usaremos esta información solamente para organizar esta cohorte y contactarte.</p></header>
         <form class="nalvi-live-form" id="nalviLiveCourseForm">
+          <fieldset class="nalvi-live-plan-picker"><legend>¿Cómo prefieres pagar cuando abramos la cohorte?</legend><label class="nalvi-live-plan-option"><input name="paymentPreference" type="radio" value="full" checked required><span><b>Pago completo · US$79</b><small>Un solo pago · ahorras US$11</small></span><em>Recomendado</em></label><label class="nalvi-live-plan-option"><input name="paymentPreference" type="radio" value="monthly" required><span><b>Plan mensual · US$45/mes</b><small>2 mensualidades · total US$90</small></span></label><p>Los dos planes incluyen las 16 clases, materiales, grabaciones, NALVI Plus y certificado. Esta elección todavía no genera un cobro.</p></fieldset>
           <div class="nalvi-live-field-grid"><label>Nombre y apellido<input name="name" autocomplete="name" maxlength="100" required></label><label>Correo electrónico<input name="email" type="email" autocomplete="email" maxlength="160" required></label></div>
           <div class="nalvi-live-field-grid"><label>WhatsApp (opcional)<input name="whatsapp" type="tel" autocomplete="tel" maxlength="40" placeholder="Incluye el código de país"></label><label>País<input name="country" autocomplete="country-name" maxlength="80" required></label></div>
           <div class="nalvi-live-field-grid"><label>Horario preferido<select name="schedule" required><option value="">Selecciona una opción</option><option value="weekday-evenings">Entre semana · tarde/noche</option><option value="saturday-mornings">Sábados · mañana</option><option value="flexible">Tengo horario flexible</option><option value="other">Necesito otro horario</option></select></label><label>Tu nivel actual<select name="level" required><option value="">Selecciona tu nivel</option><option value="new">Empiezo desde cero</option><option value="beginner">Ya conozco lo básico</option><option value="intermediate">Tengo nivel intermedio</option></select></label></div>
@@ -3990,6 +3991,6 @@ try{
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>
 <script type="module" src="assets/js/nalvi-blob-uploader.mjs?v=NALVI-PRIVATE-LIBRARY-1"></script>
   <script src="assets/js/nalvi-premium-academy.js?v=NALVI-PREMIUM-ACADEMY-10"></script>
-  <script src="assets/js/nalvi-live-courses.js?v=NALVI-LIVE-COURSES-1"></script>
+  <script src="assets/js/nalvi-live-courses.js?v=NALVI-LIVE-COURSES-2"></script>
 </body>
 </html>

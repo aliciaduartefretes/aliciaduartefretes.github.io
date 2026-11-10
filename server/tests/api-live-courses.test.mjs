@@ -31,6 +31,7 @@ const validInterest = Object.freeze({
   timezone: "America/Asuncion",
   schedule: "weekday-evenings",
   level: "new",
+  paymentPreference: "full",
   goal: "Hablar con mi familia",
   consent: true
 });
@@ -42,6 +43,9 @@ test("publica la propuesta sin exponer datos personales ni habilitar cobros", as
   assert.equal(res.payload.course.courseId, LIVE_COURSE.courseId);
   assert.equal(res.payload.course.paymentStatus, "waitlist_only");
   assert.equal(res.payload.course.capacity, 12);
+  assert.equal(res.payload.course.currency, "USD");
+  assert.equal(res.payload.course.fullPriceUsd, 79);
+  assert.equal(res.payload.course.monthlyPriceUsd, 45);
 });
 
 test("acepta la ruta compartida de academia para no crear otra función de Vercel", async () => {
@@ -64,6 +68,7 @@ test("registra el interés con un identificador determinista y evita duplicados"
   assert.equal(first.statusCode, 200);
   assert.equal(first.payload.status, "registered");
   assert.equal(saved.fields.email, "ana@example.com");
+  assert.equal(saved.fields.paymentPreference, "full");
   assert.equal(saved.pathSegments[0], "liveCourseInterests");
   assert.match(saved.pathSegments[1], /^[a-f0-9]{48}$/);
 
@@ -82,6 +87,7 @@ test("valida consentimiento, país, horario y nivel", () => {
   assert.throws(() => normalizeLiveCourseInterest({ ...validInterest, country: "" }), /COUNTRY_REQUIRED/);
   assert.throws(() => normalizeLiveCourseInterest({ ...validInterest, schedule: "night" }), /SCHEDULE_REQUIRED/);
   assert.throws(() => normalizeLiveCourseInterest({ ...validInterest, level: "expert" }), /LEVEL_REQUIRED/);
+  assert.throws(() => normalizeLiveCourseInterest({ ...validInterest, paymentPreference: "" }), /PAYMENT_PREFERENCE_REQUIRED/);
 });
 
 test("rechaza formularios de otro origen y métodos incorrectos", async () => {

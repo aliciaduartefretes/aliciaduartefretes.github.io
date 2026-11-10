@@ -11,6 +11,7 @@
   const setStatus=(message,error=false)=>{if(!status)return;status.textContent=message||"";status.classList.toggle("error",error)};
   const formatSchedule=value=>({"weekday-evenings":"Entre semana por la tarde/noche","saturday-mornings":"Sábados por la mañana","flexible":"Horario flexible","other":"Otro horario"}[value]||value||"Sin preferencia");
   const formatLevel=value=>({new:"Empieza desde cero",beginner:"Ya conoce lo básico",intermediate:"Nivel intermedio"}[value]||value||"—");
+  const formatPayment=value=>({full:"Pago completo · US$79",monthly:"Plan mensual · US$45/mes"}[value]||"Sin preferencia");
 
   async function prefill(){
     const user=await currentUser();
@@ -57,7 +58,7 @@
       window.showToast?.("Tu inscripción fue recibida.");
     }catch(error){
       console.error("NALVI_LIVE_COURSE_INTEREST",error);button.disabled=false;
-      const messages={NAME_REQUIRED:"Escribe tu nombre.",VALID_EMAIL_REQUIRED:"Revisa tu correo electrónico.",COUNTRY_REQUIRED:"Indica tu país.",SCHEDULE_REQUIRED:"Elige el horario que te conviene.",LEVEL_REQUIRED:"Indica tu nivel actual.",CONSENT_REQUIRED:"Necesitamos tu autorización para contactarte."};
+      const messages={NAME_REQUIRED:"Escribe tu nombre.",VALID_EMAIL_REQUIRED:"Revisa tu correo electrónico.",COUNTRY_REQUIRED:"Indica tu país.",SCHEDULE_REQUIRED:"Elige el horario que te conviene.",LEVEL_REQUIRED:"Indica tu nivel actual.",PAYMENT_PREFERENCE_REQUIRED:"Elige una modalidad de pago.",CONSENT_REQUIRED:"Necesitamos tu autorización para contactarte."};
       setStatus(messages[error.message]||"No pudimos guardar tu lugar. Inténtalo nuevamente.",true);
     }
   });
@@ -68,7 +69,7 @@
       const response=await fetch(`${API}&action=admin-list`,{headers:await authHeaders()}),payload=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(payload.reason||"ADMIN_LIST_FAILED");
       const interests=Array.isArray(payload.interests)?payload.interests:[];
-      panel.innerHTML=`<p class="nalvi-live-admin-summary"><b>${interests.length}</b> ${interests.length===1?"persona inscrita":"personas inscritas"}</p><div class="nalvi-live-admin-list">${interests.length?interests.map(item=>`<article class="nalvi-live-admin-lead"><b>${escapeHtml(item.name)}</b><span>${escapeHtml(item.email)}${item.whatsapp?` · ${escapeHtml(item.whatsapp)}`:""}</span><small>${escapeHtml(item.country)} · ${escapeHtml(formatSchedule(item.schedule))} · ${escapeHtml(formatLevel(item.level))}${item.goal?`<br>${escapeHtml(item.goal)}`:""}</small></article>`).join(""):'<p class="nalvi-live-admin-summary">Todavía no hay inscripciones.</p>'}</div>`;
+      panel.innerHTML=`<p class="nalvi-live-admin-summary"><b>${interests.length}</b> ${interests.length===1?"persona inscrita":"personas inscritas"}</p><div class="nalvi-live-admin-list">${interests.length?interests.map(item=>`<article class="nalvi-live-admin-lead"><b>${escapeHtml(item.name)}</b><span>${escapeHtml(item.email)}${item.whatsapp?` · ${escapeHtml(item.whatsapp)}`:""}</span><small>${escapeHtml(item.country)} · ${escapeHtml(formatSchedule(item.schedule))} · ${escapeHtml(formatLevel(item.level))}<br>${escapeHtml(formatPayment(item.paymentPreference))}${item.goal?`<br>${escapeHtml(item.goal)}`:""}</small></article>`).join(""):'<p class="nalvi-live-admin-summary">Todavía no hay inscripciones.</p>'}</div>`;
     }catch{panel.innerHTML='<p class="nalvi-live-admin-summary">No pudimos cargar la lista. Actualiza e inténtalo otra vez.</p>'}finally{button.disabled=false}
   });
 

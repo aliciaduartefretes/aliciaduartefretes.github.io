@@ -7,6 +7,7 @@ const INTEREST_COLLECTION = "liveCourseInterests";
 const DEFAULT_ADMIN_EMAILS = Object.freeze(["aliciaduartefretes@gmail.com"]);
 const SCHEDULES = new Set(["weekday-evenings", "saturday-mornings", "flexible", "other"]);
 const LEVELS = new Set(["new", "beginner", "intermediate"]);
+const PAYMENT_PREFERENCES = new Set(["full", "monthly"]);
 
 export const LIVE_COURSE = Object.freeze({
   courseId: "guarani-live-founders-2026",
@@ -18,8 +19,11 @@ export const LIVE_COURSE = Object.freeze({
   cadence: "2 encuentros en vivo por semana",
   sessionLength: "60 minutos por encuentro",
   capacity: 12,
-  pricePyg: 490000,
-  priceLabel: "G. 490.000",
+  currency: "USD",
+  fullPriceUsd: 79,
+  monthlyPriceUsd: 45,
+  monthlyPayments: 2,
+  priceLabel: "Desde US$45/mes",
   includes: [
     "16 clases en vivo en grupos reducidos",
     "Materiales y grabaciones de apoyo",
@@ -55,11 +59,13 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
   const country = cleanText(input?.country, 80);
   const schedule = SCHEDULES.has(input?.schedule) ? input.schedule : "";
   const level = LEVELS.has(input?.level) ? input.level : "";
+  const paymentPreference = PAYMENT_PREFERENCES.has(input?.paymentPreference) ? input.paymentPreference : "";
   if (name.length < 2) throw new TypeError("NAME_REQUIRED");
   if (!validEmail(email)) throw new TypeError("VALID_EMAIL_REQUIRED");
   if (!country) throw new TypeError("COUNTRY_REQUIRED");
   if (!schedule) throw new TypeError("SCHEDULE_REQUIRED");
   if (!level) throw new TypeError("LEVEL_REQUIRED");
+  if (!paymentPreference) throw new TypeError("PAYMENT_PREFERENCE_REQUIRED");
   if (input?.consent !== true) throw new TypeError("CONSENT_REQUIRED");
   const createdAt = cleanText(existing?.createdAt, 64) || now;
   return {
@@ -71,6 +77,7 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
     timezone: cleanText(input?.timezone, 100),
     schedule,
     level,
+    paymentPreference,
     goal: cleanText(input?.goal, 800),
     consent: true,
     marketingConsent: input?.marketingConsent === true,
@@ -86,7 +93,7 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
 
 function errorResponse(error) {
   const reason = String(error?.message || "");
-  if (["NAME_REQUIRED", "VALID_EMAIL_REQUIRED", "COUNTRY_REQUIRED", "SCHEDULE_REQUIRED", "LEVEL_REQUIRED", "CONSENT_REQUIRED"].includes(reason)) {
+  if (["NAME_REQUIRED", "VALID_EMAIL_REQUIRED", "COUNTRY_REQUIRED", "SCHEDULE_REQUIRED", "LEVEL_REQUIRED", "PAYMENT_PREFERENCE_REQUIRED", "CONSENT_REQUIRED"].includes(reason)) {
     return { status: 400, reason };
   }
   if (reason === "SPAM_REJECTED") return { status: 202, reason };
@@ -150,6 +157,7 @@ export function createLiveCoursesHandler({
           timezone: cleanText(document.timezone, 100),
           schedule: cleanText(document.schedule, 40),
           level: cleanText(document.level, 40),
+          paymentPreference: cleanText(document.paymentPreference, 40),
           goal: cleanText(document.goal, 800),
           status: cleanText(document.status, 40) || "waitlist",
           createdAt: cleanText(document.createdAt, 64),
