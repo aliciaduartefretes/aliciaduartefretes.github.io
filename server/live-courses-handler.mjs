@@ -106,7 +106,10 @@ export function createLiveCoursesHandler({
     let operation;
     try {
       const url = new URL(request.url || "/api/live-courses", "https://www.idiomaguarani.com.py");
-      operation = url.searchParams.get("operation") || (request.method === "POST" ? "interest" : "catalog");
+      const requestedOperation = url.searchParams.get("operation") || "";
+      operation = requestedOperation === "live-courses"
+        ? (url.searchParams.get("action") || (request.method === "POST" ? "interest" : "catalog"))
+        : (requestedOperation || (request.method === "POST" ? "interest" : "catalog"));
     } catch {
       return sendJson(response, 400, { ok: false, reason: "INVALID_REQUEST" });
     }

@@ -44,6 +44,15 @@ test("publica la propuesta sin exponer datos personales ni habilitar cobros", as
   assert.equal(res.payload.course.capacity, 12);
 });
 
+test("acepta la ruta compartida de academia para no crear otra función de Vercel", async () => {
+  const res = response();
+  const req = request("catalog");
+  req.url = "/api/premium-academy?operation=live-courses&action=catalog";
+  await createLiveCoursesHandler()(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.course.courseId, LIVE_COURSE.courseId);
+});
+
 test("registra el interés con un identificador determinista y evita duplicados", async () => {
   let saved = null;
   const first = response();

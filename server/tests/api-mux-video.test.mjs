@@ -184,10 +184,12 @@ test("Mux comparte la función de academia para respetar el límite del plan gra
   const router = createPremiumAcademyRouter({
     academyHandler: async () => called.push("academy"),
     muxHandler: async () => called.push("mux"),
-    resourceHandler: async () => called.push("resource")
+    resourceHandler: async () => called.push("resource"),
+    liveCoursesHandler: async () => called.push("live-courses")
   });
   await router({ url: "/api/premium-academy?operation=catalog" }, {});
   await router({ url: "/api/premium-academy?operation=mux-playback-token" }, {});
   await router({ url: "/api/premium-academy?operation=resource" }, {});
-  assert.deepEqual(called, ["academy", "mux", "resource"]);
+  await router({ url: "/api/premium-academy?operation=live-courses" }, {});
+  assert.deepEqual(called, ["academy", "mux", "resource", "live-courses"]);
 });

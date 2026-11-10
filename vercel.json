@@ -24,9 +24,6 @@
     },
     "api/premium-academy.js": {
       "maxDuration": 20
-    },
-    "api/live-courses.js": {
-      "maxDuration": 15
     }
   },
   "headers": [
@@ -145,23 +142,6 @@
     },
     {
       "source": "/api/premium-academy",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "no-referrer"
-        }
-      ]
-    },
-    {
-      "source": "/api/live-courses",
       "headers": [
         {
           "key": "Cache-Control",

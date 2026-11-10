@@ -1,6 +1,6 @@
 (()=>{
   "use strict";
-  const API="/api/live-courses",ADMIN_EMAILS=new Set(["aliciaduartefretes@gmail.com"]);
+  const API="/api/premium-academy?operation=live-courses",ADMIN_EMAILS=new Set(["aliciaduartefretes@gmail.com"]);
   const $=selector=>document.querySelector(selector);
   const dialog=$("#nalviLiveCourseDialog"),form=$("#nalviLiveCourseForm"),status=$("#nalviLiveCourseStatus"),success=$("#nalviLiveCourseSuccess"),formView=$("#nalviLiveCourseFormView");
   if(!dialog||!form)return;
@@ -47,7 +47,7 @@
     body.consent=data.get("consent")==="on";body.marketingConsent=data.get("marketingConsent")==="on";body.locale=document.documentElement.lang||"es";body.source="home-live-course-banner";body.formStartedAt=Number(form.dataset.startedAt||Date.now());
     try{
       const headers={"Content-Type":"application/json",...await authHeaders()};
-      const response=await fetch(`${API}?operation=interest`,{method:"POST",headers,body:JSON.stringify(body)}),payload=await response.json().catch(()=>({}));
+      const response=await fetch(`${API}&action=interest`,{method:"POST",headers,body:JSON.stringify(body)}),payload=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(payload.reason||"REGISTRATION_FAILED");
       formView.hidden=true;success.hidden=false;
       const title=$("#nalviLiveSuccessTitle"),copy=$("#nalviLiveSuccessCopy");
@@ -65,7 +65,7 @@
   $("#nalviLiveAdminButton")?.addEventListener("click",async event=>{
     const button=event.currentTarget,panel=$("#nalviLiveAdminPanel");button.disabled=true;panel.innerHTML='<p class="nalvi-live-admin-summary">Cargando inscripciones…</p>';
     try{
-      const response=await fetch(`${API}?operation=admin-list`,{headers:await authHeaders()}),payload=await response.json().catch(()=>({}));
+      const response=await fetch(`${API}&action=admin-list`,{headers:await authHeaders()}),payload=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(payload.reason||"ADMIN_LIST_FAILED");
       const interests=Array.isArray(payload.interests)?payload.interests:[];
       panel.innerHTML=`<p class="nalvi-live-admin-summary"><b>${interests.length}</b> ${interests.length===1?"persona inscrita":"personas inscritas"}</p><div class="nalvi-live-admin-list">${interests.length?interests.map(item=>`<article class="nalvi-live-admin-lead"><b>${escapeHtml(item.name)}</b><span>${escapeHtml(item.email)}${item.whatsapp?` · ${escapeHtml(item.whatsapp)}`:""}</span><small>${escapeHtml(item.country)} · ${escapeHtml(formatSchedule(item.schedule))} · ${escapeHtml(formatLevel(item.level))}${item.goal?`<br>${escapeHtml(item.goal)}`:""}</small></article>`).join(""):'<p class="nalvi-live-admin-summary">Todavía no hay inscripciones.</p>'}</div>`;
