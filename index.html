@@ -481,7 +481,8 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 <link rel="stylesheet" href="assets/css/nalvi-audio-affordances.css?v=NALVI-AUDIO-AFFORDANCES-3">
 <link rel="stylesheet" href="assets/css/nalvi-notification-center.css?v=NALVI-NOTIFICATION-CENTER-1">
 <link rel="stylesheet" href="assets/css/nalvi-accessibility.css?v=NALVI-ACCESSIBILITY-1">
-<link rel="stylesheet" href="assets/css/nalvi-premium-academy.css?v=NALVI-PREMIUM-ACADEMY-8"></head>
+<link rel="stylesheet" href="assets/css/nalvi-premium-academy.css?v=NALVI-PREMIUM-ACADEMY-8">
+<link rel="stylesheet" href="assets/css/nalvi-live-courses.css?v=NALVI-LIVE-COURSES-1"></head>
 <body aria-busy="true"><div id="nalviBoot" class="nalvi-boot" role="status" aria-live="polite" aria-label="Cargando NALVI"><div class="nalvi-boot-card"><strong>NALVI</strong><span class="nalvi-boot-mark" aria-hidden="true"><i></i><i></i><i></i></span><small id="nalviBootCopy">Preparando tu experiencia…</small></div></div>
 <header><nav class="shell"><div class="brand" aria-label="NALVI"><strong>NALVI</strong><small>Lenguas vivas</small></div><div class="header-tools"><label class="header-lang" aria-label="Idioma nativo"><span>◎</span><select id="headerLang"><option value="es">Español</option><option value="en">English</option><option value="pt">Português</option><option value="fr">Français</option><option value="it">Italiano</option><option value="de">Deutsch</option></select></label></div><div class="stats"><span class="pill">🔥 <b>1</b></span><span class="pill">💚 <b id="lives">5</b></span><span class="pill">⭐ <b id="xp">0</b> XP</span><button class="account-btn" id="accountBtn"><span id="accountIcon">👤</span><span class="account-name" id="accountName">Guardar progreso</span></button></div></nav></header>
 <aside class="play-store-promo" id="playStorePromo" aria-label="Aplicación de NALVI en Google Play">
@@ -494,6 +495,23 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
 </aside>
 <main>
   <section id="home">
+    <aside class="shell nalvi-live-launch" aria-labelledby="nalviLiveLaunchTitle">
+      <div class="nalvi-live-launch-inner">
+        <div>
+          <span class="nalvi-live-launch-eyebrow">NUEVO · COHORTE FUNDADORA</span>
+          <h2 id="nalviLiveLaunchTitle">Guaraní en vivo, con acompañamiento real</h2>
+          <p class="nalvi-live-launch-copy">Aprende desde cero en un grupo reducido, practica en cada encuentro y avanza con una persona docente seleccionada por NALVI.</p>
+          <ul class="nalvi-live-launch-facts" aria-label="Características del programa">
+            <li>8 semanas</li><li>16 clases en vivo</li><li>Máximo 12 personas</li><li>Certificado final</li>
+          </ul>
+        </div>
+        <div class="nalvi-live-launch-card">
+          <div class="nalvi-live-launch-price"><small>Programa completo</small><strong>G. 490.000</strong><span>Horarios a confirmar según el grupo</span></div>
+          <button class="nalvi-live-launch-button" type="button" data-live-course-open>Quiero reservar mi lugar →</button>
+          <p class="nalvi-live-launch-note">No se cobra ahora. Te contactamos antes de confirmar la inscripción.</p>
+        </div>
+      </div>
+    </aside>
     <div class="shell hero">
       <div>
         <h1 data-ui="hero">Aprende a pensar, hablar y sentir en guaraní.</h1>
@@ -547,6 +565,40 @@ footer{padding:28px 15px 110px}footer>br,footer #buildVersion{display:none!impor
   <section id="videos" class="hide"><div class="shell"><div class="page-head"><span class="tag">VIDEOS DE LA PROFE ALI</span><h2>Aprende con situaciones reales</h2><p>Refuerza cada tema con las explicaciones y curiosidades de Ali.</p></div><div class="reels-gallery" id="reelsGallery"></div><div class="insta-cta"><h3>¿Quieres ver más?</h3><p>Sigue a @aliexplora para recibir nuevas lecciones y curiosidades.</p><a class="btn instagram" href="https://www.instagram.com/aliexplora/" target="_blank" rel="noopener">📸 Seguir en Instagram</a></div></div></section>
   <section id="suggestions" class="hide"><div class="shell"><div class="page-head"><span class="tag">CONSTRUYAMOS JUNTOS</span><h2>¿Cómo podemos mejorar?</h2><p>Tu idea puede convertirse en la próxima función o lección.</p></div><form class="suggest-card" action="https://formsubmit.co/Aliciaduartefretes@gmail.com" method="POST"><input type="hidden" name="_subject" value="Nueva sugerencia para Guaraní con Ali"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="_template" value="table"><input type="hidden" name="_next" value="https://aliciaduartefretes.github.io/?sugerencia=enviada"><input type="text" name="_honey" style="display:none"><div class="form-row"><div><label for="visitorName">Nombre</label><input id="visitorName" name="Nombre" placeholder="¿Cómo te llamas?" required></div><div><label for="visitorEmail">Correo (opcional)</label><input id="visitorEmail" type="email" name="Correo" placeholder="Para poder responderte"></div></div><label for="ideaType">¿Qué quieres sugerir?</label><select id="ideaType" name="Tipo"><option>Nueva lección</option><option>Corrección de guaraní</option><option>Mejora de la página</option><option>Problema técnico</option><option>Accesibilidad</option><option>Otra idea</option></select><label for="idea">Cuéntanos tu idea</label><textarea id="idea" name="Sugerencia" placeholder="Escribe aquí tu sugerencia…" required></textarea><button class="btn" type="submit">Enviar sugerencia ✨</button><p><small>La sugerencia llegará directamente al correo de la Profe Ali.</small></p></form></div></section>
 </main>
+<dialog class="nalvi-live-dialog" id="nalviLiveCourseDialog" aria-labelledby="nalviLiveCourseTitle">
+  <div class="nalvi-live-dialog-shell">
+    <button class="nalvi-live-close" type="button" data-live-course-close aria-label="Cerrar">×</button>
+    <section class="nalvi-live-dialog-info">
+      <span class="nalvi-live-dialog-eyebrow">COHORTE FUNDADORA</span>
+      <h2 id="nalviLiveCourseTitle">Guaraní en vivo: de cero a conversación</h2>
+      <p class="nalvi-live-dialog-summary">Un programa cercano y exigente para aprender con acompañamiento docente, práctica real y un grupo pequeño.</p>
+      <div class="nalvi-live-dialog-meta">
+        <div><small>Duración</small><b>8 semanas</b></div><div><small>Frecuencia</small><b>2 clases por semana</b></div>
+        <div><small>Encuentros</small><b>60 minutos en vivo</b></div><div><small>Cupos</small><b>Máximo 12 personas</b></div>
+      </div>
+      <ul class="nalvi-live-includes"><li>16 clases en vivo en grupos reducidos</li><li>Materiales y grabaciones de apoyo</li><li>Acceso a NALVI Plus durante el programa</li><li>Seguimiento de avance y certificado final</li></ul>
+      <p class="nalvi-live-payment-note"><b>Programa completo: G. 490.000.</b><br>Reservar tu lugar no genera ningún cobro. Cuando confirmemos docente y horario, recibirás todos los datos antes de decidir.</p>
+    </section>
+    <section class="nalvi-live-dialog-content">
+      <div id="nalviLiveCourseFormView">
+        <header class="nalvi-live-form-head"><span>LISTA PRIORITARIA</span><h3>Reserva uno de los primeros cupos</h3><p>Cuéntanos cuándo te conviene estudiar. Usaremos esta información solamente para organizar esta cohorte y contactarte.</p></header>
+        <form class="nalvi-live-form" id="nalviLiveCourseForm">
+          <div class="nalvi-live-field-grid"><label>Nombre y apellido<input name="name" autocomplete="name" maxlength="100" required></label><label>Correo electrónico<input name="email" type="email" autocomplete="email" maxlength="160" required></label></div>
+          <div class="nalvi-live-field-grid"><label>WhatsApp (opcional)<input name="whatsapp" type="tel" autocomplete="tel" maxlength="40" placeholder="Incluye el código de país"></label><label>País<input name="country" autocomplete="country-name" maxlength="80" required></label></div>
+          <div class="nalvi-live-field-grid"><label>Horario preferido<select name="schedule" required><option value="">Selecciona una opción</option><option value="weekday-evenings">Entre semana · tarde/noche</option><option value="saturday-mornings">Sábados · mañana</option><option value="flexible">Tengo horario flexible</option><option value="other">Necesito otro horario</option></select></label><label>Tu nivel actual<select name="level" required><option value="">Selecciona tu nivel</option><option value="new">Empiezo desde cero</option><option value="beginner">Ya conozco lo básico</option><option value="intermediate">Tengo nivel intermedio</option></select></label></div>
+          <label>¿Qué quieres lograr? (opcional)<textarea name="goal" maxlength="800" placeholder="Por ejemplo: conversar con mi familia, enseñar o trabajar en Paraguay"></textarea></label>
+          <label class="nalvi-live-checkbox"><input name="consent" type="checkbox" required><span>Autorizo a NALVI a contactarme sobre esta cohorte y entiendo que todavía no se realizará ningún cobro.</span></label>
+          <label class="nalvi-live-checkbox"><input name="marketingConsent" type="checkbox"><span>También quiero recibir noticias sobre futuros cursos de NALVI. (Opcional)</span></label>
+          <label class="nalvi-live-honeypot" aria-hidden="true">Sitio web<input name="website" tabindex="-1" autocomplete="off"></label><input name="timezone" type="hidden">
+          <button class="nalvi-live-primary" type="submit">Entrar a la lista prioritaria</button>
+          <p class="nalvi-live-status" id="nalviLiveCourseStatus" role="status" aria-live="polite"></p><p class="nalvi-live-privacy">Tus datos no se publican ni se comparten con docentes hasta que se confirme la cohorte.</p>
+        </form>
+        <section class="nalvi-live-admin" id="nalviLiveAdmin" hidden><button class="nalvi-live-admin-button" id="nalviLiveAdminButton" type="button">Ver personas inscritas (administración)</button><div class="nalvi-live-admin-panel" id="nalviLiveAdminPanel"></div></section>
+      </div>
+      <div class="nalvi-live-success" id="nalviLiveCourseSuccess" hidden><div><span class="nalvi-live-success-mark">✓</span><h3 id="nalviLiveSuccessTitle">¡Tu lugar quedó reservado!</h3><p id="nalviLiveSuccessCopy">Te contactaremos para confirmar horario, docente y forma de pago antes de abrir la cohorte.</p><ul><li>No se realizó ningún cobro.</li><li>Tu correo quedó registrado una sola vez.</li><li>Recibirás la información completa antes de decidir.</li></ul><button class="nalvi-live-secondary" type="button" data-live-course-close>Volver a NALVI</button></div></div>
+    </section>
+  </div>
+</dialog>
 <div class="auth-backdrop hide" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="auth-card"><button class="auth-close" id="authClose" aria-label="Cerrar">×</button><div class="auth-icon">🌟</div><h2 id="authTitle">¿Quieres guardar tu progreso?</h2><p id="authText">Inicia sesión para conservar tus avances y personalizar tu experiencia en cualquier dispositivo.</p><div class="auth-benefits"><span id="authBenefit1">✓ Conserva tus unidades y XP</span><span id="authBenefit2">✓ Continúa desde otro celular</span><span id="authBenefit3">✓ Personaliza tu aprendizaje</span></div><button class="google-btn" id="googleLogin"><span style="font-size:20px">🇬</span><span id="googleLoginText">Continuar con Google</span></button><button class="guest-btn" id="guestContinue">Ahora no, continuar como invitado</button><div class="auth-status" id="authStatus"></div></div></div>
 <div class="account-menu hide" id="accountMenu"><strong id="profileName"></strong><small id="profileEmail"></small><button class="mini-btn staff-entry" data-go="institutional">🏫 Gestión académica</button><button class="mini-btn" id="logoutBtn">Cerrar sesión</button></div>
 <div class="consent hide" id="consentBanner"><div><h3 id="consentTitle">Tu privacidad importa</h3><p id="consentText">Con tu permiso usamos estadísticas para saber cuántas personas visitan el curso y mejorarlo. No enviamos tus respuestas ni tu correo a Analytics.</p></div><div class="consent-actions"><button class="mini-btn" id="consentReject">Solo lo necesario</button><button class="btn" id="consentAccept">Aceptar estadísticas</button></div></div>
@@ -3938,5 +3990,6 @@ try{
 <script src="assets/js/nalvi-accessibility.js?v=NALVI-ACCESSIBILITY-1"></script>
 <script type="module" src="assets/js/nalvi-blob-uploader.mjs?v=NALVI-PRIVATE-LIBRARY-1"></script>
   <script src="assets/js/nalvi-premium-academy.js?v=NALVI-PREMIUM-ACADEMY-10"></script>
+  <script src="assets/js/nalvi-live-courses.js?v=NALVI-LIVE-COURSES-1"></script>
 </body>
 </html>

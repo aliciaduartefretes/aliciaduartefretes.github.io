@@ -21,6 +21,7 @@
     "test:billing": "node --test server/tests/billing-config.test.mjs server/tests/lemon-squeezy-client.test.mjs server/tests/api-billing-create-checkout.test.mjs server/tests/api-billing-webhook.test.mjs server/tests/api-billing-one-time-access.test.mjs server/tests/api-billing-router.test.mjs server/tests/firebase-id-token.test.mjs server/tests/api-premium-academy.test.mjs server/tests/api-premium-resource.test.mjs server/tests/api-mux-video.test.mjs",
     "test:premium-academy": "node --test server/tests/api-premium-academy.test.mjs",
     "test:mux-video": "node --test server/tests/api-mux-video.test.mjs",
+    "test:live-courses": "node --test server/tests/api-live-courses.test.mjs",
     "test:billing-rules": "firebase emulators:exec --only firestore --project demo-nalvi-paso-6 --config firebase/firebase.json \"node firebase/firestore-paso-6.test.mjs\"",
     "generate:community-rules": "node scripts/generate-community-firestore-rules.mjs",
     "test:community-rules": "firebase emulators:exec --only firestore --project demo-nalvi-community-open --config firebase/firebase.json \"node --test firebase/community-open-proposal.test.mjs\"",
