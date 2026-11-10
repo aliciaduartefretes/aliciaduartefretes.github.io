@@ -16,7 +16,7 @@ export const LIVE_COURSE = Object.freeze({
   courseId: "guarani-live-founders-2026",
   status: "open",
   name: "Guaraní en vivo: de cero a conversación",
-  eyebrow: "NUEVO · COHORTE FUNDADORA",
+  eyebrow: "NUEVO · PRIMER GRUPO",
   summary: "Un programa cercano y exigente para aprender con una persona docente, practicar en grupo y recibir acompañamiento real.",
   duration: "8 semanas",
   cadence: "2 encuentros en vivo por semana",

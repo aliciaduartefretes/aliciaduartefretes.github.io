@@ -53,7 +53,7 @@
       formView.hidden=true;success.hidden=false;
       const title=$("#nalviLiveSuccessTitle"),copy=$("#nalviLiveSuccessCopy");
       if(payload.status==="already_registered"){title.textContent="Tu lugar ya estaba reservado";copy.textContent="Encontramos tu inscripción anterior. No duplicamos tus datos y conservamos tu lugar en la lista prioritaria."}
-      else{title.textContent="¡Tu lugar quedó reservado!";copy.textContent="Te contactaremos para confirmar horario, docente y forma de pago antes de abrir la cohorte."}
+      else{title.textContent="¡Tu lugar quedó reservado!";copy.textContent="Te contactaremos para confirmar horario, docente y forma de pago antes de confirmar el grupo."}
       window.courseAnalytics?.("live_course_interest_registered",{course_id:"guarani-live-founders-2026",status:payload.status||"registered"});
       window.showToast?.("Tu inscripción fue recibida.");
     }catch(error){

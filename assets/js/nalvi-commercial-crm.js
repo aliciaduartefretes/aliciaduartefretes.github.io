@@ -2,7 +2,7 @@
 (()=>{
   "use strict";
 
-  const VERSION="NALVI-COMMERCIAL-CRM-2";
+  const VERSION="NALVI-COMMERCIAL-CRM-3";
   const API="/api/premium-academy?operation=live-courses";
   const STATUSES={
     waitlist:"Nuevo · por contactar",
@@ -56,7 +56,7 @@
     return `<section class="gesa-pane hide nalvi-commercial-crm" data-gesa-pane="commercial-crm" data-platform-only role="tabpanel" aria-hidden="true">
       <header class="nalvi-commercial-head"><div><span class="tag">GESTIÓN COMERCIAL</span><h3>Personas interesadas y alumnos</h3><p>Gestiona desde el primer contacto hasta la inscripción. Los permisos de contacto y de marketing se mantienen separados.</p></div><div class="nalvi-commercial-actions"><button class="mini-btn" id="nalviCommercialRefresh" type="button">Actualizar</button><button class="mini-btn" id="nalviCommercialExport" type="button">Exportar con permiso</button></div></header>
       <div class="nalvi-commercial-metrics" id="nalviCommercialMetrics"></div>
-      <div class="nalvi-commercial-consent">Email marketing: solo se incluyen las personas que marcaron “recibir noticias”. Las demás pueden recibir únicamente mensajes relacionados con la cohorte que solicitaron.<span class="nalvi-commercial-sender">Remitente profesional: <b>NALVI · Equipo Académico &lt;cursos@correo.idiomaguarani.com.py&gt;</b>. Las respuestas llegan a <b>aliciaduartefretes@gmail.com</b>.</span></div>
+      <div class="nalvi-commercial-consent">Email marketing: solo se incluyen las personas que marcaron “recibir noticias”. Las demás pueden recibir únicamente mensajes relacionados con el programa que solicitaron.<span class="nalvi-commercial-sender">Remitente profesional: <b>NALVI · Equipo Académico &lt;cursos@correo.idiomaguarani.com.py&gt;</b>. Las respuestas llegan a <b>aliciaduartefretes@gmail.com</b>.</span></div>
       <div class="nalvi-commercial-tools"><input id="nalviCommercialSearch" type="search" placeholder="Buscar por nombre, correo, país o WhatsApp" aria-label="Buscar personas"><select id="nalviCommercialStatusFilter" aria-label="Filtrar por estado"><option value="">Todos los estados</option>${Object.entries(STATUSES).map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("")}</select><select id="nalviCommercialMarketingFilter" aria-label="Filtrar por permiso de marketing"><option value="">Todos los permisos</option><option value="yes">Aceptó novedades</option><option value="no">No aceptó novedades</option></select></div>
       <div class="nalvi-commercial-status" id="nalviCommercialStatus" role="status" aria-live="polite"></div>
       <div class="nalvi-commercial-list" id="nalviCommercialList"><div class="nalvi-commercial-empty">Abre este panel para cargar las inscripciones.</div></div>
@@ -107,7 +107,7 @@
 
   function render(){
     const root=$("#nalviCommercialList");if(!root)return;
-    root.innerHTML=interests.length?interests.map(leadMarkup).join(""):'<div class="nalvi-commercial-empty">Todavía no hay personas inscritas en esta cohorte.</div>';
+    root.innerHTML=interests.length?interests.map(leadMarkup).join(""):'<div class="nalvi-commercial-empty">Todavía no hay personas inscritas en este programa.</div>';
     renderMetrics();filter();
   }
 
