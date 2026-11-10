@@ -59,10 +59,12 @@ test("acepta la ruta compartida de academia para no crear otra función de Verce
 
 test("registra el interés con un identificador determinista y evita duplicados", async () => {
   let saved = null;
+  const sent = [];
   const first = response();
   await createLiveCoursesHandler({
     readDocument: async () => ({ status: "missing", document: null }),
     commitDocuments: async input => { saved = input.documents[0]; return { status: "persisted" }; },
+    sendEmail: async input => { sent.push(input); return { status: "sent", id: "email-registration-1" }; },
     now: () => "2026-11-09T12:00:00.000Z"
   })(request("interest", { method: "POST", body: validInterest }), first);
   assert.equal(first.statusCode, 200);
@@ -71,15 +73,21 @@ test("registra el interés con un identificador determinista y evita duplicados"
   assert.equal(saved.fields.paymentPreference, "full");
   assert.equal(saved.pathSegments[0], "liveCourseInterests");
   assert.match(saved.pathSegments[1], /^[a-f0-9]{48}$/);
+  assert.equal(first.payload.emailStatus, "sent");
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].template, "registration_confirmation");
 
   const duplicate = response();
   await createLiveCoursesHandler({
     readDocument: async () => ({ status: "found", document: { ...saved.fields, status: "waitlist", updateCount: 1 } }),
     commitDocuments: async () => ({ status: "persisted" }),
+    sendEmail: async input => { sent.push(input); return { status: "sent", id: "email-registration-2" }; },
     now: () => "2026-11-09T13:00:00.000Z"
   })(request("interest", { method: "POST", body: validInterest }), duplicate);
   assert.equal(duplicate.statusCode, 200);
   assert.equal(duplicate.payload.status, "already_registered");
+  assert.equal(duplicate.payload.emailStatus, "skipped");
+  assert.equal(sent.length, 1);
 });
 
 test("una reinscripción conserva el seguimiento interno del CRM", () => {
@@ -178,4 +186,59 @@ test("administración no puede guardar estados desconocidos ni actualizar IDs aj
   }), invalidId);
   assert.equal(invalidId.statusCode, 400);
   assert.equal(invalidId.payload.reason, "INVALID_INTEREST_ID");
+});
+
+test("administración envía correo profesional y registra la entrega", async () => {
+  const admin = { uid: "admin", email: "aliciaduartefretes@gmail.com", emailVerified: true, isAnonymous: false };
+  let saved = null;
+  let requestToProvider = null;
+  const res = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => admin,
+    readDocument: async () => ({ status: "found", document: { ...validInterest, email: "ana@example.com", status: "waitlist", marketingConsent: false, createdAt: "2026-11-09T12:00:00.000Z" } }),
+    commitDocuments: async input => { saved = input.documents[0]; return { status: "persisted" }; },
+    sendEmail: async input => { requestToProvider = input; return { status: "sent", id: "resend-email-1" }; },
+    now: () => "2026-11-10T15:00:00.000Z"
+  })(request("admin-send-email", {
+    method: "POST",
+    token: "firebase-token",
+    body: { id: "b".repeat(48), template: "cohort_details" }
+  }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(requestToProvider.template, "cohort_details");
+  assert.equal(requestToProvider.interest.email, "ana@example.com");
+  assert.equal(saved.fields.status, "contacted");
+  assert.equal(saved.fields.lastEmailId, "resend-email-1");
+  assert.equal(saved.fields.lastEmailType, "cohort_details");
+  assert.equal(saved.fields.emailHistory.length, 1);
+  assert.equal(res.payload.interest.lastEmailStatus, "sent");
+});
+
+test("bloquea novedades sin consentimiento y bloquea envíos de usuarios comunes", async () => {
+  const admin = { uid: "admin", email: "aliciaduartefretes@gmail.com", emailVerified: true, isAnonymous: false };
+  let sent = false;
+  const noConsent = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => admin,
+    readDocument: async () => ({ status: "found", document: { ...validInterest, email: "ana@example.com", status: "waitlist", marketingConsent: false } }),
+    sendEmail: async () => { sent = true; return { status: "sent", id: "should-not-send" }; }
+  })(request("admin-send-email", {
+    method: "POST",
+    token: "firebase-token",
+    body: { id: "c".repeat(48), template: "course_news" }
+  }), noConsent);
+  assert.equal(noConsent.statusCode, 403);
+  assert.equal(noConsent.payload.reason, "MARKETING_CONSENT_REQUIRED");
+  assert.equal(sent, false);
+
+  const nonAdmin = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => ({ ...admin, email: "student@example.com" })
+  })(request("admin-send-email", {
+    method: "POST",
+    token: "firebase-token",
+    body: { id: "c".repeat(48), template: "cohort_details" }
+  }), nonAdmin);
+  assert.equal(nonAdmin.statusCode, 403);
+  assert.equal(nonAdmin.payload.reason, "ADMIN_REQUIRED");
 });

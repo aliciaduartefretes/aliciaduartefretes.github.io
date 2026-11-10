@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { bearerToken, jsonBody, requestOriginAllowed, sendJson } from "./billing-http.mjs";
 import { verifyFirebaseIdToken } from "./firebase-id-token.mjs";
 import { commitAdminJson, readAdminJson } from "./firebase-rtdb-admin-rest.mjs";
+import { NALVI_EMAIL_TEMPLATES, sendNalviEmail } from "./nalvi-email.mjs";
 
 const INTEREST_COLLECTION = "liveCourseInterests";
 const DEFAULT_ADMIN_EMAILS = Object.freeze(["aliciaduartefretes@gmail.com"]);
@@ -9,6 +10,7 @@ const SCHEDULES = new Set(["weekday-evenings", "saturday-mornings", "flexible", 
 const LEVELS = new Set(["new", "beginner", "intermediate"]);
 const PAYMENT_PREFERENCES = new Set(["full", "monthly"]);
 const CRM_STATUSES = new Set(["waitlist", "contacted", "payment_pending", "enrolled", "active", "completed", "not_interested"]);
+const EMAIL_TEMPLATES = new Set(Object.keys(NALVI_EMAIL_TEMPLATES));
 
 export const LIVE_COURSE = Object.freeze({
   courseId: "guarani-live-founders-2026",
@@ -92,6 +94,17 @@ function publicAdminInterest(document = {}) {
     createdAt: cleanText(document.createdAt, 64),
     updatedAt: cleanText(document.updatedAt, 64),
     crmUpdatedAt: cleanText(document.crmUpdatedAt, 64),
+    lastEmailAt: cleanText(document.lastEmailAt, 64),
+    lastEmailType: EMAIL_TEMPLATES.has(document.lastEmailType) ? document.lastEmailType : "",
+    lastEmailStatus: cleanText(document.lastEmailStatus, 40),
+    lastEmailId: cleanText(document.lastEmailId, 160),
+    emailHistory: Array.isArray(document.emailHistory) ? document.emailHistory.slice(-12).map(entry => ({
+      sentAt: cleanText(entry?.sentAt, 64),
+      template: EMAIL_TEMPLATES.has(entry?.template) ? entry.template : "",
+      status: cleanText(entry?.status, 40),
+      providerId: cleanText(entry?.providerId, 160),
+      sentBy: cleanText(entry?.sentBy, 160)
+    })).filter(entry => entry.template) : [],
     updateCount: Math.max(0, Number(document.updateCount || 0))
   };
 }
@@ -133,6 +146,11 @@ export function normalizeLiveCourseInterest(input, { existing = null, user = nul
     followUpAt: cleanText(existing?.followUpAt, 64),
     crmUpdatedAt: cleanText(existing?.crmUpdatedAt, 64),
     crmUpdatedBy: cleanText(existing?.crmUpdatedBy, 160),
+    lastEmailAt: cleanText(existing?.lastEmailAt, 64),
+    lastEmailType: EMAIL_TEMPLATES.has(existing?.lastEmailType) ? existing.lastEmailType : "",
+    lastEmailStatus: cleanText(existing?.lastEmailStatus, 40),
+    lastEmailId: cleanText(existing?.lastEmailId, 160),
+    emailHistory: Array.isArray(existing?.emailHistory) ? existing.emailHistory.slice(-12) : [],
     userId: cleanText(user?.uid, 256),
     createdAt,
     updatedAt: now,
@@ -168,7 +186,8 @@ export function createLiveCoursesHandler({
   commitDocuments = commitAdminJson,
   listDocuments = listLiveCourseInterests,
   env = process.env,
-  now = () => new Date().toISOString()
+  now = () => new Date().toISOString(),
+  sendEmail = sendNalviEmail
 } = {}) {
   return async function liveCoursesHandler(request, response) {
     let operation;
@@ -238,6 +257,58 @@ export function createLiveCoursesHandler({
       }
     }
 
+    if (operation === "admin-send-email") {
+      if (request.method !== "POST") return sendJson(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" }, { Allow: "POST" });
+      const token = bearerToken(request);
+      const user = token ? await verifyIdToken(token, { env }) : null;
+      if (!isAdministrator(user, env)) return sendJson(response, 403, { ok: false, reason: "ADMIN_REQUIRED" });
+      try {
+        const body = await jsonBody(request, 8_192);
+        const id = cleanText(body?.id, 80);
+        const template = cleanText(body?.template, 80);
+        if (!/^[a-f0-9]{48}$/.test(id)) throw new TypeError("INVALID_INTEREST_ID");
+        if (!EMAIL_TEMPLATES.has(template) || template === "registration_confirmation") throw new TypeError("INVALID_EMAIL_TEMPLATE");
+        const existingResult = await readDocument({ pathSegments: [INTEREST_COLLECTION, id], env });
+        if (existingResult.status === "missing") return sendJson(response, 404, { ok: false, reason: "INTEREST_NOT_FOUND" });
+        if (existingResult.status !== "found" || !existingResult.document) throw new Error("LIVE_COURSE_READ_FAILED");
+        if (template === "course_news" && existingResult.document.marketingConsent !== true) {
+          return sendJson(response, 403, { ok: false, reason: "MARKETING_CONSENT_REQUIRED" });
+        }
+        const timestamp = now();
+        const delivery = await sendEmail({
+          template,
+          interest: existingResult.document,
+          env,
+          idempotencyKey: `crm:${id}:${template}:${timestamp}`
+        });
+        if (delivery.status !== "sent") {
+          const status = delivery.reason === "EMAIL_NOT_CONFIGURED" || delivery.reason === "EMAIL_DISABLED" ? 503 : 502;
+          return sendJson(response, status, { ok: false, reason: delivery.reason || "EMAIL_SEND_FAILED" });
+        }
+        const history = Array.isArray(existingResult.document.emailHistory) ? existingResult.document.emailHistory.slice(-11) : [];
+        const updated = {
+          ...existingResult.document,
+          status: existingResult.document.status === "waitlist" ? "contacted" : existingResult.document.status,
+          lastEmailAt: timestamp,
+          lastEmailType: template,
+          lastEmailStatus: "sent",
+          lastEmailId: delivery.id,
+          emailHistory: [...history, { sentAt: timestamp, template, status: "sent", providerId: delivery.id, sentBy: cleanText(user.email, 160) }],
+          crmUpdatedAt: timestamp,
+          crmUpdatedBy: cleanText(user.email, 160),
+          updatedAt: timestamp
+        };
+        const saved = await commitDocuments({ documents: [{ pathSegments: [INTEREST_COLLECTION, id], fields: updated }], env });
+        if (saved.status !== "persisted") throw new Error("LIVE_COURSE_WRITE_FAILED");
+        return sendJson(response, 200, { ok: true, delivery: { status: "sent", template }, interest: publicAdminInterest({ id, ...updated }) });
+      } catch (error) {
+        const reason = String(error?.message || "");
+        if (["INVALID_INTEREST_ID", "INVALID_EMAIL_TEMPLATE"].includes(reason)) return sendJson(response, 400, { ok: false, reason });
+        if (reason === "PAYLOAD_TOO_LARGE") return sendJson(response, 413, { ok: false, reason });
+        return sendJson(response, 503, { ok: false, reason: "EMAIL_SEND_UNAVAILABLE" });
+      }
+    }
+
     if (operation !== "interest") return sendJson(response, 404, { ok: false, reason: "UNKNOWN_OPERATION" });
     if (request.method !== "POST") return sendJson(response, 405, { ok: false, reason: "METHOD_NOT_ALLOWED" }, { Allow: "POST" });
 
@@ -257,11 +328,35 @@ export function createLiveCoursesHandler({
       });
       const saved = await commitDocuments({ documents: [{ pathSegments: [INTEREST_COLLECTION, id], fields: interest }], env });
       if (saved.status !== "persisted") throw new Error("LIVE_COURSE_WRITE_FAILED");
+      let emailStatus = "skipped";
+      if (existingResult.status === "missing") {
+        const sentAt = now();
+        const delivery = await sendEmail({
+          template: "registration_confirmation",
+          interest,
+          env,
+          idempotencyKey: `registration:${id}:registration-confirmation`
+        });
+        emailStatus = delivery.status;
+        if (delivery.status === "sent") {
+          const withEmail = {
+            ...interest,
+            lastEmailAt: sentAt,
+            lastEmailType: "registration_confirmation",
+            lastEmailStatus: "sent",
+            lastEmailId: delivery.id,
+            emailHistory: [{ sentAt, template: "registration_confirmation", status: "sent", providerId: delivery.id, sentBy: "nalvi-system" }],
+            updatedAt: sentAt
+          };
+          await commitDocuments({ documents: [{ pathSegments: [INTEREST_COLLECTION, id], fields: withEmail }], env });
+        }
+      }
       return sendJson(response, 200, {
         ok: true,
         status: existingResult.status === "found" ? "already_registered" : "registered",
         courseId: LIVE_COURSE.courseId,
-        nextStep: "NALVI_CONFIRMATION"
+        nextStep: "NALVI_CONFIRMATION",
+        emailStatus
       });
     } catch (error) {
       const failure = errorResponse(error);
