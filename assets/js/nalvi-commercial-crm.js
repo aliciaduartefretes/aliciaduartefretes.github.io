@@ -2,7 +2,7 @@
 (()=>{
   "use strict";
 
-  const VERSION="NALVI-COMMERCIAL-CRM-5";
+  const VERSION="NALVI-COMMERCIAL-CRM-6";
   const API="/api/premium-academy?operation=live-courses";
   const STATUSES={
     waitlist:"Nuevo · por contactar",
@@ -25,7 +25,6 @@
   const normalize=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
   let interests=[];
   let metrics={total:0,marketingEligible:0,pendingContact:0,customers:0,byStatus:{}};
-  let registeredUsers=0;
   let loading=false;
   let activeMetricMode="all";
 
@@ -47,7 +46,7 @@
       .nalvi-commercial-page{min-height:calc(100vh - 120px);padding:26px 0 150px;background:linear-gradient(135deg,#f8f6ff 0%,#f2fbfb 100%)}.nalvi-commercial-shell{display:grid;gap:18px}.nalvi-commercial-crm{display:grid;gap:18px;padding:22px;border:2px solid #e1daeb;border-radius:24px;background:#fff;box-shadow:0 18px 45px rgba(49,31,100,.08)}
       .nalvi-admin-area-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;border:2px solid #dfd7ea;border-radius:22px;background:#fff}.nalvi-admin-area-head h2{margin:4px 0 5px}.nalvi-admin-area-head p{margin:0;color:var(--muted);font-weight:750}.nalvi-admin-area-switcher{display:flex;gap:8px;padding:5px;border:1px solid #dcd4e9;border-radius:15px;background:#f8f6fd}.nalvi-admin-area-switcher button{min-height:42px;border:0;border-radius:11px;background:transparent;padding:9px 14px;color:var(--muted);font:900 13px/1.2 inherit;cursor:pointer}.nalvi-admin-area-switcher button.active{background:#4d3db5;color:#fff;box-shadow:0 6px 16px rgba(67,48,162,.2)}.nalvi-admin-area-switcher button:focus-visible{outline:3px solid #19856d;outline-offset:2px}
       .nalvi-academic-admin-switcher{margin:0 0 16px}.nalvi-commercial-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.nalvi-commercial-head h3{margin:5px 0}.nalvi-commercial-head p{margin:0;color:var(--muted);max-width:720px}.nalvi-commercial-actions{display:flex;gap:9px;flex-wrap:wrap}
-      .nalvi-commercial-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.nalvi-commercial-metric{width:100%;padding:16px;border:2px solid #e1daeb;border-radius:17px;background:#fff;text-align:left}.nalvi-commercial-metric[data-commercial-metric]{cursor:pointer;font:inherit}.nalvi-commercial-metric[data-commercial-metric]:hover,.nalvi-commercial-metric.active{border-color:#6b52c7;background:#f6f2ff;transform:translateY(-1px)}.nalvi-commercial-metric:focus-visible{outline:3px solid #19856d;outline-offset:2px}.nalvi-commercial-metric b{display:block;font-size:28px;line-height:1;color:#5940b7}.nalvi-commercial-metric span{display:block;margin-top:7px;color:var(--muted);font-size:12px;font-weight:900}.nalvi-commercial-metric small{display:block;margin-top:7px;color:#5940b7;font-size:11px;font-weight:900}
+      .nalvi-commercial-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.nalvi-commercial-metric{width:100%;padding:16px;border:2px solid #e1daeb;border-radius:17px;background:#fff;text-align:left}.nalvi-commercial-metric[data-commercial-metric]{cursor:pointer;font:inherit}.nalvi-commercial-metric[data-commercial-metric]:hover,.nalvi-commercial-metric.active{border-color:#6b52c7;background:#f6f2ff;transform:translateY(-1px)}.nalvi-commercial-metric:focus-visible{outline:3px solid #19856d;outline-offset:2px}.nalvi-commercial-metric b{display:block;font-size:28px;line-height:1;color:#5940b7}.nalvi-commercial-metric span{display:block;margin-top:7px;color:var(--muted);font-size:12px;font-weight:900}.nalvi-commercial-metric small{display:block;margin-top:7px;color:#5940b7;font-size:11px;font-weight:900}
       .nalvi-commercial-directory{display:grid;gap:14px;scroll-margin-top:130px}.nalvi-commercial-directory-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:4px}.nalvi-commercial-directory-head h3{margin:0}.nalvi-commercial-directory-head p{margin:4px 0 0;color:var(--muted)}.nalvi-commercial-visible-count{display:inline-flex;min-width:34px;justify-content:center;padding:5px 9px;border-radius:999px;background:#eee8ff;color:#513baa;font-size:13px;vertical-align:middle}.nalvi-commercial-consent{border:1px solid #d8d0e7;border-radius:14px;background:#faf8ff;color:var(--muted);font-weight:800}.nalvi-commercial-consent summary{cursor:pointer;padding:12px 15px;color:#4f3e9f}.nalvi-commercial-consent>div{padding:0 15px 14px}.nalvi-commercial-sender{display:block;margin-top:7px;color:#4f3e9f}.nalvi-commercial-tools{display:grid;grid-template-columns:minmax(220px,1fr) 210px 210px;gap:10px}.nalvi-commercial-tools input,.nalvi-commercial-tools select,.nalvi-commercial-lead select,.nalvi-commercial-lead textarea,.nalvi-commercial-lead input[type=date]{width:100%;min-height:44px;border:2px solid #e1daeb;border-radius:13px;background:#fff;padding:10px 12px;color:var(--ink);font:800 14px/1.2 inherit}
       .nalvi-commercial-list{display:grid;gap:12px}.nalvi-commercial-lead{padding:17px;border:2px solid #e3dcec;border-radius:18px;background:#fff}.nalvi-commercial-lead[hidden]{display:none!important}.nalvi-commercial-lead-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.nalvi-commercial-lead h4{margin:0 0 3px}.nalvi-commercial-lead p{margin:5px 0;color:var(--muted)}.nalvi-commercial-badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.nalvi-commercial-badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#f1edfb;color:#5940a9;font-size:11px;font-weight:950}.nalvi-commercial-badge.allowed{background:#e4f7ef;color:#12684f}.nalvi-commercial-badge.blocked{background:#f4f1f6;color:#756d80}.nalvi-commercial-lead-grid{display:grid;grid-template-columns:180px minmax(220px,1fr) 160px;gap:10px;align-items:end;margin-top:12px}.nalvi-commercial-lead label{display:grid;gap:5px;color:var(--muted);font-size:12px;font-weight:900}.nalvi-commercial-lead textarea{min-height:76px;resize:vertical}.nalvi-commercial-email{display:grid;grid-template-columns:minmax(240px,360px) auto;gap:8px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px solid #ece7f2}.nalvi-commercial-email small{grid-column:1/-1;color:var(--muted);font-weight:800}.nalvi-commercial-lead-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.nalvi-commercial-empty{padding:28px;border:2px dashed #ddd4e9;border-radius:17px;text-align:center;color:var(--muted);font-weight:850}.nalvi-commercial-status{min-height:20px;color:#1a795d;font-weight:850}.nalvi-commercial-status.error{color:#b43752}
       @media(max-width:1000px){.nalvi-commercial-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.nalvi-commercial-tools,.nalvi-commercial-lead-grid,.nalvi-commercial-email{grid-template-columns:1fr}}
@@ -108,7 +107,6 @@
     removeLegacyPane();registerView();installAccountEntry();installAcademicSwitcher();
     if(!isAdmin()){if(!$("#commercial")?.classList.contains("hide"))window.show?.("home",true);$("#commercial")?.remove();return false}
     if(!$("#commercial")){const bottomNav=$(".bottom-nav");bottomNav?.insertAdjacentHTML("beforebegin",pageMarkup());const page=$("#commercial");bindAreaSwitcher(page);$("#nalviCommercialRefresh",page)?.addEventListener("click",()=>load(true));$("#nalviCommercialExport",page)?.addEventListener("click",exportMarketingContacts);$("#nalviCommercialClearFilters",page)?.addEventListener("click",()=>applyMetric("all",true));$("#nalviCommercialMetrics",page)?.addEventListener("click",event=>{const button=event.target.closest?.("[data-commercial-metric]");if(button)applyMetric(button.dataset.commercialMetric,true)});["#nalviCommercialSearch","#nalviCommercialStatusFilter","#nalviCommercialMarketingFilter"].forEach(selector=>$(selector,page)?.addEventListener(selector.includes("Search")?"input":"change",()=>{activeMetricMode="custom";renderMetrics();filter()}));$("#nalviCommercialList",page)?.addEventListener("click",handleListClick)}
-    registeredUsers=Array.isArray(window.GESA_DATA?.users)?window.GESA_DATA.users.length:registeredUsers;
     renderMetrics();
     return true;
   }
@@ -117,8 +115,8 @@
 
   function renderMetrics(){
     const root=$("#nalviCommercialMetrics");if(!root)return;
-    const rows=[[registeredUsers,"Usuarios totales",""],[metrics.total||interests.length,"Interesados","all"],[metrics.pendingContact||0,"Por contactar","pending"],[metrics.marketingEligible||0,"Aceptan novedades","marketing"],[metrics.customers||0,"Inscritos/clientes","customers"]];
-    root.innerHTML=rows.map(([value,label,mode])=>mode?`<button class="nalvi-commercial-metric ${activeMetricMode===mode?"active":""}" type="button" data-commercial-metric="${mode}" aria-pressed="${activeMetricMode===mode}"><b>${Number(value)||0}</b><span>${esc(label)}</span><small>Ver personas →</small></button>`:`<article class="nalvi-commercial-metric"><b>${Number(value)||0}</b><span>${esc(label)}</span></article>`).join("");
+    const rows=[[metrics.total||interests.length,"Interesados","all"],[metrics.pendingContact||0,"Por contactar","pending"],[metrics.marketingEligible||0,"Aceptan novedades","marketing"],[metrics.customers||0,"Inscritos/clientes","customers"]];
+    root.innerHTML=rows.map(([value,label,mode])=>`<button class="nalvi-commercial-metric ${activeMetricMode===mode?"active":""}" type="button" data-commercial-metric="${mode}" aria-pressed="${activeMetricMode===mode}"><b>${Number(value)||0}</b><span>${esc(label)}</span><small>Ver personas →</small></button>`).join("");
   }
 
   function leadMarkup(item){
@@ -203,12 +201,11 @@
     load();
   }
 
-  function refreshUsers(data={}){if(Array.isArray(data.users)){registeredUsers=data.users.length;renderMetrics()}}
   function init(){
     installStyles();install();
     window.addEventListener("nalvi:role-known",()=>setTimeout(()=>{install();if(location.hash==="#commercial"&&isAdmin())open()},100));
     window.addEventListener("nalvi:academic-studio-ready",()=>setTimeout(install,100));
-    window.addEventListener("nalvi:academic-data",event=>{refreshUsers(event.detail||{});setTimeout(install,0)});
+    window.addEventListener("nalvi:academic-data",()=>setTimeout(install,0));
     if(location.hash==="#commercial"&&isAdmin())setTimeout(open,0);
   }
 
