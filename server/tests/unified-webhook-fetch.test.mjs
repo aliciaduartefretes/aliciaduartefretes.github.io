@@ -13,6 +13,8 @@ test("routes Resend only through the explicit source and preserves Lemon by defa
   const billing = await handler(new Request("https://example.test/api/billing-webhook"));
 
   assert.equal(await email.text(), "email");
+  assert.equal(email.headers.get("x-nalvi-webhook-route"), "live-course-email-v1");
   assert.equal(await billing.text(), "billing");
+  assert.equal(billing.headers.get("x-nalvi-webhook-route"), null);
   assert.deepEqual(calls, ["email", "billing"]);
 });
