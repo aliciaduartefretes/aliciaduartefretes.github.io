@@ -217,6 +217,33 @@ test("administración envía correo profesional y registra la entrega", async ()
   assert.equal(res.payload.interest.lastEmailStatus, "sent");
 });
 
+test("administración no vuelve a enviar la misma plantilla durante cinco minutos", async () => {
+  const admin = { uid: "admin", email: "aliciaduartefretes@gmail.com", emailVerified: true, isAnonymous: false };
+  let sent = false;
+  const res = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => admin,
+    readDocument: async () => ({
+      status: "found",
+      document: {
+        ...validInterest,
+        email: "ana@example.com",
+        status: "contacted",
+        emailHistory: [{ direction: "outbound", template: "cohort_details", status: "sent", sentAt: "2026-11-10T15:00:00.000Z" }]
+      }
+    }),
+    sendEmail: async () => { sent = true; return { status: "sent", id: "unexpected" }; },
+    now: () => "2026-11-10T15:03:00.000Z"
+  })(request("admin-send-email", {
+    method: "POST",
+    token: "firebase-token",
+    body: { id: "e".repeat(48), template: "cohort_details" }
+  }), res);
+  assert.equal(res.statusCode, 409);
+  assert.equal(res.payload.reason, "EMAIL_RECENTLY_SENT");
+  assert.equal(sent, false);
+});
+
 test("una respuesta verificada se incorpora a la conversación de la persona", async () => {
   const leadId = "d".repeat(48);
   let saved = null;

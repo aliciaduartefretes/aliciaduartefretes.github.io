@@ -21,6 +21,7 @@ const CRM_STATUSES = new Set(["waitlist", "contacted", "payment_pending", "enrol
 const EMAIL_TEMPLATES = new Set(Object.keys(NALVI_EMAIL_TEMPLATES));
 const CLASS_PROVIDERS = new Set(["zoom", "google-meet", "teams", "other"]);
 const RESOURCE_TYPES = new Set(["document", "video", "audio", "link", "exercise"]);
+const EMAIL_DUPLICATE_WINDOW_MS = 5 * 60 * 1_000;
 
 export const LIVE_COURSE = Object.freeze({
   courseId: "guarani-live-founders-2026",
@@ -88,6 +89,16 @@ function outboundEmailEntry(delivery, { template, timestamp, sentBy }) {
     subject: delivery.subject,
     text: delivery.text
   });
+}
+
+function recentMatchingEmail(history, template, timestamp, windowMs = EMAIL_DUPLICATE_WINDOW_MS) {
+  const currentTime = Date.parse(timestamp);
+  if (!Number.isFinite(currentTime) || !Array.isArray(history)) return null;
+  return [...history].reverse().find(entry => {
+    if (entry?.direction === "inbound" || entry?.template !== template || entry?.status !== "sent") return false;
+    const sentTime = Date.parse(entry.sentAt);
+    return Number.isFinite(sentTime) && currentTime >= sentTime && currentTime - sentTime < windowMs;
+  }) || null;
 }
 
 function adminEmails(env = process.env) {
@@ -468,17 +479,22 @@ export function createLiveCoursesHandler({
           return sendJson(response, 403, { ok: false, reason: "MARKETING_CONSENT_REQUIRED" });
         }
         const timestamp = now();
+        const history = Array.isArray(existingResult.document.emailHistory) ? existingResult.document.emailHistory.slice(-29) : [];
+        const recentDelivery = recentMatchingEmail(history, template, timestamp);
+        if (recentDelivery) {
+          return sendJson(response, 409, { ok: false, reason: "EMAIL_RECENTLY_SENT", sentAt: cleanText(recentDelivery.sentAt, 64) });
+        }
+        const idempotencyBucket = Math.floor(Date.parse(timestamp) / EMAIL_DUPLICATE_WINDOW_MS);
         const delivery = await sendEmail({
           template,
           interest: { ...existingResult.document, crmId: id },
           env,
-          idempotencyKey: `crm:${id}:${template}:${timestamp}`
+          idempotencyKey: `crm:${id}:${template}:${idempotencyBucket}`
         });
         if (delivery.status !== "sent") {
           const status = delivery.reason === "EMAIL_NOT_CONFIGURED" || delivery.reason === "EMAIL_DISABLED" ? 503 : 502;
           return sendJson(response, status, { ok: false, reason: delivery.reason || "EMAIL_SEND_FAILED" });
         }
-        const history = Array.isArray(existingResult.document.emailHistory) ? existingResult.document.emailHistory.slice(-29) : [];
         const updated = {
           ...existingResult.document,
           status: existingResult.document.status === "waitlist" ? "contacted" : existingResult.document.status,
@@ -567,5 +583,6 @@ export const __test = {
   publicAdminInterest,
   publicEmailEntry,
   outboundEmailEntry,
+  recentMatchingEmail,
   normalizeClassroom
 };
