@@ -52,6 +52,14 @@ export async function jsonBody(request, maximumBytes = 4_096) {
 }
 
 export async function rawBody(request, maximumBytes = 524_288) {
+  // Fetch-style Vercel functions expose the untouched payload through
+  // arrayBuffer(). Prefer it before inspecting `body`, which is a
+  // ReadableStream in the Web Request API rather than parsed JSON.
+  if (typeof request?.arrayBuffer === "function") {
+    const buffer = Buffer.from(await request.arrayBuffer());
+    if (buffer.length > maximumBytes) throw new RangeError("PAYLOAD_TOO_LARGE");
+    return buffer;
+  }
   if (Buffer.isBuffer(request.body)) {
     if (request.body.length > maximumBytes) throw new RangeError("PAYLOAD_TOO_LARGE");
     return request.body;
