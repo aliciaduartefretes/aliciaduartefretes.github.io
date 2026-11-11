@@ -12,6 +12,33 @@ function courseEntitlementId(userId, planKey) {
   return createHash("sha256").update(`${userId}:${planKey}`).digest("hex");
 }
 
+function liveCourseEnrollmentDocuments(entitlement = {}) {
+  if (!validId(entitlement.userId)) return [];
+  const configured = Array.isArray(entitlement.configuredEntitlements)
+    ? entitlement.configuredEntitlements
+    : (Array.isArray(entitlement.entitlements) ? entitlement.entitlements : []);
+  return [...new Set(configured)]
+    .filter(value => typeof value === "string" && value.startsWith("live-course:"))
+    .map(value => value.slice("live-course:".length))
+    .filter(validId)
+    .map(courseId => ({
+      pathSegments: ["liveCourseEnrollments", courseId, entitlement.userId],
+      fields: {
+        courseId,
+        userId: entitlement.userId,
+        planKey: entitlement.planKey,
+        active: entitlement.active === true,
+        permanent: entitlement.permanent === true,
+        status: entitlement.status,
+        source: entitlement.source,
+        testMode: entitlement.testMode === true,
+        currentPeriodEnd: entitlement.currentPeriodEnd || null,
+        purchasedAt: entitlement.purchasedAt || null,
+        updatedAt: entitlement.updatedAt
+      }
+    }));
+}
+
 export async function readBillingWebhookEvent({ eventId, ...options } = {}) {
   if (!validId(eventId)) return { status: "failed", reason: "INVALID_BILLING_EVENT_ID" };
   return readAdminJson({ pathSegments: ["billingWebhookEvents", eventId], ...options });
@@ -36,6 +63,7 @@ export async function persistSubscriptionSnapshot({ event, subscription, entitle
     documents: [
       { pathSegments: ["billingSubscriptions", subscription.subscriptionId], fields: subscription },
       { pathSegments: ["billingEntitlements", entitlement.userId], fields: entitlement },
+      ...liveCourseEnrollmentDocuments(entitlement),
       { pathSegments: ["billingWebhookEvents", event.eventId], fields: event }
     ],
     ...options
@@ -51,10 +79,11 @@ export async function persistOneTimePurchaseSnapshot({ event, purchase, entitlem
     documents: [
       { pathSegments: ["billingOrders", purchase.orderId], fields: purchase },
       { pathSegments: ["billingCourseEntitlements", entitlementId], fields: entitlement },
+      ...liveCourseEnrollmentDocuments(entitlement),
       { pathSegments: ["billingWebhookEvents", event.eventId], fields: event }
     ],
     ...options
   });
 }
 
-export const __test = { validId, courseEntitlementId };
+export const __test = { validId, courseEntitlementId, liveCourseEnrollmentDocuments };

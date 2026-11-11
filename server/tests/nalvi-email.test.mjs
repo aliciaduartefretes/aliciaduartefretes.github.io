@@ -59,6 +59,30 @@ test("usa remitente separado para marketing y exige consentimiento", async () =>
   assert.deepEqual(rejected, { status: "failed", reason: "MARKETING_CONSENT_REQUIRED" });
 });
 
+test("usa una dirección única del CRM para que las respuestas regresen a la persona correcta", async () => {
+  let body = null;
+  const crmId = "a".repeat(48);
+  const result = await sendNalviEmail({
+    template: "enrollment_open",
+    interest: { ...interest, crmId },
+    env: {
+      RESEND_API_KEY: "re_test_key",
+      RESEND_EMAIL_DOMAIN: "correo.idiomaguarani.com.py",
+      NALVI_EMAIL_INBOUND_DOMAIN: "respuestas.idiomaguarani.com.py",
+      NALVI_PUBLIC_APP_URL: "https://www.idiomaguarani.com.py"
+    },
+    fetchImpl: async (_url, options) => {
+      body = JSON.parse(options.body);
+      return { ok: true, status: 200, json: async () => ({ id: "email-enrollment-1", message_id: "message-enrollment-1" }) };
+    }
+  });
+  assert.equal(body.reply_to, `crm-${crmId}@respuestas.idiomaguarani.com.py`);
+  assert.match(body.text, /Ver mi inscripción en NALVI/);
+  assert.equal(result.subject, "Ya puedes confirmar tu lugar en Guaraní en vivo");
+  assert.equal(result.messageId, "message-enrollment-1");
+  assert.match(result.text, /calendario de clases/);
+});
+
 test("no intenta enviar si la integración todavía no está configurada", async () => {
   let called = false;
   const result = await sendNalviEmail({

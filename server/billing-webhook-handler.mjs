@@ -103,6 +103,7 @@ function normalizeSubscriptionEvent(payload, config, raw, now = new Date()) {
       status,
       active,
       entitlements: active ? [...plan.entitlements] : [],
+      configuredEntitlements: [...plan.entitlements],
       currentPeriodEnd,
       testMode: Boolean(attributes.test_mode),
       updatedAt: processedAt
@@ -171,6 +172,7 @@ function normalizeOrderEvent(payload, config, raw, now = new Date()) {
       active: isPaidOrder,
       permanent: isPaidOrder,
       entitlements: isPaidOrder ? [...plan.entitlements] : [],
+      configuredEntitlements: [...plan.entitlements],
       testMode: Boolean(attributes.test_mode),
       purchasedAt,
       updatedAt: processedAt

@@ -197,7 +197,7 @@ test("administración envía correo profesional y registra la entrega", async ()
     verifyIdToken: async () => admin,
     readDocument: async () => ({ status: "found", document: { ...validInterest, email: "ana@example.com", status: "waitlist", marketingConsent: false, createdAt: "2026-11-09T12:00:00.000Z" } }),
     commitDocuments: async input => { saved = input.documents[0]; return { status: "persisted" }; },
-    sendEmail: async input => { requestToProvider = input; return { status: "sent", id: "resend-email-1" }; },
+    sendEmail: async input => { requestToProvider = input; return { status: "sent", id: "resend-email-1", messageId: "message-1", from: "NALVI <cursos@correo.idiomaguarani.com.py>", to: "ana@example.com", replyTo: `crm-${"b".repeat(48)}@inbound.idiomaguarani.com.py`, subject: "Información de tu programa", text: "Contenido exacto enviado" }; },
     now: () => "2026-11-10T15:00:00.000Z"
   })(request("admin-send-email", {
     method: "POST",
@@ -211,7 +211,91 @@ test("administración envía correo profesional y registra la entrega", async ()
   assert.equal(saved.fields.lastEmailId, "resend-email-1");
   assert.equal(saved.fields.lastEmailType, "cohort_details");
   assert.equal(saved.fields.emailHistory.length, 1);
+  assert.equal(saved.fields.emailHistory[0].direction, "outbound");
+  assert.equal(saved.fields.emailHistory[0].subject, "Información de tu programa");
+  assert.equal(saved.fields.emailHistory[0].text, "Contenido exacto enviado");
   assert.equal(res.payload.interest.lastEmailStatus, "sent");
+});
+
+test("una respuesta verificada se incorpora a la conversación de la persona", async () => {
+  const leadId = "d".repeat(48);
+  let saved = null;
+  const res = response();
+  const req = request("email-inbound", { method: "POST", body: JSON.stringify({ type: "email.received", data: { email_id: "received-1" } }) });
+  req.headers["svix-id"] = "msg_1";
+  await createLiveCoursesHandler({
+    verifyInboundWebhook: () => true,
+    fetchReceivedEmail: async () => ({
+      id: "received-1",
+      from: "Ana Pérez <ana@example.com>",
+      to: [`crm-${leadId}@inbound.idiomaguarani.com.py`],
+      subject: "Re: Información del programa",
+      text: "Sí, quiero reservar mi lugar.",
+      message_id: "message-inbound-1"
+    }),
+    readDocument: async () => ({ status: "found", document: { ...validInterest, email: "ana@example.com", status: "waitlist", emailHistory: [] } }),
+    commitDocuments: async input => { saved = input.documents[0]; return { status: "persisted" }; },
+    now: () => "2026-11-10T16:00:00.000Z"
+  })(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.payload.matched, true);
+  assert.equal(saved.pathSegments[1], leadId);
+  assert.equal(saved.fields.status, "contacted");
+  assert.equal(saved.fields.lastReplySubject, "Re: Información del programa");
+  assert.equal(saved.fields.emailHistory[0].direction, "inbound");
+  assert.equal(saved.fields.emailHistory[0].text, "Sí, quiero reservar mi lugar.");
+});
+
+test("el aula privada solo entrega calendario y enlaces con permiso activo", async () => {
+  const user = { uid: "student-1", email: "student@example.com", emailVerified: true, isAnonymous: false };
+  const classroom = {
+    title: "Grupo de noviembre",
+    welcome: "Nos vemos en clase.",
+    events: [{ id: "class-1", title: "Clase 1", startsAt: "2026-11-12T23:00:00.000Z", provider: "zoom", joinUrl: "https://zoom.us/j/123", notes: "Trae tus apuntes" }],
+    resources: [{ id: "resource-1", title: "Guía", type: "document", url: "https://example.com/guia.pdf", description: "Lectura previa" }]
+  };
+  const allowed = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => user,
+    readDocument: async ({ pathSegments }) => pathSegments[0] === "liveCourseEnrollments"
+      ? { status: "found", document: { active: true } }
+      : { status: "found", document: classroom }
+  })(request("classroom", { token: "student-token" }), allowed);
+  assert.equal(allowed.statusCode, 200);
+  assert.equal(allowed.payload.administrator, false);
+  assert.equal(allowed.payload.classroom.events[0].joinUrl, "https://zoom.us/j/123");
+
+  const denied = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => user,
+    readDocument: async () => ({ status: "missing", document: null })
+  })(request("classroom", { token: "student-token" }), denied);
+  assert.equal(denied.statusCode, 403);
+  assert.equal(denied.payload.reason, "LIVE_COURSE_ACCESS_REQUIRED");
+});
+
+test("administración guarda un calendario validado sin exponerlo públicamente", async () => {
+  const admin = { uid: "admin", email: "aliciaduartefretes@gmail.com", emailVerified: true, isAnonymous: false };
+  let saved = null;
+  const res = response();
+  await createLiveCoursesHandler({
+    verifyIdToken: async () => admin,
+    commitDocuments: async input => { saved = input.documents[0]; return { status: "persisted" }; },
+    now: () => "2026-11-10T17:00:00.000Z"
+  })(request("admin-classroom-save", {
+    method: "POST",
+    token: "admin-token",
+    body: {
+      title: "Grupo fundador",
+      welcome: "Bienvenidos",
+      events: [{ title: "Clase de apertura", startsAt: "2026-11-15T22:00:00.000Z", provider: "google-meet", joinUrl: "https://meet.google.com/abc-defg-hij" }],
+      resources: [{ title: "Material inicial", type: "document", url: "https://example.com/material.pdf" }]
+    }
+  }), res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(saved.pathSegments[0], "liveCourseClassrooms");
+  assert.equal(saved.fields.events[0].provider, "google-meet");
+  assert.equal(saved.fields.updatedBy, admin.email);
 });
 
 test("bloquea novedades sin consentimiento y bloquea envíos de usuarios comunes", async () => {
