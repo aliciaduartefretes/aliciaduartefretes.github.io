@@ -1,6 +1,6 @@
-import { createLemonSqueezyFetchWebhookHandler } from "../server/billing-webhook-handler.mjs";
+import { createUnifiedWebhookFetchHandler } from "../server/unified-webhook-fetch.mjs";
 
-const fetchWebhook = createLemonSqueezyFetchWebhookHandler();
+const fetchWebhook = createUnifiedWebhookFetchHandler();
 
 export default {
   fetch: fetchWebhook
