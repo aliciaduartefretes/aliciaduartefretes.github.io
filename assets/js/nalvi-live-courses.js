@@ -38,6 +38,7 @@
   function closeDialog(){if(typeof dialog.close==="function"&&dialog.open)dialog.close();else dialog.removeAttribute("open")}
 
   document.querySelectorAll("[data-live-course-open]").forEach(button=>button.addEventListener("click",openDialog));
+  if(new URLSearchParams(location.search).get("programa")==="guarani-en-vivo")setTimeout(openDialog,0);
   dialog.querySelectorAll("[data-live-course-close]").forEach(button=>button.addEventListener("click",closeDialog));
   dialog.addEventListener("click",event=>{if(event.target===dialog)closeDialog()});
 
